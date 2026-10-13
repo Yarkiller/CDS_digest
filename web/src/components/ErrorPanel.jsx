@@ -2,7 +2,7 @@ export default function ErrorPanel({ title, message, meta, onDismiss }) {
   return (
     <div
       role="alert"
-      className="mr-auto w-full max-w-md rounded-xl border border-[oklch(70%_0.12_25)] bg-[oklch(96%_0.03_25)] p-4 text-[oklch(35%_0.12_25)] sm:w-auto"
+      className="mr-auto w-full max-w-md rounded-xl border border-danger bg-danger/10 p-4 text-danger sm:w-auto"
     >
       <div className="flex items-start justify-between gap-3">
         <div>
@@ -13,7 +13,7 @@ export default function ErrorPanel({ title, message, meta, onDismiss }) {
         {onDismiss ? (
           <button
             type="button"
-            className="min-h-11 shrink-0 rounded-full px-2 text-sm hover:bg-[oklch(92%_0.04_25)]"
+            className="min-h-11 shrink-0 rounded-full px-2 text-sm hover:bg-danger/15"
             aria-label="Скрыть сообщение об ошибке"
             onClick={onDismiss}
           >

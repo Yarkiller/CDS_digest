@@ -10,7 +10,7 @@ const MOCK_SHELL_IDENTITY = 'Мария Сидорова'
 const linkClass = ({ isActive }) =>
   [
     'inline-flex min-h-11 items-center rounded-full px-3 text-sm',
-    isActive ? 'bg-accent text-accent-ink' : 'text-ink-2 hover:bg-paper-2',
+    isActive ? 'bg-primary text-text-primary' : 'text-text-secondary hover:bg-bg-surface',
   ].join(' ')
 
 /** Fallback identity for local mock browsing — never shown when login is required. */
@@ -57,12 +57,12 @@ export default function AppShell() {
   }, [])
 
   return (
-    <div className="min-h-svh bg-paper text-ink">
-      <header className="sticky top-0 z-40 border-b border-rule bg-paper">
+    <div className="min-h-svh bg-bg-app text-text-primary">
+      <header className="sticky top-0 z-40 border-b border-border bg-bg-app">
         <div className="mx-auto flex max-w-6xl flex-wrap items-center gap-3 px-4 py-3">
           <div className="mr-auto min-w-0">
-            <p className="font-display text-sm font-semibold text-accent">Digest CDS</p>
-            <p className="text-xs text-muted">СВА · издание</p>
+            <p className="font-display text-sm font-semibold text-primary">Digest CDS</p>
+            <p className="text-xs text-text-disabled">СВА · издание</p>
           </div>
           <nav
             className="order-last flex w-full flex-wrap gap-1 sm:order-none sm:w-auto"
@@ -98,7 +98,7 @@ export default function AppShell() {
           {identity ? (
             <Link
               to="/profile"
-              className="max-w-[10rem] shrink-0 truncate text-sm text-ink-2 underline-offset-2 hover:text-accent hover:underline sm:max-w-[14rem]"
+              className="max-w-[10rem] shrink-0 truncate text-sm text-text-secondary underline-offset-2 hover:text-primary hover:underline sm:max-w-[14rem]"
               data-testid="shell-identity"
               title={identity}
             >

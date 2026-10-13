@@ -61,7 +61,7 @@ export default function RequireAuth({ children }) {
 
   if (!ready) {
     return (
-      <p className="text-sm text-muted" role="status">
+      <p className="text-sm text-text-disabled" role="status">
         Проверка сессии…
       </p>
     )

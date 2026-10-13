@@ -63,7 +63,7 @@ export default function PlatformProofBanner() {
       aria-live="polite"
       className={[
         'pointer-events-none fixed left-1/2 top-20 z-50 w-[min(100%-2rem,28rem)] -translate-x-1/2',
-        'rounded-lg border border-rule bg-paper-2 px-4 py-3 text-center text-sm text-ink shadow-md',
+        'rounded-lg border border-border bg-bg-surface px-4 py-3 text-center text-sm text-text-primary shadow-md',
         'transition-opacity duration-500 ease-out',
         phase === 'fading' ? 'opacity-0' : 'opacity-100',
       ].join(' ')}

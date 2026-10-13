@@ -38,14 +38,14 @@ export default function RazboryListPage() {
   return (
     <section data-testid="razbory-page">
       <h1 className="mb-2 font-display text-3xl font-semibold">Разборы</h1>
-      <p className="mb-10 text-xs text-muted">
+      <p className="mb-10 text-xs text-text-disabled">
         Встречи раз в две недели · материалы от Data Scientist
       </p>
 
       {status === 'loading' ? (
         <div aria-busy="true" data-testid="razbory-loading">
-          <div className="h-4 w-48 animate-pulse rounded bg-rule" />
-          <div className="mt-4 h-24 animate-pulse rounded bg-rule" />
+          <div className="h-4 w-48 animate-pulse rounded bg-border" />
+          <div className="mt-4 h-24 animate-pulse rounded bg-border" />
         </div>
       ) : null}
 
@@ -54,13 +54,13 @@ export default function RazboryListPage() {
       {status === 'ready' && items.length === 0 ? (
         <div data-testid="razbory-empty">
           <h2 className="font-display text-2xl font-semibold">Разборов пока нет</h2>
-          <p className="mt-3 max-w-prose text-ink-2">
+          <p className="mt-3 max-w-prose text-text-secondary">
             Когда появятся — опубликуем здесь. Пока можно проголосовать за следующую тему.
           </p>
           <p className="mt-6">
             <Link
               to="/voting"
-              className="inline-flex min-h-11 items-center font-medium text-accent no-underline hover:underline"
+              className="inline-flex min-h-11 items-center font-medium text-primary no-underline hover:underline"
             >
               К голосованию
             </Link>
