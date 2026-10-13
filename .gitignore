@@ -19,3 +19,32 @@ dist/
 .playwright-browsers/
 test-results/
 .cursor/mcp.json
+
+# --- Local tooling / agent workspace (not part of the product) ---
+.claude/
+.gsd/
+.idea/
+.scratch/
+
+# GSD transient run artifacts (tracked planning docs are unaffected)
+.planning/_*
+.planning/tmp/
+.planning/research/.cache/
+.planning/ui-reviews/.gitignore
+.planning/config.json
+.planning/state.json
+.planning/estimation-calibration.json
+
+# Vercel CLI local state
+.vercel/
+
+# Extracted homework archive (derived from archive/*.zip)
+archive/extracted/
+
+# Local notebooks (demo content, not tracked)
+notebooks/
+
+# Stray accidental files
+/-H
+/-d
+/agent-skills-researcher.tmp.txt
