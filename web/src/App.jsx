@@ -5,6 +5,7 @@ import RequireAuth from './components/RequireAuth.jsx'
 import ArchivePage from './pages/ArchivePage.jsx'
 import IssuePage from './pages/IssuePage.jsx'
 import KnowledgePage from './pages/KnowledgePage.jsx'
+import LeaderboardPage from './pages/LeaderboardPage.jsx'
 import LoginPage from './pages/LoginPage.jsx'
 import MaterialPage from './pages/MaterialPage.jsx'
 import AdminDigestPage from './pages/AdminDigestPage.jsx'
@@ -38,6 +39,7 @@ export default function App() {
           <Route path="razbory" element={<RazboryListPage />} />
           <Route path="razbory/:id" element={<RazborPage />} />
           <Route path="profile" element={<ProfilePage />} />
+          <Route path="leaderboard" element={<LeaderboardPage />} />
           <Route path="admin/digest" element={<AdminDigestPage />} />
           <Route path="admin/pipeline" element={<AdminPipelineConfigPage />} />
           <Route path="*" element={<Navigate to="/" replace />} />

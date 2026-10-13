@@ -2,7 +2,7 @@ import { useEffect, useState } from 'react'
 
 const THEME_KEY = 'digest-cds-theme'
 
-export default function ThemeToggle({ className = '' }) {
+export default function ThemeToggle({ className = '', ...rest }) {
   const [isLight, setIsLight] = useState(false)
 
   useEffect(() => {
@@ -33,9 +33,10 @@ export default function ThemeToggle({ className = '' }) {
   return (
     <button
       type="button"
+      {...rest}
       onClick={toggle}
       aria-label={isLight ? 'Тёмная тема' : 'Светлая тема'}
-      className={`flex h-9 w-9 items-center justify-center rounded-lg border border-border bg-bg-elevated text-text-secondary ${className}`}
+      className={`flex h-8 w-8 items-center justify-center rounded-lg border border-border bg-bg-elevated text-text-secondary ${className}`}
     >
       {isLight ? '☽' : '☀'}
     </button>
