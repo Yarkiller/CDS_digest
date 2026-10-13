@@ -172,15 +172,15 @@ Items acknowledged and deferred at milestone close, most recent first:
 |----------|------|--------|-------------|-----------|
 | deferred_items | 10/deferred-items.md: pre-existing test_admin_shortlist_empty_batch failure → FIX-01 / Phase 12 | in_roadmap | 2026-10-02 | v1.1→v1.2 |
 | debug_sessions | (4 items from v1 close — see MILESTONES.md) | acknowledged | 2026-09-22 | v1 |
-| debug_sessions | admin-batch-cta-removal | unknown | 2026-10-05 | v1.2 |
-| debug_sessions | draft-approved-contradiction | investigating | 2026-10-05 | v1.2 |
-| debug_sessions | email-plain-body-rendered | diagnosed | 2026-10-05 | v1.2 |
-| debug_sessions | footer-duplicates-cta-label | investigating | 2026-10-05 | v1.2 |
-| debug_sessions | interstitial-not-paragraph | diagnosed | 2026-10-05 | v1.2 |
-| debug_sessions | mark-ready-503 | unknown | 2026-10-05 | v1.2 |
-| debug_sessions | modal-close-not-sticky | diagnosed | 2026-10-05 | v1.2 |
-| debug_sessions | per-row-ready-click-noop | investigating | 2026-10-05 | v1.2 |
-| debug_sessions | preview-cursor | unknown | 2026-10-05 | v1.2 |
+| debug_sessions | admin-batch-cta-removal | resolved 2026-10-13 | 2026-10-05 | v1.2 |
+| debug_sessions | draft-approved-contradiction | resolved 2026-10-13 | 2026-10-05 | v1.2 |
+| debug_sessions | email-plain-body-rendered | resolved 2026-10-13 | 2026-10-05 | v1.2 |
+| debug_sessions | footer-duplicates-cta-label | resolved 2026-10-13 | 2026-10-05 | v1.2 |
+| debug_sessions | interstitial-not-paragraph | resolved 2026-10-13 | 2026-10-05 | v1.2 |
+| debug_sessions | mark-ready-503 | resolved 2026-10-13 | 2026-10-05 | v1.2 |
+| debug_sessions | modal-close-not-sticky | resolved 2026-10-13 | 2026-10-05 | v1.2 |
+| debug_sessions | per-row-ready-click-noop | resolved 2026-10-13 | 2026-10-05 | v1.2 |
+| debug_sessions | preview-cursor | resolved 2026-10-13 | 2026-10-05 | v1.2 |
 | deferred_items | 13/deferred-items.md: admin.spec.js `/me network failure shows ServiceUnavailable not Forbidden` flake (pre-existing, not G-13-*) | acknowledged | 2026-10-05 | v1.2 |
 
 Carried product deferrals to v1.3+: leaderboard, quiz, live SMTP, signup mail, Whisper/Foundry ASR, ingest HTTP/scheduler, PIPE execution.

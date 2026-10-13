@@ -1,5 +1,8 @@
 ---
-status: diagnosed
+status: resolved
+resolved:
+  at: 2026-10-13
+  evidence: "Dialog close stays outside overflow-y-auto with cursor-pointer; locked by a 1280x400 Playwright viewport proof (v1.2 Phase 13)"
 trigger: "G-13-1/G-13-2/G-13-3: material and email preview modal close (✕) scrolls away with content; cursor:pointer missing. find_root_cause_only."
 created: 2026-10-03T08:10:00Z
 updated: 2026-10-03T08:20:00Z

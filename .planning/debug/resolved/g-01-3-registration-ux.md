@@ -1,5 +1,8 @@
 ---
-status: diagnosed
+status: resolved
+resolved:
+  at: 2026-10-13
+  evidence: "Self-service /register with Login nickname and slim email+password login shipped; Playwright contracts added (v1 Phase 1)"
 trigger: "Diagnose UAT gap G-01-3 for Digest CDS Phase 1. Do NOT implement fixes — diagnose only. Symptoms: (1) Регистрация inactive / does not lead to registration (2) Login must NOT have Name field (3) Registration SHOULD have name field (ФИО/Имя)."
 created: 2026-09-19T19:11:00Z
 updated: 2026-09-19T19:15:00Z

@@ -1,4 +1,8 @@
 ---
+status: resolved
+resolved:
+  at: 2026-10-13
+  evidence: "Global @layer base rule button:not(:disabled) { cursor: pointer } at web/src/index.css:38 covers the control"
 audit_acknowledged:
   milestone: v1.2
   at: 2026-10-05

@@ -1,4 +1,8 @@
 ---
+status: resolved
+resolved:
+  at: 2026-10-13
+  evidence: "_fetch_one emits the FK-hinted material_relations embed, so live get()/get_by_slug() return a Material instead of raising PGRST201"
 audit_acknowledged:
   milestone: v1.2
   at: 2026-10-05

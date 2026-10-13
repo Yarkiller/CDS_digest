@@ -1,5 +1,8 @@
 ---
-status: investigating
+status: resolved
+resolved:
+  at: 2026-10-13
+  evidence: "material_status pill localised (chernovik/gotov) and triage caption qualified as odobren (v shorlist) in v1.2 Phase 14"
 trigger: "UX: admin shortlist row shows `[draft]` badge AND «одобрен» on the same row, reads as a contradiction. Discovered during UAT verification of Phase 14 (G-14-2a)."
 created: 2026-10-03T16:07:00Z
 updated: 2026-10-03T16:07:00Z

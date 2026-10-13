@@ -1,4 +1,8 @@
 ---
+status: resolved
+resolved:
+  at: 2026-10-13
+  evidence: "Batch promote CTA + promoteApprovedDrafts handler + approved-drafts hint removed from web/src (no admin-mark-ready-batch); per-row ready stays"
 audit_acknowledged:
   milestone: v1.2
   at: 2026-10-05

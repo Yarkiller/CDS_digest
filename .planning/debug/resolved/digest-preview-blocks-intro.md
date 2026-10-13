@@ -1,5 +1,8 @@
 ---
-status: diagnosed
+status: resolved
+resolved:
+  at: 2026-10-13
+  evidence: "Intro and ordered blocks reach preview.body end-to-end; G-05-1 closed in v1 Phase 5"
 trigger: "G-05-1 — Admin digest letter preview omits intro text; issue blocks should show selected topics as reorderable blocks; optional editor text blocks insertable between articles"
 created: 2026-09-21T17:46:00Z
 updated: 2026-09-21T17:52:00Z

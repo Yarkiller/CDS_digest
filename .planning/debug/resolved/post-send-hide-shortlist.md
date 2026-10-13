@@ -1,5 +1,8 @@
 ---
-status: diagnosed
+status: resolved
+resolved:
+  at: 2026-10-13
+  evidence: "Post-send triage rows/checkboxes hide behind the digest-released copy plus 7-day countdown; G-05-2 closed"
 trigger: "G-05-2: After digest send recorded, material-selection list stays visible with inactive checkboxes; should hide until new materials, show success + countdown"
 created: 2026-09-21T17:48:00Z
 updated: 2026-09-21T17:55:00Z

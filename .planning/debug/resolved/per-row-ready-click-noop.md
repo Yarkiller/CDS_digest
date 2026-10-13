@@ -1,5 +1,8 @@
 ---
-status: investigating
+status: resolved
+resolved:
+  at: 2026-10-13
+  evidence: "POST response is authoritative; preservePromotedReady reconciles a still-draft refetch (web/src/services/adminReadyReconcile.js)"
 trigger: "Per-row «Сделать ready» click does nothing — state unchanged (ADUX-05, D-85 unblock broken). Discovered during UAT verification of Phase 14."
 created: 2026-10-03T18:58:00Z
 updated: 2026-10-03T19:10:00Z

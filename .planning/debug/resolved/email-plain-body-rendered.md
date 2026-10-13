@@ -1,5 +1,8 @@
 ---
-status: diagnosed
+status: resolved
+resolved:
+  at: 2026-10-13
+  evidence: "Email preview success view is subject + sandboxed iframe only; the numbered preview.items list is unmounted (v1.2 Phase 13)"
 trigger: "Gap G-13-3b (test 3, major): Email preview modal shows a numbered plain-text list under the iframe, duplicating HTML email content. Plain body must stay internal."
 created: 2026-10-03T11:12:00+03:00
 updated: 2026-10-03T11:20:00+03:00

@@ -1,5 +1,8 @@
 ---
-status: investigating
+status: resolved
+resolved:
+  at: 2026-10-13
+  evidence: "Sticky footer drops the duplicate title list for a count-only hint; batch CTA removed (v1.2 Phase 14)"
 trigger: "UX: sticky send footer duplicates approved-draft titles already visible in the shortlist; batch CTA label «одобренные черновики» confusing. (Phase 14 UAT gap G-14-2b)"
 created: 2026-10-03T16:08:00Z
 updated: 2026-10-03T16:08:00Z

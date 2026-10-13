@@ -1,5 +1,8 @@
 ---
-status: diagnosed
+status: resolved
+resolved:
+  at: 2026-10-13
+  evidence: "Interstitial p/br matrix ships in render_email_html; Playwright asserts paragraph breaks (v1.2 Phase 13)"
 trigger: "Gap G-13-3c (test 3, minor): interstitial connecting text «Связывающий текст - тест» renders flat in the email iframe; expected <p> per ADUX-03 / Phase 12 interstitial_html. Goal: find_root_cause_only."
 created: 2026-10-03T11:14:00+03:00
 updated: 2026-10-03T11:25:00+03:00
