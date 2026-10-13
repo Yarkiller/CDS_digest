@@ -6,158 +6,65 @@
   <title>Building Production RAG Systems — Digest CDS</title>
   <link rel="preconnect" href="https://fonts.googleapis.com">
   <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
-  <link href="https://fonts.googleapis.com/css2?family=Bricolage+Grotesque:opsz,wght@12..96,400;12..96,600&family=IBM+Plex+Mono:wght@400&family=IBM+Plex+Sans:wght@400;500;600&display=swap" rel="stylesheet">
+  <link href="https://fonts.googleapis.com/css2?family=JetBrains+Mono&family=Manrope:wght@400;500;600;700&display=swap" rel="stylesheet">
   <link rel="stylesheet" href="../styles/tokens.css">
   <link rel="stylesheet" href="../styles/typography.css">
   <link rel="stylesheet" href="../styles/layout.css">
   <link rel="stylesheet" href="../styles/components.css">
 </head>
 <body>
-  <div class="reading-progress" aria-hidden="true"></div>
-
+  <div class="concept-nav"><a href="../index.html">← Concept 2</a> <strong>Материал</strong></div>
   <div class="app-shell">
     <header class="header">
       <div class="header__inner">
-        <a class="logo" href="issue.html">
-          <span class="logo__title">Digest CDS</span>
-          <span class="logo__subtitle">СВА · издание</span>
-        </a>
-        <nav class="nav" id="primary-nav">
-          <a class="nav__link" href="issue.html">Выпуск</a>
-          <a class="nav__link" href="archive.html">Архив</a>
-          <a class="nav__link nav__link--active" href="knowledge.html">База</a>
+        <a class="logo" href="home.html"><span class="logo__title">Digest CDS</span></a>
+        <nav class="nav">
+          <a class="nav__link" href="home.html">Главная</a>
+          <a class="nav__link nav__link--active" href="material.html">База знаний</a>
           <a class="nav__link" href="voting.html">Голосование</a>
-          <a class="nav__link" href="razbory.html">Разборы</a>
-          <a class="nav__link" href="admin-digest.html">Админ</a>
+          <a class="nav__link" href="leaderboard.html">Лидерборд</a>
         </nav>
-        <button class="nav-toggle" type="button" aria-controls="primary-nav" aria-expanded="false">Меню</button>
-        <div class="header__search">
-          <button class="search-pill" type="button" data-search-trigger aria-controls="search-dialog" aria-expanded="false" aria-label="Поиск (Ctrl K)">
-            <span class="search-pill__icon" aria-hidden="true">⌕</span>
-            <span class="search-pill__text">Поиск по базе</span>
-            <span class="search-pill__kbd" aria-hidden="true"><kbd>Ctrl</kbd><kbd>K</kbd></span>
-          </button>
+        <div class="header__search"><div class="search-bar"><span class="search-bar__icon">⌕</span><input class="search-bar__input" type="search" placeholder="Поиск…"></div></div>
+        <div class="header__gamification">
+          <span class="streak-pill"><span class="streak-pill__icon"><svg width="14" height="14" viewBox="0 0 24 24" fill="currentColor"><path d="M12 2C12 2 7 10 7 14a5 5 0 0 0 10 0c0-4-5-12-5-12z"/></svg></span>12</span>
+          <div class="xp-widget"><span class="xp-widget__level">Ур. 7</span><div class="xp-widget__track"><div class="xp-widget__fill"></div></div></div>
+          <a class="rank-chip" href="leaderboard.html">#8</a>
         </div>
-        <div class="header__user">
-          <span class="user-name">Иван Петров</span>
-          <span class="role-badge role-badge--ds">Data Scientist</span>
-        </div>
+        <div class="header__user"><button class="theme-toggle" type="button" data-theme-toggle>☀</button><a href="profile.html" class="avatar">ИП</a></div>
       </div>
     </header>
 
-    <dialog class="search-dialog" id="search-dialog" aria-labelledby="search-dialog-title">
-      <div class="search-dialog__panel">
-        <div class="search-dialog__header">
-          <h2 class="text-h2" id="search-dialog-title">Поиск Digest CDS</h2>
-          <button class="btn btn--ghost" type="button" data-close-search aria-label="Закрыть">✕</button>
+    <main class="main">
+      <article class="prose">
+        <figure class="material-hero">
+          <img src="../assets/covers/rag-systems.png" width="480" height="270" alt="Building Production RAG Systems">
+          <span class="format-badge">Статья</span>
+        </figure>
+
+        <h1 class="text-display">Building Production RAG Systems</h1>
+        <p class="text-caption" style="margin:var(--space-3) 0;">
+          20 марта 2026 · arXiv / Medium
+          <span class="xp-hint">+5 XP</span>
+        </p>
+
+        <h2 class="text-h2">Резюме</h2>
+        <p>Статья описывает полный цикл построения RAG-системы для корпоративной базы знаний: ingestion, chunking, embedding через FoundryModels, гибридный retrieval и reranking в закрытом контуре.</p>
+        <p>Для СВА релевантны сценарии поиска по регламентам и методологиям аудита с цитированием источников.</p>
+
+        <div style="display:flex;gap:var(--space-2);flex-wrap:wrap;margin:var(--space-6) 0;">
+          <span class="tag-pill">#RAG</span>
+          <span class="tag-pill">#LLM</span>
+          <span class="tag-pill">#pgvector</span>
         </div>
-        <label class="search-dialog__label" for="global-search">Поиск по базе знаний</label>
-        <div class="search-dialog__field">
-          <span class="search-dialog__icon" aria-hidden="true">⌕</span>
-          <input class="search-dialog__input" id="global-search" type="search" placeholder="RAG, SQL, качество данных…" autocomplete="off">
-          <kbd>Esc</kbd>
-        </div>
-        <p class="search-dialog__hint" id="search-dialog-hint">↑ ↓ для навигации · Enter для открытия · Esc для закрытия</p>
-        <ul class="search-dialog__results" role="listbox" aria-label="Разделы Digest CDS">
-          <li><a class="search-dialog__result" role="option" href="knowledge.html" data-search-result><strong>База знаний</strong><span>Найти материалы по смыслу, роли или тегу</span></a></li>
-          <li><a class="search-dialog__result" role="option" href="issue.html" data-search-result><strong>Текущий выпуск</strong><span>Открыть подборку материалов недели</span></a></li>
-          <li><a class="search-dialog__result" role="option" href="razbory.html" data-search-result><strong>Разборы</strong><span>Посмотреть встречи и longread-материалы</span></a></li>
-          <li><a class="search-dialog__result" role="option" href="voting.html" data-search-result><strong>Голосование</strong><span>Выбрать тему следующего разбора</span></a></li>
-        </ul>
-      </div>
-    </dialog>
 
-    <main class="main main--reading">
-      <div class="split-layout split-layout--reading">
-        <article class="prose prose--column">
-          <details class="toc-mobile">
-            <summary class="toc-mobile__summary">Содержание <span aria-hidden="true">⌄</span></summary>
-            <ul class="toc-mobile__list">
-              <li><a href="#summary">Резюме</a></li>
-              <li><a href="#tags">Теги</a></li>
-              <li><a href="#fulltext">Полный текст</a></li>
-            </ul>
-          </details>
-          <p class="text-overline format-overline">Статья · RAG</p>
-          <h1 class="text-display">Building Production RAG Systems</h1>
-          <p class="text-caption byline">
-            20 марта 2026 · provenance: внешний текстовый источник · ~8 мин чтения
-          </p>
-          <hr class="rule">
-
-          <figure class="material-hero">
-            <img src="../assets/covers/rag-systems.png" width="480" height="270" alt="Building Production RAG Systems — обложка">
-          </figure>
-
-          <h2 id="summary">Резюме</h2>
-          <p>
-            Статья описывает полный цикл построения <a href="razbor.html">RAG-системы</a> для корпоративной базы знаний:
-            ingestion документов, chunking, embedding через FoundryModels, гибридный retrieval
-            (векторный + BM25) и reranking. Автор показывает метрики качества и типичные ошибки
-            при деплое в закрытом контуре.
-          </p>
-
-          <blockquote class="pull-quote">
-            Для СВА наиболее релевантны сценарии поиска по регламентам с цитированием источников.
-          </blockquote>
-
-          <p>
-            Для СВА наиболее релевантны сценарии поиска по регламентам, методологиям аудита
-            и внутренним отчётам с цитированием источников.
-          </p>
-
-          <div style="display: flex; gap: var(--space-2); flex-wrap: wrap; margin: var(--space-6) 0;" id="tags">
-            <a class="tag-pill" href="knowledge.html">#RAG</a>
-            <a class="tag-pill" href="knowledge.html">#LLM</a>
-            <a class="tag-pill" href="knowledge.html">#pgvector</a>
-            <a class="tag-pill" href="knowledge.html">#аудит</a>
-          </div>
-
-          <div style="display: flex; align-items: center; justify-content: space-between; margin-bottom: var(--space-4);" id="fulltext">
-            <h2 style="margin: 0;">Полный текст</h2>
-            <button class="collapsible__toggle" type="button" aria-expanded="false" aria-controls="fulltext-content">Развернуть</button>
-          </div>
-          <div id="fulltext-content" class="collapsible__content" hidden>
-            <p>
-              Подготовленная статья переводит технический подход в контекст аудита:
-              сначала документы нормализуются и разбиваются на фрагменты, затем для
-              каждого фрагмента рассчитывается embedding.
-            </p>
-            <p>
-              На этапе поиска система объединяет семантическое совпадение с точным
-              совпадением терминов. Это помогает находить нужный фрагмент регламента
-              и одновременно сохранять цитату для проверки результата.
-            </p>
-          </div>
-
-          <aside class="editorial-box">
-            <div class="editorial-box__title">Связанные статьи</div>
-            <p class="text-body-sm" style="margin: 0;">Связанная статья: <a href="razbor.html">RAG в корпоративной среде</a>. Сложные термины связываются при первом уместном упоминании.</p>
-          </aside>
-
-          <aside class="editorial-box">
-            <div class="editorial-box__title">В выпуске</div>
-            <p class="text-body-sm" style="margin: 0;">
-              <a href="issue.html">Выпуск №14</a> · позиция 01<br>
-              Связанные темы: <a href="voting.html">RAG в корпоративной среде</a>
-            </p>
-          </aside>
-        </article>
-
-        <nav class="toc" aria-label="Содержание">
-          <span class="text-overline" style="display: block; margin-bottom: var(--space-3);">Содержание</span>
-          <ul class="toc__list">
-            <li><a class="toc__link toc__link--active" href="#summary">Резюме</a></li>
-            <li><a class="toc__link" href="#tags">Теги</a></li>
-            <li><a class="toc__link" href="#fulltext">Полный текст</a></li>
-          </ul>
-        </nav>
-      </div>
+        <section class="quiz-prompt">
+          <span class="text-overline">Карточка с вопросами</span>
+          <h2 class="text-h2 quiz-prompt__title" style="margin-top:var(--space-2);">Проверь понимание</h2>
+          <p class="text-body-sm text-secondary" style="margin:var(--space-2) 0 var(--space-5);">5 вопросов · ~3 мин · до <strong class="text-xp">+40 XP</strong> при результате ≥80%</p>
+          <a class="btn btn--primary" href="quiz.html">Начать →</a>
+        </section>
+      </article>
     </main>
-    <footer class="site-footer">
-      <p class="site-footer__statement">Хороший материал оставляет после себя ясный следующий шаг.</p>
-      <div class="site-footer__meta"><span>Digest CDS · статья</span><a href="issue.html">Выпуск</a><a href="knowledge.html">База знаний</a></div>
-    </footer>
   </div>
   <script src="../scripts/app.js"></script>
 </body>

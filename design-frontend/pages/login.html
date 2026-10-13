@@ -6,41 +6,36 @@
   <title>Вход — Digest CDS</title>
   <link rel="preconnect" href="https://fonts.googleapis.com">
   <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
-  <link href="https://fonts.googleapis.com/css2?family=Bricolage+Grotesque:opsz,wght@12..96,400;12..96,600&family=IBM+Plex+Mono:wght@400&family=IBM+Plex+Sans:wght@400;500;600&display=swap" rel="stylesheet">
+  <link href="https://fonts.googleapis.com/css2?family=JetBrains+Mono&family=Manrope:wght@400;500;600;700&display=swap" rel="stylesheet">
   <link rel="stylesheet" href="../styles/tokens.css">
   <link rel="stylesheet" href="../styles/typography.css">
   <link rel="stylesheet" href="../styles/layout.css">
   <link rel="stylesheet" href="../styles/components.css">
-  <link rel="stylesheet" href="../styles/auth.css">
 </head>
 <body>
+  <div class="concept-nav"><a href="../index.html">← Concept 2</a> <strong>Вход</strong></div>
+
   <div class="auth-layout">
     <div class="auth-card">
-      <div class="auth-card__header">
-        <h1 class="text-h1" style="color: var(--color-primary);">Digest CDS</h1>
-        <p class="text-caption">СВА · внутреннее издание</p>
+      <div style="text-align:center;margin-bottom:var(--space-8);">
+        <h1 class="text-h1" style="background:linear-gradient(135deg,#8B5CF6,#06B6D4);-webkit-background-clip:text;-webkit-text-fill-color:transparent;background-clip:text;">Digest CDS</h1>
+        <p class="text-caption">СВА · DS-направление</p>
       </div>
-
-      <form class="form-stack" action="issue.html" data-login novalidate>
+      <form class="form-stack" action="home.html">
         <div class="field">
           <label class="field__label" for="email">Email</label>
-          <input class="field__input" id="email" name="email" type="email" placeholder="name@sberbank.ru" autocomplete="email" aria-describedby="email-help" required>
-          <div class="field__helper" id="email-help">Только @sberbank.ru или @omega.sbrf.ru</div>
+          <input class="field__input" id="email" type="email" placeholder="name@sberbank.ru">
         </div>
         <div class="field">
           <label class="field__label" for="password">Пароль</label>
-          <input class="field__input" id="password" name="password" type="password" autocomplete="current-password" aria-describedby="password-help" required>
-          <div class="field__helper" id="password-help"></div>
+          <input class="field__input" id="password" type="password">
         </div>
         <button class="btn btn--primary btn--block" type="submit">Войти</button>
       </form>
-
-      <p class="text-body-sm text-secondary" style="text-align: center; margin-top: var(--space-6);">
-        Нет аккаунта? <a href="#">Регистрация</a>
-      </p>
-      <p class="text-caption" style="text-align: center; margin-top: var(--space-4);">
-        Доступ: @sberbank.ru, @omega.sbrf.ru
-      </p>
+      <p class="text-caption" style="text-align:center;margin-top:var(--space-6);">@sberbank.ru · @omega.sbrf.ru</p>
+      <div style="text-align:center;margin-top:var(--space-4);">
+        <button class="theme-toggle" type="button" data-theme-toggle style="margin:0 auto;">☀</button>
+      </div>
     </div>
   </div>
   <script src="../scripts/app.js"></script>
