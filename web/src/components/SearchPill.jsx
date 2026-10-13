@@ -25,7 +25,11 @@ export default function SearchPill() {
   }
 
   return (
-    <form role="search" onSubmit={onSubmit} className="min-w-0 flex-1 basis-[12rem] sm:max-w-xs md:max-w-sm">
+    <form
+      role="search"
+      onSubmit={onSubmit}
+      className="min-w-0 flex-1 basis-[12rem] sm:min-w-[280px] sm:max-w-sm"
+    >
       <label htmlFor={inputId} className="sr-only">
         Поиск Digest CDS
       </label>
