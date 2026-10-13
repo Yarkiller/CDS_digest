@@ -50,58 +50,54 @@ Full phase detail: [milestones/v1.2-ROADMAP.md](milestones/v1.2-ROADMAP.md)
 
 ## Backlog
 
-### Phase 999.1: Follow-up — Phase 13 deferred UAT follow-up: Test 1 (BACKLOG)
+> **Triaged 2026-10-13** (`/gsd-review-backlog`).
+> - **Queued for v1.3** — Bucket A tech debt; promote with `/gsd-new-milestone` (next free phase numbers 17+).
+> - **Deferred** — product preference, not debt.
+> - **Removed 2026-10-13** — former 999.2 (merged into 999.1, identical root cause) and former 999.3 (stale: fixed by the global `@layer base button:not(:disabled) { cursor: pointer }` rule shipped in v1.2 Phase 15).
 
-**Goal:** Resolve the UAT checkpoint deferred during Phase 13 verification
+### Phase 999.1: Reader-route honesty for draft materials — `/materials/<slug>` error page (Queued for v1.3)
+
+**Goal:** A reader link opened from the admin shortlist or the email preview must not land on an error page while the material is still a draft
 **Source phase:** 13
+**Tech-debt id:** `W-1` (`.planning/milestones/v1.2-MILESTONE-AUDIT.md`)
 **Deferred at:** 2026-10-03 during /gsd-verify-work 13 session completion
+**Merged:** former 999.2 folded in on 2026-10-13 — identical root cause (`GET /materials/{slug}` is ready-only → 404)
 **Follow-ups:**
-- [ ] Test 1: O3 — Reader /materials/<slug> returns error page. Check: slug validity, reader endpoint health, SPA route. Not Phase 13 scope. File for Phase 14 / debug session. (deferred 2026-10-03)
+- [ ] Reader `/materials/<slug>` returns an error page. Check: slug validity, reader endpoint health, SPA route. (deferred 2026-10-03)
+- [ ] «Открыть материал →» from the email/admin preview leads to an error page — reader route issue, not admin preview. (deferred 2026-10-03)
 
-### Phase 999.2: Follow-up — Phase 13 deferred UAT follow-up: Test 3 (BACKLOG)
-
-**Goal:** Resolve the UAT checkpoint deferred during Phase 13 verification
-**Source phase:** 13
-**Deferred at:** 2026-10-03 during /gsd-verify-work 13 session completion
-**Follow-ups:**
-- [ ] Test 3: O3 — «Открыть материал →» from email/admin preview leads to error page. Reader /materials/<slug> route issue, not admin preview. Separate ticket. (deferred 2026-10-03)
-
-### Phase 999.3: Follow-up — Phase 13 deferred UAT follow-up: Test 3 (BACKLOG)
-
-**Goal:** Resolve the UAT checkpoint deferred during Phase 13 verification
-**Source phase:** 13
-**Deferred at:** 2026-10-03 during /gsd-verify-work 13 session completion
-**Follow-ups:**
-- [ ] Test 3: Hover on «Превью материала» keeps the default arrow cursor instead of pointer. Fix cursor-pointer on that control. Not Phase 13. (deferred 2026-10-03)
-
-### Phase 999.4: Follow-up — Phase 14 deferred UAT follow-up: Test 1 (BACKLOG)
+### Phase 999.4: Follow-up — Phase 14 deferred UAT follow-up: Test 1 (Deferred)
 
 **Goal:** Resolve the UAT checkpoint deferred during Phase 14 verification
 **Source phase:** 14
+**Triaged:** 2026-10-13 — product preference, not tech debt; stays parked
 **Deferred at:** 2026-10-04 during /gsd-verify-work 14 session completion
 **Follow-ups:**
 - [ ] Test 1: UX (для Phase 15+): две операции на одно editorial-решение избыточны для single-operator workflow — объединить Approve (decision) + Mark ready (material_status) в одну кнопку «Одобрить и подготовить → ready»; переименовать «Сделать ready» → «Отобрать», ready → «Отобран». (deferred 2026-10-03)
 
-### Phase 999.5: Follow-up — Phase 16 deferred UAT follow-up: admin nav grouping (BACKLOG)
+### Phase 999.5: Follow-up — Phase 16 deferred UAT follow-up: admin nav grouping (Deferred)
 
 **Goal:** Resolve the UAT checkpoint deferred during Phase 16 verification
 **Source phase:** 16
+**Triaged:** 2026-10-13 — product preference, not tech debt; stays parked
 **Deferred at:** 2026-10-04 during /gsd-verify-work 16 session completion
 **Follow-ups:**
 - [ ] Test 0: UX (предпочтение, не SPEC): убрать top-level nav-пункт «Пайплайн»; открывать конфиг только из админ-раздела. Вариант C — tab-bar «Дайджест | Пайплайн» на админ-страницах, top-level «Админ» → /admin/digest. Route /admin/pipeline не меняется, новый route не нужен. При реализации обновить 16-UI-SPEC A-2 и писать TDD (failing Playwright test first). (deferred 2026-10-04)
 
-### Phase 999.6: Follow-up — Phase 16 deferred UAT follow-up: unsaved-changes guard WR-04/WR-05 (BACKLOG)
+### Phase 999.6: Follow-up — Phase 16 deferred UAT follow-up: unsaved-changes guard WR-04/WR-05 (Queued for v1.3)
 
 **Goal:** Resolve the UAT checkpoint deferred during Phase 16 verification
 **Source phase:** 16
+**Tech-debt ids:** `WR-04`, `WR-05` (`16-REVIEW-DISPOSITION.md` — both an accepted known limitation)
 **Deferred at:** 2026-10-04 during /gsd-verify-work 16 session completion
 **Follow-ups:**
 - [ ] Test 3: WR-04/WR-05 — unsaved-changes guard принят как known limitation: window.confirm внутри beforeunload ненадёжен в реальных браузерах, router-level guard не зарегистрирован, поэтому in-app SPA-навигация молча теряет черновик. БД безопасна (не сохранил → не записано); теряется только набранный текст. Fix: корректный beforeunload (event.preventDefault/returnValue) + router guard (useBlocker) с той же копией «Есть несохранённые изменения. Уйти без сохранения?». (deferred 2026-10-04)
 
-### Phase 999.7: Follow-up — Phase 16 code-review advisory WR-01: YAML merge-key regression (BACKLOG)
+### Phase 999.7: Follow-up — Phase 16 code-review advisory WR-01: YAML merge-key regression (Queued for v1.3)
 
 **Goal:** Restore valid YAML merge-key (`<<`) acceptance in the strict pipeline-config validator without weakening duplicate-key rejection
 **Source phase:** 16
+**Tech-debt id:** `999.7` (`v1.2-MILESTONE-AUDIT.md` — `WR-01`, fails closed)
 **Deferred at:** 2026-10-05 at v1.2 milestone close
 **Follow-ups:**
 - [ ] WR-01: `_StrictSafeLoader.construct_mapping` pre-constructs key nodes before `flatten_mapping`, so a valid YAML merge-key document (`<<`) is rejected with a cryptic internal-tag error instead of merging. Fails closed (still a structured 400 `{errors:[...]}`, zero writes) and the fixed 4-key `extra="forbid"` schema cannot yield a valid config from such a document, so it is not a v1.2 must-have. Fix: run `flatten_mapping` (or pre-resolve merge keys) BEFORE duplicate-key detection so `<<` documents behave like `SafeLoader` while duplicate-key rejection stays intact. Advisory only — fails closed. (deferred 2026-10-05)
