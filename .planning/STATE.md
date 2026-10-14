@@ -4,16 +4,16 @@ milestone: v1.3
 milestone_name: Live mail, scheduled ingestion & backlog debt
 current_phase: 17
 current_phase_name: YAML merge-key acceptance in the strict validator
-status: verifying
+status: executing
 stopped_at: Completed 17-02-PLAN.md
-last_updated: "2026-10-14T12:11:37.081Z"
+last_updated: "2026-10-14T12:57:40.382Z"
 last_activity: 2026-10-14
 last_activity_desc: Phase 17 execution started
-state_head: f89b22157deec3c6551802e1e775acf7b7aad70f
+state_head: 62292230fe57d72f0e20a20cc21108b7f6bbbd3d
 progress:
   total_phases: 8
   completed_phases: 0
-  total_plans: 2
+  total_plans: 3
   completed_plans: 2
   percent: 0
 ---
@@ -29,9 +29,9 @@ See: .planning/PROJECT.md (updated 2026-10-14 — after v1.3 milestone start)
 
 ## Current Position
 
-Phase: 17 (YAML merge-key acceptance in the strict validator) — EXECUTING
+Phase: 17 (YAML merge-key acceptance in the strict validator) — READY TO EXECUTE
 Plan: 2 of 2
-Status: Phase complete — ready for verification
+Status: Ready to execute
 Last activity: 2026-10-14 — Phase 17 execution started
 
 Progress: [░░░░░░░░░░] 0%
