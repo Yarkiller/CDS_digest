@@ -11,32 +11,31 @@ import json
 import re
 import sys
 import time
-from datetime import datetime, timezone
+from datetime import UTC, datetime
 from pathlib import Path
 from typing import Any
 
 import jwt
-from cryptography.hazmat.primitives.asymmetric import ec
-from fastapi.testclient import TestClient
-from jwt.algorithms import ECAlgorithm
-
 from backend.composition.container import AppContainer, build_in_memory_container
 from backend.composition.settings import Settings
 from backend.domain.current_user import CurrentUser
 from backend.domain.errors import PipelineConfigValidationError
 from backend.domain.pipeline_config import PipelineConfig, PipelineConfigError
 from backend.infrastructure.yaml_pipeline_config_validator import (
-    YamlPipelineConfigValidator,
     _EXTRA_ANCHOR_KEY_MESSAGE,
     _MERGE_TOO_BIG_MESSAGE,
     _TOO_DEEP_MESSAGE,
     _UNREADABLE_MESSAGE,
+    YamlPipelineConfigValidator,
 )
 from backend.interface.http.app import create_app
 from backend.tests_support.in_memory import (
     InMemoryPipelineConfigRepository,
     InMemoryPipelineConfigValidator,
 )
+from cryptography.hazmat.primitives.asymmetric import ec
+from fastapi.testclient import TestClient
+from jwt.algorithms import ECAlgorithm
 
 ISSUER = "https://auth.example/auth/v1"
 CONFIG_URL = "/admin/pipeline/config"
@@ -160,7 +159,7 @@ def test_get_returns_saved_config() -> None:
     """PIPE-01/PIPE-03: a stored config round-trips through the read route (D-11)."""
     stored = PipelineConfig(
         yaml="template: podcast\nroles:\n  - analyst\nlanguage: ru\nmax_chars: 8000\n",
-        updated_at=datetime(2026, 10, 4, 9, 0, tzinfo=timezone.utc),
+        updated_at=datetime(2026, 10, 4, 9, 0, tzinfo=UTC),
     )
     client, headers, _container = _admin_env(config=stored)
 
