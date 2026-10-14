@@ -5,11 +5,11 @@ milestone_name: Live mail, scheduled ingestion & backlog debt
 current_phase: 17
 current_phase_name: YAML merge-key acceptance in the strict validator
 status: executing
-stopped_at: Completed 17-02-PLAN.md
-last_updated: "2026-10-14T12:57:40.382Z"
+stopped_at: Phase 18 context gathered
+last_updated: "2026-10-14T13:08:51.992Z"
 last_activity: 2026-10-14
 last_activity_desc: Phase 17 execution started
-state_head: 62292230fe57d72f0e20a20cc21108b7f6bbbd3d
+state_head: b0abed3ed95c4c97b59d79589388b7136e1a8354
 progress:
   total_phases: 8
   completed_phases: 0
@@ -115,9 +115,9 @@ Carried product deferrals beyond v1.3: leaderboard, quiz, Whisper/Foundry ASR, i
 
 ## Session Continuity
 
-Last session: 2026-10-14T12:11:16.100Z
-Stopped at: Completed 17-02-PLAN.md
-Resume file: None
+Last session: 2026-10-14T13:08:51.937Z
+Stopped at: Phase 18 context gathered
+Resume file: .planning/phases/18-reader-route-honesty-for-draft-materials/18-CONTEXT.md
 Next: `/gsd-execute-phase 17`
 
 ## Operator Next Steps
