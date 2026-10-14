@@ -25,7 +25,7 @@ last_activity_desc: Phase 17 complete, transitioned to Phase 18
 See: .planning/PROJECT.md (updated 2026-10-14 — after v1.3 milestone start)
 
 **Core value:** Trusted weekly prepared-article issue + one honest vote toward the next разбор
-**Current focus:** Phase 17 — YAML merge-key acceptance in the strict validator
+**Current focus:** Phase 18 — Reader-route honesty for draft materials (context gathered, ready to plan)
 
 ## Current Position
 
@@ -41,13 +41,13 @@ Progress: [█░░░░░░░░░] 13%
 **Velocity:**
 - Total plans completed: 3 (40 v1 + 23 v1.1 + 26 v1.2)
 - Prior milestones shipped: v1 (5 phases), v1.1 (6 phases), v1.2 (5 phases)
-- v1.3 plans completed: 0
+- v1.3 plans completed: 3
 
 **By Phase (v1.3):**
 
 | Phase | Plans | Total | Avg/Plan |
 |-------|-------|-------|----------|
-| 17. YAML merge-key | 3/3 | all plans executed; pending verification | - |
+| 17. YAML merge-key | 3/3 | Complete (verified 27/27) | - |
 | 18. Reader-route honesty | 0/? | context gathered | - |
 | 19. Unsaved-changes guard | 0/? | not started | - |
 | 20. Signup mail (MAIL-02) | 0/? | context gathered | - |
@@ -123,13 +123,12 @@ Carried product deferrals beyond v1.3: leaderboard, quiz, Whisper/Foundry ASR, i
 ## Session Continuity
 
 Last session: 2026-10-14T13:30:48.873Z
-Stopped at: Phase 17 complete, ready to plan Phase 18
-Resume file: None
-Next: `/gsd-execute-phase 17`
+Stopped at: Phase 17 complete and re-verified (27/27) after the WR-02 rework
+Resume file: .planning/phases/18-reader-route-honesty-for-draft-materials/18-CONTEXT.md
+Next: `/gsd-plan-phase 18`
 
 ## Operator Next Steps
 
-- Re-verify Phase 17 now that the CR-01 gap is closed: `/gsd-verify-work 17`
-- Reconcile the stale `17-VALIDATION.md` to the shipped state: `/gsd-validate-phase 17`
-- Plan the discussed phases: `/gsd-plan-phase 18` and `/gsd-plan-phase 20` (both have CONTEXT.md)
-- Discuss or plan Phase 19 (Unsaved-changes guard) — not yet discussed
+- Plan the two discussed phases: `/gsd-plan-phase 18` and `/gsd-plan-phase 20` (both have CONTEXT.md)
+- Phase 17 is complete and re-verified (27/27); stale `17-VALIDATION.md` is a record-accuracy task: `/gsd-validate-phase 17`
+- Phase 19 (Unsaved-changes guard) is not yet discussed
