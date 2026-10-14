@@ -77,10 +77,11 @@ Backlog tech debt comes first (lowest blast radius first), then mail, then inges
   3. A merge document crafted for high fan-out is refused by the expansion bound with the structured 400 and zero writes; the research-measured 480-char bomb (~1.5 s unguarded on this checkout, vs ~2 ms guarded) and deeper chains measured in the tens of seconds complete in bounded time instead of exhausting CPU.
   4. The merge fix and the bound ship together — there is no intermediate state where merges validate but expansion is unbounded; the strict 4-key `extra="forbid"` schema still governs the result and the structured-body contract is unchanged.
 
-**Plans:** 2/2 plans executed
-Plans:
+**Plans:** 3/3 plans executed
+
 **Wave 1** (no dependencies)
 - [x] 17-01-PLAN.md — Tracer: valid merge document accepted end-to-end, merge bomb refused (PIPE-04, PIPE-05)
+- [x] 17-03-PLAN.md — Gap closure: a duplicate inside a merge source is rejected; nested-merge anchor holders taught (PIPE-04, PIPE-05)
 
 **Wave 2** *(blocked on Wave 1 completion)*
 - [x] 17-02-PLAN.md — Teach the anchor-holder mistake with a key-naming Russian message (PIPE-04, PIPE-05)
@@ -205,7 +206,7 @@ Phases execute in numeric order: 17 → 18 → 19 → 20 → 21 → 22 → 23 �
 
 | Phase | Plans Complete | Status | Completed |
 |-------|----------------|--------|-----------|
-| 17. YAML merge-key acceptance | 2/2 | In Progress|  |
+| 17. YAML merge-key acceptance | 3/3 | In Progress|  |
 | 18. Reader-route honesty | 0/TBD | Not started | - |
 | 19. Unsaved-changes guard | 0/TBD | Not started | - |
 | 20. MAIL-02 signup mail | 0/TBD | Not started | - |

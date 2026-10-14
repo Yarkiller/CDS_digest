@@ -3,19 +3,19 @@ gsd_state_version: "1.0"
 milestone: v1.3
 milestone_name: Live mail, scheduled ingestion & backlog debt
 current_phase: 17
-current_phase_name: GAP CLOSURE PENDING
-status: Verification found a gap (13/14) — CR-01 duplicate keys inside a merge source; execute `17-03`
-stopped_at: Phase 20 context gathered
-last_updated: "2026-10-14T13:20:22.251Z"
+current_phase_name: YAML merge-key acceptance in the strict validator
+status: executing
+stopped_at: Completed 17-03-PLAN.md
+last_updated: "2026-10-14T13:30:48.939Z"
 last_activity: 2026-10-14
-state_head: aa9589e1759ec2b153e08afb968e676f17daa7a9
+last_activity_desc: Phase 17 execution started
+state_head: 96046456e62240a1e48f603e72bec77798758594
 progress:
   total_phases: 8
   completed_phases: 0
   total_plans: 3
-  completed_plans: 2
+  completed_plans: 3
   percent: 0
-last_activity_desc: Phase 17 execution started
 ---
 
 # Project State
@@ -29,10 +29,10 @@ See: .planning/PROJECT.md (updated 2026-10-14 — after v1.3 milestone start)
 
 ## Current Position
 
-Phase: 17 (YAML merge-key acceptance in the strict validator) — GAP CLOSURE PENDING
-Plan: 2 of 3 (17-01, 17-02 done; 17-03 gap plan ready)
-Status: Verification found a gap (13/14) — CR-01 duplicate keys inside a merge source; execute `17-03`
-Last activity: 2026-10-14
+Phase: 17 (YAML merge-key acceptance in the strict validator) — EXECUTING
+Plan: 3 of 3 (17-01, 17-02 and the 17-03 gap-closure plan all executed)
+Status: All 3 plans executed — CR-01 gap closed and WR-01 repaired; ready for `/gsd-verify-work 17`
+Last activity: 2026-10-14 — Phase 17 gap-closure plan 17-03 executed
 
 Progress: [░░░░░░░░░░] 0%
 
@@ -47,7 +47,7 @@ Progress: [░░░░░░░░░░] 0%
 
 | Phase | Plans | Total | Avg/Plan |
 |-------|-------|-------|----------|
-| 17. YAML merge-key | 2/3 | gap closure pending (17-03) | - |
+| 17. YAML merge-key | 3/3 | all plans executed; pending verification | - |
 | 18. Reader-route honesty | 0/? | context gathered | - |
 | 19. Unsaved-changes guard | 0/? | not started | - |
 | 20. Signup mail (MAIL-02) | 0/? | context gathered | - |
@@ -61,6 +61,7 @@ Progress: [░░░░░░░░░░] 0%
 |------|----------|-------|-------|
 | Phase 17 P01 | 9min | 2 tasks | 3 files |
 | Phase 17 P02 | 7min | 2 tasks | 3 files |
+| Phase 17 P03 | 8min | 3 tasks | 3 files |
 
 ## Accumulated Context
 
@@ -87,6 +88,11 @@ v1.3 roadmap locks:
 - [Phase 17]: The D-07 row keeps the loc-derived path (defaults) and only the message changes, so its field identity matches every other extra_forbidden row (A2)
 - [Phase 17]: The anchor-holder translation is gated on composed-graph anchor identity, so a genuine unknown key keeps Pydantic's English extra_forbidden message and the D-09 tripwire stays byte-identical (Pitfall 9)
 - [Phase 17]: _anchor_holder_keys is guarded (yaml.YAMLError/RecursionError -> empty set), runs only on the reject path when an extra_forbidden row exists, and reads the allow-list from PipelineConfigModel.model_fields (D-05, A5)
+- [Phase 17]: [Phase 17-03]: A merge source's pristine own keys are snapshotted and duplicate-scanned in the same pre-mutation window as the carrier, before super().flatten_mapping mutates the graph (CR-01)
+- [Phase 17]: [Phase 17-03]: The source scan runs before _project, so the duplicate-vs-bound and own-key-vs-source precedence is specified and pinned in all four measured directions, one row in every case
+- [Phase 17]: [Phase 17-03]: _check_own_keys is a verbatim extraction of the existing duplicate loop, so the D-09 tripwire and the explicit-duplicate line pins stay byte-identical
+- [Phase 17]: [Phase 17-03]: _merge_source_ids is an iterative visited-guarded walk, so _anchor_holder_keys reaches nested-merge holders and terminates on a self-referential merge (WR-01)
+- [Phase 17]: [Phase 17-03]: IN-01 alias-copy over-match is accepted and pinned by a characterisation test; precise disambiguation needs composer-event data PyYAML discards
 
 ### Pending Todos
 
@@ -115,13 +121,14 @@ Carried product deferrals beyond v1.3: leaderboard, quiz, Whisper/Foundry ASR, i
 
 ## Session Continuity
 
-Last session: 2026-10-14T13:19:00.200Z
-Stopped at: Phase 20 context gathered
-Resume file: .planning/phases/20-mail-02-signup-confirmation-mail/20-CONTEXT.md
+Last session: 2026-10-14T13:30:48.873Z
+Stopped at: Completed 17-03-PLAN.md
+Resume file: None
 Next: `/gsd-execute-phase 17`
 
 ## Operator Next Steps
 
-- Close Phase 17's verification gap: `/gsd-execute-phase 17 --gaps-only` (executes `17-03`)
+- Re-verify Phase 17 now that the CR-01 gap is closed: `/gsd-verify-work 17`
+- Reconcile the stale `17-VALIDATION.md` to the shipped state: `/gsd-validate-phase 17`
 - Plan the discussed phases: `/gsd-plan-phase 18` and `/gsd-plan-phase 20` (both have CONTEXT.md)
 - Discuss or plan Phase 19 (Unsaved-changes guard) — not yet discussed
