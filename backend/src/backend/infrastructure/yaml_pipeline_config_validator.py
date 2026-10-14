@@ -43,6 +43,10 @@ MAX_MERGE_ENTRIES = 256
 # D-06: a dedicated message — a merge bomb is ~500 characters, so claiming it exceeds
 # the size cap would be false.
 _MERGE_TOO_BIG_MESSAGE = "Документ содержит слияние (merge), превышающее допустимый размер"
+# D-07: an extra top-level key used purely as an anchor holder gets a message that names
+# the key and teaches the merge form — the most likely admin mistake after the merge fix.
+# ``{key}`` is interpolated with the offending top-level key name.
+_EXTRA_ANCHOR_KEY_MESSAGE = "Лишний ключ «{key}»: якоря нужно объявлять в самом `<<`"
 
 
 class _MergeExpansionTooLarge(Exception):
@@ -166,6 +170,39 @@ def _loc_to_dot_sep(loc: tuple[Any, ...]) -> str:
     return path
 
 
+def _anchor_holder_keys(yaml_text: str) -> set[str]:
+    """Top-level keys (outside the schema) whose value node is used as a merge source.
+
+    Anchor identity survives only in the composed node graph (after construction the
+    merged pairs are copies and the aliases are shared node objects), so the document is
+    re-composed. The call is guarded (D-05): a malformed or too-deep document returns the
+    empty set instead of becoming a new 500 path, and the helper runs only on the reject
+    path when an ``extra_forbidden`` row exists. The allowed-key set is read from
+    ``PipelineConfigModel.model_fields`` so the four keys are never copied here (A5).
+    """
+    try:
+        root = yaml.compose(yaml_text, Loader=_StrictSafeLoader)
+    except (yaml.YAMLError, RecursionError):
+        return set()
+    if not isinstance(root, MappingNode):
+        return set()
+
+    merge_source_ids: set[int] = set()
+    for key_node, value_node in root.value:
+        if key_node.tag == _MERGE_TAG:
+            sources = value_node.value if isinstance(value_node, SequenceNode) else [value_node]
+            merge_source_ids.update(id(source) for source in sources)
+
+    return {
+        key_node.value
+        for key_node, value_node in root.value
+        if key_node.tag != _MERGE_TAG
+        and id(value_node) in merge_source_ids
+        and isinstance(key_node.value, str)
+        and key_node.value not in PipelineConfigModel.model_fields
+    }
+
+
 class YamlPipelineConfigValidator:
     """Server-authoritative validator implementing the ``PipelineConfigValidator`` port."""
 
@@ -218,12 +255,26 @@ class YamlPipelineConfigValidator:
         try:
             PipelineConfigModel.model_validate(data)
         except ValidationError as exc:
+            schema_errors = exc.errors()
+            # D-07: only pay for the composed-graph re-read when an extra key exists, and
+            # only translate a row whose key is genuinely a top-level merge anchor holder.
+            anchor_holders = (
+                _anchor_holder_keys(yaml_text)
+                if any(error["type"] == "extra_forbidden" for error in schema_errors)
+                else set()
+            )
             raise PipelineConfigValidationError(
                 tuple(
                     PipelineConfigError(
                         path=_loc_to_dot_sep(error["loc"]),
-                        message=error["msg"],
+                        message=(
+                            _EXTRA_ANCHOR_KEY_MESSAGE.format(key=error["loc"][0])
+                            if error["type"] == "extra_forbidden"
+                            and error["loc"]
+                            and error["loc"][0] in anchor_holders
+                            else error["msg"]
+                        ),
                     )
-                    for error in exc.errors()
+                    for error in schema_errors
                 )
             ) from exc
