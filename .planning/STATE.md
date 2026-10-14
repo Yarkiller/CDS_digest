@@ -1,10 +1,15 @@
 ---
-gsd_state_version: "2.0"
+gsd_state_version: "1.0"
 milestone: v1.3
 milestone_name: Live mail, scheduled ingestion & backlog debt
+current_phase: 17
+current_phase_name: YAML merge-key acceptance in the strict validator
 status: ready_to_plan
-last_updated: "2026-10-14T09:40:00.000Z"
+stopped_at: Phase 17 context gathered
+last_updated: "2026-10-14T09:51:39.486Z"
 last_activity: 2026-10-14
+last_activity_desc: v1.3 roadmap created (Phases 17–24, 19/19 requirements mapped)
+state_head: 3d58d392596cf01f756b5ea651f963ec88b71bcf
 progress:
   total_phases: 8
   completed_phases: 0
@@ -97,9 +102,9 @@ Carried product deferrals beyond v1.3: leaderboard, quiz, Whisper/Foundry ASR, i
 
 ## Session Continuity
 
-Last session: 2026-10-14T09:40:00.000Z
-Stopped at: v1.3 roadmap created — 8 phases (17–24), 19/19 requirements mapped
-Resume file: None
+Last session: 2026-10-14T09:51:39.459Z
+Stopped at: Phase 17 context gathered
+Resume file: .planning/phases/17-yaml-merge-key-acceptance-in-the-strict-validator/17-CONTEXT.md
 Next: `/gsd-plan-phase 17`
 
 ## Operator Next Steps
