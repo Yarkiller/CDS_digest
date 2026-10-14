@@ -4,17 +4,17 @@ milestone: v1.3
 milestone_name: Live mail, scheduled ingestion & backlog debt
 current_phase: 17
 current_phase_name: YAML merge-key acceptance in the strict validator
-status: ready_to_execute
-stopped_at: Phase 17 planned — 2 plans ready
-last_updated: "2026-10-14T11:20:00.000Z"
+status: executing
+stopped_at: Completed 17-01-PLAN.md
+last_updated: "2026-10-14T12:03:05.678Z"
 last_activity: 2026-10-14
-last_activity_desc: Phase 17 planned (2 plans, plan-checker PASS with 0 blockers) — YAML merge-key acceptance
-state_head: dc13e45
+last_activity_desc: Phase 17 execution started
+state_head: 35b76817768bfde301628aa920f2d8a4cc6758df
 progress:
   total_phases: 8
   completed_phases: 0
   total_plans: 2
-  completed_plans: 0
+  completed_plans: 1
   percent: 0
 ---
 
@@ -25,14 +25,14 @@ progress:
 See: .planning/PROJECT.md (updated 2026-10-14 — after v1.3 milestone start)
 
 **Core value:** Trusted weekly prepared-article issue + one honest vote toward the next разбор
-**Current focus:** v1.3 Phase 17 — YAML merge-key acceptance in the strict pipeline-config validator
+**Current focus:** Phase 17 — YAML merge-key acceptance in the strict validator
 
 ## Current Position
 
-Phase: 17 (1 of 8) — YAML merge-key acceptance in the strict validator
-Plan: 17-01 (Wave 1, tracer), 17-02 (Wave 2) — 2 plans
-Status: Ready to execute — all planning gates passed (0 blockers, 0 warnings)
-Last activity: 2026-10-14 — Phase 17 planned from research; entry-budget boundary fixture arithmetic measured and reconciled
+Phase: 17 (YAML merge-key acceptance in the strict validator) — EXECUTING
+Plan: 2 of 2
+Status: Ready to execute
+Last activity: 2026-10-14 — Phase 17 execution started
 
 Progress: [░░░░░░░░░░] 0%
 
@@ -55,6 +55,11 @@ Progress: [░░░░░░░░░░] 0%
 | 22. Admin nav grouping | 0/? | not started | - |
 | 23. Ingest sources | 0/? | not started | - |
 | 24. Scheduled ingestion | 0/? | not started | - |
+**Per-Plan Metrics:**
+
+| Plan | Duration | Tasks | Files |
+|------|----------|-------|-------|
+| Phase 17 P01 | 9min | 2 tasks | 3 files |
 
 ## Accumulated Context
 
@@ -74,6 +79,10 @@ v1.3 roadmap locks:
 - Phase 22 (999.5): one «Админ» top-level entry + in-page tab-bar «Дайджест | Пайплайн»; `/admin/pipeline` unchanged, no new route; 16-UI-SPEC A-2 must be updated
 - Phase 23 (SRC): `IngestSourceRepository` port wired only in composition; server-side canonical-id validation → structured 400 with zero writes; ADUX-10 owned here
 - Phase 24 (ING): key-free YouTube Atom feed chosen → **ADR-0002 gate removed**, no Data API spike; `google-api-python-client` and `yt-dlp` rejected; zero new runtime Python packages
+- [Phase 17]: Merge-key fix and the expansion bound ship in the same diff (D-04): _project bounds (entries, depth) memoised at the head of flatten_mapping, before the k^depth node multiplication
+- [Phase 17]: Merge-introduced collisions are override semantics, not errors (D-03): an explicit own key beats a merged one and the first merge source wins; pinned by yaml.SafeLoader oracle equality rather than hand-written cases
+- [Phase 17]: Skip the merge key by tag tag:yaml.org,2002:merge, never by the literal << — a quoted << is an ordinary string key (D-02); the duplicate scan reads the pristine pre-merge own-key snapshot
+- [Phase 17]: The merge bound raises a plain Exception (not a ConstructorError) so the reject row keeps the sibling {path: "", message: ...} shape with no line, never reusing _OVER_CAP_MESSAGE (D-06/D-09)
 
 ### Pending Todos
 
@@ -102,9 +111,9 @@ Carried product deferrals beyond v1.3: leaderboard, quiz, Whisper/Foundry ASR, i
 
 ## Session Continuity
 
-Last session: 2026-10-14T11:20:00.000Z
-Stopped at: Phase 17 planned — 2 plans verified by the plan checker (0 blockers, 0 warnings, 4 info advisories)
-Resume file: .planning/phases/17-yaml-merge-key-acceptance-in-the-strict-validator/17-01-PLAN.md
+Last session: 2026-10-14T12:03:05.643Z
+Stopped at: Completed 17-01-PLAN.md
+Resume file: None
 Next: `/gsd-execute-phase 17`
 
 ## Operator Next Steps
