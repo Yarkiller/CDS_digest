@@ -4,17 +4,17 @@ milestone: v1.3
 milestone_name: Live mail, scheduled ingestion & backlog debt
 current_phase: 17
 current_phase_name: YAML merge-key acceptance in the strict validator
-status: executing
-stopped_at: Completed 17-01-PLAN.md
-last_updated: "2026-10-14T12:03:05.678Z"
+status: verifying
+stopped_at: Completed 17-02-PLAN.md
+last_updated: "2026-10-14T12:11:37.081Z"
 last_activity: 2026-10-14
 last_activity_desc: Phase 17 execution started
-state_head: 35b76817768bfde301628aa920f2d8a4cc6758df
+state_head: f89b22157deec3c6551802e1e775acf7b7aad70f
 progress:
   total_phases: 8
   completed_phases: 0
   total_plans: 2
-  completed_plans: 1
+  completed_plans: 2
   percent: 0
 ---
 
@@ -31,7 +31,7 @@ See: .planning/PROJECT.md (updated 2026-10-14 — after v1.3 milestone start)
 
 Phase: 17 (YAML merge-key acceptance in the strict validator) — EXECUTING
 Plan: 2 of 2
-Status: Ready to execute
+Status: Phase complete — ready for verification
 Last activity: 2026-10-14 — Phase 17 execution started
 
 Progress: [░░░░░░░░░░] 0%
@@ -60,6 +60,7 @@ Progress: [░░░░░░░░░░] 0%
 | Plan | Duration | Tasks | Files |
 |------|----------|-------|-------|
 | Phase 17 P01 | 9min | 2 tasks | 3 files |
+| Phase 17 P02 | 7min | 2 tasks | 3 files |
 
 ## Accumulated Context
 
@@ -83,6 +84,9 @@ v1.3 roadmap locks:
 - [Phase 17]: Merge-introduced collisions are override semantics, not errors (D-03): an explicit own key beats a merged one and the first merge source wins; pinned by yaml.SafeLoader oracle equality rather than hand-written cases
 - [Phase 17]: Skip the merge key by tag tag:yaml.org,2002:merge, never by the literal << — a quoted << is an ordinary string key (D-02); the duplicate scan reads the pristine pre-merge own-key snapshot
 - [Phase 17]: The merge bound raises a plain Exception (not a ConstructorError) so the reject row keeps the sibling {path: "", message: ...} shape with no line, never reusing _OVER_CAP_MESSAGE (D-06/D-09)
+- [Phase 17]: The D-07 row keeps the loc-derived path (defaults) and only the message changes, so its field identity matches every other extra_forbidden row (A2)
+- [Phase 17]: The anchor-holder translation is gated on composed-graph anchor identity, so a genuine unknown key keeps Pydantic's English extra_forbidden message and the D-09 tripwire stays byte-identical (Pitfall 9)
+- [Phase 17]: _anchor_holder_keys is guarded (yaml.YAMLError/RecursionError -> empty set), runs only on the reject path when an extra_forbidden row exists, and reads the allow-list from PipelineConfigModel.model_fields (D-05, A5)
 
 ### Pending Todos
 
@@ -111,8 +115,8 @@ Carried product deferrals beyond v1.3: leaderboard, quiz, Whisper/Foundry ASR, i
 
 ## Session Continuity
 
-Last session: 2026-10-14T12:03:05.643Z
-Stopped at: Completed 17-01-PLAN.md
+Last session: 2026-10-14T12:11:16.100Z
+Stopped at: Completed 17-02-PLAN.md
 Resume file: None
 Next: `/gsd-execute-phase 17`
 

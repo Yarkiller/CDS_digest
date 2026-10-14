@@ -23,8 +23,8 @@ Ordering rule: **backlog tech debt first** (999.7 → 999.1 → 999.6), then mai
 
 ### Pipeline config validator (backlog 999.7)
 
-- [ ] **PIPE-04**: The strict pipeline-config validator accepts a valid YAML merge-key (`<<`) document and persists it, while still rejecting duplicate **explicit** keys with the same top-level structured 400 `{errors:[…]}` and zero writes
-- [ ] **PIPE-05**: Merge expansion is bounded so a small document cannot exhaust CPU (breach returns the structured 400), and duplicate-key rejection is provably not weakened
+- [x] **PIPE-04**: The strict pipeline-config validator accepts a valid YAML merge-key (`<<`) document and persists it, while still rejecting duplicate **explicit** keys with the same top-level structured 400 `{errors:[…]}` and zero writes
+- [x] **PIPE-05**: Merge expansion is bounded so a small document cannot exhaust CPU (breach returns the structured 400), and duplicate-key rejection is provably not weakened
 
 ### Mail
 
@@ -100,8 +100,8 @@ Deferred. Not in this milestone's roadmap.
 
 | Requirement | Phase | Status |
 |-------------|-------|--------|
-| PIPE-04 | Phase 17 | Pending |
-| PIPE-05 | Phase 17 | Pending |
+| PIPE-04 | Phase 17 | Complete |
+| PIPE-05 | Phase 17 | Complete |
 | ADUX-07 | Phase 18 | Pending |
 | ADUX-08 | Phase 18 | Pending |
 | ADUX-09 | Phase 19 | Pending |
