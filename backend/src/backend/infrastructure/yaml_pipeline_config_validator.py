@@ -201,6 +201,39 @@ def _loc_to_dot_sep(loc: tuple[Any, ...]) -> str:
     return path
 
 
+def _merge_source_ids(node: Any) -> set[int]:
+    """Ids of every mapping node used as a merge source at any depth (WR-01).
+
+    Iterative with a ``visited`` node-id guard, so a self-referential merge
+    (``a: &a {<<: *a}``) terminates in O(#nodes) rather than recursing. Values of
+    non-merge pairs are pushed too, so a merge nested under any value is reached.
+    """
+    ids: set[int] = set()
+    if not isinstance(node, MappingNode):
+        return ids
+
+    stack: list[Any] = [node]
+    visited: set[int] = set()
+    while stack:
+        current = stack.pop()
+        if id(current) in visited or not isinstance(current, MappingNode):
+            continue
+        visited.add(id(current))
+        for key_node, value_node in current.value:
+            if key_node.tag == _MERGE_TAG:
+                sources = (
+                    value_node.value
+                    if isinstance(value_node, SequenceNode)
+                    else [value_node]
+                )
+                for source in sources:
+                    ids.add(id(source))
+                    stack.append(source)
+            else:
+                stack.append(value_node)
+    return ids
+
+
 def _anchor_holder_keys(yaml_text: str) -> set[str]:
     """Top-level keys (outside the schema) whose value node is used as a merge source.
 
@@ -218,12 +251,13 @@ def _anchor_holder_keys(yaml_text: str) -> set[str]:
     if not isinstance(root, MappingNode):
         return set()
 
-    merge_source_ids: set[int] = set()
-    for key_node, value_node in root.value:
-        if key_node.tag == _MERGE_TAG:
-            sources = value_node.value if isinstance(value_node, SequenceNode) else [value_node]
-            merge_source_ids.update(id(source) for source in sources)
+    merge_source_ids = _merge_source_ids(root)
 
+    # IN-01 (accepted): the set is keyed on value-node identity, so a top-level key that
+    # merely ALIASES a merge source is reported too. The teaching message is apt for any
+    # such key, and precise disambiguation would need composer-event data that PyYAML
+    # does not retain after composition — pinned by
+    # test_anchor_holder_keys_matches_alias_copies_by_identity_design.
     return {
         key_node.value
         for key_node, value_node in root.value

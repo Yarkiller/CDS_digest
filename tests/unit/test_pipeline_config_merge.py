@@ -18,21 +18,20 @@ import time
 
 import pytest
 import yaml
-
 from backend.domain.errors import PipelineConfigValidationError
 from backend.domain.pipeline_config import PipelineConfigError
 from backend.infrastructure.yaml_pipeline_config_validator import (
+    _EXTRA_ANCHOR_KEY_MESSAGE,
+    _MERGE_TOO_BIG_MESSAGE,
+    _OVER_CAP_MESSAGE,
     MAX_MERGE_DEPTH,
     MAX_MERGE_ENTRIES,
     MAX_PIPELINE_CONFIG_CHARS,
     PipelineConfigModel,
     YamlPipelineConfigValidator,
-    _EXTRA_ANCHOR_KEY_MESSAGE,
-    _MERGE_TOO_BIG_MESSAGE,
-    _OVER_CAP_MESSAGE,
-    _StrictSafeLoader,
     _anchor_holder_keys,
     _project,
+    _StrictSafeLoader,
 )
 
 SCHEMA_KEYS = frozenset(PipelineConfigModel.model_fields)
@@ -235,13 +234,15 @@ DUPLICATE_REJECTED: tuple[tuple[str, int], ...] = (
         2,
     ),
     (
-        "<<: &b {language: ru}\n"
-        "template: podcast\n"
-        "template: lecture\n"
-        "roles:\n"
-        "  - ds\n"
-        "language: ru\n"
-        "max_chars: 100\n",
+        (
+            "<<: &b {language: ru}\n"
+            "template: podcast\n"
+            "template: lecture\n"
+            "roles:\n"
+            "  - ds\n"
+            "language: ru\n"
+            "max_chars: 100\n"
+        ),
         3,
     ),
 )
@@ -430,8 +431,11 @@ def test_merge_bomb_is_rejected_in_bounded_time(document: str) -> None:
     assert errors == MERGE_BOUND_ROW
     assert errors[0].line is None
     assert _MERGE_TOO_BIG_MESSAGE != _OVER_CAP_MESSAGE
-    # ~2 ms guarded; the unbounded cost at this size is ~1.5 s (minutes deeper).
-    assert elapsed < 0.5
+    # IN-03 (17-03): the `errors == MERGE_BOUND_ROW` assertion above is the primary
+    # regression guard — a removed bound falls through to the schema stage and can never
+    # produce `_MERGE_TOO_BIG_MESSAGE` — so the wall clock only has to catch a hang or
+    # runaway. The ceiling is raised from 0.5 s to remove the only flake surface.
+    assert elapsed < 5.0
 
 
 def test_merge_bound_boundaries() -> None:
@@ -496,7 +500,9 @@ def test_self_referential_merge_is_refused_not_hung() -> None:
     elapsed = time.perf_counter() - start
 
     assert errors == MERGE_BOUND_ROW
-    assert elapsed < 0.5
+    # IN-03 (17-03): as above — the row equality is the guard; the ceiling only has to
+    # catch a hang, so it is raised from 0.5 s to remove the flake surface.
+    assert elapsed < 5.0
     # The divergence from the oracle is deliberate and pinned: SafeLoader silently
     # collapses this document to {"a": {}}, which is why it is NOT in ORACLE_ACCEPTED.
     assert yaml.safe_load(SELF_REFERENTIAL_DOC) == {"a": {}}
@@ -604,3 +610,48 @@ def test_own_key_duplicate_wins_over_a_merge_source_duplicate() -> None:
             path="", message="found duplicate key ('template')", line=2
         ),
     )
+
+
+# --- Group 7: WR-01 nested-merge anchor holders + IN-01 alias acceptance (17-03) ---
+
+
+def test_nested_merge_anchor_holder_gets_teaching_message() -> None:
+    """WR-01: a holder referenced only by a NESTED merge still gets the D-07 message."""
+    errors = _errors(NESTED_MERGE_ANCHOR_HOLDER_DOC)
+
+    assert _anchor_holder_keys(NESTED_MERGE_ANCHOR_HOLDER_DOC) == {"defaults"}
+    assert sum(1 for row in errors if "Лишний ключ" in row.message) == 1
+    defaults_row = next(row for row in errors if row.path == "defaults")
+    assert defaults_row.message == _EXTRA_ANCHOR_KEY_MESSAGE.format(key="defaults")
+    assert defaults_row.line is None
+    # `other` CARRIES the nested merge but is not itself a merge source: English message.
+    other_row = next(row for row in errors if row.path == "other")
+    assert other_row.message != _EXTRA_ANCHOR_KEY_MESSAGE.format(key="other")
+    assert "Лишний ключ" not in other_row.message
+
+
+def test_anchor_holder_keys_terminates_on_self_referential_merge() -> None:
+    """WR-01: the visited-guarded walk terminates on `a: &a {<<: *a}`."""
+    start = time.perf_counter()
+    holders = _anchor_holder_keys(SELF_REFERENTIAL_DOC)
+    elapsed = time.perf_counter() - start
+
+    assert holders == {"a"}
+    assert elapsed < 5.0
+
+
+def test_anchor_holder_keys_matches_alias_copies_by_identity_design() -> None:
+    """IN-01 (accepted, NOT a RED gate): the set is keyed on value-node identity.
+
+    A top-level key that merely ALIASES the merge-source node is reported too; that is the
+    documented acceptance — the teaching message is apt for any such key, and precise
+    disambiguation would need composer-event data PyYAML discards after composition.
+    """
+    assert _anchor_holder_keys(ALIAS_COPY_ANCHOR_HOLDER_DOC) == {
+        "defaults",
+        "alias_key",
+    }
+    errors = _errors(ALIAS_COPY_ANCHOR_HOLDER_DOC)
+    for key in ("defaults", "alias_key"):
+        row = next(row for row in errors if row.path == key)
+        assert row.message == _EXTRA_ANCHOR_KEY_MESSAGE.format(key=key)
