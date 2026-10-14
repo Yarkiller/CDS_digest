@@ -73,12 +73,19 @@ Backlog tech debt comes first (lowest blast radius first), then mail, then inges
 **Success Criteria** (what must be TRUE):
   1. An admin can save a pipeline config that uses valid `<<` merge keys; it validates, persists, and reads back in a later session.
   2. A document with a duplicated **explicit** key is still rejected with the same top-level structured 400 `{errors:[…]}` and zero writes — duplicate-key rejection is provably not weakened.
-  3. A merge document crafted for high fan-out is refused by the expansion bound with the structured 400 and zero writes; the research-measured case (~610 chars → >10 s today) completes in bounded time instead of exhausting CPU.
+  3. A merge document crafted for high fan-out is refused by the expansion bound with the structured 400 and zero writes; the research-measured 480-char bomb (~1.5 s unguarded on this checkout, vs ~2 ms guarded) and deeper chains measured in the tens of seconds complete in bounded time instead of exhausting CPU.
   4. The merge fix and the bound ship together — there is no intermediate state where merges validate but expansion is unbounded; the strict 4-key `extra="forbid"` schema still governs the result and the structured-body contract is unchanged.
 **Plans:** 2 plans
 Plans:
+**Wave 1** (no dependencies)
 - [ ] 17-01-PLAN.md — Tracer: valid merge document accepted end-to-end, merge bomb refused (PIPE-04, PIPE-05)
+**Wave 2** *(blocked on Wave 1 completion)*
 - [ ] 17-02-PLAN.md — Teach the anchor-holder mistake with a key-naming Russian message (PIPE-04, PIPE-05)
+**Cross-cutting constraints**:
+- Structured-body contract: every new reject keeps the existing top-level `{errors:[…]}` 400 envelope with zero writes and no new response shape — the duplicate row, the merge-bound row and the anchor-holder row each carry `path` and omit `line`.
+- Single production file: both plans edit only `backend/src/backend/infrastructure/yaml_pipeline_config_validator.py`; the four-key `extra="forbid"` schema is never widened and `MAX_PIPELINE_CONFIG_CHARS` is untouched.
+- Parse path only: no `web/` change (D-08); `_StrictSafeLoader` keeps subclassing `yaml.SafeLoader` and `validate()` keeps passing `Loader=_StrictSafeLoader`.
+- PIPE-02 tripwire: `test_put_invalid_error_rows_are_verbatim_and_top_level` stays byte-identical.
 **Tripwires**: `test_put_invalid_error_rows_are_verbatim_and_top_level` → **PRESERVE** (PIPE-02 duplicate-key rejection must survive verbatim). RED tests are pytest validator/HTTP tests (a `yaml.load` merge-fit oracle); Playwright is only integration proof.
 
 ### Phase 18: Reader-route honesty for draft materials

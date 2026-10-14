@@ -4,16 +4,16 @@ milestone: v1.3
 milestone_name: Live mail, scheduled ingestion & backlog debt
 current_phase: 17
 current_phase_name: YAML merge-key acceptance in the strict validator
-status: ready_to_plan
-stopped_at: Phase 17 context gathered
-last_updated: "2026-10-14T09:51:39.486Z"
+status: ready_to_execute
+stopped_at: Phase 17 planned — 2 plans ready
+last_updated: "2026-10-14T11:20:00.000Z"
 last_activity: 2026-10-14
-last_activity_desc: v1.3 roadmap created (Phases 17–24, 19/19 requirements mapped)
-state_head: 3d58d392596cf01f756b5ea651f963ec88b71bcf
+last_activity_desc: Phase 17 planned (2 plans, plan-checker PASS with 0 blockers) — YAML merge-key acceptance
+state_head: 110848b
 progress:
   total_phases: 8
   completed_phases: 0
-  total_plans: 0
+  total_plans: 2
   completed_plans: 0
   percent: 0
 ---
@@ -30,9 +30,9 @@ See: .planning/PROJECT.md (updated 2026-10-14 — after v1.3 milestone start)
 ## Current Position
 
 Phase: 17 (1 of 8) — YAML merge-key acceptance in the strict validator
-Plan: — (ready to plan)
-Status: Roadmap complete — ready to plan Phase 17
-Last activity: 2026-10-14 — v1.3 roadmap created (Phases 17–24, 19/19 requirements mapped)
+Plan: 17-01 (Wave 1, tracer), 17-02 (Wave 2) — 2 plans
+Status: Ready to execute — all planning gates passed (0 blockers, 0 warnings)
+Last activity: 2026-10-14 — Phase 17 planned from research; entry-budget boundary fixture arithmetic measured and reconciled
 
 Progress: [░░░░░░░░░░] 0%
 
@@ -47,7 +47,7 @@ Progress: [░░░░░░░░░░] 0%
 
 | Phase | Plans | Total | Avg/Plan |
 |-------|-------|-------|----------|
-| 17. YAML merge-key | 0/? | not started | - |
+| 17. YAML merge-key | 0/2 | ready to execute | - |
 | 18. Reader-route honesty | 0/? | not started | - |
 | 19. Unsaved-changes guard | 0/? | not started | - |
 | 20. Signup mail (MAIL-02) | 0/? | not started | - |
@@ -102,12 +102,12 @@ Carried product deferrals beyond v1.3: leaderboard, quiz, Whisper/Foundry ASR, i
 
 ## Session Continuity
 
-Last session: 2026-10-14T09:51:39.459Z
-Stopped at: Phase 17 context gathered
-Resume file: .planning/phases/17-yaml-merge-key-acceptance-in-the-strict-validator/17-CONTEXT.md
-Next: `/gsd-plan-phase 17`
+Last session: 2026-10-14T11:20:00.000Z
+Stopped at: Phase 17 planned — 2 plans verified by the plan checker (0 blockers, 0 warnings, 4 info advisories)
+Resume file: .planning/phases/17-yaml-merge-key-acceptance-in-the-strict-validator/17-01-PLAN.md
+Next: `/gsd-execute-phase 17`
 
 ## Operator Next Steps
 
-- Start Phase 17 with `/gsd-plan-phase 17`
+- Execute Phase 17 with `/gsd-execute-phase 17`
 - Resolve the SMTP relay choice before Phase 20 is planned (`/gsd-discuss-phase 20`)
