@@ -27,6 +27,7 @@ from backend.domain.errors import PipelineConfigValidationError
 from backend.domain.pipeline_config import PipelineConfig
 from backend.infrastructure.yaml_pipeline_config_validator import (
     YamlPipelineConfigValidator,
+    _EXTRA_ANCHOR_KEY_MESSAGE,
     _MERGE_TOO_BIG_MESSAGE,
     _TOO_DEEP_MESSAGE,
     _UNREADABLE_MESSAGE,
@@ -393,6 +394,34 @@ def test_put_merge_bomb_returns_400_and_writes_nothing() -> None:
     body = response.json()
     assert "detail" not in body
     assert body["errors"] == [{"path": "", "message": _MERGE_TOO_BIG_MESSAGE}]
+    # The reject never reached the repository (D-03/D-07): zero saves.
+    assert container.pipeline_config.save_count == 0
+
+
+def test_put_anchor_holder_key_returns_400_with_teaching_message() -> None:
+    """D-06/D-07/D-09: the anchor-holder row crosses the unchanged envelope, zero writes."""
+    client, headers, container = _real_validator_admin_env()
+    document = (
+        "defaults: &base\n"
+        "  template: lecture\n"
+        "  roles:\n"
+        "    - employee\n"
+        "  language: ru\n"
+        "  max_chars: 4000\n"
+        "<<: *base\n"
+    )
+
+    response = client.put(CONFIG_URL, headers=headers, json={"yaml": document})
+
+    assert response.status_code == 400
+    body = response.json()
+    assert "detail" not in body
+    assert body["errors"] == [
+        {"path": "defaults", "message": _EXTRA_ANCHOR_KEY_MESSAGE.format(key="defaults")}
+    ]
+    row = body["errors"][0]
+    assert set(row.keys()) <= {"path", "message", "line"}
+    assert "line" not in row
     # The reject never reached the repository (D-03/D-07): zero saves.
     assert container.pipeline_config.save_count == 0
 
