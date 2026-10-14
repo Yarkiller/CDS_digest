@@ -27,6 +27,7 @@ from backend.domain.errors import PipelineConfigValidationError
 from backend.domain.pipeline_config import PipelineConfig
 from backend.infrastructure.yaml_pipeline_config_validator import (
     YamlPipelineConfigValidator,
+    _MERGE_TOO_BIG_MESSAGE,
     _TOO_DEEP_MESSAGE,
     _UNREADABLE_MESSAGE,
 )
@@ -192,6 +193,34 @@ def test_put_then_get_round_trip_returns_saved_yaml() -> None:
     assert get.json()["yaml"] == yaml_text
 
 
+def test_put_merge_document_round_trips() -> None:
+    """PIPE-04 / ROADMAP criterion 1: a merge-key config persists and reads back verbatim."""
+    yaml_text = (
+        "<<: &base\n"
+        "  template: lecture\n"
+        "  roles:\n"
+        "    - employee\n"
+        "  language: ru\n"
+        "  max_chars: 4000\n"
+    )
+    client, headers, container = _real_validator_admin_env()
+
+    put = client.put(CONFIG_URL, headers=headers, json={"yaml": yaml_text})
+
+    assert put.status_code == 200
+    put_body = put.json()
+    assert set(put_body.keys()) == {"yaml", "updated_at"}
+    assert put_body["yaml"] == yaml_text
+    assert put_body["updated_at"] is not None
+    # Validate-then-persist through the REAL strict validator: exactly one write.
+    assert container.pipeline_config.save_count == 1
+
+    get = client.get(CONFIG_URL, headers=headers)
+
+    assert get.status_code == 200
+    assert get.json()["yaml"] == yaml_text
+
+
 def test_get_put_require_admin_unauth_401_and_employee_403() -> None:
     """D-10 / T-16-01: both routes are admin-gated; 401 unauthenticated, 403 non-admin."""
     private_key = ec.generate_private_key(ec.SECP256R1())
@@ -338,6 +367,32 @@ def test_put_control_char_yaml_returns_400_not_500() -> None:
     assert body["errors"] == [
         {"path": "", "message": _UNREADABLE_MESSAGE}
     ]
+    # The reject never reached the repository (D-03/D-07): zero saves.
+    assert container.pipeline_config.save_count == 0
+
+
+def _merge_bomb(*, fanout: int = 3, nesting: int = 13) -> str:
+    """The fan-out merge bomb (17-RESEARCH § Q9): tiny document, huge expansion."""
+    lines = ["a0: &a0 {k0: v0}"]
+    for level in range(1, nesting + 1):
+        sources = ", ".join([f"*a{level - 1}"] * fanout)
+        lines.append(f"a{level}: &a{level} {{<<: [{sources}]}}")
+    lines.extend(
+        ("template: lecture", "roles: [employee]", "language: ru", "max_chars: 4000")
+    )
+    return "\n".join(lines) + "\n"
+
+
+def test_put_merge_bomb_returns_400_and_writes_nothing() -> None:
+    """PIPE-05: the merge bound's row crosses the unchanged HTTP envelope, zero writes."""
+    client, headers, container = _real_validator_admin_env()
+
+    response = client.put(CONFIG_URL, headers=headers, json={"yaml": _merge_bomb()})
+
+    assert response.status_code == 400
+    body = response.json()
+    assert "detail" not in body
+    assert body["errors"] == [{"path": "", "message": _MERGE_TOO_BIG_MESSAGE}]
     # The reject never reached the repository (D-03/D-07): zero saves.
     assert container.pipeline_config.save_count == 0
 
