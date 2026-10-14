@@ -29,10 +29,10 @@ See: .planning/PROJECT.md (updated 2026-10-14 — after v1.3 milestone start)
 
 ## Current Position
 
-Phase: 17 (YAML merge-key acceptance in the strict validator) — READY TO EXECUTE
-Plan: 2 of 2
-Status: Ready to execute
-Last activity: 2026-10-14 — Phase 17 execution started
+Phase: 17 (YAML merge-key acceptance in the strict validator) — GAP CLOSURE PENDING
+Plan: 2 of 3 (17-01, 17-02 done; 17-03 gap plan ready)
+Status: Verification found a gap (13/14) — CR-01 duplicate keys inside a merge source; execute `17-03`
+Last activity: 2026-10-14 — Phase 20 context gathered
 
 Progress: [░░░░░░░░░░] 0%
 
@@ -47,10 +47,10 @@ Progress: [░░░░░░░░░░] 0%
 
 | Phase | Plans | Total | Avg/Plan |
 |-------|-------|-------|----------|
-| 17. YAML merge-key | 0/2 | ready to execute | - |
-| 18. Reader-route honesty | 0/? | not started | - |
+| 17. YAML merge-key | 2/3 | gap closure pending (17-03) | - |
+| 18. Reader-route honesty | 0/? | context gathered | - |
 | 19. Unsaved-changes guard | 0/? | not started | - |
-| 20. Signup mail (MAIL-02) | 0/? | not started | - |
+| 20. Signup mail (MAIL-02) | 0/? | context gathered | - |
 | 21. Live SMTP digest (MAIL-01) | 0/? | not started | - |
 | 22. Admin nav grouping | 0/? | not started | - |
 | 23. Ingest sources | 0/? | not started | - |
@@ -94,8 +94,8 @@ None.
 
 ### Blockers/Concerns
 
-- **SMTP relay choice (pre-phase gate)** — Phase 20/21 cannot pass until the corporate relay is chosen (one relay serves GoTrue + MAIL-01; TLS mode/port, CA bundle, ADR-0002 contour isolation). TDD: contract first.
-- Signup confirmation mail (`g-01-3b-signup-mailer`) carried from v1 — root cause still unknown; Phase 20 opens with diagnosis.
+- **SMTP relay (Phase 20/21)** — the corporate relay **choice and configuration shape** are now recorded (Phase 20 CONTEXT: `GOTRUE_SMTP_*` for the GoTrue lane, `SMTP_*` for MAIL-01; one-command rollback = `GOTRUE_MAILER_AUTOCONFIRM=true` + container config reload). Relay **values** are still operator-supplied, so criterion 4's smoke-test *proof* is an acknowledged gap: Phase 20 ships honest autoconfirm (path B) and hands "relay chosen and proven" forward as Phase 21's precondition.
+- Signup confirmation mail (`g-01-3b-signup-mailer`) — **root cause is now diagnosed** (GoTrue fails while sending the confirmation email; `{code:500, error_code:"unexpected_failure"}`), and autoconfirm is on since 2026-09-20. Phase 20 now delivers the honest-copy fix (B) and closes the debug session; the SPA error-mapping honesty in `authApi.js` stays deferred.
 - Nyquist VALIDATION.md drafts for phases 6–8 remain historical audit debt (not a product requirement).
 
 ## Deferred Items
@@ -122,5 +122,6 @@ Next: `/gsd-execute-phase 17`
 
 ## Operator Next Steps
 
-- Execute Phase 17 with `/gsd-execute-phase 17`
-- Resolve the SMTP relay choice before Phase 20 is planned (`/gsd-discuss-phase 20`)
+- Close Phase 17's verification gap: `/gsd-execute-phase 17 --gaps-only` (executes `17-03`)
+- Plan the discussed phases: `/gsd-plan-phase 18` and `/gsd-plan-phase 20` (both have CONTEXT.md)
+- Discuss or plan Phase 19 (Unsaved-changes guard) — not yet discussed
