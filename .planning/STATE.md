@@ -3,19 +3,19 @@ gsd_state_version: "1.0"
 milestone: v1.3
 milestone_name: Live mail, scheduled ingestion & backlog debt
 current_phase: 17
-current_phase_name: YAML merge-key acceptance in the strict validator
-status: executing
+current_phase_name: GAP CLOSURE PENDING
+status: Verification found a gap (13/14) — CR-01 duplicate keys inside a merge source; execute `17-03`
 stopped_at: Phase 20 context gathered
-last_updated: "2026-10-14T13:19:00.359Z"
+last_updated: "2026-10-14T13:20:22.251Z"
 last_activity: 2026-10-14
-last_activity_desc: Phase 17 execution started
-state_head: 43f76a75e78b58f423399715ab5a8633ae8caf9a
+state_head: aa9589e1759ec2b153e08afb968e676f17daa7a9
 progress:
   total_phases: 8
   completed_phases: 0
   total_plans: 3
   completed_plans: 2
   percent: 0
+last_activity_desc: Phase 17 execution started
 ---
 
 # Project State
@@ -32,7 +32,7 @@ See: .planning/PROJECT.md (updated 2026-10-14 — after v1.3 milestone start)
 Phase: 17 (YAML merge-key acceptance in the strict validator) — GAP CLOSURE PENDING
 Plan: 2 of 3 (17-01, 17-02 done; 17-03 gap plan ready)
 Status: Verification found a gap (13/14) — CR-01 duplicate keys inside a merge source; execute `17-03`
-Last activity: 2026-10-14 — Phase 20 context gathered
+Last activity: 2026-10-14
 
 Progress: [░░░░░░░░░░] 0%
 
