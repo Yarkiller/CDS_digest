@@ -29,6 +29,7 @@ test-results/
 # GSD transient run artifacts (tracked planning docs are unaffected)
 .planning/_*
 .planning/tmp/
+.planning/.tmp/
 .planning/research/.cache/
 .planning/ui-reviews/.gitignore
 .planning/config.json
