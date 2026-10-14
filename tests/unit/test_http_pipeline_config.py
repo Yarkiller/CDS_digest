@@ -24,7 +24,7 @@ from backend.composition.container import AppContainer, build_in_memory_containe
 from backend.composition.settings import Settings
 from backend.domain.current_user import CurrentUser
 from backend.domain.errors import PipelineConfigValidationError
-from backend.domain.pipeline_config import PipelineConfig
+from backend.domain.pipeline_config import PipelineConfig, PipelineConfigError
 from backend.infrastructure.yaml_pipeline_config_validator import (
     YamlPipelineConfigValidator,
     _EXTRA_ANCHOR_KEY_MESSAGE,
@@ -220,6 +220,30 @@ def test_put_merge_document_round_trips() -> None:
 
     assert get.status_code == 200
     assert get.json()["yaml"] == yaml_text
+
+
+def test_put_merge_source_duplicate_returns_400_and_writes_nothing() -> None:
+    """CR-01 end-to-end: a duplicate inside a merge source → 400 envelope, zero writes."""
+    client, headers, container = _real_validator_admin_env()
+    document = (
+        "<<: &b {language: ru, language: en}\n"
+        "template: lecture\n"
+        "roles: [employee]\n"
+        "max_chars: 4000\n"
+    )
+
+    response = client.put(CONFIG_URL, headers=headers, json={"yaml": document})
+
+    assert response.status_code == 400
+    body = response.json()
+    assert "detail" not in body
+    assert body["errors"] == [
+        PipelineConfigError(
+            path="", message="found duplicate key ('language')", line=1
+        ).to_dict()
+    ]
+    # The reject never reached the repository (D-03/D-07): zero saves.
+    assert container.pipeline_config.save_count == 0
 
 
 def test_get_put_require_admin_unauth_401_and_employee_403() -> None:
