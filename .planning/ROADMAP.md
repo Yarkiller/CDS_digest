@@ -75,7 +75,10 @@ Backlog tech debt comes first (lowest blast radius first), then mail, then inges
   2. A document with a duplicated **explicit** key is still rejected with the same top-level structured 400 `{errors:[…]}` and zero writes — duplicate-key rejection is provably not weakened.
   3. A merge document crafted for high fan-out is refused by the expansion bound with the structured 400 and zero writes; the research-measured case (~610 chars → >10 s today) completes in bounded time instead of exhausting CPU.
   4. The merge fix and the bound ship together — there is no intermediate state where merges validate but expansion is unbounded; the strict 4-key `extra="forbid"` schema still governs the result and the structured-body contract is unchanged.
-**Plans**: TBD
+**Plans:** 2 plans
+Plans:
+- [ ] 17-01-PLAN.md — Tracer: valid merge document accepted end-to-end, merge bomb refused (PIPE-04, PIPE-05)
+- [ ] 17-02-PLAN.md — Teach the anchor-holder mistake with a key-naming Russian message (PIPE-04, PIPE-05)
 **Tripwires**: `test_put_invalid_error_rows_are_verbatim_and_top_level` → **PRESERVE** (PIPE-02 duplicate-key rejection must survive verbatim). RED tests are pytest validator/HTTP tests (a `yaml.load` merge-fit oracle); Playwright is only integration proof.
 
 ### Phase 18: Reader-route honesty for draft materials
@@ -176,7 +179,7 @@ Phases execute in numeric order: 17 → 18 → 19 → 20 → 21 → 22 → 23 �
 
 | Phase | Plans Complete | Status | Completed |
 |-------|----------------|--------|-----------|
-| 17. YAML merge-key acceptance | 0/TBD | Not started | - |
+| 17. YAML merge-key acceptance | 0/2 | Not started | - |
 | 18. Reader-route honesty | 0/TBD | Not started | - |
 | 19. Unsaved-changes guard | 0/TBD | Not started | - |
 | 20. MAIL-02 signup mail | 0/TBD | Not started | - |

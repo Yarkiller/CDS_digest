@@ -45,15 +45,15 @@ created: "2026-10-14"
 
 | Task ID | Plan | Wave | Requirement | Threat Ref | Secure Behavior | Test Type | Automated Command | File Exists | Status |
 |---------|------|------|-------------|------------|-----------------|-----------|-------------------|-------------|--------|
-| TBD | TBD | TBD | PIPE-04 | — | Valid `<<` document accepted; strict loader mapping equals the `yaml.SafeLoader` oracle mapping | unit (oracle loop) | `.venv\Scripts\python.exe -m pytest tests/unit/test_pipeline_config_merge.py::test_strict_loader_matches_safeloader_oracle -q` | ❌ W0 | ⬜ pending |
-| TBD | TBD | TBD | PIPE-04 | — | Valid `<<` document passes schema validation and resolves to exactly the 4 keys | unit | `…::test_merge_document_validates -q` | ❌ W0 | ⬜ pending |
-| TBD | TBD | TBD | PIPE-04 | — | Merge document persists and reads back byte-identical (no store on reject) | integration (in-process HTTP) | `.venv\Scripts\python.exe -m pytest tests/unit/test_http_pipeline_config.py -q` | ✅ file, +1 test | ⬜ pending |
-| TBD | TBD | TBD | PIPE-04 | — | Explicit duplicate still rejected with the same envelope, with and without a `<<` present | unit + HTTP | `…::test_explicit_duplicate_still_rejected -q` | ❌ W0 | ⬜ pending |
-| TBD | TBD | TBD | PIPE-04 | — | Reject envelope rows verbatim + zero writes (tripwire — **PRESERVE**) | integration (in-process HTTP) | `.venv\Scripts\python.exe -m pytest tests/unit/test_http_pipeline_config.py::test_put_invalid_error_rows_are_verbatim_and_top_level -q` | ✅ PRESERVE | ⬜ pending |
-| TBD | TBD | TBD | PIPE-05 | — | Merge bomb refused with `_MERGE_TOO_BIG_MESSAGE`, `path=""`, no `line`, bounded time, zero writes | unit | `…::test_merge_bomb_is_rejected_in_bounded_time -q` | ❌ W0 | ⬜ pending |
-| TBD | TBD | TBD | PIPE-05 | — | Anchor-holder key (D-07) gets the Russian message naming the key | unit | `…::test_anchor_holder_key_message -q` | ❌ W0 | ⬜ pending |
-| TBD | TBD | TBD | PIPE-05 | — | Genuine unknown key keeps Pydantic's English `extra_forbidden` message with `path` preserved | unit | `.venv\Scripts\python.exe -m pytest tests/unit/test_pipeline_config_validator.py::test_unknown_key_is_rejected_by_extra_forbid -q` | ✅ PRESERVE | ⬜ pending |
-| TBD | TBD | TBD | PIPE-05 | — | Depth/entry boundaries (5 accepted / 6 rejected at fan-out 3; 8 accepted / 9 rejected on depth) | unit | `…::test_merge_bound_boundaries -q` | ❌ W0 | ⬜ pending |
+| 17-01-T1 | 17-01 | 1 | PIPE-04 | T-17-04 | Valid `<<` document accepted; strict loader mapping equals the `yaml.SafeLoader` oracle mapping | unit (oracle loop) | `.venv\Scripts\python.exe -m pytest tests/unit/test_pipeline_config_merge.py::test_strict_loader_matches_safeloader_oracle -q` | ❌ W0 | ⬜ pending |
+| 17-01-T1 | 17-01 | 1 | PIPE-04 | T-17-05 | Valid `<<` document passes schema validation and resolves to exactly the 4 keys | unit | `…::test_merge_document_validates -q` | ❌ W0 | ⬜ pending |
+| 17-01-T2 | 17-01 | 1 | PIPE-04 | T-17-04 | Merge document persists and reads back byte-identical (no store on reject) | integration (in-process HTTP) | `.venv\Scripts\python.exe -m pytest tests/unit/test_http_pipeline_config.py -q` | ✅ file, +1 test | ⬜ pending |
+| 17-01-T1 | 17-01 | 1 | PIPE-04 | T-17-04 | Explicit duplicate still rejected with the same envelope, with and without a `<<` present | unit + HTTP | `…::test_explicit_duplicate_still_rejected -q` | ❌ W0 | ⬜ pending |
+| 17-01-T2 | 17-01 | 1 | PIPE-04 | T-17-04 | Reject envelope rows verbatim + zero writes (tripwire — **PRESERVE**) | integration (in-process HTTP) | `.venv\Scripts\python.exe -m pytest tests/unit/test_http_pipeline_config.py::test_put_invalid_error_rows_are_verbatim_and_top_level -q` | ✅ PRESERVE | ⬜ pending |
+| 17-01-T1 | 17-01 | 1 | PIPE-05 | T-17-01 | Merge bomb refused with `_MERGE_TOO_BIG_MESSAGE`, `path=""`, no `line`, bounded time, zero writes | unit | `…::test_merge_bomb_is_rejected_in_bounded_time -q` | ❌ W0 | ⬜ pending |
+| 17-02-T1 | 17-02 | 2 | PIPE-05 | T-17-10 | Anchor-holder key (D-07) gets the Russian message naming the key | unit | `…::test_anchor_holder_key_gets_teaching_message -q` | ❌ W0 | ⬜ pending |
+| 17-02-T1 | 17-02 | 2 | PIPE-05 | T-17-10 | Genuine unknown key keeps Pydantic's English `extra_forbidden` message with `path` preserved | unit | `.venv\Scripts\python.exe -m pytest tests/unit/test_pipeline_config_validator.py::test_unknown_key_is_rejected_by_extra_forbid -q` | ✅ PRESERVE | ⬜ pending |
+| 17-01-T1 | 17-01 | 1 | PIPE-05 | T-17-01 | Depth/entry boundaries (5 accepted / 6 rejected at fan-out 3; 8 accepted / 9 rejected on depth) | unit | `…::test_merge_bound_boundaries -q` | ❌ W0 | ⬜ pending |
 
 *Status: ⬜ pending · ✅ green · ❌ red · ⚠️ flaky*
 
