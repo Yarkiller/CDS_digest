@@ -24,6 +24,7 @@ from backend.infrastructure.yaml_pipeline_config_validator import (
     _EXTRA_ANCHOR_KEY_MESSAGE,
     _MERGE_TOO_BIG_MESSAGE,
     _OVER_CAP_MESSAGE,
+    _UNHASHABLE_KEY_MESSAGE,
     MAX_MERGE_DEPTH,
     MAX_MERGE_ENTRIES,
     MAX_PIPELINE_CONFIG_CHARS,
@@ -197,6 +198,18 @@ ALIAS_COPY_ANCHOR_HOLDER_DOC = (
     "alias_key: *c\n"
     "<<: *c\n"
 )
+
+# WR-02 shapes: a holder consumed only by a merge nested inside a SEQUENCE value (a
+# list element), which the WR-01 walk must still reach; and the unhashable-key reject
+# whose 400 body must carry curated copy rather than PyYAML's raw English text.
+LIST_NESTED_MERGE_ANCHOR_HOLDER_DOC = (
+    "defaults: &c {template: lecture, roles: [employee], language: ru, "
+    "max_chars: 4000}\n"
+    "items:\n"
+    "  - <<: *c\n"
+)
+
+UNHASHABLE_DUPLICATE_KEYS_DOC = "? [1, 2]\n: 1\n? [1, 2]\n: 2\n"
 
 # Group 1 — documents `yaml.safe_load` accepts; the strict loader must agree exactly.
 ORACLE_ACCEPTED: tuple[str, ...] = (
@@ -655,3 +668,48 @@ def test_anchor_holder_keys_matches_alias_copies_by_identity_design() -> None:
     for key in ("defaults", "alias_key"):
         row = next(row for row in errors if row.path == key)
         assert row.message == _EXTRA_ANCHOR_KEY_MESSAGE.format(key=key)
+
+
+# --- Group 8: WR-02 — sequence-nested holders + the unhashable-key reject (17-03 rework) ---
+
+
+def test_anchor_holder_keys_reaches_a_merge_nested_under_a_sequence() -> None:
+    """WR-02: a merge nested inside a SEQUENCE value must still be reached.
+
+    The ``_merge_source_ids`` docstring promises "a merge nested under any value is
+    reached"; before the WR-02 fix the walk popped a ``SequenceNode`` and skipped it, so
+    ``items: [- <<: *c]`` left the holder undetected and the D-07 teaching message never
+    fired.
+    """
+    assert _anchor_holder_keys(LIST_NESTED_MERGE_ANCHOR_HOLDER_DOC) == {"defaults"}
+
+    errors = _errors(LIST_NESTED_MERGE_ANCHOR_HOLDER_DOC)
+    assert sum(1 for row in errors if "Лишний ключ" in row.message) == 1
+    defaults_row = next(row for row in errors if row.path == "defaults")
+    assert defaults_row.message == _EXTRA_ANCHOR_KEY_MESSAGE.format(key="defaults")
+    assert defaults_row.line is None
+    # `items` CARRIES the sequence-nested merge but is not itself a merge source.
+    items_row = next(row for row in errors if row.path == "items")
+    assert "Лишний ключ" not in items_row.message
+
+
+def test_unhashable_duplicate_keys_are_rejected_with_curated_copy() -> None:
+    """Info #2 (decided): unhashable keys are rejected with curated copy, not parser text.
+
+    Duplicate keys whose key nodes are collections cannot be compared by hashing, so
+    ``_check_own_keys`` skips them (``except TypeError: continue``) rather than paying an
+    O(n²) equality scan over attacker-controlled collections — a new CPU-exhaustion path
+    this phase must not open. PyYAML then refuses the whole document itself, so the
+    invariant that matters holds either way: the document is rejected, never
+    silently accepted and never a 500.
+
+    What this test pins is the 400-body honesty: the row carries OUR copy, not PyYAML's
+    raw ``found unhashable key`` English text (the transparency prohibition).
+    """
+    errors = _errors(UNHASHABLE_DUPLICATE_KEYS_DOC)
+
+    assert len(errors) == 1
+    assert errors[0].path == ""
+    assert errors[0].line == 1
+    assert errors[0].message == _UNHASHABLE_KEY_MESSAGE
+    assert "unhashable" not in errors[0].message

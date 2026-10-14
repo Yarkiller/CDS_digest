@@ -47,6 +47,10 @@ _MERGE_TOO_BIG_MESSAGE = "Документ содержит слияние (merg
 # the key and teaches the merge form — the most likely admin mistake after the merge fix.
 # ``{key}`` is interpolated with the offending top-level key name.
 _EXTRA_ANCHOR_KEY_MESSAGE = "Лишний ключ «{key}»: якоря нужно объявлять в самом `<<`"
+# Info #2 (17-03 rework): a key node that is a collection cannot be hashed, so PyYAML
+# refuses the document itself; the reject row must carry our copy, not PyYAML's raw
+# English ``found unhashable key`` text (the phase's transparency prohibition).
+_UNHASHABLE_KEY_MESSAGE = "Ключом объекта не может быть список или объект"
 
 
 class _MergeExpansionTooLarge(Exception):
@@ -202,11 +206,13 @@ def _loc_to_dot_sep(loc: tuple[Any, ...]) -> str:
 
 
 def _merge_source_ids(node: Any) -> set[int]:
-    """Ids of every mapping node used as a merge source at any depth (WR-01).
+    """Ids of every mapping node used as a merge source at any depth (WR-01/WR-02).
 
     Iterative with a ``visited`` node-id guard, so a self-referential merge
     (``a: &a {<<: *a}``) terminates in O(#nodes) rather than recursing. Values of
-    non-merge pairs are pushed too, so a merge nested under any value is reached.
+    non-merge pairs are pushed too, and a pushed ``SequenceNode`` is descended into, so a
+    merge nested under any value — including inside a list element (``items: [- <<: *c]``)
+    — is reached (WR-02).
     """
     ids: set[int] = set()
     if not isinstance(node, MappingNode):
@@ -216,7 +222,14 @@ def _merge_source_ids(node: Any) -> set[int]:
     visited: set[int] = set()
     while stack:
         current = stack.pop()
-        if id(current) in visited or not isinstance(current, MappingNode):
+        if id(current) in visited:
+            continue
+        if isinstance(current, SequenceNode):
+            # WR-02: a merge can sit inside a sequence value, so descend into it.
+            visited.add(id(current))
+            stack.extend(current.value)
+            continue
+        if not isinstance(current, MappingNode):
             continue
         visited.add(id(current))
         for key_node, value_node in current.value:
@@ -286,7 +299,17 @@ class YamlPipelineConfigValidator:
                     PipelineConfigError(
                         path="",
                         line=(mark.line + 1) if mark is not None else None,
-                        message=str(exc.problem or exc),
+                        message=(
+                            # Info #2: a collection key node cannot be hashed, so PyYAML
+                            # refuses the document itself. Curate the copy here rather than
+                            # echoing its raw English text; duplicate detection among
+                            # unhashable keys is deliberately NOT attempted (it would need
+                            # an O(n²) equality scan over attacker-controlled collections —
+                            # a new CPU-exhaustion path this phase must not open).
+                            _UNHASHABLE_KEY_MESSAGE
+                            if exc.problem == "found unhashable key"
+                            else str(exc.problem or exc)
+                        ),
                     ),
                 )
             ) from exc
