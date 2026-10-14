@@ -14,16 +14,23 @@ shape (hand-written cases are how the nested-collision trap stays invisible).
 
 from __future__ import annotations
 
+import time
+
 import pytest
 import yaml
 
 from backend.domain.errors import PipelineConfigValidationError
 from backend.domain.pipeline_config import PipelineConfigError
 from backend.infrastructure.yaml_pipeline_config_validator import (
+    MAX_MERGE_DEPTH,
+    MAX_MERGE_ENTRIES,
     MAX_PIPELINE_CONFIG_CHARS,
     PipelineConfigModel,
     YamlPipelineConfigValidator,
+    _MERGE_TOO_BIG_MESSAGE,
+    _OVER_CAP_MESSAGE,
     _StrictSafeLoader,
+    _project,
 )
 
 SCHEMA_KEYS = frozenset(PipelineConfigModel.model_fields)
@@ -164,12 +171,80 @@ UNSAFE_DOC = (
 
 SELF_REFERENTIAL_DOC = "a: &a {<<: *a}\n"
 
+VALID_KEY_LINES = (
+    "template: lecture",
+    "roles: [employee]",
+    "language: ru",
+    "max_chars: 4000",
+)
+
+
+def _merge_chain_lines(*, fanout: int, nesting: int) -> list[str]:
+    """The side-key chain: a0 owns one key, every aN merges its child `fanout` times.
+
+    The chain node therefore projects ``(fanout ** nesting, nesting + 1)`` — the shape
+    that multiplies inside ``SafeConstructor.flatten_mapping``.
+    """
+    lines = ["a0: &a0 {k0: v0}"]
+    for level in range(1, nesting + 1):
+        sources = ", ".join([f"*a{level - 1}"] * fanout)
+        lines.append(f"a{level}: &a{level} {{<<: [{sources}]}}")
+    return lines
+
+
+def _merge_bomb(*, fanout: int, nesting: int) -> str:
+    """The side-key bomb: the chain plus the four required keys (no merge at the root)."""
+    lines = _merge_chain_lines(fanout=fanout, nesting=nesting)
+    lines.extend(VALID_KEY_LINES)
+    return "\n".join(lines) + "\n"
+
+
+def _root_anchored_bomb(*, fanout: int, nesting: int) -> str:
+    """The same chain, but the document's own root mapping carries ``<<: *aN``."""
+    lines = _merge_chain_lines(fanout=fanout, nesting=nesting)
+    lines.append(f"<<: *a{nesting}")
+    lines.extend(VALID_KEY_LINES)
+    return "\n".join(lines) + "\n"
+
+
+def _wide_merge_source(n: int) -> str:
+    """A document whose root carries a single ``<<`` whose source owns exactly `n` keys."""
+    keys = "\n".join(f"  k{i}: v{i}" for i in range(n))
+    return f"<<: &w\n{keys}\n"
+
+
+def _nested_merge_chain(fanout: int, levels: int) -> str:
+    """Nested flow-mapping chain: four schema keys at the leaf, merge-only levels above.
+
+    Every enclosing level merges its child exactly `fanout` times (one inline anchor plus
+    `fanout - 1` aliases), so the chain projects ``(fanout ** levels * 4, levels + 1)``.
+    `levels = 0` emits the bare four-key flow mapping.
+    """
+    expression = "{template: lecture, roles: [employee], language: ru, max_chars: 4000}"
+    for level in range(levels):
+        sources = [f"&chain{level} {expression}"] + [f"*chain{level}"] * (fanout - 1)
+        expression = "{<<: [" + ", ".join(sources) + "]}"
+    return expression + "\n"
+
+
+# 2 ** 6 * 4 == 256 projected entries at depth 7 — the entries budget is INCLUSIVE.
+EXACT_ENTRY_BUDGET = _nested_merge_chain(2, 6)
+BOMB = _merge_bomb(fanout=3, nesting=13)
+ROOT_ANCHORED_BOMB = _root_anchored_bomb(fanout=3, nesting=13)
+
 
 def _errors(yaml_text: str) -> tuple[PipelineConfigError, ...]:
     validator = YamlPipelineConfigValidator()
     with pytest.raises(PipelineConfigValidationError) as exc_info:
         validator.validate(yaml_text)
     return exc_info.value.errors
+
+
+def _projection(document: str) -> tuple[int, int]:
+    return _project(yaml.compose(document, Loader=_StrictSafeLoader), {}, set())
+
+
+MERGE_BOUND_ROW = (PipelineConfigError(path="", message=_MERGE_TOO_BIG_MESSAGE),)
 
 
 # --- Group 1: the loader oracle ------------------------------------------------
@@ -224,3 +299,91 @@ def test_unsafe_tag_is_refused_not_constructed() -> None:
 
     assert len(errors) == 1
     assert errors[0].path == ""
+
+
+# --- Group 4: the merge-expansion bound (D-04/D-06) ----------------------------
+
+
+@pytest.mark.parametrize("document", (BOMB, ROOT_ANCHORED_BOMB))
+def test_merge_bomb_is_rejected_in_bounded_time(document: str) -> None:
+    """PIPE-05: a tiny fan-out bomb is refused by the bound, loudly and fast."""
+    # The reject can never be the size cap: the bomb is ~2.5% of MAX_PIPELINE_CONFIG_CHARS.
+    assert len(document) < MAX_PIPELINE_CONFIG_CHARS
+
+    start = time.perf_counter()
+    errors = _errors(document)
+    elapsed = time.perf_counter() - start
+
+    assert errors == MERGE_BOUND_ROW
+    assert errors[0].line is None
+    assert _MERGE_TOO_BIG_MESSAGE != _OVER_CAP_MESSAGE
+    # ~2 ms guarded; the unbounded cost at this size is ~1.5 s (minutes deeper).
+    assert elapsed < 0.5
+
+
+def test_merge_bound_boundaries() -> None:
+    """PIPE-05: both bounds are inclusive at their limit and exclusive one step beyond."""
+    assert MAX_MERGE_ENTRIES == 256
+    assert MAX_MERGE_DEPTH == 8
+
+    # Fan-out 3: 5 merge levels project (243, 6) — accepted; 6 levels project 729
+    # entries — refused by the ENTRIES budget.
+    shallow_wide = _merge_bomb(fanout=3, nesting=5)
+    deep_wide = _merge_bomb(fanout=3, nesting=6)
+    assert len(shallow_wide) < MAX_PIPELINE_CONFIG_CHARS
+    assert len(deep_wide) < MAX_PIPELINE_CONFIG_CHARS
+    yaml.load(shallow_wide, Loader=_StrictSafeLoader)
+    assert _errors(deep_wide) == MERGE_BOUND_ROW
+
+    # Fan-out 1: a pure merge chain stays at 1 projected entry per level, so only the
+    # DEPTH bound can refuse it — 7 levels (depth 8) accepted, 8 levels (depth 9) refused.
+    shallow_narrow = _merge_bomb(fanout=1, nesting=7)
+    deep_narrow = _merge_bomb(fanout=1, nesting=8)
+    assert len(shallow_narrow) < MAX_PIPELINE_CONFIG_CHARS
+    assert len(deep_narrow) < MAX_PIPELINE_CONFIG_CHARS
+    yaml.load(shallow_narrow, Loader=_StrictSafeLoader)
+    assert _errors(deep_narrow) == MERGE_BOUND_ROW
+
+    # Fan-out 2 at 8 levels is admissible on entries alone (exactly 256) but refused by
+    # the depth bound (9) — proof that both bounds are load-bearing.
+    assert _errors(_merge_bomb(fanout=2, nesting=8)) == MERGE_BOUND_ROW
+
+    # Entries budget INCLUSIVE at exactly MAX_MERGE_ENTRIES: the four schema keys at the
+    # leaf under six merge-only levels project (2 ** 6 * 4, 7) == (256, 7) and validate.
+    assert len(EXACT_ENTRY_BUDGET) < MAX_PIPELINE_CONFIG_CHARS
+    assert _projection(EXACT_ENTRY_BUDGET) == (MAX_MERGE_ENTRIES, 7)
+    assert set(yaml.load(EXACT_ENTRY_BUDGET, Loader=_StrictSafeLoader)) == SCHEMA_KEYS
+    YamlPipelineConfigValidator().validate(EXACT_ENTRY_BUDGET)
+
+    # The next level computes 2 ** 7 * 4 == 512 entries at depth 8: refused before
+    # `_project` can return them.
+    over_budget = _nested_merge_chain(2, 7)
+    assert len(over_budget) < MAX_PIPELINE_CONFIG_CHARS
+    assert _errors(over_budget) == MERGE_BOUND_ROW
+
+    # The same inclusivity on the flat axis: 256 own keys in one merge source load to a
+    # 256-key mapping, 257 are refused.
+    wide = _wide_merge_source(MAX_MERGE_ENTRIES)
+    assert len(wide) < MAX_PIPELINE_CONFIG_CHARS
+    assert _projection(wide) == (MAX_MERGE_ENTRIES, 2)
+    assert len(yaml.load(wide, Loader=_StrictSafeLoader)) == MAX_MERGE_ENTRIES
+
+    overflowing = _wide_merge_source(MAX_MERGE_ENTRIES + 1)
+    assert len(overflowing) < MAX_PIPELINE_CONFIG_CHARS
+    assert _errors(overflowing) == MERGE_BOUND_ROW
+
+
+# --- cycle guard ---------------------------------------------------------------
+
+
+def test_self_referential_merge_is_refused_not_hung() -> None:
+    """The `stack` branch of `_project` fires before any expansion — never a hang/500."""
+    start = time.perf_counter()
+    errors = _errors(SELF_REFERENTIAL_DOC)
+    elapsed = time.perf_counter() - start
+
+    assert errors == MERGE_BOUND_ROW
+    assert elapsed < 0.5
+    # The divergence from the oracle is deliberate and pinned: SafeLoader silently
+    # collapses this document to {"a": {}}, which is why it is NOT in ORACLE_ACCEPTED.
+    assert yaml.safe_load(SELF_REFERENTIAL_DOC) == {"a": {}}
