@@ -27,9 +27,11 @@ from backend.infrastructure.yaml_pipeline_config_validator import (
     MAX_PIPELINE_CONFIG_CHARS,
     PipelineConfigModel,
     YamlPipelineConfigValidator,
+    _EXTRA_ANCHOR_KEY_MESSAGE,
     _MERGE_TOO_BIG_MESSAGE,
     _OVER_CAP_MESSAGE,
     _StrictSafeLoader,
+    _anchor_holder_keys,
     _project,
 )
 
@@ -417,7 +419,7 @@ def test_anchor_holder_key_gets_teaching_message() -> None:
     assert len(errors) == 1
     assert errors[0].path == "defaults"
     assert errors[0].line is None
-    assert errors[0].message == "Лишний ключ «defaults»: якоря нужно объявлять в самом `<<`"
+    assert errors[0].message == _EXTRA_ANCHOR_KEY_MESSAGE.format(key="defaults")
 
 
 def test_genuine_unknown_key_keeps_english_message() -> None:
@@ -427,4 +429,16 @@ def test_genuine_unknown_key_keeps_english_message() -> None:
     assert len(errors) == 1
     assert errors[0].path == "score_factors"
     assert errors[0].line is None
+    assert errors[0].message != _EXTRA_ANCHOR_KEY_MESSAGE.format(key="score_factors")
     assert "Лишний ключ" not in errors[0].message
+
+
+def test_inline_merge_shape_has_no_anchor_holder_keys() -> None:
+    """The inline `<<: &base` form has no top-level anchor holder — the guard returns ∅.
+
+    Proves the D-07 detection cannot fire on a document whose merge sits in the merge
+    key itself: identity exists only for a SEPARATE top-level key used as a merge source.
+    """
+    assert _anchor_holder_keys(MERGE_SOURCE_DOC) == set()
+    # …and such a document validates cleanly (the translation never engages).
+    YamlPipelineConfigValidator().validate(MERGE_SOURCE_DOC)
