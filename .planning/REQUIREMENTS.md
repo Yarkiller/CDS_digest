@@ -98,35 +98,37 @@ Deferred. Not in this milestone's roadmap.
 
 ## Traceability
 
-Populated during roadmap creation.
-
 | Requirement | Phase | Status |
 |-------------|-------|--------|
-| PIPE-04 | — | Pending |
-| PIPE-05 | — | Pending |
-| ADUX-07 | — | Pending |
-| ADUX-08 | — | Pending |
-| ADUX-09 | — | Pending |
-| ADUX-10 | — | Pending |
-| ADUX-12 | — | Pending |
-| MAIL-02 | — | Pending |
-| MAIL-01 | — | Pending |
-| MAIL-03 | — | Pending |
-| MAIL-04 | — | Pending |
-| MAIL-05 | — | Pending |
-| SRC-01 | — | Pending |
-| SRC-02 | — | Pending |
-| SRC-03 | — | Pending |
-| ING-02 | — | Pending |
-| ING-05 | — | Pending |
-| ING-06 | — | Pending |
-| ING-07 | — | Pending |
+| PIPE-04 | Phase 17 | Pending |
+| PIPE-05 | Phase 17 | Pending |
+| ADUX-07 | Phase 18 | Pending |
+| ADUX-08 | Phase 18 | Pending |
+| ADUX-09 | Phase 19 | Pending |
+| ADUX-10 | Phase 23 | Pending |
+| ADUX-12 | Phase 22 | Pending |
+| MAIL-02 | Phase 20 | Pending |
+| MAIL-01 | Phase 21 | Pending |
+| MAIL-03 | Phase 21 | Pending |
+| MAIL-04 | Phase 21 | Pending |
+| MAIL-05 | Phase 21 | Pending |
+| SRC-01 | Phase 23 | Pending |
+| SRC-02 | Phase 23 | Pending |
+| SRC-03 | Phase 23 | Pending |
+| ING-02 | Phase 24 | Pending |
+| ING-05 | Phase 24 | Pending |
+| ING-06 | Phase 24 | Pending |
+| ING-07 | Phase 24 | Pending |
 
 **Coverage:**
 - v1.3 requirements: 19 total
-- Mapped to phases: 0 — roadmap not yet created (this is the next step, not a gap)
-- Unmapped: 0 with no owner — deferred items are listed under v2+ / Out of Scope
+- Mapped to phases: 19 — every v1.3 requirement maps to exactly one phase (Phase 17–24)
+- Orphans: 0 — no v1.3 requirement is unmapped; deferred items are listed under v2+ / Out of Scope
+
+**Notes:**
+- ADUX-10 is owned by Phase 23 (ingest sources), not Phase 19 — recorded explicitly in both phases so the coverage gap is deliberate, not forgotten.
+- Backlog 999.7 → Phase 17 · 999.1 → Phase 18 · 999.6 → Phase 19 · 999.5 → Phase 22; 999.4 stays parked.
 
 ---
 *Requirements defined: 2026-10-14*
-*Last updated: 2026-10-14 after initial v1.3 definition*
+*Last updated: 2026-10-14 after v1.3 roadmap creation (Phases 17–24)*
