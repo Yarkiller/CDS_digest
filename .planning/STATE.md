@@ -1,37 +1,33 @@
 ---
 gsd_state_version: "1.0"
-milestone: v1.2
-milestone_name: Admin UX + diagnostics + PIPE-01 MVP
-status: Awaiting next milestone
-stopped_at: Phase 16 complete — all phases complete
-last_updated: "2026-10-05T10:47:22.521Z"
-last_activity: 2026-10-05
-last_activity_desc: Milestone v1.2 completed and archived
-state_head: d29e31827275d27a64fe8e477269b8565965217e
+milestone: v1.3
+milestone_name: Live mail, scheduled ingestion & backlog debt
+status: planning
+last_updated: "2026-10-14T08:59:51.362Z"
+last_activity: 2026-10-14
 progress:
-  total_phases: 5
-  completed_phases: 7
-  total_plans: 26
-  completed_plans: 26
-  percent: 100
-current_phase: 16
+  total_phases: 0
+  completed_phases: 0
+  total_plans: 0
+  completed_plans: 0
+  percent: 0
 ---
 
 # Project State
 
 ## Project Reference
 
-See: .planning/PROJECT.md (updated 2026-10-05 — after v1.2)
+See: .planning/PROJECT.md (updated 2026-10-14 — after v1.3 milestone start)
 
 **Core value:** Trusted weekly prepared-article issue + one honest vote toward the next разбор
-**Current focus:** v1.2 shipped — planning next milestone
+**Current focus:** v1.3 — Live mail, scheduled ingestion & backlog debt (defining requirements)
 
 ## Current Position
 
-Phase: Milestone v1.2 complete
+Phase: Not started (defining requirements)
 Plan: —
-Status: Awaiting next milestone
-Last activity: 2026-10-05 — Milestone v1.2 completed and archived
+Status: Defining requirements
+Last activity: 2026-10-14 — Milestone v1.3 started
 
 ## Performance Metrics
 
@@ -159,10 +155,10 @@ None. Phase 13 plans 01–08 are complete and ready for verification.
 
 ### Blockers/Concerns
 
-Signup confirmation mail (`g-01-3b-signup-mailer`) remains open from v1 (not this milestone).
+Signup confirmation mail (`g-01-3b-signup-mailer`) carried from v1 into v1.3 as MAIL-02 — root cause still unknown, the phase opens with investigation.
 Nyquist VALIDATION.md drafts for phases 6–8 remain historical debt (not a v1.2 product requirement).
-[Phase 16] Backlog 999.5 (admin nav grouping) and 999.6 (WR-04/WR-05 unsaved-changes guard) — deferred optional UX.
-[Phase 16] Open advisory review warnings (16-REVIEW.md, post stale re-verification): WR-01 (valid YAML merge-key `<<` rejected with a cryptic internal-tag message in `_StrictSafeLoader.construct_mapping` — fails closed, still a structured 400) plus IN-01/IN-02/IN-03 — non-blocking, no must-have impact; verifier passed 49/49.
+[Phase 16] Backlog 999.5 (admin nav grouping) and 999.6 (WR-04/WR-05 unsaved-changes guard) — 999.6 is scheduled for v1.3; 999.5 stays deferred optional UX.
+[Phase 16] Open advisory review warnings (16-REVIEW.md, post stale re-verification): WR-01 (valid YAML merge-key `<<` rejected with a cryptic internal-tag message in `_StrictSafeLoader.construct_mapping` — fails closed, still a structured 400) scheduled for v1.3 as 999.7; plus IN-01/IN-02/IN-03 — non-blocking, no must-have impact; verifier passed 49/49.
 
 ## Deferred Items
 
@@ -183,15 +179,15 @@ Items acknowledged and deferred at milestone close, most recent first:
 | debug_sessions | preview-cursor | resolved 2026-10-13 | 2026-10-05 | v1.2 |
 | deferred_items | 13/deferred-items.md: admin.spec.js `/me network failure shows ServiceUnavailable not Forbidden` flake (pre-existing, not G-13-*) | acknowledged | 2026-10-05 | v1.2 |
 
-Carried product deferrals to v1.3+: leaderboard, quiz, live SMTP, signup mail, Whisper/Foundry ASR, ingest HTTP/scheduler, PIPE execution.
+Carried product deferrals beyond v1.3: leaderboard, quiz, Whisper/Foundry ASR, ingest HTTP API, auto-publish/send, PIPE execution.
 
 ## Session Continuity
 
-Last session: 2026-10-05T10:47:22.521Z
-Stopped at: Milestone v1.2 complete and archived (Phases 12–16 shipped 2026-10-05)
+Last session: 2026-10-14T08:59:51.362Z
+Stopped at: Milestone v1.3 started — backlog debt first (999.1, 999.6, 999.7), then mail and scheduled ingestion
 Resume file: None
-Next: close v1.2 milestone (`/gsd-complete-milestone v1.2`)
+Next: define v1.3 requirements and create the roadmap (backlog debt → MAIL-02 → MAIL-01 → scheduled ingestion)
 
 ## Operator Next Steps
 
-- Start the next milestone with /gsd-new-milestone
+- Finish scoping v1.3 (requirements + roadmap), then start Phase 17 with /gsd-discuss-phase 17
