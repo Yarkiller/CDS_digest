@@ -93,6 +93,24 @@ ANCHOR_HOLDER_TWICE_DOC = (
     "<<: [*c, *c]\n"
 )
 
+# D-07 shape: an anchor holder that is also the merge source — the most likely
+# post-fix admin spelling. The holder key sits outside the four-key schema, so the
+# document is rejected at the schema stage (never at parse): the merge itself is valid.
+ANCHOR_HOLDER_KEY_DOC = (
+    "defaults: &base\n"
+    "  template: lecture\n"
+    "  roles:\n"
+    "    - employee\n"
+    "  language: ru\n"
+    "  max_chars: 4000\n"
+    "<<: *base\n"
+)
+
+# A genuine unknown key on a NON-merge document — the D-09 tripwire's shape.
+UNKNOWN_KEY_DOC = (
+    "template: lecture\nroles:\n  - ds\nlanguage: ru\nmax_chars: 100\nscore_factors: 1.0\n"
+)
+
 QUOTED_MERGE_DOC = (
     "'<<': 1\ntemplate: lecture\nroles: [employee]\nlanguage: ru\nmax_chars: 4000\n"
 )
@@ -387,3 +405,26 @@ def test_self_referential_merge_is_refused_not_hung() -> None:
     # The divergence from the oracle is deliberate and pinned: SafeLoader silently
     # collapses this document to {"a": {}}, which is why it is NOT in ORACLE_ACCEPTED.
     assert yaml.safe_load(SELF_REFERENTIAL_DOC) == {"a": {}}
+
+
+# --- Group 5: the D-07 anchor-holder teaching message --------------------------
+
+
+def test_anchor_holder_key_gets_teaching_message() -> None:
+    """D-07: a top-level anchor holder is rejected with the key-naming Russian message."""
+    errors = _errors(ANCHOR_HOLDER_KEY_DOC)
+
+    assert len(errors) == 1
+    assert errors[0].path == "defaults"
+    assert errors[0].line is None
+    assert errors[0].message == "Лишний ключ «defaults»: якоря нужно объявлять в самом `<<`"
+
+
+def test_genuine_unknown_key_keeps_english_message() -> None:
+    """D-07 / Pitfall 9: the translation is anchor-gated — a genuine typo stays English."""
+    errors = _errors(UNKNOWN_KEY_DOC)
+
+    assert len(errors) == 1
+    assert errors[0].path == "score_factors"
+    assert errors[0].line is None
+    assert "Лишний ключ" not in errors[0].message
