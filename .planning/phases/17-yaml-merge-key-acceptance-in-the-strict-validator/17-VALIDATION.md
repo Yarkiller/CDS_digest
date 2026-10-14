@@ -54,6 +54,8 @@ created: "2026-10-14"
 | 17-02-T1 | 17-02 | 2 | PIPE-05 | T-17-10 | Anchor-holder key (D-07) gets the Russian message naming the key | unit | `…::test_anchor_holder_key_gets_teaching_message -q` | ❌ W0 | ⬜ pending |
 | 17-02-T1 | 17-02 | 2 | PIPE-05 | T-17-10 | Genuine unknown key keeps Pydantic's English `extra_forbidden` message with `path` preserved | unit | `.venv\Scripts\python.exe -m pytest tests/unit/test_pipeline_config_validator.py::test_unknown_key_is_rejected_by_extra_forbid -q` | ✅ PRESERVE | ⬜ pending |
 | 17-01-T1 | 17-01 | 1 | PIPE-05 | T-17-01 | Depth/entry boundaries (5 accepted / 6 rejected at fan-out 3; 8 accepted / 9 rejected on depth) | unit | `…::test_merge_bound_boundaries -q` | ❌ W0 | ⬜ pending |
+| 17-01-T1 | 17-01 | 1 | PIPE-05 | T-17-01 | Entries budget inclusive at exactly `MAX_MERGE_ENTRIES`: 256 projected entries validate (depth 7), 257 are refused | unit | `…::test_merge_bound_boundaries -q` | ❌ W0 | ⬜ pending |
+| 17-01-T1 | 17-01 | 1 | PIPE-05 | T-17-06 | Loader safety profile unchanged: an `!!python/object/apply` document is refused, never constructed | unit | `…::test_unsafe_tag_is_refused_not_constructed -q` | ❌ W0 | ⬜ pending |
 
 *Status: ⬜ pending · ✅ green · ❌ red · ⚠️ flaky*
 

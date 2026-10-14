@@ -1170,23 +1170,32 @@ except (yaml.YAMLError, RecursionError):
 
 **If this table is empty:** not applicable — the entries are the phase's open calibration points, all within Claude's Discretion except A2/A3/A6, which the planner should record explicitly.
 
-## Open Questions
+## Open Questions (RESOLVED)
 
 1. **What `path` should the D-07 row carry — `""` (like D-06) or the offending key name (like every other schema error)?**
    - What we know: the existing `extra_forbidden` row carries `path == "score_factors"` and the UI/tests treat that as the field identity; D-06 fixes the merge-bound path to `""` but D-07 says nothing.
    - Recommendation: keep the loc-derived `path` (`"defaults"`) and change only `message`; that is the smallest change and the most informative row. Record it in the plan.
+   - **RESOLVED:** keep the loc-derived `path` (`"defaults"`) and change only `message` — planned in `17-02-PLAN.md` Task 1 (`_anchor_holder_keys` + the anchor-gated translation inside the existing `ValidationError` comprehension) and proved end-to-end by that plan's `test_put_anchor_holder_key_returns_400_with_teaching_message`, which asserts `body["errors"] == [{"path": "defaults", "message": …}]` with no `line`. That keeps the row's field identity identical to every other `extra_forbidden` row (Assumption A2).
 
 2. **Should duplicates inside an inline merge-source mapping be rejected?**
    - What we know: they are currently accepted (last-wins inside the source) with both candidate loaders; D-03 arguably covers them as merge-introduced.
    - Recommendation: keep them accepted and pin the behaviour with an explicit test (Assumption A6), so the strictness boundary is documented rather than incidental.
+   - **RESOLVED:** kept accepted, recorded as a deliberate decision (Assumption A6) rather than an accident. `SafeConstructor.flatten_mapping` splices a merge source's entries into the outer mapping node and never constructs the source mapping on its own, so the pre-merge own-key scan fixed by D-02 cannot see a key repeated *inside* one inline source; the repeat therefore resolves last-wins inside that source, matching `yaml.safe_load` (reproduced on this checkout). Duplicate rejection — the PIPE-05 / ROADMAP criterion-2 proof — stays on the explicit own-key list of the mapping being validated: `17-01-PLAN.md` Group 3 pins it with and without a `<<` present, and the Group 1 oracle rows pin loader agreement with `yaml.safe_load` on colliding merge sources (`<<: [*a, *b]`, own key over merged key, `<<: [*c, *c]`). A dedicated accepted-fixture row for a key repeated *inside* one source is deliberately not added: it would read against ROADMAP criterion 2's "duplicated **explicit** key" wording while adding no behaviour claim beyond the oracle rows — and rejecting such a document instead would break the mandated `SafeLoader` oracle contract.
 
 3. **Does the `_validate` order need the bound *before* the schema check?**
    - What we know: it already is — `yaml.load` (line 95) runs before `model_validate` (line 129), so a merge bomb is refused before the schema ever sees the (correctly small) parsed dict.
    - Recommendation: no change; assert it in a test only if it is cheap to do so.
+   - **RESOLVED:** no ordering change. The bound fires inside `yaml.load` (parse stage) and `PipelineConfigModel.model_validate` runs on the parsed dict afterwards, so the ordering holds by construction in `17-01-PLAN.md` Task 1. It is asserted cheaply: the bomb fixtures are also schema-invalid (13–14 side keys) yet must fail with `_MERGE_TOO_BIG_MESSAGE` and never with an `extra_forbidden` row — which is only possible if the bound ran first.
 
 4. **Is `MAX_MERGE_ENTRIES = 256` meant to count only the root mapping, or every mapping in the document?**
    - What we know: a side-key bomb puts no merge on the root mapping, so a root-only guard would never fire (measured: the guard must reject a nesting-13 side-key chain, whose root has 18 own keys and no merge).
    - Recommendation: every mapping reached by `flatten_mapping` (the current design), which is what the measurements cover.
+   - **RESOLVED:** every mapping reached by `flatten_mapping`, not just the root — implemented as the memoised `_project` projection invoked from the loader's own `flatten_mapping` override (`17-01-PLAN.md` Task 1, per D-04). A root-only guard would never fire on the phase's own bomb fixture, whose root mapping carries no merge at all; the budget therefore counts the projected flattened pairs of the whole merge-connected graph.
+
+5. **Are the bound values (`MAX_MERGE_DEPTH = 8`, `MAX_MERGE_ENTRIES = 256`) and the bounded-time regression tooling settled?**
+   - What we know: the numbers are **Claude's Discretion** per `17-CONTEXT.md` and are headroom-chosen from measurements on this checkout (Assumption A1), **not** derived from a specification: a legitimate 4-key document needs 4 entries and 1–2 merge levels, while the entries budget is the measured DoS stopper (nesting 14: 4 297 ms unbounded → ~2 ms guarded). `pytest-timeout` is not installed and `signal.SIGALRM` is unavailable on win32 (Pitfall 7).
+   - Recommendation: fix the numbers in the plan as module constants and pin the frozen boundary table with a test; use an in-test wall-clock ceiling instead of a timeout plugin.
+   - **RESOLVED:** settled **by disposition, not by derivation**. D-04 locks two independent bounds (defence in depth: depth refuses the linear fan-out-1 chain the entries budget would never catch; entries refuse the wide fan-out that depth alone would only catch late), and `17-01-PLAN.md` ships `MAX_MERGE_DEPTH = 8` / `MAX_MERGE_ENTRIES = 256` as module constants pinned by `test_merge_bound_boundaries` (fan-out 3 → 5 accepted / 6 rejected; fan-out 1 → 7 accepted / 8 rejected; plus the exact-`256`-entry acceptance and `257`-entry refusal). The bounded-time regression uses an in-test `time.perf_counter()` ceiling of 0.5 s (≥250× margin over the ~2 ms guarded cost); `pytest-timeout` is deliberately not added and `SIGALRM` is not used.
 
 ## Sources
 
