@@ -80,7 +80,7 @@ Backlog tech debt comes first (lowest blast radius first), then mail, then inges
 
 ### Phase 18: Reader-route honesty for draft materials
 **Goal**: An admin can open any draft (or ready) material at an admin-gated preview and read it in the normal reader rendering, while ordinary readers still get an opaque 404 and no unpublished content is exposed.
-**Depends on**: Nothing functionally (independent debt item; sequenced after Phase 17 in the debt track)
+**Depends on**: Nothing (independent debt item; the debt-track order is a sequencing choice, not a dependency)
 **Requirements**: ADUX-07, ADUX-08
 **Success Criteria** (what must be TRUE):
   1. An admin can open a draft material from the admin shortlist / email preview and read it in the normal reader rendering.
@@ -104,7 +104,7 @@ Backlog tech debt comes first (lowest blast radius first), then mail, then inges
 
 ### Phase 20: MAIL-02 signup confirmation mail
 **Goal**: The signup-confirmation mail root cause is diagnosed and documented, and the delivered end state is honest — either a working confirmation email through the corporate relay, or an explicitly autoconfirmed flow whose copy never claims mail was sent.
-**Depends on**: Nothing functionally (opens the mail track); gates Phase 21 through the shared relay
+**Depends on**: Nothing (opens the mail track); the shared relay decision must land here and is reused by the later digest-delivery phase
 **Requirements**: MAIL-02
 **Decision gate**: the **corporate SMTP relay choice** must be settled before this phase can pass — one relay serves GoTrue and MAIL-01 (ADR-0002 contour isolation applies).
 **Success Criteria** (what must be TRUE):
@@ -194,7 +194,7 @@ Phases execute in numeric order: 17 → 18 → 19 → 20 → 21 → 22 → 23 �
 >
 > **Moved into v1.3 (2026-10-14):** 999.7 → Phase 17 · 999.1 → Phase 18 · 999.6 → Phase 19 · 999.5 → Phase 22. **999.4 stays parked** (product preference, not debt).
 
-### Phase 999.1: Reader-route honesty for draft materials — `/materials/<slug>` error page (→ v1.3 Phase 18)
+### Backlog 999.1: Reader-route honesty for draft materials — `/materials/<slug>` error page (→ v1.3 Phase 18)
 
 **Goal:** A reader link opened from the admin shortlist or the email preview must not land on an error page while the material is still a draft
 **Source phase:** 13
@@ -205,7 +205,7 @@ Phases execute in numeric order: 17 → 18 → 19 → 20 → 21 → 22 → 23 �
 - [ ] Reader `/materials/<slug>` returns an error page. Check: slug validity, reader endpoint health, SPA route. (deferred 2026-10-03)
 - [ ] «Открыть материал →» from the email/admin preview leads to an error page — reader route issue, not admin preview. (deferred 2026-10-03)
 
-### Phase 999.4: Follow-up — Phase 14 deferred UAT follow-up: Test 1 (Deferred — stays parked)
+### Backlog 999.4: Follow-up — Phase 14 deferred UAT follow-up: Test 1 (Deferred — stays parked)
 
 **Goal:** Resolve the UAT checkpoint deferred during Phase 14 verification
 **Source phase:** 14
@@ -214,7 +214,7 @@ Phases execute in numeric order: 17 → 18 → 19 → 20 → 21 → 22 → 23 �
 **Follow-ups:**
 - [ ] Test 1: UX (для Phase 15+): две операции на одно editorial-решение избыточны для single-operator workflow — объединить Approve (decision) + Mark ready (material_status) в одну кнопку «Одобрить и подготовить → ready»; переименовать «Сделать ready» → «Отобрать», ready → «Отобран». (deferred 2026-10-03)
 
-### Phase 999.5: Follow-up — Phase 16 deferred UAT follow-up: admin nav grouping (→ v1.3 Phase 22)
+### Backlog 999.5: Follow-up — Phase 16 deferred UAT follow-up: admin nav grouping (→ v1.3 Phase 22)
 
 **Goal:** Resolve the UAT checkpoint deferred during Phase 16 verification
 **Source phase:** 16
@@ -223,7 +223,7 @@ Phases execute in numeric order: 17 → 18 → 19 → 20 → 21 → 22 → 23 �
 **Follow-ups:**
 - [ ] Test 0: UX (предпочтение, не SPEC): убрать top-level nav-пункт «Пайплайн»; открывать конфиг только из админ-раздела. Вариант C — tab-bar «Дайджест | Пайплайн» на админ-страницах, top-level «Админ» → /admin/digest. Route /admin/pipeline не меняется, новый route не нужен. При реализации обновить 16-UI-SPEC A-2 и писать TDD (failing Playwright test first). (deferred 2026-10-04)
 
-### Phase 999.6: Follow-up — Phase 16 deferred UAT follow-up: unsaved-changes guard WR-04/WR-05 (→ v1.3 Phase 19)
+### Backlog 999.6: Follow-up — Phase 16 deferred UAT follow-up: unsaved-changes guard WR-04/WR-05 (→ v1.3 Phase 19)
 
 **Goal:** Resolve the UAT checkpoint deferred during Phase 16 verification
 **Source phase:** 16
@@ -233,7 +233,7 @@ Phases execute in numeric order: 17 → 18 → 19 → 20 → 21 → 22 → 23 �
 - [ ] Test 3: WR-04/WR-05 — unsaved-changes guard принят как known limitation: window.confirm внутри beforeunload ненадёжен в реальных браузерах, router-level guard не зарегистрирован, поэтому in-app SPA-навигация молча теряет черновик. БД безопасна (не сохранил → не записано); теряется только набранный текст. Fix: корректный beforeunload (event.preventDefault/returnValue) + router guard (useBlocker) с той же копией «Есть несохранённые изменения. Уйти без сохранения?». (deferred 2026-10-04)
 - [ ] ADUX-10 — extend the guard to the ingest-sources editor; owned by v1.3 Phase 23 (sources), not Phase 19.
 
-### Phase 999.7: Follow-up — Phase 16 code-review advisory WR-01: YAML merge-key regression (→ v1.3 Phase 17)
+### Backlog 999.7: Follow-up — Phase 16 code-review advisory WR-01: YAML merge-key regression (→ v1.3 Phase 17)
 
 **Goal:** Restore valid YAML merge-key (`<<`) acceptance in the strict pipeline-config validator without weakening duplicate-key rejection
 **Source phase:** 16

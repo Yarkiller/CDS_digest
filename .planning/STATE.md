@@ -24,7 +24,7 @@ See: .planning/PROJECT.md (updated 2026-10-14 — after v1.3 milestone start)
 
 ## Current Position
 
-Phase: 17 of 24 (YAML merge-key acceptance in the strict validator)
+Phase: 17 (1 of 8) — YAML merge-key acceptance in the strict validator
 Plan: — (ready to plan)
 Status: Roadmap complete — ready to plan Phase 17
 Last activity: 2026-10-14 — v1.3 roadmap created (Phases 17–24, 19/19 requirements mapped)
