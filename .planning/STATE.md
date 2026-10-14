@@ -6,16 +6,16 @@ current_phase: 18
 current_phase_name: Reader-route honesty for draft materials
 status: planning
 stopped_at: Phase 17 complete, ready to plan Phase 18
-last_updated: "2026-10-14T13:44:39.523Z"
+last_updated: "2026-10-14T13:54:28.985Z"
 last_activity: 2026-10-14
-last_activity_desc: Phase 17 complete, transitioned to Phase 18
-state_head: ca1860bc37b6dd1d200109231c688b652da569ec
+state_head: 990a279f12c7a708deb10c67cbe912454814c194
 progress:
   total_phases: 8
   completed_phases: 1
   total_plans: 3
   completed_plans: 3
   percent: 13
+last_activity_desc: Phase 17 complete, transitioned to Phase 18
 ---
 
 # Project State
@@ -32,7 +32,7 @@ See: .planning/PROJECT.md (updated 2026-10-14 — after v1.3 milestone start)
 Phase: 18 — Reader-route honesty for draft materials
 Plan: Not started
 Status: Ready to plan
-Last activity: 2026-10-14 — Phase 17 complete, transitioned to Phase 18
+Last activity: 2026-10-14
 
 Progress: [█░░░░░░░░░] 13%
 
