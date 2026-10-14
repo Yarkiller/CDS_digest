@@ -135,6 +135,70 @@ SAME_SOURCE_TWICE_DOC = (
     "max_chars: 4000\n"
 )
 
+# Group 5b — CR-01 gap shapes (17-03): a duplicate key written inside a mapping that is
+# only ever used as a merge source must STILL be rejected (PIPE-04/PIPE-05, D-02).
+MERGE_SOURCE_DUPLICATE_DOC = (
+    "<<: &b {language: ru, language: en}\n"
+    "template: lecture\n"
+    "roles: [employee]\n"
+    "max_chars: 4000\n"
+)
+
+MERGE_SOURCE_SEQUENCE_DUPLICATE_DOC = (
+    "<<: [&b {language: ru, language: en}]\n"
+    "template: lecture\n"
+    "roles: [employee]\n"
+    "max_chars: 4000\n"
+)
+
+ANCHOR_HOLDER_DUPLICATE_DOC = (
+    "defaults: &b {template: lecture, roles: [employee], language: ru, "
+    "language: en, max_chars: 4000}\n"
+    "<<: *b\n"
+)
+
+# The duplicate lives inside a merge source's VALUES — caught by the ordinary scan.
+MERGE_SOURCE_VALUE_DUPLICATE_DOC = (
+    "<<: &b {language: {x: 1, x: 2}}\n"
+    "template: lecture\n"
+    "roles: [employee]\n"
+    "max_chars: 4000\n"
+)
+
+# A near-miss: distinct keys `language` / `languages` — the source scan must NOT flag it.
+MERGE_SOURCE_NEAR_MISS_DOC = (
+    "<<: &b {language: ru, languages: en}\n"
+    "template: lecture\n"
+    "roles: [employee]\n"
+    "max_chars: 4000\n"
+)
+
+# One document carrying BOTH an own-key duplicate and a merge-source duplicate: the
+# pristine own-key scan runs first, so the OWN duplicate is the row that is reported.
+OWN_AND_SOURCE_DUPLICATE_DOC = (
+    "template: podcast\n"
+    "template: lecture\n"
+    "<<: &b {language: ru, language: en}\n"
+    "roles: [employee]\n"
+    "max_chars: 4000\n"
+)
+
+# WR-01 shapes (17-03): a top-level key used as a merge source only by a NESTED merge,
+# and the alias-copy case the identity-keyed detection deliberately over-matches (IN-01).
+NESTED_MERGE_ANCHOR_HOLDER_DOC = (
+    "defaults: &c {template: lecture, roles: [employee], language: ru, "
+    "max_chars: 4000}\n"
+    "other:\n"
+    "  <<: *c\n"
+)
+
+ALIAS_COPY_ANCHOR_HOLDER_DOC = (
+    "defaults: &c {template: lecture, roles: [employee], language: ru, "
+    "max_chars: 4000}\n"
+    "alias_key: *c\n"
+    "<<: *c\n"
+)
+
 # Group 1 — documents `yaml.safe_load` accepts; the strict loader must agree exactly.
 ORACLE_ACCEPTED: tuple[str, ...] = (
     PLAIN_DOC,
@@ -182,6 +246,14 @@ DUPLICATE_REJECTED: tuple[tuple[str, int], ...] = (
     ),
 )
 
+# Group 5b — duplicates inside a merge source's own mapping (CR-01 gap, 17-03).
+DUPLICATE_IN_MERGE_SOURCE: tuple[tuple[str, str, int], ...] = (
+    (MERGE_SOURCE_DUPLICATE_DOC, "language", 1),
+    (MERGE_SOURCE_SEQUENCE_DUPLICATE_DOC, "language", 1),
+    (ANCHOR_HOLDER_DUPLICATE_DOC, "language", 1),
+    (MERGE_SOURCE_VALUE_DUPLICATE_DOC, "x", 1),
+)
+
 UNSAFE_DOC = (
     "template: !!python/object/apply:os.system ['echo hi']\n"
     "roles: [employee]\n"
@@ -222,6 +294,27 @@ def _merge_bomb(*, fanout: int, nesting: int) -> str:
 def _root_anchored_bomb(*, fanout: int, nesting: int) -> str:
     """The same chain, but the document's own root mapping carries ``<<: *aN``."""
     lines = _merge_chain_lines(fanout=fanout, nesting=nesting)
+    lines.append(f"<<: *a{nesting}")
+    lines.extend(VALID_KEY_LINES)
+    return "\n".join(lines) + "\n"
+
+
+def _root_anchored_bomb_with_duplicate_source(*, fanout: int, nesting: int) -> str:
+    """Precedence (a): the root's own pre-mutation window observes an over-budget source
+    AND a duplicate-bearing source, so the duplicate row must win over the bound."""
+    lines = _merge_chain_lines(fanout=fanout, nesting=nesting)
+    lines.append(f"<<: [*a{nesting}, &dup {{language: ru, language: en}}]")
+    lines.extend(VALID_KEY_LINES)
+    return "\n".join(lines) + "\n"
+
+
+def _nested_duplicate_source_bomb(*, fanout: int, nesting: int) -> str:
+    """Precedence (b)/(c): the duplicate sits on the chain's ``a0`` base and is reachable
+    only through the merge chain that the root merges."""
+    lines = ["a0: &a0 {k0: v0, language: ru, language: en}"]
+    for level in range(1, nesting + 1):
+        sources = ", ".join([f"*a{level - 1}"] * fanout)
+        lines.append(f"a{level}: &a{level} {{<<: [{sources}]}}")
     lines.append(f"<<: *a{nesting}")
     lines.extend(VALID_KEY_LINES)
     return "\n".join(lines) + "\n"
@@ -442,3 +535,72 @@ def test_inline_merge_shape_has_no_anchor_holder_keys() -> None:
     assert _anchor_holder_keys(MERGE_SOURCE_DOC) == set()
     # …and such a document validates cleanly (the translation never engages).
     YamlPipelineConfigValidator().validate(MERGE_SOURCE_DOC)
+
+
+# --- Group 6: CR-01 — duplicate keys inside a merge source (17-03) -------------
+
+
+@pytest.mark.parametrize(("document", "key", "line"), DUPLICATE_IN_MERGE_SOURCE)
+def test_duplicate_inside_merge_source_is_rejected(
+    document: str, key: str, line: int
+) -> None:
+    """CR-01 closure: an explicit duplicate inside a merge source is still rejected."""
+    expected = PipelineConfigError(
+        path="", message=f"found duplicate key ({key!r})", line=line
+    )
+
+    assert _errors(document) == (expected,)
+
+
+def test_merge_source_near_miss_is_not_flagged_as_duplicate() -> None:
+    """The source scan must not over-reach: distinct keys (`language`/`languages`) load."""
+    assert yaml.load(
+        MERGE_SOURCE_NEAR_MISS_DOC, Loader=_StrictSafeLoader
+    ) == yaml.safe_load(MERGE_SOURCE_NEAR_MISS_DOC)
+    errors = _errors(MERGE_SOURCE_NEAR_MISS_DOC)
+
+    assert len(errors) == 1
+    assert "duplicate" not in errors[0].message.lower()
+
+
+def test_duplicate_source_observed_before_the_projection_wins_over_the_bound() -> None:
+    """Precedence (a): a source the projected node itself observes reports its duplicate."""
+    document = _root_anchored_bomb_with_duplicate_source(fanout=3, nesting=13)
+    assert len(document) < MAX_PIPELINE_CONFIG_CHARS
+
+    errors = _errors(document)
+
+    assert len(errors) == 1
+    assert errors[0].path == ""
+    assert errors[0].line is not None
+    assert "duplicate" in errors[0].message.lower()
+    assert errors[0].message != _MERGE_TOO_BIG_MESSAGE
+
+
+def test_nested_duplicate_source_over_the_bound_is_refused_by_the_bound() -> None:
+    """Precedence (b): a source the projection never reaches leaves the bound to win."""
+    document = _nested_duplicate_source_bomb(fanout=3, nesting=13)
+    assert len(document) < MAX_PIPELINE_CONFIG_CHARS
+
+    assert _errors(document) == MERGE_BOUND_ROW
+
+
+def test_nested_duplicate_source_under_the_bound_is_rejected_as_a_duplicate() -> None:
+    """Precedence (c): the same nested shape inside both bounds is a duplicate reject."""
+    document = _nested_duplicate_source_bomb(fanout=3, nesting=4)
+    assert len(document) < MAX_PIPELINE_CONFIG_CHARS
+
+    assert _errors(document) == (
+        PipelineConfigError(
+            path="", message="found duplicate key ('language')", line=1
+        ),
+    )
+
+
+def test_own_key_duplicate_wins_over_a_merge_source_duplicate() -> None:
+    """Precedence (d): the pristine own-key scan precedes the flatten/source scan."""
+    assert _errors(OWN_AND_SOURCE_DUPLICATE_DOC) == (
+        PipelineConfigError(
+            path="", message="found duplicate key ('template')", line=2
+        ),
+    )

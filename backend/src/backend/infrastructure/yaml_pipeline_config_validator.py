@@ -118,29 +118,60 @@ class _StrictSafeLoader(yaml.SafeLoader):
             self._checked.add(id(node))
             if any(key_node.tag == _MERGE_TAG for key_node, _ in node.value):
                 self._own_keys[id(node)] = list(node.value)
+                # CR-01: a mapping used ONLY as a merge source is never passed through
+                # ``construct_mapping`` (PyYAML splices its raw pairs into the parent via
+                # ``merge.extend(value_node.value)``), so its own duplicate keys must be
+                # scanned here, still pristine (before ``super().flatten_mapping``).
+                for key_node, value_node in node.value:
+                    if key_node.tag != _MERGE_TAG:
+                        continue
+                    sources = (
+                        value_node.value
+                        if isinstance(value_node, SequenceNode)
+                        else [value_node]
+                    )
+                    for source in sources:
+                        if (
+                            isinstance(source, MappingNode)
+                            and id(source) not in self._own_keys
+                        ):
+                            self._own_keys[id(source)] = list(source.value)
+                            self._check_own_keys(self._own_keys[id(source)], source)
                 _project(node, self._memo, set())
         return super().flatten_mapping(node)
 
+    def _check_own_keys(
+        self, key_pairs: list[Any], node: MappingNode, deep: bool = False
+    ) -> None:
+        """Raise ``ConstructorError`` on the second occurrence of a key in ``key_pairs``.
+
+        Factored out of ``construct_mapping`` (17-03) so the same verbatim scan runs for a
+        node's own pristine keys AND for every mapping used as a merge source.
+        """
+        seen: set[Any] = set()
+        for key_node, _value_node in key_pairs:
+            if key_node.tag == _MERGE_TAG:
+                # D-02: skip by tag — a quoted ``'<<'`` is an ordinary string key.
+                continue
+            key = self.construct_object(key_node, deep=deep)
+            try:
+                hash(key)
+            except TypeError:
+                continue
+            if key in seen:
+                raise ConstructorError(
+                    "while constructing a mapping",
+                    node.start_mark,
+                    f"found duplicate key ({key!r})",
+                    key_node.start_mark,
+                )
+            seen.add(key)
+
     def construct_mapping(self, node: MappingNode, deep: bool = False) -> dict[Any, Any]:
         if isinstance(node, MappingNode):
-            seen: set[Any] = set()
-            for key_node, _value_node in self._own_keys.get(id(node), node.value):
-                if key_node.tag == _MERGE_TAG:
-                    # D-02: skip by tag — a quoted ``'<<'`` is an ordinary string key.
-                    continue
-                key = self.construct_object(key_node, deep=deep)
-                try:
-                    hash(key)
-                except TypeError:
-                    continue
-                if key in seen:
-                    raise ConstructorError(
-                        "while constructing a mapping",
-                        node.start_mark,
-                        f"found duplicate key ({key!r})",
-                        key_node.start_mark,
-                    )
-                seen.add(key)
+            self._check_own_keys(
+                self._own_keys.get(id(node), node.value), node, deep=deep
+            )
         return super().construct_mapping(node, deep=deep)
 
 
