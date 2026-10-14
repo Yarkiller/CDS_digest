@@ -55,7 +55,7 @@ Full phase detail: [milestones/v1.2-ROADMAP.md](milestones/v1.2-ROADMAP.md)
 
 Backlog tech debt comes first (lowest blast radius first), then mail, then ingest sources, then the scheduler. Continuous numbering — v1.3 starts at Phase 17 (v1.2 ended at Phase 16).
 
-- [ ] **Phase 17: YAML merge-key acceptance in the strict validator** - The strict pipeline-config validator accepts valid `<<` merge-key documents, bounded so they cannot exhaust CPU, without weakening duplicate-key rejection
+- [x] **Phase 17: YAML merge-key acceptance in the strict validator** - The strict pipeline-config validator accepts valid `<<` merge-key documents, bounded so they cannot exhaust CPU, without weakening duplicate-key rejection (completed 2026-10-14)
 - [ ] **Phase 18: Reader-route honesty for draft materials** - An admin reads any draft at an admin-gated preview surface while the public reader route stays ready-only and draft ≡ missing (opaque 404)
 - [ ] **Phase 19: Unsaved-changes guard for the pipeline editor** - The admin pipeline editor warns before losing unsaved changes on in-app SPA navigation and on reload/close
 - [ ] **Phase 20: MAIL-02 signup confirmation mail** - The root cause is diagnosed and the delivered end state is honest (working relay mail, or explicitly autoconfirmed copy)
@@ -77,7 +77,7 @@ Backlog tech debt comes first (lowest blast radius first), then mail, then inges
   3. A merge document crafted for high fan-out is refused by the expansion bound with the structured 400 and zero writes; the research-measured 480-char bomb (~1.5 s unguarded on this checkout, vs ~2 ms guarded) and deeper chains measured in the tens of seconds complete in bounded time instead of exhausting CPU.
   4. The merge fix and the bound ship together — there is no intermediate state where merges validate but expansion is unbounded; the strict 4-key `extra="forbid"` schema still governs the result and the structured-body contract is unchanged.
 
-**Plans:** 3/3 plans executed
+**Plans:** 3/3 plans complete
 
 **Wave 1** (no dependencies)
 - [x] 17-01-PLAN.md — Tracer: valid merge document accepted end-to-end, merge bomb refused (PIPE-04, PIPE-05)
@@ -206,7 +206,7 @@ Phases execute in numeric order: 17 → 18 → 19 → 20 → 21 → 22 → 23 �
 
 | Phase | Plans Complete | Status | Completed |
 |-------|----------------|--------|-----------|
-| 17. YAML merge-key acceptance | 3/3 | In Progress|  |
+| 17. YAML merge-key acceptance | 3/3 | Complete    | 2026-10-14 |
 | 18. Reader-route honesty | 0/TBD | Not started | - |
 | 19. Unsaved-changes guard | 0/TBD | Not started | - |
 | 20. MAIL-02 signup mail | 0/TBD | Not started | - |

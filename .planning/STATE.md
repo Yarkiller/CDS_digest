@@ -2,20 +2,20 @@
 gsd_state_version: "1.0"
 milestone: v1.3
 milestone_name: Live mail, scheduled ingestion & backlog debt
-current_phase: 17
-current_phase_name: YAML merge-key acceptance in the strict validator
-status: executing
-stopped_at: Completed 17-03-PLAN.md
-last_updated: "2026-10-14T13:30:48.939Z"
+current_phase: 18
+current_phase_name: Reader-route honesty for draft materials
+status: planning
+stopped_at: Phase 17 complete, ready to plan Phase 18
+last_updated: "2026-10-14T13:44:39.523Z"
 last_activity: 2026-10-14
-last_activity_desc: Phase 17 execution started
-state_head: 96046456e62240a1e48f603e72bec77798758594
+last_activity_desc: Phase 17 complete, transitioned to Phase 18
+state_head: ca1860bc37b6dd1d200109231c688b652da569ec
 progress:
   total_phases: 8
-  completed_phases: 0
+  completed_phases: 1
   total_plans: 3
   completed_plans: 3
-  percent: 0
+  percent: 13
 ---
 
 # Project State
@@ -29,17 +29,17 @@ See: .planning/PROJECT.md (updated 2026-10-14 — after v1.3 milestone start)
 
 ## Current Position
 
-Phase: 17 (YAML merge-key acceptance in the strict validator) — EXECUTING
-Plan: 3 of 3 (17-01, 17-02 and the 17-03 gap-closure plan all executed)
-Status: All 3 plans executed — CR-01 gap closed and WR-01 repaired; ready for `/gsd-verify-work 17`
-Last activity: 2026-10-14 — Phase 17 gap-closure plan 17-03 executed
+Phase: 18 — Reader-route honesty for draft materials
+Plan: Not started
+Status: Ready to plan
+Last activity: 2026-10-14 — Phase 17 complete, transitioned to Phase 18
 
-Progress: [░░░░░░░░░░] 0%
+Progress: [█░░░░░░░░░] 13%
 
 ## Performance Metrics
 
 **Velocity:**
-- Total plans completed: 26 (40 v1 + 23 v1.1 + 26 v1.2)
+- Total plans completed: 3 (40 v1 + 23 v1.1 + 26 v1.2)
 - Prior milestones shipped: v1 (5 phases), v1.1 (6 phases), v1.2 (5 phases)
 - v1.3 plans completed: 0
 
@@ -55,6 +55,7 @@ Progress: [░░░░░░░░░░] 0%
 | 22. Admin nav grouping | 0/? | not started | - |
 | 23. Ingest sources | 0/? | not started | - |
 | 24. Scheduled ingestion | 0/? | not started | - |
+| 17 | 3 | - | - |
 **Per-Plan Metrics:**
 
 | Plan | Duration | Tasks | Files |
@@ -122,7 +123,7 @@ Carried product deferrals beyond v1.3: leaderboard, quiz, Whisper/Foundry ASR, i
 ## Session Continuity
 
 Last session: 2026-10-14T13:30:48.873Z
-Stopped at: Completed 17-03-PLAN.md
+Stopped at: Phase 17 complete, ready to plan Phase 18
 Resume file: None
 Next: `/gsd-execute-phase 17`
 
