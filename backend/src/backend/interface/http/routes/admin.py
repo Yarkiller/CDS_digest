@@ -4,11 +4,12 @@ from __future__ import annotations
 
 from datetime import datetime
 
-from fastapi import APIRouter, Depends, HTTPException, Request, status
+from fastapi import APIRouter, Depends, HTTPException, Path, Request, Response, status
 from fastapi.responses import JSONResponse
 from pydantic import BaseModel, ConfigDict, Field
 
 from backend.application.use_cases.get_admin_shortlist import get_admin_shortlist
+from backend.application.use_cases.get_material_for_preview import get_material_for_preview
 from backend.application.use_cases.mark_material_ready import (
     mark_material_ready,
     mark_materials_ready,
@@ -37,8 +38,10 @@ from backend.domain.errors import (
     PipelineConfigValidationError,
     ShortlistNotFoundError,
 )
+from backend.domain.material import Material
 from backend.domain.shortlist import AdminShortlist
 from backend.interface.http.deps import require_admin
+from backend.interface.http.routes.materials import MaterialReaderResponse, _SLUG_PATTERN
 
 router = APIRouter(prefix="/admin", tags=["admin"])
 
@@ -269,6 +272,27 @@ def _to_response(dto: AdminShortlist) -> AdminShortlistResponse:
     )
 
 
+def _to_preview_response(material: Material) -> MaterialReaderResponse:
+    """Build the preview payload from the reader DTO (D-02).
+
+    D-08: `tags`/`related` ship empty so no unpublished taxonomy or neighbour leaks —
+    deliberately omitted, not filtered (the reader's `_related_ready` stays the reader's).
+    `editor` is left to the DTO default so the payload stays byte-shaped like the reader's.
+    """
+    return MaterialReaderResponse(
+        slug=material.slug,
+        title=material.title,
+        dek=material.dek,
+        body_markdown=material.body_markdown,
+        format=material.format,
+        provenance=material.provenance_label,
+        tags=[],
+        related=[],
+        reading_minutes=material.reading_minutes,
+        published_at=material.published_at,
+    )
+
+
 @router.post(
     "/materials/ready",
     response_model=MarkReadyBatchResponse,
@@ -329,6 +353,39 @@ def post_material_ready(
             detail="materials_unavailable",
         ) from exc
     return MarkReadyResponse(material_id=material.id, status=material.status.value)
+
+
+@router.get(
+    "/materials/{slug}",
+    response_model=MaterialReaderResponse,
+    summary="Draft material preview for admins",
+    description=(
+        "Admin-gated preview of a draft material in the reader DTO shape (D-01/D-02, ADUX-07). "
+        "Draft only — every other status (unknown or ready) answers 404 material_not_found, so "
+        "403 comes only from the role gate and never becomes a slug-existence oracle (D-03/D-04/"
+        "D-12). Requires profiles.role=admin. Response is served non-cacheable (D-07)."
+    ),
+)
+def read_material_preview(
+    request: Request,
+    response: Response,
+    slug: str = Path(..., pattern=_SLUG_PATTERN),
+    _admin: CurrentUser = Depends(require_admin),
+) -> MaterialReaderResponse:
+    materials = _require_materials(request)
+    try:
+        material = get_material_for_preview(materials, slug)
+    except MaterialNotFoundError as exc:
+        raise HTTPException(
+            status_code=status.HTTP_404_NOT_FOUND,
+            detail="material_not_found",
+        ) from exc
+    except PersistenceError as exc:
+        raise HTTPException(
+            status_code=status.HTTP_503_SERVICE_UNAVAILABLE,
+            detail="materials_unavailable",
+        ) from exc
+    return _to_preview_response(material)
 
 
 @router.get(
