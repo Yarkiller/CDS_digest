@@ -78,6 +78,14 @@ export default function MaterialPage({ preview = false, loadMaterial }) {
     let cancelled = false
     setStatus('loading')
     setNotFound(false)
+    // CR-01: `redirectToReader` is read by an early return that is not guarded by `preview`,
+    // and this instance is reused across the /admin/materials/:id -> /materials/:id handoff
+    // the flag itself triggers. A stale `true` therefore re-renders <Navigate> to the URL we
+    // are already on — i.e. nothing — and wedges every later in-app navigation until a full
+    // reload. `forbidden` is the same defect class (WR-01), latent only while no
+    // preview->preview link exists.
+    setRedirectToReader(false)
+    setForbidden(false)
 
     loader(slug)
       .then((dto) => {
