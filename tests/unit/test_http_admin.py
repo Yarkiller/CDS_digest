@@ -1219,3 +1219,59 @@ def test_admin_material_preview_draft_returns_200_reader_dto() -> None:
     assert body["related"] == []
     # DTO default byline, not a re-typed literal
     assert body["editor"] == EDITOR_BYLINE
+
+
+def test_admin_material_preview_employee_returns_403() -> None:
+    """D-03: 403 comes only from require_admin (the DB-role gate), never from the slug lookup."""
+    draft = _material(slug="secret-draft", status=MaterialStatus.DRAFT)
+    client, headers, _container = _preview_env([draft], role="employee")
+
+    response = client.get("/admin/materials/secret-draft", headers=headers)
+
+    assert response.status_code == 403
+    assert response.json()["detail"] == "forbidden"
+
+
+def test_admin_material_preview_anonymous_returns_401() -> None:
+    """D-03: no Bearer token → 401 from the auth dependency, before any slug lookup."""
+    draft = _material(slug="secret-draft", status=MaterialStatus.DRAFT)
+    client, _headers, _container = _preview_env([draft])
+
+    response = client.get("/admin/materials/secret-draft")
+
+    assert response.status_code == 401
+
+
+def test_admin_material_preview_unknown_slug_returns_404() -> None:
+    """D-04/D-12: unknown slug for an admin → 404 material_not_found, never 403."""
+    client, headers, _container = _preview_env([])
+
+    response = client.get("/admin/materials/does-not-exist", headers=headers)
+
+    assert response.status_code == 404
+    assert response.json()["detail"] == "material_not_found"
+
+
+def test_admin_material_preview_ready_slug_returns_404() -> None:
+    """D-04/D-12: a ready slug is not previewable — 404, never a 3xx redirect and never 403."""
+    ready = _material(slug="rag-systems", status=MaterialStatus.READY)
+    client, headers, _container = _preview_env([ready])
+
+    response = client.get("/admin/materials/rag-systems", headers=headers)
+
+    assert response.status_code == 404
+    assert response.json()["detail"] == "material_not_found"
+
+
+def test_admin_material_preview_outcomes_are_status_driven() -> None:
+    """D-04/D-12: with a draft and a ready material present, the outcome follows status."""
+    draft = _material(slug="secret-draft", status=MaterialStatus.DRAFT, material_id=1)
+    ready = _material(slug="rag-systems", status=MaterialStatus.READY, material_id=2)
+    client, headers, _container = _preview_env([draft, ready])
+
+    draft_response = client.get("/admin/materials/secret-draft", headers=headers)
+    ready_response = client.get("/admin/materials/rag-systems", headers=headers)
+
+    assert draft_response.status_code == 200
+    assert ready_response.status_code == 404
+    assert ready_response.json()["detail"] == "material_not_found"

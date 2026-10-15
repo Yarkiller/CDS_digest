@@ -15,6 +15,7 @@ from jwt.algorithms import ECAlgorithm
 
 from backend.composition.container import build_in_memory_container
 from backend.composition.settings import Settings
+from backend.domain.current_user import CurrentUser
 from backend.domain.material import Material, MaterialStatus
 from backend.interface.http.app import create_app
 
@@ -98,6 +99,29 @@ def _client(
     return TestClient(app)
 
 
+def _client_and_container(
+    signing_jwk: dict[str, Any],
+    materials: list[Material] | None = None,
+) -> tuple[TestClient, Any]:
+    """Mirror of `_client` that also hands back the container (to seed a profile)."""
+    settings = Settings(
+        api_cors_origins="http://127.0.0.1:5173",
+        allowed_email_domains="@sberbank.ru,@omega.sbrf.ru",
+        supabase_url="",
+        supabase_publishable_key="",
+        supabase_secret_key="",
+        supabase_jwks_url="https://unused.example/jwks.json",
+        supabase_jwt_issuer=ISSUER,
+    )
+    container = build_in_memory_container(materials=materials)
+    app = create_app(
+        settings,
+        container=container,
+        signing_key_resolver=lambda _token: signing_jwk,
+    )
+    return TestClient(app), container
+
+
 def test_materials_by_slug_without_authorization_returns_401() -> None:
     private_key = ec.generate_private_key(ec.SECP256R1())
     client = _client(_public_jwk(private_key))
@@ -176,3 +200,24 @@ def test_materials_ready_rag_systems_returns_200_with_body_markdown() -> None:
     assert body["related"] == [
         {"slug": "anomaly-detection", "title": "Anomaly Detection in Audit Pipelines"}
     ]
+
+
+def test_materials_draft_slug_returns_404_for_admin_token_too() -> None:
+    """T-18-01: the reader route has no role branch — an admin token still gets the opaque 404."""
+    private_key = ec.generate_private_key(ec.SECP256R1())
+    jwk = _public_jwk(private_key)
+    draft = _material(slug="secret-draft", status=MaterialStatus.DRAFT)
+    client, container = _client_and_container(jwk, [draft])
+    container.profiles._by_id["user-uuid-1"] = CurrentUser(
+        id="user-uuid-1",
+        email="alice@sberbank.ru",
+        role="admin",
+        display_name=None,
+    )
+    token = _mint(private_key, email="alice@sberbank.ru")
+    response = client.get(
+        "/materials/secret-draft",
+        headers={"Authorization": f"Bearer {token}"},
+    )
+    assert response.status_code == 404
+    assert response.json()["detail"] == "material_not_found"
