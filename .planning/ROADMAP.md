@@ -105,7 +105,17 @@ Backlog tech debt comes first (lowest blast radius first), then mail, then inges
   3. A draft preview response is served `no-store`, carries a visible preview marker, and exposes no `related`/`tags` of unpublished material.
   4. The admin shortlist and email-preview links target the admin preview surface, and the email-preview CTA navigates the top-level app rather than being trapped inside the `sandbox=""` iframe.
 
-**Plans**: TBD
+**Plans:** 3 plans
+
+**Wave 1** — backend preview surface (ADUX-07, ADUX-08):
+- [ ] `18-01-PLAN.md` — Tracer slice + gate/non-draft outcomes + `no-store`/empty-relations/read-only edge contract
+
+**Wave 2** — SPA preview rendering (ADUX-07, ADUX-08), depends on 18-01:
+- [ ] `18-02-PLAN.md` — Tracer slice for the reader rendering with draft banner + client-side `NOT_FOUND` redirect + `ForbiddenPage` mapping
+
+**Wave 3** — link honesty and sandbox escape (ADUX-08), depends on 18-02:
+- [ ] `18-03-PLAN.md` — Email-preview CTA escapes the sandbox + admin shortlist link repointed at the preview surface
+
 **Tripwires**: `test_materials_draft_slug_returns_404_not_403` → **PRESERVE** (the current ready-only contract must stay). RED test must be a pytest HTTP test — `VITE_USE_MOCKS=true` makes draft-404 structurally unreproducible in the browser suite (mock materials have no `status`).
 
 ### Phase 19: Unsaved-changes guard for the pipeline editor
