@@ -221,3 +221,18 @@ def test_materials_draft_slug_returns_404_for_admin_token_too() -> None:
     )
     assert response.status_code == 404
     assert response.json()["detail"] == "material_not_found"
+
+
+def test_materials_ready_response_is_not_no_store() -> None:
+    """D-07: the reader response's caching contract is untouched — no no-store."""
+    private_key = ec.generate_private_key(ec.SECP256R1())
+    jwk = _public_jwk(private_key)
+    ready = _material(slug="rag-systems", status=MaterialStatus.READY)
+    client = _client(jwk, materials=[ready])
+    token = _mint(private_key, email="alice@sberbank.ru")
+    response = client.get(
+        "/materials/rag-systems",
+        headers={"Authorization": f"Bearer {token}"},
+    )
+    assert response.status_code == 200
+    assert "no-store" not in (response.headers.get("cache-control") or "")

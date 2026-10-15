@@ -1275,3 +1275,63 @@ def test_admin_material_preview_outcomes_are_status_driven() -> None:
     assert draft_response.status_code == 200
     assert ready_response.status_code == 404
     assert ready_response.json()["detail"] == "material_not_found"
+
+
+def test_admin_material_preview_draft_has_no_store() -> None:
+    """D-07: only the draft preview response carries Cache-Control: no-store."""
+    draft = _material(slug="secret-draft", status=MaterialStatus.DRAFT)
+    client, headers, _container = _preview_env([draft])
+
+    response = client.get("/admin/materials/secret-draft", headers=headers)
+
+    assert response.status_code == 200
+    assert response.headers.get("cache-control") == "no-store"
+
+
+def test_admin_material_preview_repeat_is_identical_and_writes_nothing() -> None:
+    """Idempotency (D-08): a repeat read is byte-identical and leaves the material untouched."""
+    draft = _material(slug="secret-draft", status=MaterialStatus.DRAFT)
+    client, headers, container = _preview_env([draft])
+    before = container.materials.get_by_slug("secret-draft")
+    before_snapshot = (before.status, before.body_markdown, before.updated_at)
+
+    first = client.get("/admin/materials/secret-draft", headers=headers)
+    second = client.get("/admin/materials/secret-draft", headers=headers)
+
+    assert first.status_code == 200
+    assert second.status_code == 200
+    assert first.json() == second.json()
+    assert first.json()["tags"] == [] and first.json()["related"] == []
+    assert second.json()["tags"] == [] and second.json()["related"] == []
+    after = container.materials.get_by_slug("secret-draft")
+    assert (after.status, after.body_markdown, after.updated_at) == before_snapshot
+
+
+def test_admin_material_preview_malformed_slug_never_succeeds() -> None:
+    """Edge: a slug violating _SLUG_PATTERN is refused at validation — never 200 and never 403."""
+    draft = _material(slug="secret-draft", status=MaterialStatus.DRAFT)
+    client, headers, _container = _preview_env([draft])
+
+    for path in (
+        "/admin/materials/--bad--",
+        "/admin/materials/",
+        "/admin/materials/Привет-мир",
+    ):
+        response = client.get(path, headers=headers)
+        assert response.status_code in (404, 422)
+        assert response.status_code not in (200, 403)
+        assert response.json().get("detail") != "forbidden"
+
+
+def test_admin_material_preview_slug_key_parity_with_reader() -> None:
+    """D-02: the preview payload's key set equals the reader DTO's shape oracle."""
+    ready = _material(slug="rag-systems", status=MaterialStatus.READY, material_id=1)
+    draft = _material(slug="secret-draft", status=MaterialStatus.DRAFT, material_id=2)
+    client, headers, _container = _preview_env([ready, draft])
+
+    reader_response = client.get("/materials/rag-systems", headers=headers)
+    preview_response = client.get("/admin/materials/secret-draft", headers=headers)
+
+    assert reader_response.status_code == 200
+    assert preview_response.status_code == 200
+    assert set(preview_response.json().keys()) == set(reader_response.json().keys())
