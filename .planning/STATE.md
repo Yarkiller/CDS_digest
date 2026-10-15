@@ -4,12 +4,12 @@ milestone: v1.3
 milestone_name: Live mail, scheduled ingestion & backlog debt
 current_phase: 18
 current_phase_name: Reader-route honesty for draft materials
-status: verifying
+status: executing
 stopped_at: Completed 18-03-PLAN.md
-last_updated: "2026-10-15T11:52:33.969Z"
+last_updated: "2026-10-15T11:56:54.776Z"
 last_activity: 2026-10-15
 last_activity_desc: Phase 18 execution started
-state_head: ec451255371ae931ca8c3ff4fef658037720b1a2
+state_head: 26cae6873dd01b567732c6b4965dd01ccbb86b32
 progress:
   total_phases: 8
   completed_phases: 1
@@ -30,8 +30,8 @@ See: .planning/PROJECT.md (updated 2026-10-14 — after v1.3 milestone start)
 ## Current Position
 
 Phase: 18 (Reader-route honesty for draft materials) — EXECUTING
-Plan: 3 of 3
-Status: Phase complete — ready for verification
+Plan: 1 of 3
+Status: Executing Phase 18
 Last activity: 2026-10-15 — Phase 18 execution started
 
 Progress: [█░░░░░░░░░] 13%
