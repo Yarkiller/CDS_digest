@@ -466,22 +466,29 @@ def _approved_ready(items: tuple[ShortlistItem, ...]) -> list[ShortlistItem]:
 | A2 | Adding `allow-popups allow-popups-to-escape-sandbox` to the email-preview iframe is acceptable security-wise for backend-rendered, `html.escape`d markup | Pitfall 2, Security Domain | A widened sandbox on an escaped-HTML document; MDN warns sandboxing is void if content can be opened outside the frame, hence the explicit `_blank`-plus-tokens design |
 | A3 | `README`/docs need no update for this phase (no runbook/ops surface is touched) | — | Docs drift; low impact |
 
-## Open Questions
+## Open Questions (RESOLVED)
 
-1. **What exactly does D-09 repoint, given the email renderer is shared with the real digest send?**
+> All three questions below were settled by developer decision at the plan-time checkpoint.
+> The recommendations are kept verbatim as history; each item now carries its resolving decision.
+> Resolutions: Q1 → **D-11**, Q2 → **D-12**, Q3 → **D-03**.
+
+1. **What exactly does D-09 repoint, given the email renderer is shared with the real digest send?** — **RESOLVED by D-11**
    - **What we know:** the email-preview pool is `approved ∩ ready` (`preview_digest_email.py:47-54`), so **no draft can ever appear in the email preview**; today its links already resolve on the reader route. The email HTML builder `render_email_html` is shared by preview *and* send (`send_digest.py:171`), its href is `{base}/materials/{slug}` (`email_render.py:46-47`), and `test_preview_email_html_matches_send_html` (`test_preview_digest.py:413`) asserts `send_html == preview.html`. The draft-404 that motivates the phase lives in the **shortlist modal** link (`AdminDigestPage.jsx:996`), not in the email.
    - **What is unclear:** whether ADUX-08's "email-preview links target the admin preview surface" requires the *href* to change (which would put admin URLs into the real mail that ordinary readers receive, and/or break the D-12 preview≡send parity) or whether the intent is criterion 4's other half — "the email-preview CTA navigates the top-level app rather than being trapped inside the `sandbox=""` iframe".
    - **Recommendation:** satisfy criterion 4's *behavioural* requirement without regressing the real mail: (a) repoint the **shortlist** link to the admin preview route (D-10, unambiguous, fixes the drafts-404 defect); (b) for the email HTML keep `{base}/materials/{slug}` for both paths, add `target="_blank" rel="noopener noreferrer"` to the anchor, and amend the iframe to `sandbox="allow-popups allow-popups-to-escape-sandbox"`. If the user insists on admin URLs inside the email preview, then the link base must become a parameter threaded from `preview_digest_email` only, and `test_preview_email_html_matches_send_html` + the `test_email_render.py` href assertions must be consciously amended — a shipped-invariant change that should be confirmed before planning, not during execution.
+   - **Resolution (D-11):** the recommendation was adopted verbatim. The email `href` stays `{base}/materials/{slug}` for BOTH the preview and the real send; the anchor gains `target="_blank" rel="noopener noreferrer"`; the email-preview iframe becomes `sandbox="allow-popups allow-popups-to-escape-sandbox"` with `allow-scripts` and `allow-same-origin` deliberately left OFF. `test_preview_email_html_matches_send_html` and the `test_email_render.py` href assertions are **PRESERVED**, not amended. The rejected alternative — repointing the href, which would put admin URLs into mail ordinary readers receive and break preview≡send parity — is explicitly blocked. Only the admin shortlist link is repointed (D-10). Planned in `18-03-PLAN.md` T1/T2.
 
-2. **Which layer owns D-05's `ready` → reader-route redirect?**
+2. **Which layer owns D-05's `ready` → reader-route redirect?** — **RESOLVED by D-12**
    - **What we know:** the reader DTO has no `status` field (`materials.py:29-43`), so the payload cannot express "this is ready, go elsewhere". D-04 says the endpoint has "no preview-specific success path for any other status"; D-05 says the preview redirects. The layer is not named; D-05's reversibility note only requires that "redirect behaviour lives in one place".
    - **What is unclear:** backend HTTP 307 vs. client-side navigation, and — for `ready` — whether the new endpoint 404s (D-04 literal) or 307s.
    - **Recommendation (prescriptive):** implement it **client-side**, with the endpoint serving drafts only (`DRAFT` → 200; anything else → 404 `material_not_found`). The SPA preview page treats `NOT_FOUND` as "not a previewable draft" and issues `<Navigate to={/materials/${slug}} replace />`, which arrives at the reader route (D-05's stated outcome) and shows no draft marker. Rationale: one request, no HTTP-redirect opacity (Pitfall 6 / A1), D-04 honoured literally, deterministic in pytest (endpoint 404 + reader 200/404) and reproducible under mocks in Playwright. The alternative — a backend `RedirectResponse(url=f"{site_url}/materials/{slug}", status_code=307)` — is the literal reading of "redirects", but it requires `follow_redirects=False` in pytest, `redirect: 'manual'` plus opaque-redirect handling in the service, and a mock-level 3xx emulation for the browser suite.
+   - **Resolution (D-12):** the client-side recommendation was adopted. The endpoint serves drafts only — `DRAFT` → 200, any other status → 404 `material_not_found` — and the SPA preview page maps `NOT_FOUND` → `<Navigate to={/materials/${slug}} replace />`. **No backend 307**, therefore no `follow_redirects=False` in pytest and no opaque-redirect handling in the service layer. Planned in `18-01-PLAN.md` T1/T2 (endpoint) and `18-02-PLAN.md` T2 (client redirect). The 307 alternative is rejected.
 
-3. **Does the new preview route need its own role pre-check in the SPA?**
+3. **Does the new preview route need its own role pre-check in the SPA?** — **RESOLVED by D-03**
    - **What we know:** `AdminDigestPage` pre-checks via `fetchMe` and renders `ForbiddenPage` on `UNAUTHORIZED`/`FORBIDDEN`; the backend gate is the real control (D-03).
    - **What is unclear:** whether the preview page should duplicate that pre-check or simply map the endpoint's 403 through the existing `AdminApiError` `FORBIDDEN` mapping (`adminApi.js:217-218`) to `ForbiddenPage`.
    - **Recommendation:** map the endpoint's 403 → `ForbiddenPage`; skip the extra `fetchMe` round trip. The backend remains the single authorization authority (D-03), which is also the honest reading of "an ordinary reader gets an opaque 404" — a non-admin hitting the preview route must not be told whether the slug exists.
+   - **Resolution (D-03):** the recommendation was adopted — the SPA maps the endpoint's 403 → `ForbiddenPage` and performs no `/me` pre-check and no local slug lookup, so an ordinary reader cannot distinguish an existing slug from a nonexistent one. Planned in `18-02-PLAN.md` T3.
 
 ## Environment Availability
 
@@ -523,7 +530,7 @@ def _approved_ready(items: tuple[ShortlistItem, ...]) -> list[ShortlistItem]:
 | ADUX-07 | `get_material_for_preview` draft-only semantics against an in-memory fake; `MaterialNotFoundError` on `READY`/missing | unit (use case) | `uv run pytest tests/unit/test_get_material_for_preview.py -x` | ❌ Wave 0 |
 | ADUX-08 | Draft preview response carries `Cache-Control: no-store`; the reader response does **not** | unit (HTTP) | same admin file | ❌ Wave 0 |
 | ADUX-08 | Draft preview payload has `tags == []` and `related == []`, with the same keys as the reader DTO | unit (HTTP) | same admin file | ❌ Wave 0 |
-| ADUX-08 | Ready slug on the preview endpoint → 404 (recommended variant) **or** 307 + `Location` (alternative) | unit (HTTP) | same admin file, `follow_redirects=False` if 307 | ❌ Wave 0 |
+| ADUX-08 | Ready slug on the preview endpoint → 404 `material_not_found` (D-12: no 307 variant) | unit (HTTP) | same admin file | ❌ Wave 0 |
 | ADUX-08 | SPA: shortlist «Открыть материал →» targets `/admin/materials/{slug}` | e2e (Playwright) | `npm run test:web -- tests/admin.spec.js -g "Открыть материал"` | ✅ exists — **AMEND** `:816-821` |
 | ADUX-08 | SPA: preview route shows the draft banner + `material-prose`, and `material-tags`/`material-related` have count 0 | e2e (Playwright) | `npm run test:web -- tests/admin.spec.js -g "предпросмотр"` | ❌ Wave 0 |
 | ADUX-08 | Email-preview CTA escapes the iframe (new tab) | e2e (Playwright) | `npm run test:web -- tests/admin.spec.js -g "email-preview"` | ❌ Wave 0 after the sandbox amend; three `sandbox=""` asserts **AMEND** `:407,:690,:713` |
@@ -539,7 +546,7 @@ def _approved_ready(items: tuple[ShortlistItem, ...]) -> list[ShortlistItem]:
 
 - [ ] `backend/tests_support/in_memory.py` — no change needed (`InMemoryMaterialRepository.get_by_slug` already returns materials at any status; `backend/src/backend/tests_support/in_memory.py:339-340`), but the admin HTTP fixtures (`_admin_client_with_batch`, `_seed_profile`, `_mint`) live in `tests/unit/test_http_admin.py` and should be reused rather than reinvented.
 - [ ] `tests/unit/test_get_material_for_preview.py` — draft-only use-case semantics (ADUX-07).
-- [ ] `tests/unit/test_http_admin.py` — new preview route cases: 200 draft + `no-store` + empty `tags`/`related`; 403 employee; 401 anonymous; 404 unknown; 404/307 ready.
+- [ ] `tests/unit/test_http_admin.py` — new preview route cases: 200 draft + `no-store` + empty `tags`/`related`; 403 employee; 401 anonymous; 404 unknown; 404 ready.
 - [ ] `tests/unit/test_http_materials.py` — add the admin-token reader-route 404 case (proves no role branch on the reader route) **without touching** `test_materials_draft_slug_returns_404_not_403`.
 - [ ] `tests/admin.spec.js` — new preview-route spec; **amend** the shortlist href assert and the three `sandbox=""` asserts.
 - [ ] Mock layer: the preview fetch must be mockable (`adminApi.js` mock branch) so the SPA banner is Playwright-reproducible; note that `web/src/data/mock.js` materials have no `status`, so the mock branch must not attempt a status decision.
