@@ -1182,5 +1182,19 @@ test.describe("Admin Digest — предпросмотр черновика в �
     // D-08: empty payload arrays + the pre-existing length>0 gates hide both blocks.
     await expect(page.getByTestId("material-tags")).toHaveCount(0);
     await expect(page.getByTestId("material-related")).toHaveCount(0);
+    await expect(
+      page.getByRole("heading", { name: "Связанные материалы" }),
+    ).toHaveCount(0);
+  });
+
+  test("ready-материал уходит на читательский маршрут без баннера", async ({ page }) => {
+    await gotoAsRole(page, "admin", "/admin/materials/building-production-rag-systems");
+
+    // Host-anchored: /admin/materials/{slug} also *ends* with /materials/{slug},
+    // so a bare trailing-path regex would pass without any redirect happening.
+    await expect(page).toHaveURL(
+      /^https?:\/\/[^/]+\/materials\/building-production-rag-systems$/,
+    );
+    await expect(page.getByTestId("material-preview-banner")).toHaveCount(0);
   });
 });
