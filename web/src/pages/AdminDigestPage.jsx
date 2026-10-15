@@ -995,7 +995,7 @@ function AdminItemPreview({ item, onClose }) {
           )}
           {slug ? (
             <Link
-              to={`/materials/${slug}`}
+              to={`/admin/materials/${slug}`}
               className="mt-6 inline-flex min-h-11 items-center font-medium text-accent hover:underline"
             >
               Открыть материал →
