@@ -19,6 +19,7 @@ from backend.domain.errors import PersistenceError
 from backend.domain.material import Material, MaterialStatus
 from backend.domain.shortlist import ShortlistBatch, ShortlistItem
 from backend.interface.http.app import create_app
+from backend.interface.http.routes.materials import EDITOR_BYLINE
 from backend.tests_support.in_memory import InMemoryShortlistRepository
 
 
@@ -1126,3 +1127,95 @@ def test_admin_mark_ready_batch_employee_returns_403() -> None:
 
     assert response.status_code == 403
     assert response.json()["detail"] == "forbidden"
+
+
+def _material(
+    *,
+    slug: str,
+    status: MaterialStatus,
+    material_id: int = 1,
+    related: tuple[str, ...] = (),
+    title: str = "Draft preview article",
+) -> Material:
+    now = datetime(2026, 3, 20, tzinfo=timezone.utc)
+    return Material(
+        id=material_id,
+        slug=slug,
+        title=title,
+        dek="Preview dek",
+        body_markdown="## Draft\n\nDraft body.",
+        format="статья",
+        status=status,
+        reading_minutes=8,
+        provenance_label="внешний текстовый источник",
+        source_id=None,
+        roles=("ds",),
+        tags=(("RAG", "rag"), ("LLM", "llm")),
+        related_material_ids=related,
+        published_at=now if status == MaterialStatus.READY else None,
+        created_at=now,
+        updated_at=now,
+    )
+
+
+def _preview_env(
+    materials: list[Material],
+    *,
+    role: str = "admin",
+) -> tuple[TestClient, dict[str, str], AppContainer]:
+    private_key = ec.generate_private_key(ec.SECP256R1())
+    jwk = _public_jwk(private_key)
+    container = build_in_memory_container(materials=materials)
+    _seed_profile(
+        container,
+        user_id="admin-uuid-1",
+        email="admin@sberbank.ru",
+        role=role,
+    )
+    client = _client(jwk, container)
+    token = _mint(private_key, email="admin@sberbank.ru", sub="admin-uuid-1")
+    return client, {"Authorization": f"Bearer {token}"}, container
+
+
+def test_admin_material_preview_draft_returns_200_reader_dto() -> None:
+    """D-01/D-02/D-04/D-08/D-12: admin reads a draft; reader DTO shape, empty tags/related."""
+    related_ready = _material(
+        slug="anomaly-detection",
+        status=MaterialStatus.READY,
+        material_id=2,
+        title="Anomaly Detection",
+    )
+    draft = _material(
+        slug="secret-draft",
+        status=MaterialStatus.DRAFT,
+        related=("2",),
+    )
+    client, headers, _container = _preview_env([draft, related_ready])
+
+    response = client.get("/admin/materials/secret-draft", headers=headers)
+
+    assert response.status_code == 200
+    body = response.json()
+    assert body["slug"] == "secret-draft"
+    # D-02: byte-shaped like the reader DTO — exact key set, no `status` key anywhere
+    assert set(body.keys()) == {
+        "slug",
+        "title",
+        "dek",
+        "body_markdown",
+        "format",
+        "provenance",
+        "tags",
+        "related",
+        "reading_minutes",
+        "published_at",
+        "editor",
+    }
+    assert "status" not in body
+    # D-04 literal: the draft's own body really is served
+    assert body["body_markdown"] == "## Draft\n\nDraft body."
+    # D-08: no unpublished relations/taxonomy — even though a ready target resolves
+    assert body["tags"] == []
+    assert body["related"] == []
+    # DTO default byline, not a re-typed literal
+    assert body["editor"] == EDITOR_BYLINE
