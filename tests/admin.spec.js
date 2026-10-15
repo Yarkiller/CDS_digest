@@ -866,10 +866,44 @@ test.describe("Admin Digest — material preview honesty (ADUX-01, D-04…D-06)"
     await expect(readerLink).toBeVisible();
     await expect(readerLink).toHaveAttribute(
       "href",
-      "/materials/building-production-rag-systems",
+      "/admin/materials/building-production-rag-systems",
     );
     await expect(dialog.getByRole("button", { name: "Закрыть", exact: true })).toBeVisible();
     expect(materialByIdHits).toEqual([]);
+  });
+
+  test("черновик: «Открыть материал →» ведёт на админ-предпросмотр, а не на читательский 404", async ({
+    page,
+  }) => {
+    // Backlog 999.1: this is the row whose «Открыть материал →» used to land on the
+    // reader route's «Материал не найден». Row 104 is the draft seed — deliberately
+    // NOT `.first()`, which is the ready row 101.
+    await gotoAsRole(page, "admin", "/admin/digest");
+
+    const draftRow = page
+      .getByTestId("admin-shortlist-row")
+      .filter({ hasText: "SQL Dashboards for Audit Reporting" });
+    await expect(draftRow).toHaveCount(1);
+    await draftRow.getByRole("button", { name: "Превью материала" }).click();
+
+    const dialog = page.getByRole("dialog").filter({
+      has: page.getByRole("heading", { name: "Превью материала", exact: true }),
+    });
+    await expect(dialog).toBeVisible();
+    await expect(dialog.getByText("SQL Dashboards for Audit Reporting")).toBeVisible();
+
+    const previewLink = dialog.getByRole("link", { name: "Открыть материал →" });
+    await expect(previewLink).toHaveAttribute(
+      "href",
+      "/admin/materials/sql-dashboards-for-audit-reporting",
+    );
+    await previewLink.click();
+
+    await expect(page).toHaveURL(
+      /\/admin\/materials\/sql-dashboards-for-audit-reporting$/,
+    );
+    await expect(page.getByTestId("material-preview-banner")).toBeVisible();
+    await expect(page.getByText("Материал не найден")).toHaveCount(0);
   });
 
   test("material preview empty body shows Текст материала недоступен without toast", async ({
