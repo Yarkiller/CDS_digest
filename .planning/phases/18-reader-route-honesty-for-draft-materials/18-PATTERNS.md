@@ -144,7 +144,7 @@ def read_material_preview(
     except PersistenceError as exc:
         raise HTTPException(status_code=503, detail="materials_unavailable") from exc
     response.headers["Cache-Control"] = "no-store"
-    return _to_preview_response(materials, material)
+    return _to_preview_response(material)
 ```
 - `_SLUG_PATTERN = r"^[a-zA-Z0-9]+(?:-[a-zA-Z0-9]+)*$"` is defined once at `routes/materials.py:18` — import it, do not re-roll.
 - `MaterialReaderResponse` (`routes/materials.py:29-43`) is reused verbatim (D-02). No `status` field.
