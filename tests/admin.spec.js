@@ -1197,4 +1197,38 @@ test.describe("Admin Digest — предпросмотр черновика в �
     );
     await expect(page.getByTestId("material-preview-banner")).toHaveCount(0);
   });
+
+  test("сотрудник на предпросмотре черновика видит Forbidden, а не 404-заглушку", async ({
+    page,
+  }) => {
+    await gotoAsRole(
+      page,
+      "employee",
+      "/admin/materials/sql-dashboards-for-audit-reporting",
+    );
+
+    await expect(page.getByTestId("forbidden-page")).toBeVisible();
+    await expect(
+      page.getByRole("heading", { name: "Недостаточно прав", exact: true }),
+    ).toBeVisible();
+    // The role gate owns the screen — no draft marker, no 404 splash.
+    await expect(page.getByTestId("material-preview-banner")).toHaveCount(0);
+    await expect(page.getByTestId("material-not-found")).toHaveCount(0);
+    await expect(page.getByTestId("service-unavailable")).toHaveCount(0);
+  });
+
+  test("сотрудник на предпросмотре неизвестного slug видит тот же Forbidden", async ({
+    page,
+  }) => {
+    await gotoAsRole(page, "employee", "/admin/materials/no-such-draft-slug");
+
+    // D-03 / T-18-08: an existing slug and a missing slug are indistinguishable —
+    // the seat-role gate fires before any slug lookup.
+    await expect(page.getByTestId("forbidden-page")).toBeVisible();
+    await expect(
+      page.getByRole("heading", { name: "Недостаточно прав", exact: true }),
+    ).toBeVisible();
+    await expect(page.getByTestId("material-not-found")).toHaveCount(0);
+    await expect(page.getByTestId("material-preview-banner")).toHaveCount(0);
+  });
 });
