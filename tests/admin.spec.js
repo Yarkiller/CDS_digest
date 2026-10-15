@@ -1279,6 +1279,37 @@ test.describe("Admin Digest — предпросмотр черновика в �
       /^https?:\/\/[^/]+\/materials\/building-production-rag-systems$/,
     );
     await expect(page.getByTestId("material-preview-banner")).toHaveCount(0);
+    // NOTE (WR-02): this test cannot observe whether the reader route actually *rendered*.
+    // `gotoAsRole` ends in `page.reload()`, and by then the client-side redirect has already
+    // moved the document to /materials/{slug} — the reload therefore loads the reader URL
+    // directly in a fresh document, and the handoff under test is never asserted. The
+    // rendered-surface proof lives in the click-path test below.
+  });
+
+  test("клик по «Открыть материал →» на готовой строке рендерит читательский маршрут, а не пустоту", async ({
+    page,
+  }) => {
+    await gotoAsRole(page, "admin", "/admin/digest");
+
+    // D-10: the repointed shortlist link is the only in-app entry into the preview surface,
+    // and it sits on ready rows as well as on the draft row.
+    const readyRow = page
+      .getByTestId("admin-shortlist-row")
+      .filter({ hasText: "Building Production RAG Systems" });
+    await readyRow.getByRole("button", { name: /Превью материала/ }).click();
+    await page.getByRole("link", { name: /Открыть материал/ }).click();
+
+    // Host-anchored: /admin/materials/{slug} also *ends* with /materials/{slug}.
+    await expect(page).toHaveURL(
+      /^https?:\/\/[^/]+\/materials\/building-production-rag-systems$/,
+    );
+
+    // CR-01: the URL is necessary but not sufficient — it also holds while the page renders
+    // nothing at all. `redirectToReader` is never reset by the effect and is read by an early
+    // return that is not guarded by `preview`, so the reused MaterialPage instance renders
+    // <Navigate to={the URL we are already on}>, i.e. null. Pin the reader surface itself:
+    // this slug is absent from the reader mock, so the honest reader surface is the reader 404.
+    await expect(page.getByTestId("material-not-found")).toBeVisible();
   });
 
   test("сотрудник на предпросмотре черновика видит Forbidden, а не 404-заглушку", async ({
