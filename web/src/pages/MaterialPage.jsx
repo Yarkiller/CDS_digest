@@ -1,11 +1,11 @@
 import { useCallback, useEffect, useState } from 'react'
 import Markdown from 'react-markdown'
-import { Link, useParams } from 'react-router-dom'
+import { Link, Navigate, useParams } from 'react-router-dom'
 import remarkGfm from 'remark-gfm'
 import rehypeSanitize from 'rehype-sanitize'
 import rehypeSlug from 'rehype-slug'
 import ServiceUnavailable from '../components/ServiceUnavailable.jsx'
-import { ContentApiError, clearFailNextContentFetch, fetchMaterial } from '../services/contentApi.js'
+import { clearFailNextContentFetch, fetchMaterial } from '../services/contentApi.js'
 import { fetchMaterialPreview } from '../services/adminApi.js'
 import { extractMarkdownHeadings } from '../utils/markdownToc.js'
 
@@ -60,6 +60,7 @@ export default function MaterialPage({ preview = false, loadMaterial }) {
   const [material, setMaterial] = useState(null)
   const [status, setStatus] = useState('loading')
   const [notFound, setNotFound] = useState(false)
+  const [redirectToReader, setRedirectToReader] = useState(false)
   const [loadKey, setLoadKey] = useState(0)
 
   // Additive injection: the reader route passes nothing, so it keeps loading
@@ -84,7 +85,15 @@ export default function MaterialPage({ preview = false, loadMaterial }) {
       })
       .catch((err) => {
         if (cancelled) return
-        if (err instanceof ContentApiError && err.code === 'NOT_FOUND') {
+        // A code check (not `instanceof`) so both the reader loader's ContentApiError
+        // and the preview loader's AdminApiError map through the same branch (D-12).
+        const code = err && typeof err === 'object' ? err.code : null
+        if (code === 'NOT_FOUND') {
+          if (preview) {
+            // Not a previewable draft — the reader route is the honest destination.
+            setRedirectToReader(true)
+            return
+          }
           setNotFound(true)
           setStatus('ready')
           return
@@ -96,6 +105,10 @@ export default function MaterialPage({ preview = false, loadMaterial }) {
       cancelled = true
     }
   }, [slug, loadKey, preview])
+
+  if (redirectToReader) {
+    return <Navigate to={`/materials/${slug}`} replace />
+  }
 
   if (status === 'loading') {
     return (
