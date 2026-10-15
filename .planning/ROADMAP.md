@@ -105,7 +105,10 @@ Backlog tech debt comes first (lowest blast radius first), then mail, then inges
   3. A draft preview response is served `no-store`, carries a visible preview marker, and exposes no `related`/`tags` of unpublished material.
   4. The admin shortlist and email-preview links target the admin preview surface, and the email-preview CTA navigates the top-level app rather than being trapped inside the `sandbox=""` iframe.
 
-**Plans:** 3 plans
+**Plans:** 1/3 plans executed
+- [x] 18-01-PLAN.md
+- [ ] 18-02-PLAN.md
+- [ ] 18-03-PLAN.md
 
 **Wave 1** — backend preview surface (ADUX-07, ADUX-08):
 - [ ] `18-01-PLAN.md` — Tracer slice + gate/non-draft outcomes + `no-store`/empty-relations/read-only edge contract
@@ -217,7 +220,7 @@ Phases execute in numeric order: 17 → 18 → 19 → 20 → 21 → 22 → 23 �
 | Phase | Plans Complete | Status | Completed |
 |-------|----------------|--------|-----------|
 | 17. YAML merge-key acceptance | 3/3 | Complete    | 2026-10-14 |
-| 18. Reader-route honesty | 0/TBD | Not started | - |
+| 18. Reader-route honesty | 1/3 | In Progress|  |
 | 19. Unsaved-changes guard | 0/TBD | Not started | - |
 | 20. MAIL-02 signup mail | 0/TBD | Not started | - |
 | 21. MAIL-01 live SMTP digest | 0/TBD | Not started | - |

@@ -5,16 +5,16 @@ milestone_name: Live mail, scheduled ingestion & backlog debt
 current_phase: 18
 current_phase_name: Reader-route honesty for draft materials
 status: executing
-stopped_at: Phase 17 complete, ready to plan Phase 18
-last_updated: "2026-10-15T06:52:01.689Z"
+stopped_at: Completed 18-01-PLAN.md
+last_updated: "2026-10-15T10:19:50.025Z"
 last_activity: 2026-10-15
-last_activity_desc: Phase 18 planning complete
-state_head: 737bca97498604293d4b07acf7a35408d4ad5883
+last_activity_desc: Phase 18 execution started
+state_head: 77398e2c1eb55abb8185c4e2a6d440f977a1b5b3
 progress:
   total_phases: 8
   completed_phases: 1
   total_plans: 6
-  completed_plans: 3
+  completed_plans: 4
   percent: 13
 ---
 
@@ -25,14 +25,14 @@ progress:
 See: .planning/PROJECT.md (updated 2026-10-14 — after v1.3 milestone start)
 
 **Core value:** Trusted weekly prepared-article issue + one honest vote toward the next разбор
-**Current focus:** Phase 18 — Reader-route honesty for draft materials (context gathered, ready to plan)
+**Current focus:** Phase 18 — Reader-route honesty for draft materials
 
 ## Current Position
 
-Phase: 18 (Reader-route honesty for draft materials) — READY TO EXECUTE
-Plan: Not started
+Phase: 18 (Reader-route honesty for draft materials) — EXECUTING
+Plan: 2 of 3
 Status: Ready to execute
-Last activity: 2026-10-15 — Phase 18 planning complete
+Last activity: 2026-10-15 — Phase 18 execution started
 
 Progress: [█░░░░░░░░░] 13%
 
@@ -63,6 +63,7 @@ Progress: [█░░░░░░░░░] 13%
 | Phase 17 P01 | 9min | 2 tasks | 3 files |
 | Phase 17 P02 | 7min | 2 tasks | 3 files |
 | Phase 17 P03 | 8min | 3 tasks | 3 files |
+| Phase 18 P01 | 9min | 3 tasks | 5 files |
 
 ## Accumulated Context
 
@@ -94,6 +95,10 @@ v1.3 roadmap locks:
 - [Phase 17]: [Phase 17-03]: _check_own_keys is a verbatim extraction of the existing duplicate loop, so the D-09 tripwire and the explicit-duplicate line pins stay byte-identical
 - [Phase 17]: [Phase 17-03]: _merge_source_ids is an iterative visited-guarded walk, so _anchor_holder_keys reaches nested-merge holders and terminates on a self-referential merge (WR-01)
 - [Phase 17]: [Phase 17-03]: IN-01 alias-copy over-match is accepted and pinned by a characterisation test; precise disambiguation needs composer-event data PyYAML discards
+- [Phase 18]: Phase 18 P01: the preview endpoint reuses MaterialReaderResponse verbatim with tags=[] and related=[] (D-02/D-08) — no preview DTO, no status key
+- [Phase 18]: Phase 18 P01: 403 comes only from require_admin and every non-draft slug is 404 material_not_found, so no slug-existence oracle is created (D-03/D-04/D-12)
+- [Phase 18]: Phase 18 P01: no-store is set on the preview route only via the declared Response param; the reader route and get_material_for_reader stay byte-identical (D-07)
+- [Phase 18]: Phase 18 P01: the reader route's lack of a role branch is frozen by an admin-token characterisation pin landed with zero production edits
 
 ### Pending Todos
 
@@ -122,9 +127,9 @@ Carried product deferrals beyond v1.3: leaderboard, quiz, Whisper/Foundry ASR, i
 
 ## Session Continuity
 
-Last session: 2026-10-14T13:30:48.873Z
-Stopped at: Phase 17 complete and re-verified (27/27) after the WR-02 rework
-Resume file: .planning/phases/18-reader-route-honesty-for-draft-materials/18-CONTEXT.md
+Last session: 2026-10-15T10:19:33.254Z
+Stopped at: Completed 18-01-PLAN.md
+Resume file: None
 Next: `/gsd-plan-phase 18`
 
 ## Operator Next Steps
