@@ -867,10 +867,12 @@ export default function AdminDigestPage() {
                     {emailModal.preview.subject}
                   </p>
                   {emailModal.preview.html ? (
+                    // D-11/T-18-05: popups must escape the frame so the CTA is not inert;
+                    // script and same-origin powers stay deliberately OFF.
                     <iframe
                       data-testid="email-preview-frame"
                       title="Превью письма HTML"
-                      sandbox=""
+                      sandbox="allow-popups allow-popups-to-escape-sandbox"
                       srcDoc={emailModal.preview.html}
                       className="mt-3 min-h-64 w-full rounded-xl border border-rule bg-white"
                     />

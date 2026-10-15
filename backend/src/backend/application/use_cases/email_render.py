@@ -44,8 +44,15 @@ def render_material_email_block(
         parts.append(f"<p>{html.escape(dek.strip(), quote=True)}</p>")
     clean_slug = slug.strip()
     if clean_slug:
+        # This builder is shared by preview_digest_email and send_digest, so the href
+        # stays reader-facing (`{base}/materials/{slug}`) for the preview and the real
+        # send alike — D-11 satisfies the preview-CTA requirement behaviourally, through
+        # `target`/`rel` plus the widened iframe sandbox, never by leaking an admin URL
+        # into the mail ordinary readers receive (T-18-06).
         href = html.escape(f"{base}/materials/{clean_slug}", quote=True)
-        parts.append(f'<p><a href="{href}">Читать →</a></p>')
+        parts.append(
+            f'<p><a href="{href}" target="_blank" rel="noopener noreferrer">Читать →</a></p>'
+        )
     return "".join(parts)
 
 

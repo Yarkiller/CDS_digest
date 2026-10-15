@@ -565,8 +565,11 @@ function composeMockPreviewHtml({ intro = '', blocks = [], itemById = new Map() 
         parts.push(`<p>${escapeHtml(String(item.dek).trim())}</p>`)
       }
       const slug = item.slug || String(item.material_id)
+      // Mirrors backend render_material_email_block: keyed on `slug` and carrying the
+      // same target/rel as the backend anchor, so the Playwright escape proof asserts
+      // the real shape rather than a mock-only one (D-11). The href is unchanged.
       parts.push(
-        `<p><a href="http://127.0.0.1:5173/materials/${escapeHtml(slug)}">Читать →</a></p>`,
+        `<p><a href="http://127.0.0.1:5173/materials/${escapeHtml(slug)}" target="_blank" rel="noopener noreferrer">Читать →</a></p>`,
       )
     }
   }
