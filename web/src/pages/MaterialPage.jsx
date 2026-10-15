@@ -5,6 +5,7 @@ import remarkGfm from 'remark-gfm'
 import rehypeSanitize from 'rehype-sanitize'
 import rehypeSlug from 'rehype-slug'
 import ServiceUnavailable from '../components/ServiceUnavailable.jsx'
+import ForbiddenPage from './ForbiddenPage.jsx'
 import { clearFailNextContentFetch, fetchMaterial } from '../services/contentApi.js'
 import { fetchMaterialPreview } from '../services/adminApi.js'
 import { extractMarkdownHeadings } from '../utils/markdownToc.js'
@@ -61,6 +62,7 @@ export default function MaterialPage({ preview = false, loadMaterial }) {
   const [status, setStatus] = useState('loading')
   const [notFound, setNotFound] = useState(false)
   const [redirectToReader, setRedirectToReader] = useState(false)
+  const [forbidden, setForbidden] = useState(false)
   const [loadKey, setLoadKey] = useState(0)
 
   // Additive injection: the reader route passes nothing, so it keeps loading
@@ -98,6 +100,11 @@ export default function MaterialPage({ preview = false, loadMaterial }) {
           setStatus('ready')
           return
         }
+        // D-03: the SPA only translates the server's 403 — it never decides the role.
+        if (preview && code === 'FORBIDDEN') {
+          setForbidden(true)
+          return
+        }
         setStatus('error')
       })
 
@@ -105,6 +112,10 @@ export default function MaterialPage({ preview = false, loadMaterial }) {
       cancelled = true
     }
   }, [slug, loadKey, preview])
+
+  if (preview && forbidden) {
+    return <ForbiddenPage />
+  }
 
   if (redirectToReader) {
     return <Navigate to={`/materials/${slug}`} replace />
