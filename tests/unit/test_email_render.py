@@ -152,6 +152,68 @@ def test_render_email_html_defaults_site_url() -> None:
     assert 'href="http://127.0.0.1:5173/materials/x"' in html
 
 
+def test_render_material_email_block_read_link_opens_in_new_context() -> None:
+    """D-11: the CTA escapes the sandboxed preview via target=_blank + rel=noopener noreferrer."""
+    html = render_material_email_block(
+        title="My Title",
+        dek="Short dek",
+        slug="my-slug",
+        site_url="http://127.0.0.1:5173",
+    )
+    assert 'target="_blank"' in html
+    assert 'rel="noopener noreferrer"' in html
+    # D-11: the href stays reader-facing — preview and the real send share this builder.
+    assert 'href="http://127.0.0.1:5173/materials/my-slug"' in html
+
+
+def test_render_email_html_material_link_opens_in_new_context() -> None:
+    """D-11: the block-level path carries the same anchor attributes as the block helper."""
+    html = render_email_html(
+        intro="",
+        blocks=({"kind": "material", "title": "Seeded", "dek": None, "slug": "seeded"},),
+        site_url="http://127.0.0.1:5173",
+    )
+    assert 'target="_blank"' in html
+    assert 'rel="noopener noreferrer"' in html
+    assert 'href="http://127.0.0.1:5173/materials/seeded"' in html
+
+
+def test_render_material_email_block_is_idempotent() -> None:
+    """D-11: the added attributes are static literals — rendering twice is byte-identical."""
+    first = render_material_email_block(
+        title="Same",
+        dek="Same dek",
+        slug="same-slug",
+        site_url="http://127.0.0.1:5173",
+    )
+    second = render_material_email_block(
+        title="Same",
+        dek="Same dek",
+        slug="same-slug",
+        site_url="http://127.0.0.1:5173",
+    )
+    assert first == second
+    blocks = ({"kind": "material", "title": "Same", "dek": None, "slug": "same-slug"},)
+    assert render_email_html(intro="", blocks=blocks) == render_email_html(
+        intro="", blocks=blocks
+    )
+
+
+def test_render_material_email_block_blank_slug_emits_no_anchor_attributes() -> None:
+    """W-2 preserved: a blank slug emits no anchor, so target/rel cannot sit on a dead link."""
+    for blank in ("", "   "):
+        html = render_material_email_block(
+            title="Blank",
+            dek=None,
+            slug=blank,
+            site_url="http://127.0.0.1:5173",
+        )
+        assert "Читать →" not in html
+        assert "/materials/" not in html
+        assert "target=" not in html
+        assert "rel=" not in html
+
+
 def test_forbidden_lower_closed_list() -> None:
     assert FORBIDDEN_LOWER == ["test-header", "test_header", "testheader"]
 

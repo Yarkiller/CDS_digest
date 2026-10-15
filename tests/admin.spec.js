@@ -404,7 +404,10 @@ test.describe("Admin Digest — batch select + preview/send gate (ADMIN-04,06,07
     await expect(emailDialog.getByText(/Digest CDS/i)).toBeVisible();
     const iframe = emailDialog.getByTestId("email-preview-frame");
     await expect(iframe).toBeVisible();
-    await expect(iframe).toHaveAttribute("sandbox", "");
+    await expect(iframe).toHaveAttribute(
+      "sandbox",
+      "allow-popups allow-popups-to-escape-sandbox",
+    );
     await expect(emailDialog.locator("ul")).toHaveCount(0);
     const frame = emailDialog.frameLocator('[data-testid=email-preview-frame]');
     await expect(frame.getByRole("heading")).toContainText("Building Production RAG Systems");
@@ -687,7 +690,10 @@ test.describe("Admin Digest — email preview honesty (ADUX-02, D-08/D-12)", () 
     const iframe = emailDialog.getByTestId("email-preview-frame");
     await expect(iframe).toBeVisible();
     await expect(iframe).toHaveAttribute("title", "Превью письма HTML");
-    await expect(iframe).toHaveAttribute("sandbox", "");
+    await expect(iframe).toHaveAttribute(
+      "sandbox",
+      "allow-popups allow-popups-to-escape-sandbox",
+    );
     await expect(emailDialog.getByTestId("email-preview-body")).toHaveCount(0);
 
     const frame = emailDialog.frameLocator('[data-testid=email-preview-frame]');
@@ -695,6 +701,46 @@ test.describe("Admin Digest — email preview honesty (ADUX-02, D-08/D-12)", () 
       "Building Production RAG Systems",
     );
     await expect(frame.getByRole("link", { name: "Читать →" })).toBeVisible();
+  });
+
+  test("превью письма: «Читать →» открывает новую вкладку из песочницы (D-11, T-18-05)", async ({
+    page,
+  }) => {
+    await gotoAsRole(page, "admin", "/admin/digest");
+    await approveReadyRows(page, [0]);
+
+    await page.getByRole("button", { name: /предпросмотр письма/i }).click();
+    const emailDialog = page.getByRole("dialog").filter({
+      has: page.getByRole("heading", { name: "Превью письма", exact: true }),
+    });
+    const iframe = emailDialog.getByTestId("email-preview-frame");
+    await expect(iframe).toBeVisible();
+
+    const frame = emailDialog.frameLocator("[data-testid=email-preview-frame]");
+    const readLink = frame.getByRole("link", { name: "Читать →" });
+    await expect(readLink).toBeVisible();
+
+    // Behavioural proof (criterion 4): the CTA opens a NEW top-level browsing
+    // context instead of silently doing nothing. The mock href host
+    // (127.0.0.1:5173) is not served in this project, so only the popup event is
+    // asserted — never the popup's URL or content.
+    const popupPromise = page.waitForEvent("popup", { timeout: 15000 });
+    await readLink.click();
+    const popup = await popupPromise;
+    expect(popup).toBeTruthy();
+    await popup.close();
+
+    // Shape proof (T-18-05): popups are allowed, script and same-origin powers
+    // are deliberately withheld.
+    await expect(iframe).toHaveAttribute(
+      "sandbox",
+      "allow-popups allow-popups-to-escape-sandbox",
+    );
+    const sandbox = await iframe.getAttribute("sandbox");
+    expect(sandbox).not.toContain("allow-scripts");
+    expect(sandbox).not.toContain("allow-same-origin");
+    await expect(readLink).toHaveAttribute("target", "_blank");
+    await expect(readLink).toHaveAttribute("rel", /noopener/);
   });
 
   test("email preview close stays visible while the preview scrolls", async ({ page }) => {
@@ -710,7 +756,10 @@ test.describe("Admin Digest — email preview honesty (ADUX-02, D-08/D-12)", () 
     const close = emailDialog.getByRole("button", { name: "Закрыть", exact: true });
     const frame = emailDialog.getByTestId("email-preview-frame");
     await expect(frame).toBeVisible();
-    await expect(frame).toHaveAttribute("sandbox", "");
+    await expect(frame).toHaveAttribute(
+      "sandbox",
+      "allow-popups allow-popups-to-escape-sandbox",
+    );
     await expect(emailDialog.locator("ul")).toHaveCount(0);
 
     const closeContract = await close.evaluate((button) => {
