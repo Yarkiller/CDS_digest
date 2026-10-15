@@ -5,11 +5,11 @@ milestone_name: Live mail, scheduled ingestion & backlog debt
 current_phase: 18
 current_phase_name: Reader-route honesty for draft materials
 status: executing
-stopped_at: Completed 18-01-PLAN.md
-last_updated: "2026-10-15T10:19:50.025Z"
+stopped_at: Completed 18-02-PLAN.md
+last_updated: "2026-10-15T10:43:06.465Z"
 last_activity: 2026-10-15
 last_activity_desc: Phase 18 execution started
-state_head: 77398e2c1eb55abb8185c4e2a6d440f977a1b5b3
+state_head: 5f9ec58aee8657e9819f20f84a1e5c3e861e3177
 progress:
   total_phases: 8
   completed_phases: 1
@@ -30,7 +30,7 @@ See: .planning/PROJECT.md (updated 2026-10-14 — after v1.3 milestone start)
 ## Current Position
 
 Phase: 18 (Reader-route honesty for draft materials) — EXECUTING
-Plan: 2 of 3
+Plan: 3 of 3
 Status: Ready to execute
 Last activity: 2026-10-15 — Phase 18 execution started
 
@@ -64,6 +64,7 @@ Progress: [█░░░░░░░░░] 13%
 | Phase 17 P02 | 7min | 2 tasks | 3 files |
 | Phase 17 P03 | 8min | 3 tasks | 3 files |
 | Phase 18 P01 | 9min | 3 tasks | 5 files |
+| Phase 18 P02 | 21 min | 3 tasks | 4 files |
 
 ## Accumulated Context
 
@@ -99,6 +100,9 @@ v1.3 roadmap locks:
 - [Phase 18]: Phase 18 P01: 403 comes only from require_admin and every non-draft slug is 404 material_not_found, so no slug-existence oracle is created (D-03/D-04/D-12)
 - [Phase 18]: Phase 18 P01: no-store is set on the preview route only via the declared Response param; the reader route and get_material_for_reader stay byte-identical (D-07)
 - [Phase 18]: Phase 18 P01: the reader route's lack of a role branch is frozen by an admin-token characterisation pin landed with zero production edits
+- [Phase 18]: 18-02: единственный SPA-маршрут admin/materials/:id с флагом preview — структурное переиспользование MaterialPage (D-02), без отдельной страницы предпросмотра
+- [Phase 18]: 18-02: полномочия остаются за сервером (D-03) — клиент не делает запрос /me на preview-маршруте, а маппит FORBIDDEN на ForbiddenPage, NOT_FOUND — на Navigate к /materials/:slug (D-12)
+- [Phase 18]: 18-02: баннер предпросмотра зависит только от route-scoped prop preview (D-06), т.к. ответ читательского DTO не содержит status; tags/related приходят пустыми по D-08
 
 ### Pending Todos
 
@@ -127,8 +131,8 @@ Carried product deferrals beyond v1.3: leaderboard, quiz, Whisper/Foundry ASR, i
 
 ## Session Continuity
 
-Last session: 2026-10-15T10:19:33.254Z
-Stopped at: Completed 18-01-PLAN.md
+Last session: 2026-10-15T10:43:06.410Z
+Stopped at: Completed 18-02-PLAN.md
 Resume file: None
 Next: `/gsd-plan-phase 18`
 

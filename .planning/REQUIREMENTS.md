@@ -13,8 +13,8 @@ Ordering rule: **backlog tech debt first** (999.7 → 999.1 → 999.6), then mai
 
 ### Reader honesty for draft materials (backlog 999.1)
 
-- [ ] **ADUX-07**: Admin can open any material (draft or ready) at an admin-gated preview and read it in the normal reader rendering; the public `GET /materials/{slug}` stays ready-only and an unknown **or draft** slug returns an opaque 404 (never 403)
-- [ ] **ADUX-08**: The admin shortlist and email-preview links target the admin preview surface; a draft preview is served non-cacheable (`no-store`) and carries a visible preview marker, exposing no `related`/`tags` of unpublished material
+- [x] **ADUX-07**: Admin can open any material (draft or ready) at an admin-gated preview and read it in the normal reader rendering; the public `GET /materials/{slug}` stays ready-only and an unknown **or draft** slug returns an opaque 404 (never 403)
+- [x] **ADUX-08**: The admin shortlist and email-preview links target the admin preview surface; a draft preview is served non-cacheable (`no-store`) and carries a visible preview marker, exposing no `related`/`tags` of unpublished material
 
 ### Unsaved-changes guard for the pipeline editor (backlog 999.6)
 
@@ -102,8 +102,8 @@ Deferred. Not in this milestone's roadmap.
 |-------------|-------|--------|
 | PIPE-04 | Phase 17 | Complete |
 | PIPE-05 | Phase 17 | Complete |
-| ADUX-07 | Phase 18 | Pending |
-| ADUX-08 | Phase 18 | Pending |
+| ADUX-07 | Phase 18 | Complete |
+| ADUX-08 | Phase 18 | Complete |
 | ADUX-09 | Phase 19 | Pending |
 | ADUX-10 | Phase 23 | Pending |
 | ADUX-12 | Phase 22 | Pending |
