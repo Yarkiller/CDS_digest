@@ -4,17 +4,17 @@ milestone: v1.3
 milestone_name: Live mail, scheduled ingestion & backlog debt
 current_phase: 18
 current_phase_name: Reader-route honesty for draft materials
-status: executing
-stopped_at: Completed 18-02-PLAN.md
-last_updated: "2026-10-15T10:43:06.465Z"
+status: verifying
+stopped_at: Completed 18-03-PLAN.md
+last_updated: "2026-10-15T11:52:33.969Z"
 last_activity: 2026-10-15
 last_activity_desc: Phase 18 execution started
-state_head: 5f9ec58aee8657e9819f20f84a1e5c3e861e3177
+state_head: ec451255371ae931ca8c3ff4fef658037720b1a2
 progress:
   total_phases: 8
   completed_phases: 1
   total_plans: 6
-  completed_plans: 4
+  completed_plans: 6
   percent: 13
 ---
 
@@ -31,7 +31,7 @@ See: .planning/PROJECT.md (updated 2026-10-14 — after v1.3 milestone start)
 
 Phase: 18 (Reader-route honesty for draft materials) — EXECUTING
 Plan: 3 of 3
-Status: Ready to execute
+Status: Phase complete — ready for verification
 Last activity: 2026-10-15 — Phase 18 execution started
 
 Progress: [█░░░░░░░░░] 13%
@@ -65,6 +65,7 @@ Progress: [█░░░░░░░░░] 13%
 | Phase 17 P03 | 8min | 3 tasks | 3 files |
 | Phase 18 P01 | 9min | 3 tasks | 5 files |
 | Phase 18 P02 | 21 min | 3 tasks | 4 files |
+| Phase 18 P03 | 57min | 2 tasks | 5 files |
 
 ## Accumulated Context
 
@@ -103,6 +104,9 @@ v1.3 roadmap locks:
 - [Phase 18]: 18-02: единственный SPA-маршрут admin/materials/:id с флагом preview — структурное переиспользование MaterialPage (D-02), без отдельной страницы предпросмотра
 - [Phase 18]: 18-02: полномочия остаются за сервером (D-03) — клиент не делает запрос /me на preview-маршруте, а маппит FORBIDDEN на ForbiddenPage, NOT_FOUND — на Navigate к /materials/:slug (D-12)
 - [Phase 18]: 18-02: баннер предпросмотра зависит только от route-scoped prop preview (D-06), т.к. ответ читательского DTO не содержит status; tags/related приходят пустыми по D-08
+- [Phase 18]: 18-03: anchor attributes plus a widened sandbox replace any repoint of the shared email href (D-11), so preview-send parity stays provable and no admin URL reaches recipient mail — render_email_html is shared by preview_digest_email and send_digest; test_preview_email_html_matches_send_html and the /materials/ href assertions all stayed byte-identical and green
+- [Phase 18]: 18-03: the email-preview iframe grants allow-popups allow-popups-to-escape-sandbox while withholding script and same-origin powers (T-18-05) - the CTA escapes, the frame does not gain script or origin powers — The frame body is backend-rendered with stdlib html.escape only; the new spec asserts the exact sandbox value plus two not.toContain checks, so a future token addition fails the suite
+- [Phase 18]: 18-03: only the shortlist modal link is repointed to /admin/materials/{slug} (D-10) - the draft-404 never lived in the email, whose pool is approved-and-ready — Repointing the shared email builder would put admin URLs into the real digest mail ordinary readers receive (T-18-06); preview_digest_email.py received zero edits
 
 ### Pending Todos
 
@@ -131,8 +135,8 @@ Carried product deferrals beyond v1.3: leaderboard, quiz, Whisper/Foundry ASR, i
 
 ## Session Continuity
 
-Last session: 2026-10-15T10:43:06.410Z
-Stopped at: Completed 18-02-PLAN.md
+Last session: 2026-10-15T11:52:14.598Z
+Stopped at: Completed 18-03-PLAN.md
 Resume file: None
 Next: `/gsd-plan-phase 18`
 
