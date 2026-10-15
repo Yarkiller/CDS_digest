@@ -6,6 +6,7 @@ import rehypeSanitize from 'rehype-sanitize'
 import rehypeSlug from 'rehype-slug'
 import ServiceUnavailable from '../components/ServiceUnavailable.jsx'
 import { ContentApiError, clearFailNextContentFetch, fetchMaterial } from '../services/contentApi.js'
+import { fetchMaterialPreview } from '../services/adminApi.js'
 import { extractMarkdownHeadings } from '../utils/markdownToc.js'
 
 function formatPublishedLabel(material) {
@@ -54,12 +55,16 @@ function SectionToc({ headings }) {
   )
 }
 
-export default function MaterialPage() {
+export default function MaterialPage({ preview = false, loadMaterial }) {
   const { id: slug } = useParams()
   const [material, setMaterial] = useState(null)
   const [status, setStatus] = useState('loading')
   const [notFound, setNotFound] = useState(false)
   const [loadKey, setLoadKey] = useState(0)
+
+  // Additive injection: the reader route passes nothing, so it keeps loading
+  // through fetchMaterial byte-identically (D-02).
+  const loader = loadMaterial ?? (preview ? fetchMaterialPreview : fetchMaterial)
 
   const reload = useCallback(() => {
     clearFailNextContentFetch()
@@ -71,7 +76,7 @@ export default function MaterialPage() {
     setStatus('loading')
     setNotFound(false)
 
-    fetchMaterial(slug)
+    loader(slug)
       .then((dto) => {
         if (cancelled) return
         setMaterial(dto)
@@ -90,7 +95,7 @@ export default function MaterialPage() {
     return () => {
       cancelled = true
     }
-  }, [slug, loadKey])
+  }, [slug, loadKey, preview])
 
   if (status === 'loading') {
     return (
@@ -142,6 +147,15 @@ export default function MaterialPage() {
 
   return (
     <article className="max-w-5xl">
+      {preview ? (
+        <p
+          data-testid="material-preview-banner"
+          className="mb-6 rounded-lg border border-rule bg-paper-2 px-4 py-3 text-sm font-medium text-ink"
+        >
+          Черновик — предпросмотр, не опубликовано
+        </p>
+      ) : null}
+
       <div className="flex flex-wrap items-center gap-2">
         <p className="text-xs font-semibold uppercase tracking-wide text-muted">
           Статья{overlineTag ? ` · ${overlineTag}` : ''}

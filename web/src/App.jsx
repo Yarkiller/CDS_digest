@@ -37,6 +37,7 @@ export default function App() {
           <Route path="razbory/:id" element={<RazborPage />} />
           <Route path="profile" element={<ProfilePage />} />
           <Route path="admin/digest" element={<AdminDigestPage />} />
+          <Route path="admin/materials/:id" element={<MaterialPage preview />} />
           <Route path="admin/pipeline" element={<AdminPipelineConfigPage />} />
           <Route path="*" element={<Navigate to="/" replace />} />
         </Route>

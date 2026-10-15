@@ -301,6 +301,81 @@ export async function fetchShortlist(accessToken) {
   return mapShortlistBody(body)
 }
 
+/** @typedef {{ slug: string, title: string, dek: string, body_markdown: string, format: string, provenance: string, tags: string[], related: Array<{ slug: string, title: string }>, reading_minutes: number, published_at: string|null, editor: string }} MaterialPreviewDto */
+
+/**
+ * Sticky mock seat role — read directly from the window seat flag (the same
+ * convention the /me mock uses) so the preview performs no extra round trip (D-03).
+ * @returns {string}
+ */
+function mockSeatRole() {
+  if (typeof window !== 'undefined' && typeof window.__DIGEST_MOCK_ME_ROLE__ === 'string') {
+    return window.__DIGEST_MOCK_ME_ROLE__
+  }
+  return 'employee'
+}
+
+/**
+ * Draft material preview by slug via the admin-gated endpoint (ADUX-07, ADUX-08).
+ * 403 → FORBIDDEN; 404 → NOT_FOUND (the caller sends a non-draft to the reader route).
+ * Mock branch resolves against the shortlist batch (its items carry
+ * material_status) — never against web/src/data/mock.js (D-12, Pitfall 7).
+ * @param {string} slug
+ * @param {string} [accessToken]
+ * @returns {Promise<MaterialPreviewDto>}
+ */
+export async function fetchMaterialPreview(slug, accessToken) {
+  if (useMocks()) {
+    await delay(80)
+    // The seat-role gate runs BEFORE the slug lookup — the client mirror of
+    // require_admin running before the repository read, so an employee cannot
+    // distinguish an existing slug from a missing one (D-03).
+    if (mockSeatRole() !== 'admin') {
+      throw new AdminApiError('Недостаточно прав.', { code: 'FORBIDDEN', retryable: false })
+    }
+    const item = mockBatch.items.find((row) => row.slug === slug)
+    if (!item || item.material_status !== 'draft') {
+      throw new AdminApiError('Материал не найден.', { code: 'NOT_FOUND', retryable: false })
+    }
+    return {
+      slug: item.slug,
+      title: item.title,
+      dek: item.dek ?? '',
+      body_markdown: item.body_markdown ?? '',
+      format: item.format ?? 'статья',
+      provenance: item.provenance_label ?? '',
+      tags: [],
+      related: [],
+      reading_minutes: item.reading_minutes ?? 1,
+      published_at: null,
+      editor: 'Редакция Digest CDS',
+    }
+  }
+
+  const token = accessToken ?? (await getAccessToken())
+  if (!token) {
+    throw new AdminApiError('Требуется вход.', { code: 'UNAUTHORIZED', retryable: false })
+  }
+
+  let response
+  try {
+    response = await fetch(`${apiBase()}/admin/materials/${encodeURIComponent(slug)}`, {
+      headers: { Authorization: `Bearer ${token}` },
+    })
+  } catch {
+    throw new AdminApiError('Не удалось загрузить материал. Проверьте сеть.', {
+      code: 'NETWORK',
+      retryable: true,
+    })
+  }
+
+  if (!response.ok) {
+    throw mapHttpError(response, 'Материал не найден.')
+  }
+
+  return response.json()
+}
+
 /**
  * @param {number} materialId
  * @param {'pending'|'approved'|'rejected'} decision
