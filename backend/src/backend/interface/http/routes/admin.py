@@ -385,6 +385,7 @@ def read_material_preview(
             status_code=status.HTTP_503_SERVICE_UNAVAILABLE,
             detail="materials_unavailable",
         ) from exc
+    response.headers["Cache-Control"] = "no-store"  # D-07
     return _to_preview_response(material)
 
 
