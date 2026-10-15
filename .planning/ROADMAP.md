@@ -56,7 +56,7 @@ Full phase detail: [milestones/v1.2-ROADMAP.md](milestones/v1.2-ROADMAP.md)
 Backlog tech debt comes first (lowest blast radius first), then mail, then ingest sources, then the scheduler. Continuous numbering — v1.3 starts at Phase 17 (v1.2 ended at Phase 16).
 
 - [x] **Phase 17: YAML merge-key acceptance in the strict validator** - The strict pipeline-config validator accepts valid `<<` merge-key documents, bounded so they cannot exhaust CPU, without weakening duplicate-key rejection (completed 2026-10-14)
-- [ ] **Phase 18: Reader-route honesty for draft materials** - An admin reads any draft at an admin-gated preview surface while the public reader route stays ready-only and draft ≡ missing (opaque 404)
+- [x] **Phase 18: Reader-route honesty for draft materials** - An admin reads any draft at an admin-gated preview surface while the public reader route stays ready-only and draft ≡ missing (opaque 404) (completed 2026-10-15)
 - [ ] **Phase 19: Unsaved-changes guard for the pipeline editor** - The admin pipeline editor warns before losing unsaved changes on in-app SPA navigation and on reload/close
 - [ ] **Phase 20: MAIL-02 signup confirmation mail** - The root cause is diagnosed and the delivered end state is honest (working relay mail, or explicitly autoconfirmed copy)
 - [ ] **Phase 21: MAIL-01 live SMTP digest delivery** - The weekly digest is delivered by a real SMTP mailer to the `profiles` audience, with honest counts and contained failures
@@ -105,7 +105,7 @@ Backlog tech debt comes first (lowest blast radius first), then mail, then inges
   3. A draft preview response is served `no-store`, carries a visible preview marker, and exposes no `related`/`tags` of unpublished material.
   4. The admin shortlist and email-preview links target the admin preview surface, and the email-preview CTA navigates the top-level app rather than being trapped inside the `sandbox=""` iframe.
 
-**Plans:** 3/3 plans executed
+**Plans:** 3/3 plans complete
 - [x] 18-01-PLAN.md
 - [x] 18-02-PLAN.md
 - [x] 18-03-PLAN.md
@@ -220,7 +220,7 @@ Phases execute in numeric order: 17 → 18 → 19 → 20 → 21 → 22 → 23 �
 | Phase | Plans Complete | Status | Completed |
 |-------|----------------|--------|-----------|
 | 17. YAML merge-key acceptance | 3/3 | Complete    | 2026-10-14 |
-| 18. Reader-route honesty | 3/3 | In Progress|  |
+| 18. Reader-route honesty | 3/3 | Complete    | 2026-10-15 |
 | 19. Unsaved-changes guard | 0/TBD | Not started | - |
 | 20. MAIL-02 signup mail | 0/TBD | Not started | - |
 | 21. MAIL-01 live SMTP digest | 0/TBD | Not started | - |

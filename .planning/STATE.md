@@ -2,44 +2,44 @@
 gsd_state_version: "1.0"
 milestone: v1.3
 milestone_name: Live mail, scheduled ingestion & backlog debt
-current_phase: 18
-current_phase_name: Reader-route honesty for draft materials
-status: executing
-stopped_at: Completed 18-03-PLAN.md
-last_updated: "2026-10-15T11:56:54.776Z"
+current_phase: 19
+current_phase_name: Unsaved-changes guard for the pipeline editor
+status: planning
+stopped_at: Phase 18 complete, ready to plan Phase 19
+last_updated: "2026-10-15T13:27:32.141Z"
 last_activity: 2026-10-15
-last_activity_desc: Phase 18 execution started
-state_head: 26cae6873dd01b567732c6b4965dd01ccbb86b32
+last_activity_desc: Phase 18 complete, transitioned to Phase 19
+state_head: 82d1762d1e36c1fe6848e7e8033a48840d5d2828
 progress:
   total_phases: 8
-  completed_phases: 1
+  completed_phases: 2
   total_plans: 6
   completed_plans: 6
-  percent: 13
+  percent: 25
 ---
 
 # Project State
 
 ## Project Reference
 
-See: .planning/PROJECT.md (updated 2026-10-14 — after v1.3 milestone start)
+See: .planning/PROJECT.md (updated 2026-10-15 — after Phase 18)
 
 **Core value:** Trusted weekly prepared-article issue + one honest vote toward the next разбор
-**Current focus:** Phase 18 — Reader-route honesty for draft materials
+**Current focus:** Phase 19 — Unsaved-changes guard for the pipeline editor
 
 ## Current Position
 
-Phase: 18 (Reader-route honesty for draft materials) — EXECUTING
-Plan: 1 of 3
-Status: Executing Phase 18
-Last activity: 2026-10-15 — Phase 18 execution started
+Phase: 19 — Unsaved-changes guard for the pipeline editor
+Plan: Not started
+Status: Ready to plan
+Last activity: 2026-10-15 — Phase 18 complete, transitioned to Phase 19
 
-Progress: [█░░░░░░░░░] 13%
+Progress: [███░░░░░░░] 25%
 
 ## Performance Metrics
 
 **Velocity:**
-- Total plans completed: 3 (40 v1 + 23 v1.1 + 26 v1.2)
+- Total plans completed: 6 (40 v1 + 23 v1.1 + 26 v1.2)
 - Prior milestones shipped: v1 (5 phases), v1.1 (6 phases), v1.2 (5 phases)
 - v1.3 plans completed: 3
 
@@ -48,7 +48,7 @@ Progress: [█░░░░░░░░░] 13%
 | Phase | Plans | Total | Avg/Plan |
 |-------|-------|-------|----------|
 | 17. YAML merge-key | 3/3 | Complete (verified 27/27) | - |
-| 18. Reader-route honesty | 0/? | context gathered | - |
+| 18. Reader-route honesty | 3/3 | Complete (verified 20/20, UAT 3/3, threats_open 0) | - |
 | 19. Unsaved-changes guard | 0/? | not started | - |
 | 20. Signup mail (MAIL-02) | 0/? | context gathered | - |
 | 21. Live SMTP digest (MAIL-01) | 0/? | not started | - |
@@ -56,6 +56,7 @@ Progress: [█░░░░░░░░░] 13%
 | 23. Ingest sources | 0/? | not started | - |
 | 24. Scheduled ingestion | 0/? | not started | - |
 | 17 | 3 | - | - |
+| 18 | 3 | - | - |
 **Per-Plan Metrics:**
 
 | Plan | Duration | Tasks | Files |
@@ -107,12 +108,17 @@ v1.3 roadmap locks:
 - [Phase 18]: 18-03: anchor attributes plus a widened sandbox replace any repoint of the shared email href (D-11), so preview-send parity stays provable and no admin URL reaches recipient mail — render_email_html is shared by preview_digest_email and send_digest; test_preview_email_html_matches_send_html and the /materials/ href assertions all stayed byte-identical and green
 - [Phase 18]: 18-03: the email-preview iframe grants allow-popups allow-popups-to-escape-sandbox while withholding script and same-origin powers (T-18-05) - the CTA escapes, the frame does not gain script or origin powers — The frame body is backend-rendered with stdlib html.escape only; the new spec asserts the exact sandbox value plus two not.toContain checks, so a future token addition fails the suite
 - [Phase 18]: 18-03: only the shortlist modal link is repointed to /admin/materials/{slug} (D-10) - the draft-404 never lived in the email, whose pool is approved-and-ready — Repointing the shared email builder would put admin URLs into the real digest mail ordinary readers receive (T-18-06); preview_digest_email.py received zero edits
+- [Phase 18]: CR-01 (post-execution code review, reproduced in the browser and fixed): MaterialPage now resets `redirectToReader` and `forbidden` on every load — The instance is reused across the /admin/materials/:id -> /materials/:id handoff the flag itself triggers (both routes are children of one layout route in App.jsx), so a stale `true` re-rendered `<Navigate>` to the URL already current and the reader route rendered nothing; the pre-existing D-12 test could not see it because `gotoAsRole` ends in `page.reload()` after the redirect has already moved the document (WR-02)
+- [Phase 18]: The RED that catches CR-01 drives the real user journey (shortlist «Превью материала» -> «Открыть материал →») and asserts the rendered reader surface, not just the URL — URL equality is necessary but not sufficient, since it also holds while the page renders nothing
+- [Phase 18]: IN-01…IN-05 (code-review info findings) are recorded `deferred` with reasons in `18-REVIEW-DISPOSITION.md` and the verifier concurred — inert unused prop, `no-store` absent on error paths (no leak), private `_SLUG_PATTERN` crossing route modules + a duplicated guard, a duplicated mock role resolver, and 401 mapped to a retryable NETWORK error on the preview surface
 
 ### Pending Todos
 
 None.
 
 ### Blockers/Concerns
+
+- **Vite dev-server flakiness in this workspace (operational, recurring).** Across Phases 18-02, 18-03 and the Phase 18 gates, the Playwright `web` project produced mass `ERR_CONNECTION_REFUSED` failures on `127.0.0.1:5174` — a reuse fight between a stale long-lived Vite server and a new run, or the server dying mid-run. The signature is indistinguishable from a real regression unless the error text is read. Always check for a listener on 5174 (`Get-NetTCPConnection -LocalPort 5174 -State Listen`) and kill stale servers before a full-suite run; a clean re-run has produced 110 passed every time.
 
 - **SMTP relay (Phase 20/21)** — the corporate relay **choice and configuration shape** are now recorded (Phase 20 CONTEXT: `GOTRUE_SMTP_*` for the GoTrue lane, `SMTP_*` for MAIL-01; one-command rollback = `GOTRUE_MAILER_AUTOCONFIRM=true` + container config reload). Relay **values** are still operator-supplied, so criterion 4's smoke-test *proof* is an acknowledged gap: Phase 20 ships honest autoconfirm (path B) and hands "relay chosen and proven" forward as Phase 21's precondition.
 - Signup confirmation mail (`g-01-3b-signup-mailer`) — **root cause is now diagnosed** (GoTrue fails while sending the confirmation email; `{code:500, error_code:"unexpected_failure"}`), and autoconfirm is on since 2026-09-20. Phase 20 now delivers the honest-copy fix (B) and closes the debug session; the SPA error-mapping honesty in `authApi.js` stays deferred.
@@ -135,13 +141,15 @@ Carried product deferrals beyond v1.3: leaderboard, quiz, Whisper/Foundry ASR, i
 
 ## Session Continuity
 
-Last session: 2026-10-15T11:52:14.598Z
-Stopped at: Completed 18-03-PLAN.md
+Last session: 2026-10-15T13:30:00.000Z
+Stopped at: Phase 18 complete, ready to plan Phase 19
 Resume file: None
-Next: `/gsd-plan-phase 18`
+Next: `/gsd-plan-phase 19`
 
 ## Operator Next Steps
 
-- Plan the two discussed phases: `/gsd-plan-phase 18` and `/gsd-plan-phase 20` (both have CONTEXT.md)
-- Phase 17 is complete and re-verified (27/27); stale `17-VALIDATION.md` is a record-accuracy task: `/gsd-validate-phase 17`
-- Phase 19 (Unsaved-changes guard) is not yet discussed
+- Plan the discussed phase: `/gsd-plan-phase 20` (MAIL-02, CONTEXT.md exists)
+- Phase 19 (Unsaved-changes guard, 999.6) is not yet discussed — `/gsd-discuss-phase 19`
+- Phase 17 and 18 are complete; stale `17-VALIDATION.md` is a record-accuracy task: `/gsd-validate-phase 17`
+- Phase 18 deferred code-review info findings IN-01…IN-05 (see `18-REVIEW-DISPOSITION.md`) — none blocking
+- Optional: `/gsd-ui-review 18` — Phase 18 modified frontend files

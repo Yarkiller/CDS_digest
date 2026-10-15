@@ -12,6 +12,8 @@ Authorized СВА staff can read a trustworthy weekly issue of prepared articles
 
 v1.3 Live mail, scheduled ingestion & backlog debt started 2026-10-14 (Phases 17+). Scope: backlog tech debt first — 999.1 reader-route honesty, 999.6 unsaved-changes guard, 999.7 YAML merge-key — then MAIL-02 investigation + signup mail, MAIL-01 live SMTP digest delivered to `profiles`, and a cron/systemd scheduled ingestion over the existing `ingest` CLI (YouTube channel/playlist source; drafts only, never auto-send).
 
+v1.3 progress: Phase 17 (999.7 YAML merge-key) and Phase 18 (999.1 reader-route honesty) complete and verified. Phase 18 shipped an admin-gated draft preview surface and closed a code-review BLOCKER (CR-01) found after execution — a stale `redirectToReader` left the reader route blank after the preview→reader handoff, now fixed and pinned by a click-path test.
+
 v1.2 Admin UX + diagnostics + PIPE-01 MVP shipped 2026-10-05 (Phases 12–16, 26 plans). Admin preview/email honesty, draft→ready promote without SQL, CLI `--debug` secret-safe diagnostics, and PIPE-01 MVP (YAML config view/edit/validate/persist behind a `PipelineConfigRepository` port; no execution). Phase 16 verified 49/49 after a stale re-verification (covered-digest restamp + code-review advisory only).
 
 v1.1 YouTube → LLM → Supabase ingestion shipped 2026-10-02 (Phases 6–11). Operator CLI turns a YouTube URL into a `materials` draft + shortlist row via captions → DeepSeek → `persist_draft_and_enqueue` (migrations 007–009). Backend/SPA remain readers; four-video UAT confirmed drafts in `/admin/digest`. Mail still StubMailer; signup confirmation mail unresolved.
@@ -25,7 +27,7 @@ Stack: FastAPI, React/Vite, self-hosted Supabase + pgvector, `data-collection` +
 **Goal:** The admin sends the weekly digest through real mail (not a log line), new videos are collected on a schedule without a human running the CLI, and the accumulated backlog debt is closed before any new feature work.
 
 **Target features:**
-- Backlog 999.1 — reader-route honesty: a draft material opened at `/materials/<slug>` must not land on an error page (today `GET /materials/{slug}` is ready-only → 404)
+- ✓ Backlog 999.1 — reader-route honesty (Phase 18): an admin previews any draft **or ready** material at the admin-gated surface while the public reader route stays ready-only and draft ≡ missing (opaque 404)
 - Backlog 999.6 — unsaved-changes guard (WR-04/WR-05): correct `beforeunload` plus a router guard, so in-app SPA navigation cannot silently drop the typed pipeline config
 - Backlog 999.7 — restore valid YAML merge-key (`<<`) acceptance in the strict pipeline-config validator without weakening duplicate-key rejection
 - MAIL-02 — investigate why no signup confirmation mail is sent, then ship the fix
@@ -118,12 +120,12 @@ v1 is done only when **all** of the following hold:
 - ✓ PIPE-01 MVP: YAML pipeline config + validation + admin UI (no execution) — Phase 16
 - ✓ PIPE-02: strict validate-before-save; invalid config rejected with a structured top-level 400 `{errors:[...]}` and zero writes (no silent accept) — Phase 16
 - ✓ PIPE-03: validated config persists behind a `PipelineConfigRepository` port and reads back on later sessions; SPA has no deep Supabase coupling — Phase 16
+- ✓ Backlog 999.1 — reader-route honesty: an admin opens any draft **or ready** material at an admin-gated preview surface (`GET /admin/materials/{slug}`) in the normal reader rendering with a visible «Черновик — предпросмотр, не опубликовано» marker, while `GET /materials/{slug}` and `get_material_for_reader` stay ready-only and draft ≡ missing (opaque 404, never 403) (ADUX-07, ADUX-08) — Phase 18
 
 ### Active
 
 v1.3 scope (REQ-IDs are defined in `.planning/REQUIREMENTS.md`):
 
-- [ ] Backlog 999.1 — a draft material reachable from the admin shortlist or email preview does not land on an error page
 - [ ] Backlog 999.6 — unsaved pipeline-config edits survive in-app SPA navigation or are guarded before leaving
 - [ ] Backlog 999.7 — the strict pipeline-config validator accepts valid YAML merge keys (`<<`) while still rejecting duplicate keys
 - [ ] MAIL-02 — signup confirmation mail root cause identified and the send path shipped
@@ -204,6 +206,12 @@ v1.3 scope (REQ-IDs are defined in `.planning/REQUIREMENTS.md`):
 | Pipeline config persistence sits behind a `PipelineConfigRepository` port; the Supabase adapter is wired only in `composition/live.py` | PIPE-03: the SPA reaches storage only through `pipelineConfigApi.js`; no deep Supabase coupling in UI | ✓ Phase 16 |
 | Strict validator maps parser `RecursionError` to a structured 400 (WR-02) | Deeply nested flow collections (< 20k cap) must not surface as an unhandled 500; strict validation stays honest | ✓ Phase 16 |
 | Unsaved-changes guard (WR-04/WR-05) and admin nav grouping deferred to ROADMAP backlog 999.5/999.6 | Optional UX, not v1.2 success criteria; DB is safe (no save → no write) | — Deferred → backlog |
+| Phase 18 preview reuses `MaterialReaderResponse` verbatim with `tags=[]`/`related=[]`; no preview DTO and no `status` key (D-02/D-08) | A second DTO shape would be a second reader contract to keep in sync; empty collections are the honest answer since a draft's neighbours/taxonomy may themselves be unpublished | ✓ Phase 18 |
+| Phase 18: 403 comes only from `require_admin`; every non-draft slug is 404 `material_not_found` (D-03/D-04/D-12) | Keeps draft ≡ missing ≡ opaque 404 — no slug-existence oracle for a non-admin | ✓ Phase 18 |
+| Phase 18: `no-store` set on the preview route only via the declared `Response` param (D-07) | An unpublished body must not be cached, but the mitigation must not widen onto the reader route; both directions are pinned | ✓ Phase 18 |
+| Phase 18: only the shortlist modal link is repointed to `/admin/materials/{slug}`; the shared email href builder is untouched (D-10/D-11) | Repointing the shared builder would put admin URLs into the real digest mail ordinary readers receive (T-18-06); `render_email_html` stays shared so preview≡send parity remains provable | ✓ Phase 18 |
+| Phase 18: the email-preview iframe grants `allow-popups allow-popups-to-escape-sandbox` while withholding script and same-origin powers (T-18-05) | The CTA must escape the frame to reach the app, but the frame must not gain script or origin powers; the frame body is backend-rendered with stdlib `html.escape` only | ✓ Phase 18 |
+| MaterialPage resets `redirectToReader`/`forbidden` on every load (CR-01/WR-01) | The instance is reused across the preview→reader handoff the flag itself triggers, so a stale `true` re-rendered `<Navigate>` to the current URL (a blank page) and wedged later navigation; the D-12 URL-only assertion could not see it (WR-02) | ✓ Phase 18 |
 
 <decisions>
 ## Locked decisions (from ADRs / ingest)
@@ -244,4 +252,4 @@ After each phase transition: move validated/invalidated requirements; log decisi
 After milestone: full review of Core Value, Out of Scope, and Context against shipped reality.
 
 ---
-*Last updated: 2026-10-14 after starting the v1.3 milestone*
+*Last updated: 2026-10-15 after Phase 18*

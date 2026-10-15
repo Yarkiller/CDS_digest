@@ -1,7 +1,7 @@
 ---
 phase: 18-reader-route-honesty-for-draft-materials
 verified: 2026-10-15T12:55:00Z
-status: human_needed
+status: passed
 score: 20/20 must-haves verified
 covered_files:
   - .planning/phases/18-reader-route-honesty-for-draft-materials/18-01-PLAN.md
@@ -22,6 +22,7 @@ covered_files:
   - web/src/pages/AdminDigestPage.jsx
   - web/src/pages/MaterialPage.jsx
   - web/src/services/adminApi.js
+
 covered_digest: "v2:sha256:beb41051c4117cf7a588a8f569966be1d4e54368f7ac29158305d40e13b46297"
 behavior_unverified: 0
 overrides_applied: 0
