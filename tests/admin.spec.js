@@ -1158,3 +1158,29 @@ test.describe("Admin pipeline config — empty/dirty/reset/nav/no-execution (PIP
     }
   });
 });
+
+test.describe("Admin Digest — предпросмотр черновика в читательском рендере (ADUX-07, ADUX-08)", () => {
+  test("черновик открывается на предпросмотре с баннером", async ({ page }) => {
+    await gotoAsRole(page, "admin", "/admin/materials/sql-dashboards-for-audit-reporting");
+
+    const banner = page.getByTestId("material-preview-banner");
+    await expect(banner).toBeVisible();
+    await expect(banner).toContainText("Черновик — предпросмотр, не опубликовано");
+
+    await expect(
+      page.getByRole("heading", {
+        level: 1,
+        name: "SQL Dashboards for Audit Reporting",
+        exact: true,
+      }),
+    ).toBeVisible();
+
+    // D-02: the same reader container, proven attached — the draft seed's body is
+    // empty, so the container is zero-height by construction (never toBeVisible()).
+    await expect(page.getByTestId("material-prose")).toHaveCount(1);
+
+    // D-08: empty payload arrays + the pre-existing length>0 gates hide both blocks.
+    await expect(page.getByTestId("material-tags")).toHaveCount(0);
+    await expect(page.getByTestId("material-related")).toHaveCount(0);
+  });
+});
