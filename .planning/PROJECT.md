@@ -12,7 +12,7 @@ Authorized СВА staff can read a trustworthy weekly issue of prepared articles
 
 v1.3 Live mail, scheduled ingestion & backlog debt started 2026-10-14 (Phases 17+). Scope: backlog tech debt first — 999.1 reader-route honesty, 999.6 unsaved-changes guard, 999.7 YAML merge-key — then MAIL-02 investigation + signup mail, MAIL-01 live SMTP digest delivered to `profiles`, and a cron/systemd scheduled ingestion over the existing `ingest` CLI (YouTube channel/playlist source; drafts only, never auto-send).
 
-v1.3 progress: Phase 17 (999.7 YAML merge-key) and Phase 18 (999.1 reader-route honesty) complete and verified. Phase 18 shipped an admin-gated draft preview surface and closed a code-review BLOCKER (CR-01) found after execution — a stale `redirectToReader` left the reader route blank after the preview→reader handoff, now fixed and pinned by a click-path test.
+v1.3 progress: Phases 17–20 complete and verified. Phase 18 shipped admin-gated draft preview + CR-01 fix. Phase 19 shipped the pipeline-editor unsaved-changes guard. Phase 20 (MAIL-02) shipped path (B): honest autoconfirm post-register copy (no letter claim), GoTrue owns confirmation (no signup→`Mailer.send_digest`), runbook documents the criterion-4 relay gap deferred to Phase 21.
 
 v1.2 Admin UX + diagnostics + PIPE-01 MVP shipped 2026-10-05 (Phases 12–16, 26 plans). Admin preview/email honesty, draft→ready promote without SQL, CLI `--debug` secret-safe diagnostics, and PIPE-01 MVP (YAML config view/edit/validate/persist behind a `PipelineConfigRepository` port; no execution). Phase 16 verified 49/49 after a stale re-verification (covered-digest restamp + code-review advisory only).
 
@@ -30,7 +30,7 @@ Stack: FastAPI, React/Vite, self-hosted Supabase + pgvector, `data-collection` +
 - ✓ Backlog 999.1 — reader-route honesty (Phase 18): an admin previews any draft **or ready** material at the admin-gated surface while the public reader route stays ready-only and draft ≡ missing (opaque 404)
 - Backlog 999.6 — unsaved-changes guard (WR-04/WR-05): correct `beforeunload` plus a router guard, so in-app SPA navigation cannot silently drop the typed pipeline config
 - Backlog 999.7 — restore valid YAML merge-key (`<<`) acceptance in the strict pipeline-config validator without weakening duplicate-key rejection
-- MAIL-02 — investigate why no signup confirmation mail is sent, then ship the fix
+- ✓ MAIL-02 — root cause diagnosed; path (B) honest autoconfirm copy shipped; live confirmation relay deferred to Phase 21 (criterion 4) — Phase 20
 - MAIL-01 — live SMTP digest delivery behind the existing `Mailer` port, with recipients taken from `profiles` and an honest `recipient_count`
 - Scheduled ingestion — cron/systemd timer on the VM driving the existing `ingest` CLI against a YouTube channel/playlist; drafts + shortlist rows only, never auto-publish or auto-send
 
@@ -38,7 +38,7 @@ Stack: FastAPI, React/Vite, self-hosted Supabase + pgvector, `data-collection` +
 - **SMTP relay is not chosen yet.** Ship the port + config (`SMTP_*`), the operator plugs in the relay; ADR-0002 contour isolation applies.
 - **No recipient list exists today** — `recipient_count` is hardcoded `0` by migrations 005/006 (`p_recipient_count int default 0`). `profiles` becomes the source of truth.
 - **Listing a channel/playlist needs YouTube Data API v3 + an API key** — a new external public dependency that must be settled in a spike/ADR (against ADR-0002) before the scheduler phase can pass.
-- **MAIL-02's root cause is unknown** since v1 («signup mailer is still unknown») — the phase opens with investigation, not implementation.
+- **MAIL-02 closed as path (B)** — GoTrue autoconfirm + honest UI copy; confirmation-letter relay remains a Phase 21 ops criterion, not a backend `Mailer` feature.
 - **The `ingest` CLI is already idempotent** (`already_saved`, unique `youtube_video_id`), so re-scanning a playlist must stay safe — lock it with a test.
 
 ## Shipped Milestone: v1.2 Admin UX + diagnostics + PIPE-01 MVP (SHIPPED 2026-10-05)
@@ -121,6 +121,7 @@ v1 is done only when **all** of the following hold:
 - ✓ PIPE-02: strict validate-before-save; invalid config rejected with a structured top-level 400 `{errors:[...]}` and zero writes (no silent accept) — Phase 16
 - ✓ PIPE-03: validated config persists behind a `PipelineConfigRepository` port and reads back on later sessions; SPA has no deep Supabase coupling — Phase 16
 - ✓ Backlog 999.1 — reader-route honesty: an admin opens any draft **or ready** material at an admin-gated preview surface (`GET /admin/materials/{slug}`) in the normal reader rendering with a visible «Черновик — предпросмотр, не опубликовано» marker, while `GET /materials/{slug}` and `get_material_for_reader` stay ready-only and draft ≡ missing (opaque 404, never 403) (ADUX-07, ADUX-08) — Phase 18
+- ✓ MAIL-02 — path (B) honest autoconfirm post-register copy; no signup→`Mailer.send_digest`; criterion-4 relay → Phase 21 — Phase 20
 
 ### Active
 
@@ -128,7 +129,6 @@ v1.3 scope (REQ-IDs are defined in `.planning/REQUIREMENTS.md`):
 
 - [ ] Backlog 999.6 — unsaved pipeline-config edits survive in-app SPA navigation or are guarded before leaving
 - [ ] Backlog 999.7 — the strict pipeline-config validator accepts valid YAML merge keys (`<<`) while still rejecting duplicate keys
-- [ ] MAIL-02 — signup confirmation mail root cause identified and the send path shipped
 - [ ] MAIL-01 — weekly digest delivered by a real mailer to the `profiles` audience with an honest `recipient_count`
 - [ ] Scheduled ingestion — unattended collection against a YouTube channel/playlist writes drafts + shortlist rows only
 
@@ -149,7 +149,7 @@ v1.3 scope (REQ-IDs are defined in `.planning/REQUIREMENTS.md`):
 - **Shipped v1:** Auth, issue/materials/archive, voting, knowledge search, разборы, and admin digest publish. Live adapters through migration 005. Mail is StubMailer.
 - **Shipped v1.1:** Ingestion path (`data-collection` + `ingestion-service`) writes drafts into the same Supabase DB; backend/SPA unchanged as readers. DeepSeek MVP bends ADR-0002 temporarily. Migrations 007–009 live (`persist_draft_and_enqueue`, provenance, unique `youtube_video_id`, decision gate, sent-batch `already_saved`).
 - **v1.2 focus:** Admin UX honesty, CLI `--debug`, PIPE-01 MVP (config/validation/UI), admin shortlist unit fix. Live SMTP and PIPE execution deferred.
-- **v1.3 focus:** Backlog tech debt first (999.1 reader-route honesty, 999.6 unsaved-changes guard, 999.7 YAML merge-key), then MAIL-02 investigation + signup mail, MAIL-01 live SMTP digest to `profiles`, and a cron/systemd scheduled ingestion over the existing `ingest` CLI. No auto-send, no pipeline execution.
+- **v1.3 focus:** Backlog tech debt (999.1/999.6/999.7), MAIL-02 path (B) shipped in Phase 20, next MAIL-01 live SMTP digest to `profiles`, then cron/systemd scheduled ingestion over the existing `ingest` CLI. No auto-send, no pipeline execution.
 - **Product framing:** Concept 3 Editorial UI («Digest CDS: издание»); personas and journeys J1–J6 in ingest context.
 - **Known debt at v1.1 close:** Nyquist drafts for phases 6–8; Phase 10 deferred admin unit flake; UAT polish items; advisory WR notes in milestone audit; four v1 debug sessions still suppressed (see STATE.md Deferred Items).
 - **Domain language:** `CONTEXT.md` + `docs/adr/` are canonical for agents.
@@ -252,4 +252,4 @@ After each phase transition: move validated/invalidated requirements; log decisi
 After milestone: full review of Core Value, Out of Scope, and Context against shipped reality.
 
 ---
-*Last updated: 2026-10-15 after Phase 18*
+*Last updated: 2026-10-16 after Phase 20*

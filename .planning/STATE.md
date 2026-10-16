@@ -2,46 +2,46 @@
 gsd_state_version: "1.0"
 milestone: v1.3
 milestone_name: Live mail, scheduled ingestion & backlog debt
-current_phase: 20
-current_phase_name: mail-02-signup-confirmation-mail
-current_plan: 2
-status: verifying
-stopped_at: Completed 20-02-PLAN.md
-last_updated: "2026-10-16T08:48:21.476Z"
+current_phase: 21
+current_phase_name: MAIL-01 live SMTP digest delivery
+current_plan: Not started
+status: planning
+stopped_at: Phase 20 complete, ready to plan Phase 21
+last_updated: "2026-10-16T10:09:07.071Z"
 last_activity: 2026-10-16
-last_activity_desc: Phase 20 execution resumed (wave continue)
-state_head: 21f688925890d6f29a1f60bf74ccc6a089b3dc47
+last_activity_desc: Phase 20 complete, transitioned to Phase 21
+state_head: f75f38fd715b8b08ee0a55cfb9f3b4d0888edd99
 progress:
   total_phases: 8
-  completed_phases: 3
+  completed_phases: 4
   total_plans: 10
   completed_plans: 10
-  percent: 38
+  percent: 50
 ---
 
 # Project State
 
 ## Project Reference
 
-See: .planning/PROJECT.md (updated 2026-10-15 — after Phase 18)
+See: .planning/PROJECT.md (updated 2026-10-16 — after Phase 20)
 
 **Core value:** Trusted weekly prepared-article issue + one honest vote toward the next разбор
-**Current focus:** Phase 20 — MAIL-02 signup confirmation mail
+**Current focus:** Phase 21 — MAIL-01 live SMTP digest delivery
 
 ## Current Position
 
-Phase: 20 (mail-02-signup-confirmation-mail) — EXECUTING
-Current Plan: 2
+Phase: 21 — MAIL-01 live SMTP digest delivery
+Current Plan: Not started
 Total Plans in Phase: 2
-Status: Phase complete — ready for verification
-Last activity: 2026-10-16 — Completed 20-01-PLAN.md
+Status: Ready to plan
+Last activity: 2026-10-16 — Phase 20 complete, transitioned to Phase 21
 
-Progress: [████░░░░░░] 38%
+Progress: [█████░░░░░] 50%
 
 ## Performance Metrics
 
 **Velocity:**
-- Total plans completed: 8 (40 v1 + 23 v1.1 + 26 v1.2)
+- Total plans completed: 10 (40 v1 + 23 v1.1 + 26 v1.2)
 - Prior milestones shipped: v1 (5 phases), v1.1 (6 phases), v1.2 (5 phases)
 - v1.3 plans completed: 3
 
@@ -60,6 +60,7 @@ Progress: [████░░░░░░] 38%
 | 17 | 3 | - | - |
 | 18 | 3 | - | - |
 | 19 | 2 | - | - |
+| 20 | 2 | - | - |
 **Per-Plan Metrics:**
 
 | Plan | Duration | Tasks | Files |
@@ -160,7 +161,7 @@ Carried product deferrals beyond v1.3: leaderboard, quiz, Whisper/Foundry ASR, i
 ## Session Continuity
 
 Last session: 2026-10-16T08:48:21.374Z
-Stopped at: Completed 20-02-PLAN.md
+Stopped at: Phase 20 complete, ready to plan Phase 21
 Resume file: None
 Next: `/gsd-plan-phase 19`
 

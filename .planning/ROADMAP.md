@@ -58,7 +58,7 @@ Backlog tech debt comes first (lowest blast radius first), then mail, then inges
 - [x] **Phase 17: YAML merge-key acceptance in the strict validator** - The strict pipeline-config validator accepts valid `<<` merge-key documents, bounded so they cannot exhaust CPU, without weakening duplicate-key rejection (completed 2026-10-14)
 - [x] **Phase 18: Reader-route honesty for draft materials** - An admin reads any draft at an admin-gated preview surface while the public reader route stays ready-only and draft ≡ missing (opaque 404) (completed 2026-10-15)
 - [x] **Phase 19: Unsaved-changes guard for the pipeline editor** - The admin pipeline editor warns before losing unsaved changes on in-app SPA navigation and on reload/close (completed 2026-10-16)
-- [ ] **Phase 20: MAIL-02 signup confirmation mail** - The root cause is diagnosed and the delivered end state is honest (working relay mail, or explicitly autoconfirmed copy)
+- [x] **Phase 20: MAIL-02 signup confirmation mail** - The root cause is diagnosed and the delivered end state is honest (working relay mail, or explicitly autoconfirmed copy) (completed 2026-10-16)
 - [ ] **Phase 21: MAIL-01 live SMTP digest delivery** - The weekly digest is delivered by a real SMTP mailer to the `profiles` audience, with honest counts and contained failures
 - [ ] **Phase 22: Admin nav grouping** - The pipeline config is reached from a single «Админ» entry with an in-page tab-bar, not a second top-level nav item
 - [ ] **Phase 23: Admin-managed ingest sources** - An admin manages the DB-stored YouTube channel/playlist source list on the pipeline page, validated server-side
@@ -165,7 +165,7 @@ Backlog tech debt comes first (lowest blast radius first), then mail, then inges
   4. The corporate SMTP relay is chosen and proven by a smoke test with a one-command rollback, serving both GoTrue and MAIL-01.
   5. If autoconfirm is flipped off, the shipped `tests/auth.spec.js` post-register assertion is deliberately **amended** (never deleted) alongside a regression for the re-introduced signup path.
 
-**Plans:** 2/2 plans executed
+**Plans:** 2/2 plans complete
 
 **Wave 1** (no dependencies)
 - [x] 20-01-PLAN.md — Tracer: honest (B) post-register copy + harness + Playwright D-09/D-10 (MAIL-02)
@@ -246,7 +246,7 @@ Phases execute in numeric order: 17 → 18 → 19 → 20 → 21 → 22 → 23 �
 | 17. YAML merge-key acceptance | 3/3 | Complete    | 2026-10-14 |
 | 18. Reader-route honesty | 3/3 | Complete    | 2026-10-15 |
 | 19. Unsaved-changes guard | 2/2 | Complete    | 2026-10-16 |
-| 20. MAIL-02 signup mail | 2/2 | In Progress|  |
+| 20. MAIL-02 signup mail | 2/2 | Complete    | 2026-10-16 |
 | 21. MAIL-01 live SMTP digest | 0/TBD | Not started | - |
 | 22. Admin nav grouping | 0/TBD | Not started | - |
 | 23. Admin-managed ingest sources | 0/TBD | Not started | - |
