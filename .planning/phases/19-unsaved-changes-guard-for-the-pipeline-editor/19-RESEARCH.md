@@ -406,7 +406,7 @@ export function armBeforeUnload(event) {
 
 ### Pattern 5: Page wiring (the Rules-of-Hooks trap)
 
-The hook **must be called before `AdminPipelineConfigPage`'s early returns**. The page has four (`roleState === 'loading'` / `'forbidden'` / `'error'`, then `loadState === 'loading'` / `'error'`), and they begin well after the `dirty` derivation. Place the guard right beside it:
+The hook **must be called before `AdminPipelineConfigPage`'s early returns**. The page has five (`roleState === 'loading'` / `'forbidden'` / `'error'`, then `loadState === 'loading'` / `'error'`), and they begin well after the `dirty` derivation. Place the guard right beside it:
 
 ```jsx
 const dirty = yaml !== savedYaml                      // (:107 — unchanged)
