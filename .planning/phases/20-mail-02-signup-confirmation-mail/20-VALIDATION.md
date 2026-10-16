@@ -113,3 +113,36 @@ git ls-files -- ".planning/debug/**/g-01-3b-signup-mailer.md"
 rg Resolution/mailer tokens in debug + runbook
 → all required tokens present
 ```
+
+## Validation Audit 2026-10-16 (re-audit /validate-phase)
+
+| Metric | Count |
+|--------|-------|
+| Gaps found | 0 |
+| Resolved | 0 |
+| Escalated | 0 |
+
+### Classification (all COVERED)
+
+| Task ID | Requirement | Status |
+|---------|-------------|--------|
+| 20-01-01 | MAIL-02 honest copy + letter-claim + Mailer fence | COVERED |
+| 20-01-02 | MAIL-02 autoconfirm happy-path + domain gate | COVERED |
+| 20-02-01 | MAIL-02 debug session closed with fix ref | COVERED |
+| 20-02-02 | MAIL-02 runbook SMTP shape/smoke/rollback | COVERED |
+
+### Re-run evidence (this audit)
+
+```text
+npx playwright test tests/auth.spec.js --project=web -g "shell identity after register|post-register copy|Регистрация завершена|confirmation letter"
+→ 2 passed
+
+uv run pytest tests/unit/test_auth_email_domain.py tests/unit/test_signup_confirmation_mail_fence.py -x
+→ 8 passed
+
+git ls-files ".planning/debug/g-01-3b-signup-mailer.md"
+→ .planning/debug/g-01-3b-signup-mailer.md
+
+rg Resolution/mailer tokens in debug + runbook
+→ all required tokens present
+```
