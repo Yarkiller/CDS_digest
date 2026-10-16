@@ -1,7 +1,7 @@
 ---
 phase: 20-mail-02-signup-confirmation-mail
 verified: 2026-10-16T09:00:00Z
-status: human_needed
+status: passed
 score: 10/10 must-haves verified
 covered_files:
   - .planning/debug/g-01-3b-signup-mailer.md
@@ -15,6 +15,7 @@ covered_files:
   - web/src/main.jsx
   - web/src/pages/RegisterPage.jsx
   - web/src/services/authApi.js
+
 covered_digest: "v2:sha256:23a8479648763f36991ac9d27fe611d2bac8f883c286d3adb855e2f572e0f90c"
 behavior_unverified: 0
 overrides_applied: 0
