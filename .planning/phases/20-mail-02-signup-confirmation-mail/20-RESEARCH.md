@@ -373,22 +373,19 @@ class Mailer(Protocol):
 
 **If this table is empty:** N/A — assumptions listed above need confirmation before path (A).
 
-## Open Questions
+## Open Questions (RESOLVED)
 
-1. **Harness vs constant-scan for D-10**
+1. **Harness vs constant-scan for D-10** — RESOLVED
    - What we know: mock `signUp` never returns null; dishonest string lives only on `!session`.
-   - What's unclear: preferred RED surface (DOM vs source).
-   - Recommendation: prefer DOM + harness arm (behaviour); constant-scan as cheaper Wave 0 fallback under discretion.
+   - Resolution: Plan `20-01` locks the **DOM harness** path — `armSignUpWithoutSession()` on `window.__DIGEST_AUTH_HARNESS__` (Claude's discretion chose behaviour over constant-scan). Constant-scan is not the shipped RED surface.
 
-2. **Signup-edge domain gate before path (A)**
+2. **Signup-edge domain gate before path (A)** — RESOLVED
    - What we know: Pitfall 16 — SPA gate is bypassable; healthy SMTP enables open confirmation sends.
-   - What's unclear: whether Phase 21 precondition must include a GoTrue hook / edge check.
-   - Recommendation: document as operator blocker for flipping (A); do not expand Phase 20 scope (D-08/deferred).
+   - Resolution: Plan `20-02` treats Pitfall 16 as **document-only** operator blocker before flipping to path (A); no GoTrue hook / edge check in Phase 20 (D-06 / deferred Ideas). Phase 21 inherits the documented precondition.
 
-3. **Exact Studio vs env mapping on knowledge-db.ru**
+3. **Exact Studio vs env mapping on knowledge-db.ru** — RESOLVED
    - What we know: runbook equates Studio «Confirm email OFF» with `GOTRUE_MAILER_AUTOCONFIRM=true`.
-   - What's unclear: whether compose file on the Supabase VM uses Studio overrides that shadow env.
-   - Recommendation: runbook smoke always trusts `GET /auth/v1/settings`, not file contents alone.
+   - Resolution: Plan `20-02` runbook smoke **trusts `GET /auth/v1/settings`** (`mailer_autoconfirm`) over Studio UI or compose/env file contents alone (Pitfall 5).
 
 ## Environment Availability
 
