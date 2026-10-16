@@ -165,10 +165,10 @@ Backlog tech debt comes first (lowest blast radius first), then mail, then inges
   4. The corporate SMTP relay is chosen and proven by a smoke test with a one-command rollback, serving both GoTrue and MAIL-01.
   5. If autoconfirm is flipped off, the shipped `tests/auth.spec.js` post-register assertion is deliberately **amended** (never deleted) alongside a regression for the re-introduced signup path.
 
-**Plans:** 2 plans
+**Plans:** 1/2 plans executed
 
 **Wave 1** (no dependencies)
-- [ ] 20-01-PLAN.md — Tracer: honest (B) post-register copy + harness + Playwright D-09/D-10 (MAIL-02)
+- [x] 20-01-PLAN.md — Tracer: honest (B) post-register copy + harness + Playwright D-09/D-10 (MAIL-02)
 
 **Wave 2** *(blocked on Wave 1)*
 - [ ] 20-02-PLAN.md — Close g-01-3b diagnosis; runbook relay shape/smoke/rollback; criterion-4 gap → Phase 21 (MAIL-02)
@@ -246,7 +246,7 @@ Phases execute in numeric order: 17 → 18 → 19 → 20 → 21 → 22 → 23 �
 | 17. YAML merge-key acceptance | 3/3 | Complete    | 2026-10-14 |
 | 18. Reader-route honesty | 3/3 | Complete    | 2026-10-15 |
 | 19. Unsaved-changes guard | 2/2 | Complete    | 2026-10-16 |
-| 20. MAIL-02 signup mail | 0/2 | Planned | - |
+| 20. MAIL-02 signup mail | 1/2 | In Progress|  |
 | 21. MAIL-01 live SMTP digest | 0/TBD | Not started | - |
 | 22. Admin nav grouping | 0/TBD | Not started | - |
 | 23. Admin-managed ingest sources | 0/TBD | Not started | - |

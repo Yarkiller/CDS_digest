@@ -3,18 +3,18 @@ gsd_state_version: "1.0"
 milestone: v1.3
 milestone_name: Live mail, scheduled ingestion & backlog debt
 current_phase: 20
-current_phase_name: MAIL-02 signup confirmation mail
+current_phase_name: PLACEHOLDER
 status: executing
-stopped_at: Phase 19 complete, ready to plan Phase 20
-last_updated: "2026-10-16T08:08:48.356Z"
+stopped_at: Completed 20-01-PLAN.md
+last_updated: "2026-10-16T08:40:14.408Z"
 last_activity: 2026-10-16
-last_activity_desc: Phase 19 complete, transitioned to Phase 20
-state_head: dee2b883b2b5446d2f6b8826418119979736a81c
+last_activity_desc: Phase 20 execution resumed (wave continue)
+state_head: 8c027f185acb6b19ab156bedcd56bea8e6931a7d
 progress:
   total_phases: 8
   completed_phases: 3
   total_plans: 10
-  completed_plans: 8
+  completed_plans: 9
   percent: 38
 ---
 
@@ -25,14 +25,14 @@ progress:
 See: .planning/PROJECT.md (updated 2026-10-15 — after Phase 18)
 
 **Core value:** Trusted weekly prepared-article issue + one honest vote toward the next разбор
-**Current focus:** Phase 19 — Unsaved-changes guard for the pipeline editor
+**Current focus:** Phase 20 — PLACEHOLDER
 
 ## Current Position
 
-Phase: 20 (MAIL-02 signup confirmation mail) — READY TO EXECUTE
-Plan: Not started
-Status: Ready to execute
-Last activity: 2026-10-16 — Phase 19 complete, transitioned to Phase 20
+Phase: 20 (PLACEHOLDER) — EXECUTING
+Plan: 1 of ?
+Status: Executing Phase 20
+Last activity: 2026-10-16 — Phase 20 execution resumed (wave continue)
 
 Progress: [████░░░░░░] 38%
 
@@ -70,6 +70,7 @@ Progress: [████░░░░░░] 38%
 | Phase 18 P03 | 57min | 2 tasks | 5 files |
 | Phase 19 P01 | 16min | 2 tasks | 1 files |
 | Phase 19 P02 | 22min | 3 tasks | 6 files |
+| Phase 20 P01 | 4min | 2 tasks | 4 files |
 
 ## Accumulated Context
 
@@ -119,6 +120,9 @@ v1.3 roadmap locks:
 - [Phase 19]: D-01/D-04: boolean useBlocker + custom modal for SPA leave (ADUX-09 c1)
 - [Phase 19]: D-05/D-06: armBeforeUnload two-statement contract; browser-owned unload text
 - [Phase 19]: D-07: reusable util/hook/dialog trio for Phase 23 ADUX-10 reuse
+- [Phase 20]: D-02: Ship path (B) honest autoconfirm copy this session; relay-proof deferred to Phase 21 via Plan 20-02
+- [Phase 20]: D-07/D-08: CONFIRM_MESSAGE lives only in RegisterPage; authApi error-mapping strings untouched
+- [Phase 20]: D-10: DOM harness armSignUpWithoutSession forces null session under VITE_USE_MOCKS
 
 ### Pending Todos
 
@@ -149,8 +153,8 @@ Carried product deferrals beyond v1.3: leaderboard, quiz, Whisper/Foundry ASR, i
 
 ## Session Continuity
 
-Last session: 2026-10-16T07:06:13.502Z
-Stopped at: Phase 19 complete, ready to plan Phase 20
+Last session: 2026-10-16T08:40:14.302Z
+Stopped at: Completed 20-01-PLAN.md
 Resume file: None
 Next: `/gsd-plan-phase 19`
 
