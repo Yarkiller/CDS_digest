@@ -114,7 +114,7 @@ Each task was committed atomically:
 2. **Task 1 (GREEN): harness + CONFIRM_MESSAGE** - `8c027f1` (feat)
 3. **Task 2: Prove happy path + domain tripwire** - verification-only (no code commit); Playwright 2/2 + pytest 5/5 passed
 
-**Plan metadata:** (pending docs commit)
+**Plan metadata:** `29a4e7b` (docs: complete plan)
 
 _Note: TDD tasks may have multiple commits (test → feat → refactor)_
 

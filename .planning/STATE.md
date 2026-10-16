@@ -3,7 +3,7 @@ gsd_state_version: "1.0"
 milestone: v1.3
 milestone_name: Live mail, scheduled ingestion & backlog debt
 current_phase: 20
-current_phase_name: PLACEHOLDER
+current_phase_name: mail-02-signup-confirmation-mail
 status: executing
 stopped_at: Completed 20-01-PLAN.md
 last_updated: "2026-10-16T08:40:14.408Z"
@@ -25,14 +25,15 @@ progress:
 See: .planning/PROJECT.md (updated 2026-10-15 — after Phase 18)
 
 **Core value:** Trusted weekly prepared-article issue + one honest vote toward the next разбор
-**Current focus:** Phase 20 — PLACEHOLDER
+**Current focus:** Phase 20 — MAIL-02 signup confirmation mail
 
 ## Current Position
 
-Phase: 20 (PLACEHOLDER) — EXECUTING
-Plan: 1 of ?
-Status: Executing Phase 20
-Last activity: 2026-10-16 — Phase 20 execution resumed (wave continue)
+Phase: 20 (mail-02-signup-confirmation-mail) — EXECUTING
+Current Plan: 2
+Total Plans in Phase: 2
+Status: Executing Phase 20 — Plan 01 complete, ready for 20-02
+Last activity: 2026-10-16 — Completed 20-01-PLAN.md
 
 Progress: [████░░░░░░] 38%
 
