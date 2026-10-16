@@ -141,6 +141,7 @@ class SendDigestResponse(BaseModel):
     issue_url: str
     delivery_status: str
     recipient_count: int = 0
+    delivered_count: int = 0
     message: str
 
 
@@ -517,10 +518,13 @@ def post_shortlist_preview(
 @router.post(
     "/shortlist/send",
     response_model=SendDigestResponse,
-    summary="Send digest: claim, publish issue, stub mail",
+    summary="Send digest: claim, publish issue, deliver mail",
     description=(
-        "Publish-on-send (D-88): claim batch, publish digest_issues, StubMailer. "
-        "Draft in pool → 400; empty → 400; already sent → 409. Success: «Отправка записана»."
+        "Publish-on-send (D-88): claim batch, publish digest_issues, then best-effort mail "
+        "(StubMailer by default, live SMTP when MAILER=smtp). Draft in pool → 400; empty → 400; "
+        "already sent → 409. Success is HTTP 200 with honest planned M (recipient_count), "
+        "delivered N (delivered_count), and a two-sentence message (D-09/D-10/D-12); a "
+        "contained mail partial/fail after publish never becomes 5xx (D-11)."
     ),
 )
 def post_shortlist_send(
@@ -580,6 +584,7 @@ def post_shortlist_send(
         issue_url=result.issue_url,
         delivery_status=result.delivery_status,
         recipient_count=result.recipient_count,
+        delivered_count=result.delivered_count,
         message=result.message,
     )
 
