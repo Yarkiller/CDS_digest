@@ -199,3 +199,15 @@ def test_settings_repr_never_leaks_the_smtp_password() -> None:
     settings = Settings(mailer="smtp", smtp_pass="hunter2-relay-secret")
 
     assert "hunter2-relay-secret" not in repr(settings)
+
+
+@pytest.mark.parametrize("bad_port", ["0", "65536", "70000", "-1"])
+def test_settings_rejects_non_positive_or_out_of_range_smtp_port(bad_port: str) -> None:
+    """IN-03/D-16: an invalid SMTP_PORT fails fast instead of passing the completeness check."""
+    with pytest.raises(ConfigurationError):
+        Settings.from_env({"SMTP_PORT": bad_port})
+
+
+@pytest.mark.parametrize("good_port", ["1", "587", "65535"])
+def test_settings_accepts_in_range_smtp_port(good_port: str) -> None:
+    assert Settings.from_env({"SMTP_PORT": good_port}).smtp_port == int(good_port)

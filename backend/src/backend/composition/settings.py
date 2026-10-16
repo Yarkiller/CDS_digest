@@ -14,13 +14,20 @@ def _split_csv(value: str) -> tuple[str, ...]:
 
 
 def _read_smtp_port(env: Mapping[str, str]) -> int | None:
-    """D-16: ``SMTP_PORT`` must be an explicit integer, otherwise it stays unset."""
+    """D-16: ``SMTP_PORT`` must be an explicit in-range integer, otherwise it stays unset.
+
+    IN-03: ``0`` (and anything outside 1..65535) is rejected here so an invalid port fails
+    fast at startup instead of passing the completeness check and hot-looping at connect.
+    """
     raw = (env.get("SMTP_PORT") or "").strip()
     if not raw:
         return None
     if not raw.isdigit():
         raise ConfigurationError(f"SMTP_PORT must be an integer, got {raw!r}")
-    return int(raw)
+    port = int(raw)
+    if not (1 <= port <= 65535):
+        raise ConfigurationError(f"SMTP_PORT must be in 1..65535, got {raw!r}")
+    return port
 
 
 @dataclass(frozen=True)
