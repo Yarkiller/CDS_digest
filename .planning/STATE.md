@@ -4,17 +4,18 @@ milestone: v1.3
 milestone_name: Live mail, scheduled ingestion & backlog debt
 current_phase: 20
 current_phase_name: mail-02-signup-confirmation-mail
-status: executing
-stopped_at: Completed 20-01-PLAN.md
-last_updated: "2026-10-16T08:40:14.408Z"
+current_plan: 2
+status: verifying
+stopped_at: Completed 20-02-PLAN.md
+last_updated: "2026-10-16T08:48:21.476Z"
 last_activity: 2026-10-16
 last_activity_desc: Phase 20 execution resumed (wave continue)
-state_head: 8c027f185acb6b19ab156bedcd56bea8e6931a7d
+state_head: 21f688925890d6f29a1f60bf74ccc6a089b3dc47
 progress:
   total_phases: 8
   completed_phases: 3
   total_plans: 10
-  completed_plans: 9
+  completed_plans: 10
   percent: 38
 ---
 
@@ -32,7 +33,7 @@ See: .planning/PROJECT.md (updated 2026-10-15 — after Phase 18)
 Phase: 20 (mail-02-signup-confirmation-mail) — EXECUTING
 Current Plan: 2
 Total Plans in Phase: 2
-Status: Executing Phase 20 — Plan 01 complete, ready for 20-02
+Status: Phase complete — ready for verification
 Last activity: 2026-10-16 — Completed 20-01-PLAN.md
 
 Progress: [████░░░░░░] 38%
@@ -72,6 +73,7 @@ Progress: [████░░░░░░] 38%
 | Phase 19 P01 | 16min | 2 tasks | 1 files |
 | Phase 19 P02 | 22min | 3 tasks | 6 files |
 | Phase 20 P01 | 4min | 2 tasks | 4 files |
+| Phase 20 P02 | 5min | 2 tasks | 2 files |
 
 ## Accumulated Context
 
@@ -124,6 +126,9 @@ v1.3 roadmap locks:
 - [Phase 20]: D-02: Ship path (B) honest autoconfirm copy this session; relay-proof deferred to Phase 21 via Plan 20-02
 - [Phase 20]: D-07/D-08: CONFIRM_MESSAGE lives only in RegisterPage; authApi error-mapping strings untouched
 - [Phase 20]: D-10: DOM harness armSignUpWithoutSession forces null session under VITE_USE_MOCKS
+- [Phase 20]: D-12: Close g-01-3b in place with Resolution citing 20-01 honest copy
+- [Phase 20]: D-03/D-13: Runbook records GOTRUE_SMTP_*/SMTP_* shape only; no new ADR (D-04)
+- [Phase 20]: D-05/D-06: Rollback GOTRUE_MAILER_AUTOCONFIRM=true; criterion-4 proof → Phase 21
 
 ### Pending Todos
 
@@ -154,8 +159,8 @@ Carried product deferrals beyond v1.3: leaderboard, quiz, Whisper/Foundry ASR, i
 
 ## Session Continuity
 
-Last session: 2026-10-16T08:40:14.302Z
-Stopped at: Completed 20-01-PLAN.md
+Last session: 2026-10-16T08:48:21.374Z
+Stopped at: Completed 20-02-PLAN.md
 Resume file: None
 Next: `/gsd-plan-phase 19`
 
