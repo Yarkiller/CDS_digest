@@ -9,7 +9,7 @@ import { armWelcomeToast } from '../services/welcomeSession.js'
 
 const DOMAIN_MESSAGE = 'Вход только с корпоративного домена СВА'
 const CONFIRM_MESSAGE =
-  'Регистрация принята. Подтвердите email по ссылке из письма, затем войдите.'
+  'Регистрация завершена. Аккаунт активен — войдите.'
 
 export default function RegisterPage() {
   const navigate = useNavigate()

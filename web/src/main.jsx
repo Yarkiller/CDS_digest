@@ -5,6 +5,7 @@ import App from './App.jsx'
 import {
   armFailNextSignIn,
   armFailNextSignUp,
+  armSignUpWithoutSession,
   resetAuthHarness,
 } from './services/authApi.js'
 import {
@@ -40,6 +41,7 @@ import {
 window.__DIGEST_AUTH_HARNESS__ = {
   armFailNextSignIn,
   armFailNextSignUp,
+  armSignUpWithoutSession,
   resetAuthHarness,
 }
 window.__DIGEST_ME_HARNESS__ = { armFailNextMeFetch, resetMeHarness, setMockMeRole }

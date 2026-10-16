@@ -15,6 +15,7 @@ let signInInvocations = 0
 let signUpInvocations = 0
 let failNextSignIn = false
 let failNextSignUp = false
+let signUpWithoutSession = false
 
 export function armFailNextSignIn() {
   failNextSignIn = true
@@ -24,12 +25,17 @@ export function armFailNextSignUp() {
   failNextSignUp = true
 }
 
+export function armSignUpWithoutSession() {
+  signUpWithoutSession = true
+}
+
 export function resetAuthHarness() {
   mockSession = null
   signInInvocations = 0
   signUpInvocations = 0
   failNextSignIn = false
   failNextSignUp = false
+  signUpWithoutSession = false
 }
 
 export function getSignInInvocationCount() {
@@ -118,6 +124,11 @@ export async function signUp({ email, password, displayName }) {
       code: 'NETWORK',
       retryable: true,
     })
+  }
+
+  if (signUpWithoutSession) {
+    signUpWithoutSession = false
+    return null
   }
 
   const trimmedName = (displayName ?? '').trim()
