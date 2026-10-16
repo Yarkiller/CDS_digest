@@ -1,4 +1,9 @@
-"""StubMailer + SmtpMailer — honesty path for digest send (D-87)."""
+"""StubMailer — the default digest mailer double (D-87 / D-15).
+
+``SmtpMailer`` is re-exported from ``backend.infrastructure.smtp_mailer`` so the historical
+import path stays stable; ``StubMailer`` remains the ``MAILER=stub`` implementation and the
+in-memory test double (assumption-delta: live SMTP is added alongside, never instead).
+"""
 
 from __future__ import annotations
 
@@ -6,6 +11,9 @@ import logging
 from typing import Sequence
 
 from backend.domain.recipient import Recipient
+from backend.infrastructure.smtp_mailer import SmtpMailer
+
+__all__ = ["SmtpMailer", "StubMailer", "resolve_mailer"]
 
 logger = logging.getLogger(__name__)
 
@@ -53,23 +61,6 @@ class StubMailer:
             "delivered_count": 0,
             "issue_url": issue_url,
         }
-
-
-class SmtpMailer:
-    """Placeholder for Phase 21 Plan 02 SMTP — send is intentionally unimplemented (D-87)."""
-
-    def send_digest(
-        self,
-        *,
-        batch_id: int,
-        issue_url: str,
-        subject: str,
-        body_text: str,
-        recipient_count: int,
-        recipients: Sequence[Recipient] = (),
-        body_html: str | None = None,
-    ) -> dict[str, object]:
-        raise NotImplementedError("SmtpMailer is not implemented; use MAILER=stub")
 
 
 def resolve_mailer(mailer_mode: str) -> StubMailer:

@@ -30,17 +30,17 @@ def test_stub_mailer_returns_stubbed_delivery_and_zero_recipients() -> None:
     assert mailer.last_batch_id == 42
 
 
-def test_smtp_mailer_send_raises_not_implemented() -> None:
-    """D-87: SmtpMailer exists but send is NotImplementedError."""
-    mailer = SmtpMailer()
-    with pytest.raises(NotImplementedError):
-        mailer.send_digest(
-            batch_id=1,
-            issue_url="/issues/1",
-            subject="x",
-            body_text="y",
-            recipient_count=0,
-        )
+def test_smtp_mailer_import_path_is_stable_and_real() -> None:
+    """Plan 02: the historical ``stub_mailer`` import path re-exports the real adapter."""
+    assert SmtpMailer is not StubMailer
+    mailer = SmtpMailer(
+        host="relay.example.test",
+        port=587,
+        user="digest-bot",
+        password="unused-in-constructor",
+        from_addr="digest@knowledge-db.ru",
+    )
+    assert callable(mailer.send_digest)
 
 
 def test_settings_mailer_defaults_to_stub() -> None:
