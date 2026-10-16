@@ -59,12 +59,17 @@ class SupabaseDigestPublisher:
         period_label: str,
         title: str,
         material_ids: list[int] | None = None,
+        recipient_count: int = 0,
     ) -> DigestPublication:
         params: dict[str, Any] = {
             "p_batch_id": batch_id,
             "p_sent_at": _iso(sent_at),
             "p_period_label": period_label,
             "p_title": title,
+            # D-06 option i: stamp the planned audience M at claim. The live N/status ride
+            # the API result + pings — p_delivery_status stays at the RPC default (no
+            # post-mail update_delivery in this phase).
+            "p_recipient_count": recipient_count,
         }
         if material_ids:
             params["p_material_ids"] = list(material_ids)

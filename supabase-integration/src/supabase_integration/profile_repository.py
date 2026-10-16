@@ -2,10 +2,14 @@
 
 from __future__ import annotations
 
+import logging
 from typing import Any, Protocol
 
 from backend.domain.current_user import CurrentUser
 from backend.domain.errors import PersistenceError
+from backend.domain.recipient import Recipient, is_usable_email
+
+_logger = logging.getLogger(__name__)
 
 _DEFAULT_APP_ROLE = "employee"
 
@@ -81,3 +85,39 @@ class SupabaseProfileRepository:
         if not data:
             raise PersistenceError("profiles set_display_name returned no rows")
         return _row_to_user(data[0])
+
+    def list_digest_recipients(self) -> list[Recipient]:
+        """All profiles with a usable email — no role filter (D-01), email-only (D-03).
+
+        Runs on the service_role client wired by composition (RESEARCH Pitfall 7: the
+        ``profiles_select_own`` RLS policy would hide every other row under a user JWT).
+        Empty/malformed emails are excluded and logged; they never count toward M (D-02).
+        """
+        try:
+            result = (
+                self._client.table("profiles")
+                .select("id,email,display_name")
+                .execute()
+            )
+        except PersistenceError:
+            raise
+        except Exception as exc:  # noqa: BLE001 — map all SDK failures at boundary
+            raise PersistenceError(f"profiles list_digest_recipients failed: {exc}") from exc
+
+        rows = getattr(result, "data", None) or []
+        recipients: list[Recipient] = []
+        for row in rows:
+            email = str(row.get("email") or "")
+            if not is_usable_email(email):
+                _logger.info(
+                    "digest audience: excluding profile id=%s email=%r (unusable)",
+                    row.get("id"),
+                    row.get("email"),
+                )
+                continue
+            raw_name = row.get("display_name")
+            display_name = (
+                str(raw_name) if raw_name is not None and str(raw_name).strip() else None
+            )
+            recipients.append(Recipient(email=email, display_name=display_name))
+        return recipients
