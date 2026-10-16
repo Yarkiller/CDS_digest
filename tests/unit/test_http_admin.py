@@ -768,6 +768,66 @@ def test_admin_preview_employee_returns_403() -> None:
     assert response.json()["detail"] == "forbidden"
 
 
+class _FakeStatusMailer:
+    """Mailer double returning a scripted live delivery status (D-11 containment proofs)."""
+
+    def __init__(self, *, status: str, delivered: int) -> None:
+        self._status = status
+        self._delivered = delivered
+
+    def send_digest(
+        self,
+        *,
+        batch_id: int,
+        issue_url: str,
+        subject: str,
+        body_text: str,
+        recipient_count: int,
+        recipients: Any,
+        body_html: str | None = None,
+    ) -> dict[str, Any]:
+        return {
+            "delivery_status": self._status,
+            "recipient_count": recipient_count,
+            "delivered_count": self._delivered,
+            "issue_url": issue_url,
+        }
+
+
+def test_admin_send_stays_200_when_mail_partial_after_publish() -> None:
+    """D-11 / D-88: a contained mail partial after publish is HTTP 200 with honest N/M."""
+    client, headers, container = _admin_client_with_batch(_ready_approved_batch())
+    _seed_profile(container, user_id="emp-uuid-1", email="emp@sberbank.ru", role="employee")
+    container.mailer = _FakeStatusMailer(status="partial", delivered=1)
+
+    response = client.post("/admin/shortlist/send", headers=headers)
+
+    assert response.status_code == 200
+    body = response.json()
+    assert body["delivery_status"] == "partial"
+    assert body["recipient_count"] == 2
+    assert body["delivered_count"] == 1
+    assert body["message"] == "Выпуск опубликован. Доставлено 1 из 2 (частично)"
+    assert container.issues.get_by_number(body["issue_number"]) is not None
+
+
+def test_admin_send_stays_200_when_mail_failed_after_publish() -> None:
+    """D-11 / D-88: a full mail failure after publish is still HTTP 200, never 5xx."""
+    client, headers, container = _admin_client_with_batch(_ready_approved_batch())
+    _seed_profile(container, user_id="emp-uuid-1", email="emp@sberbank.ru", role="employee")
+    container.mailer = _FakeStatusMailer(status="failed", delivered=0)
+
+    response = client.post("/admin/shortlist/send", headers=headers)
+
+    assert response.status_code == 200
+    body = response.json()
+    assert body["delivery_status"] == "failed"
+    assert body["recipient_count"] == 2
+    assert body["delivered_count"] == 0
+    assert body["message"] == "Выпуск опубликован. Письма не доставлены (0 из 2)"
+    assert container.issues.get_by_number(body["issue_number"]) is not None
+
+
 def test_admin_send_happy_path_publishes_and_returns_issue_link() -> None:
     """ADMIN-07/08 / D-88: send publishes once; stub honesty message."""
     client, headers, container = _admin_client_with_batch(_ready_approved_batch())
@@ -778,6 +838,7 @@ def test_admin_send_happy_path_publishes_and_returns_issue_link() -> None:
     body = response.json()
     assert body["message"] == "Выпуск опубликован. Доставка писем: stub (0 из 1)"
     assert body["delivery_status"] == "stubbed"
+    assert body["delivered_count"] == 0
     assert body["issue_url"].startswith("/issues/")
     # WR-03: sent batch leaves the unsent pool; sent_at is visible via get_latest_batch.
     assert container.shortlist.get_current_batch() is None
@@ -828,6 +889,7 @@ def test_admin_send_material_ids_order_honored_and_mismatch_is_400() -> None:
     )
     assert ok.status_code == 200
     assert ok.json()["message"] == "Выпуск опубликован. Доставка писем: stub (0 из 1)"
+    assert ok.json()["delivered_count"] == 0
     published = container.issues.get_by_number(ok.json()["issue_number"])
     assert published is not None
     assert [item.title for item in published.items] == ["Second by rank", "First by rank"]
@@ -976,6 +1038,7 @@ def test_admin_mark_ready_promotes_draft_and_clears_send_gate() -> None:
     assert send_response.status_code == 200
     detail = send_response.json()
     assert detail["message"] == "Выпуск опубликован. Доставка писем: stub (0 из 1)"
+    assert detail["delivered_count"] == 0
 
 
 def test_admin_mark_ready_missing_material_returns_404() -> None:
