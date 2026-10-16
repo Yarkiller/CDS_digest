@@ -1,4 +1,4 @@
-import { BrowserRouter, Navigate, Route, Routes } from 'react-router-dom'
+import { createBrowserRouter, Navigate, RouterProvider } from 'react-router-dom'
 import AppShell from './components/AppShell.jsx'
 import RequireAuth from './components/RequireAuth.jsx'
 import ArchivePage from './pages/ArchivePage.jsx'
@@ -14,34 +14,33 @@ import RazboryListPage from './pages/RazboryListPage.jsx'
 import RegisterPage from './pages/RegisterPage.jsx'
 import VotingPage from './pages/VotingPage.jsx'
 
+const router = createBrowserRouter([
+  { path: '/login', element: <LoginPage /> },
+  { path: '/register', element: <RegisterPage /> },
+  {
+    element: (
+      <RequireAuth>
+        <AppShell />
+      </RequireAuth>
+    ),
+    children: [
+      { index: true, element: <IssuePage isCurrent /> },
+      { path: 'archive', element: <ArchivePage /> },
+      { path: 'issues/:number', element: <IssuePage isCurrent={false} /> },
+      { path: 'voting', element: <VotingPage /> },
+      { path: 'knowledge', element: <KnowledgePage /> },
+      { path: 'materials/:id', element: <MaterialPage /> },
+      { path: 'razbory', element: <RazboryListPage /> },
+      { path: 'razbory/:id', element: <RazborPage /> },
+      { path: 'profile', element: <ProfilePage /> },
+      { path: 'admin/digest', element: <AdminDigestPage /> },
+      { path: 'admin/materials/:id', element: <MaterialPage preview /> },
+      { path: 'admin/pipeline', element: <AdminPipelineConfigPage /> },
+      { path: '*', element: <Navigate to="/" replace /> },
+    ],
+  },
+])
+
 export default function App() {
-  return (
-    <BrowserRouter>
-      <Routes>
-        <Route path="/login" element={<LoginPage />} />
-        <Route path="/register" element={<RegisterPage />} />
-        <Route
-          element={
-            <RequireAuth>
-              <AppShell />
-            </RequireAuth>
-          }
-        >
-          <Route index element={<IssuePage isCurrent />} />
-          <Route path="archive" element={<ArchivePage />} />
-          <Route path="issues/:number" element={<IssuePage isCurrent={false} />} />
-          <Route path="voting" element={<VotingPage />} />
-          <Route path="knowledge" element={<KnowledgePage />} />
-          <Route path="materials/:id" element={<MaterialPage />} />
-          <Route path="razbory" element={<RazboryListPage />} />
-          <Route path="razbory/:id" element={<RazborPage />} />
-          <Route path="profile" element={<ProfilePage />} />
-          <Route path="admin/digest" element={<AdminDigestPage />} />
-          <Route path="admin/materials/:id" element={<MaterialPage preview />} />
-          <Route path="admin/pipeline" element={<AdminPipelineConfigPage />} />
-          <Route path="*" element={<Navigate to="/" replace />} />
-        </Route>
-      </Routes>
-    </BrowserRouter>
-  )
+  return <RouterProvider router={router} />
 }
