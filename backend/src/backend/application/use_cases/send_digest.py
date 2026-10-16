@@ -33,6 +33,10 @@ from backend.domain.shortlist import ShortlistItem, visible_shortlist_items
 
 logger = logging.getLogger(__name__)
 
+_ALLOWED_DELIVERY_STATUSES = frozenset({"stubbed", "sent", "partial", "failed"})
+"""D-07: the only mailer statuses `_compose_delivery_message` may render; anything else is
+treated as `failed` so an unknown token can never be promoted to a delivery claim (IN-01/D-09)."""
+
 
 @dataclass(frozen=True)
 class SendDigestResult:
@@ -229,7 +233,12 @@ def send_digest(
         )
 
     if mail_result is not None:
-        delivery_status = str(mail_result.get("delivery_status") or "sent")
+        raw_status = str(mail_result.get("delivery_status") or "")
+        # IN-01/D-09: validate the mailer token; an unknown/absent status is reported
+        # conservatively as `failed` instead of being rendered as a successful delivery.
+        delivery_status = (
+            raw_status if raw_status in _ALLOWED_DELIVERY_STATUSES else "failed"
+        )
         raw_delivered = mail_result.get("delivered_count")
         delivered_count = raw_delivered if isinstance(raw_delivered, int) else 0
         stop_reason = mail_result.get("stop_reason")

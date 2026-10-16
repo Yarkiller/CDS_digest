@@ -367,6 +367,26 @@ def test_send_live_failed_message_is_full_mail_fail_copy() -> None:
     assert "stub" not in result.message
 
 
+def test_send_unknown_delivery_status_token_defaults_to_failed() -> None:
+    """IN-01/D-09: an unknown mailer status token must never render as delivery success."""
+    shortlist = InMemoryShortlistRepository(batch=_batch(_item(material_id=101)))
+    issues = InMemoryIssueRepository()
+    mailer = _StatusMailer(delivery_status="teleported", delivered_count=0)
+
+    result = send_digest(
+        shortlist,
+        _publisher(shortlist, issues),
+        mailer,
+        InMemoryPingRecorder(),
+        _three_profiles(),
+        actor_user_id="admin-uuid-1",
+        now=datetime(2026, 9, 21, 15, 0, tzinfo=timezone.utc),
+    )
+
+    assert result.delivery_status == "failed"
+    assert result.message == "Выпуск опубликован. Письма не доставлены (0 из 3)"
+
+
 def test_send_mail_failure_after_publish_still_returns_success() -> None:
     """MAIL-04 / D-88: MailDeliveryError after claim+publish must not fail the send."""
     shortlist = InMemoryShortlistRepository(batch=_batch(_item(material_id=101)))
