@@ -697,32 +697,37 @@ Two caveats the executor must respect: (1) a `page.on('dialog')` listener **must
 | A4 | The pre-migration baseline is **110 passed** for the `web` project | Runtime State Inventory, Validation Architecture | LOW — it comes from STATE.md's recorded clean re-run, not from a run this session. Record the actual number before migrating; do not assume it. |
 | A5 | `web/src/utils/` is the correct home for the pure helper, matching the existing `forbiddenChrome.js` convention that `tests/admin.spec.js` already imports through `pathToFileURL` | Recommended Project Structure | LOW — cosmetic; the planner may relocate the file without consequence to the contract. |
 
-## Open Questions
+## Open Questions (RESOLVED)
 
 1. **Exact file split for the guard (D-07 leaves it to the planner).**
    - What we know: D-07 mandates a reusable hook + dialog; Phase 23 (`ADUX-10`) must import them without a rewrite; the copy constant must have one home.
    - What's unclear: whether the copy constant lives in the dialog, a small `copy.js`, or the `utils` helper.
    - Recommendation: put `armBeforeUnload` + `UNSAVED_LEAVE_CONFIRM` in `web/src/utils/unsavedChangesGuard.js` (Vite-free → `node --test`-able), the hook in `web/src/hooks/useUnsavedChangesGuard.js`, and the dialog in `web/src/components/UnsavedChangesDialog.jsx`. The page imports the hook and the dialog; the dialog imports only the copy constant.
+   - **RESOLVED:** the split is adopted verbatim and planned. `19-02-PLAN.md` T1 creates `UNSAVED_LEAVE_CONFIRM` + `useUnsavedChangesGuard(dirty)` + `UnsavedChangesDialog`, and T2 adds `armBeforeUnload` to the same util module and the dirty-scoped unload effect to the same hook. The page imports the hook and the dialog; the dialog imports only the copy constant, so the leave copy has exactly one home (D-07).
 
 2. **Does D-04's "the guard blocks the `RequireAuth` `/login` redirect too" actually hold?**
    - What we know: `RequireAuth` re-checks only inside an effect keyed on `[location.pathname, location.search]` `[VERIFIED: web/src/components/RequireAuth.jsx:45]`, and its `!authed` branch returns `<Navigate to={/login?returnUrl=…} replace />` `[VERIFIED: web/src/components/RequireAuth.jsx:59-63]`. `useBlocker`'s cleanup deletes the blocker when its host unmounts (`router.deleteBlocker(key)` — Context7 source excerpt), and `<Navigate>` would unmount the pipeline page.
    - What's unclear: whether a `<Navigate>`-driven redirect can ever begin **while the dirty editor is still mounted**.
    - Recommendation: it cannot, for the reachable reasons — the only trigger that flips `authed` to false is a location change, and a location change while dirty is exactly the navigation the blocker intercepts first. If the user chooses «Уйти без сохранения», the editor has already unmounted by the time `RequireAuth` re-checks and redirects, so no blocker is needed. **Do not add a pathname carve-out** (D-04). The plan should record this reachability argument rather than writing an unprovable test: with `VITE_USE_MOCKS=true` the Playwright `web` project short-circuits `RequireAuth` (`mocksOn` → `return children`), so the redirect path is not browser-reproducible here. A `window.__DIGEST_FORCE_AUTH_GATE__ = true` harness exists for exactly this gate, but it cannot express "dirty, then session expiry" because the gate is read once when `RequireAuth` mounts. **Flag this as an accepted, documented gap in the phase — it is not a blocker for `ADUX-09`, which speaks of in-app navigation, not session expiry.**
+   - **RESOLVED:** D-04 holds and no pathname carve-out is added — planned as the boolean `useBlocker(dirty)` in `19-02-PLAN.md` T1 (one predicate, every in-app navigation). The reachability argument (a location change while dirty is the navigation the blocker intercepts first, and the editor unmounts before `RequireAuth` re-checks) is recorded rather than tested, because under `VITE_USE_MOCKS=true` the `web` project short-circuits `RequireAuth` and the redirect path is not browser-reproducible. The gap is carried as threat `T-19-07` (disposition `accept`) in `19-02-PLAN.md`, matching the "accepted, documented gap" conclusion recorded here.
 
 3. **Should the migration add an explicit `errorElement`?**
    - What we know: a data router installs a default error boundary (A1), which is a behaviour change for every route.
    - What's unclear: whether any existing test depends on a render throw propagating, and whether `containsForbiddenChrome` (`tests/admin.spec.js:19-24` imports `web/src/utils/forbiddenChrome.js`) would flag the default English error UI.
    - Recommendation: add **no** `errorElement` in the migration plan — adding one is a new behaviour, not a behaviour-preserving refactor. Record the delta in the plan and let the full-suite gate decide. If the suite stays green (expected, since no route throws in tests), ship as-is.
+   - **RESOLVED:** add NO `errorElement` — planned in `19-01-PLAN.md` T1/T2, whose `<action>` and acceptance criteria forbid any `errorElement` key and whose `must_haves.truths` states "No `errorElement` is added and no route is added, removed, or loosened". The data-router default error boundary is the one recorded behavioural delta, and the full `web` suite gate decides; no route throws in tests, so it ships as-is.
 
 4. **What is the exact pre-migration baseline?**
    - What we know: STATE.md records "a clean re-run has produced 110 passed every time".
    - What's unclear: whether that number holds on the current tree (`experiment/gsd-framework` branch).
    - Recommendation: Wave 0 of Plan 1 runs `npm run test:web` once on the untouched tree, records the number, then re-runs after the migration and asserts equality. Do not hard-code 110.
+   - **RESOLVED:** the baseline is MEASURED, not assumed. `19-01-PLAN.md` T1 STEP 0 runs `npm run test:web` on the untouched tree (after confirming nothing listens on `127.0.0.1:5174`) and records the exact passed count before any edit; STEP 2 re-runs it and asserts equality. The plan's `must_haves.truths` states the number is "MEASURED on this checkout, never assumed to be 110".
 
 5. **Do the copy constants need to move at all?**
    - What we know: `RESET_CONFIRM` at `:24` and `UNSAVED_LEAVE_CONFIRM` at `:27` `[VERIFIED: web/src/pages/AdminPipelineConfigPage.jsx:24,27]`.
    - What's unclear: whether the planner wants one module for both strings.
    - Recommendation: move `UNSAVED_LEAVE_CONFIRM` into the guard module (Phase 23 needs it; the dialog owns it). Leave `RESET_CONFIRM` where it is (D-08) to keep the two reset tests' surface untouched — its string must not change either way.
+   - **RESOLVED:** `UNSAVED_LEAVE_CONFIRM` moves into `web/src/utils/unsavedChangesGuard.js` — created by `19-02-PLAN.md` T1 as the single home the dialog renders, and its now-unused page-local copy is deleted by `19-02-PLAN.md` T2. `RESET_CONFIRM` stays in `AdminPipelineConfigPage.jsx` (D-08) with its `window.confirm` path untouched, so the two reset tests remain byte-identical and green.
 
 ## Environment Availability
 
