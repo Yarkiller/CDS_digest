@@ -29,9 +29,9 @@ created: "2026-10-16"
 
 ## Sampling Rate
 
-- **After every task commit:** Run `npx playwright test tests/auth.spec.js --project=web`
-- **After every plan wave:** Run `npm run test:web` + `uv run pytest tests/unit/test_auth_email_domain.py`
-- **Before `/gsd-verify-work`:** Full suite must be green
+- **After every task commit:** Run that task's filtered `<automated>` smoke (Plan 20-01 Task 2: `npx playwright test tests/auth.spec.js --project=web -g "shell identity after register|post-register copy|Регистрация завершена|confirmation letter"` + domain pytest when listed)
+- **After every plan wave:** Run full `npx playwright test tests/auth.spec.js --project=web` / `npm run test:web` + `uv run pytest tests/unit/test_auth_email_domain.py`
+- **Before `/gsd-verify-work`:** Full suite must be green (`npm run test:web` + unit suite)
 - **Max feedback latency:** 120 seconds
 
 ---
@@ -41,7 +41,7 @@ created: "2026-10-16"
 | Task ID | Plan | Wave | Requirement | Threat Ref | Secure Behavior | Test Type | Automated Command | File Exists | Status |
 |---------|------|------|-------------|------------|-----------------|-----------|-------------------|-------------|--------|
 | 20-01-01 | 20-01 | 1 | MAIL-02 | T-20-01, T-20-02 | Honest (B) copy + letter-claim forbid under null-session harness | e2e | `npx playwright test tests/auth.spec.js --project=web -g "post-register copy\|Регистрация завершена\|confirmation letter"` | ❌ W0 | ⬜ pending |
-| 20-01-02 | 20-01 | 1 | MAIL-02 | T-20-03 | Autoconfirm happy path + full auth.spec green; domain gate PRESERVE | e2e + unit | `npx playwright test tests/auth.spec.js --project=web` then `uv run pytest tests/unit/test_auth_email_domain.py -x` | ✅ happy path / ✅ domain | ⬜ pending |
+| 20-01-02 | 20-01 | 1 | MAIL-02 | T-20-03 | Autoconfirm happy-path + honest-copy filtered smoke; domain gate PRESERVE | e2e + unit | `npx playwright test tests/auth.spec.js --project=web -g "shell identity after register\|post-register copy\|Регистрация завершена\|confirmation letter" && uv run pytest tests/unit/test_auth_email_domain.py -x` | ✅ happy path / ✅ domain | ⬜ pending |
 | 20-02-01 | 20-02 | 2 | MAIL-02 | T-20-08 | Debug session closed with fix ref (not deleted) | doc + rg | `git ls-files -- ".planning/debug/**/g-01-3b-signup-mailer.md"` + `rg` Resolution/diagnosis | ✅ | ⬜ pending |
 | 20-02-02 | 20-02 | 2 | MAIL-02 | T-20-05, T-20-06, T-20-07 | Runbook SMTP shape/smoke/rollback; criterion-4 → Phase 21 | doc + unit | `rg` GOTRUE_SMTP_/rollback/Phase 21 in runbook; `uv run pytest tests/unit/test_auth_email_domain.py -x` | ✅ | ⬜ pending |
 
