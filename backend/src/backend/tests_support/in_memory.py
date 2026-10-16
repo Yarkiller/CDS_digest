@@ -551,12 +551,10 @@ class InMemoryDigestPublisher:
         issues_provider: Any,
         *,
         delivery_status: str = "stubbed",
-        recipient_count: int = 0,
     ) -> None:
         self._shortlist_provider = shortlist_provider
         self._issues_provider = issues_provider
         self._delivery_status = delivery_status
-        self._recipient_count = recipient_count
 
     def claim_and_publish(
         self,
@@ -566,7 +564,7 @@ class InMemoryDigestPublisher:
         period_label: str,
         title: str,
         material_ids: list[int] | None = None,
-        recipient_count: int | None = None,
+        recipient_count: int = 0,
     ) -> DigestPublication:
         shortlist = self._shortlist_provider()
         issues = self._issues_provider()
@@ -611,7 +609,7 @@ class InMemoryDigestPublisher:
         except Exception:
             shortlist.release_claim(batch_id=batch_id)
             raise
-        planned = self._recipient_count if recipient_count is None else recipient_count
+        planned = recipient_count
         return DigestPublication(
             batch_id=claimed.id,
             issue_number=published.number,

@@ -877,3 +877,25 @@ def test_post_shortlist_send_passes_settings_site_url() -> None:
     assert "settings" in send_fn
     assert "payload.site_url" not in send_fn
     assert "body.site_url" not in send_fn
+
+
+def test_in_memory_digest_publisher_matches_port_recipient_count_default() -> None:
+    """IN-02: the in-memory double mirrors the port's ``recipient_count: int = 0`` default.
+
+    Structural typing does not police the port/double signature drift, so pin it: a ``None``
+    default on the double would let it accept a call the real adapter would reject.
+    """
+    from inspect import signature
+
+    from backend.application.ports.digest_publisher import DigestPublisher
+    from backend.tests_support.in_memory import InMemoryDigestPublisher
+
+    port_default = signature(DigestPublisher.claim_and_publish).parameters[
+        "recipient_count"
+    ].default
+    double_default = signature(InMemoryDigestPublisher.claim_and_publish).parameters[
+        "recipient_count"
+    ].default
+
+    assert port_default == 0
+    assert double_default == 0
