@@ -665,7 +665,7 @@ export async function previewEmail(accessToken, composition = {}) {
 /**
  * @param {string} [accessToken]
  * @param {{ material_ids?: number[], intro?: string, blocks?: Array<{ kind: 'material', material_id: number } | { kind: 'text', text: string }> }} [options]
- * @returns {Promise<{ batch_id: number, issue_number: number, issue_url: string, delivery_status: string, recipient_count: number, message: string }>}
+ * @returns {Promise<{ batch_id: number, issue_number: number, issue_url: string, delivery_status: string, recipient_count: number, delivered_count: number, message: string }>}
  */
 export async function sendDigest(accessToken, options = {}) {
   const materialIds = Array.isArray(options?.material_ids) ? options.material_ids : null
@@ -717,7 +717,9 @@ export async function sendDigest(accessToken, options = {}) {
       issue_url: '/issues/15',
       delivery_status: 'stubbed',
       recipient_count: 0,
-      message: 'Отправка записана',
+      delivered_count: 0,
+      // D-12 stub honesty: the mock never looks like a live SMTP failure.
+      message: 'Выпуск опубликован. Доставка писем: stub (0 из 0)',
     }
   }
 

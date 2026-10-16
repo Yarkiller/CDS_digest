@@ -487,7 +487,7 @@ test.describe("Admin Digest — batch select + preview/send gate (ADMIN-04,06,07
     await emailDialog.getByRole("button", { name: "Закрыть", exact: true }).click();
   });
 
-  test("G-05-1: intro + interstitial in Превью письма; send records Отправка записана", async ({
+  test("G-05-1: intro + interstitial in Превью письма; send shows stub honesty banner", async ({
     page,
   }) => {
     const introPhrase = `Привет! G05-1-${Date.now()}`;
@@ -534,13 +534,15 @@ test.describe("Admin Digest — batch select + preview/send gate (ADMIN-04,06,07
     await expect(sendBtn).toBeEnabled();
     await sendBtn.click();
     await page.getByRole("button", { name: /подтвердить отправку/i }).click();
-    await expect(page.getByText("Отправка записана", { exact: true })).toBeVisible();
+    await expect(
+      page.getByText("Выпуск опубликован. Доставка писем: stub (0 из 0)", { exact: true }),
+    ).toBeVisible();
     const issueLink = page.getByRole("link", { name: /к выпуску/i });
     await expect(issueLink).toBeVisible();
     await expect(issueLink).toHaveAttribute("href", "/issues/15");
   });
 
-  test("превью unlocks send; confirm records Отправка записана + issue link (D-90)", async ({
+  test("превью unlocks send; confirm shows stub honesty banner + issue link (D-90)", async ({
     page,
   }) => {
     await gotoAsRole(page, "admin", "/admin/digest");
@@ -567,7 +569,9 @@ test.describe("Admin Digest — batch select + preview/send gate (ADMIN-04,06,07
       page.getByRole("heading", { name: "Подтвердите отправку", exact: true }),
     ).toBeVisible();
     await page.getByRole("button", { name: /подтвердить отправку/i }).click();
-    await expect(page.getByText("Отправка записана", { exact: true })).toBeVisible();
+    await expect(
+      page.getByText("Выпуск опубликован. Доставка писем: stub (0 из 0)", { exact: true }),
+    ).toBeVisible();
     // D-90 / ADMIN-08 — success surfaces same-origin issue path for returnUrl integrity
     const issueLink = page.getByRole("link", { name: /к выпуску/i });
     await expect(issueLink).toBeVisible();
@@ -578,7 +582,7 @@ test.describe("Admin Digest — batch select + preview/send gate (ADMIN-04,06,07
     await expect(sendBtn).toBeDisabled();
   });
 
-  test("G-05-2: after Отправка записана shortlist hides; rest copy shown", async ({ page }) => {
+  test("G-05-2: after stub honesty send shortlist hides; rest copy shown", async ({ page }) => {
     await gotoAsRole(page, "admin", "/admin/digest");
     await approveReadyRows(page, [0, 1]);
     await page.getByRole("button", { name: /предпросмотр письма/i }).click();
@@ -590,7 +594,9 @@ test.describe("Admin Digest — batch select + preview/send gate (ADMIN-04,06,07
     await page.getByRole("button", { name: /отправить дайджест/i }).click();
     await page.getByRole("button", { name: /подтвердить отправку/i }).click();
 
-    await expect(page.getByText("Отправка записана", { exact: true })).toBeVisible();
+    await expect(
+      page.getByText("Выпуск опубликован. Доставка писем: stub (0 из 0)", { exact: true }),
+    ).toBeVisible();
     await expect(page.getByText(/дайджест успешно выпущен/i)).toBeVisible();
     await expect(
       page.getByText(/Следующие материалы будут подготовлены через 7 дней/i),

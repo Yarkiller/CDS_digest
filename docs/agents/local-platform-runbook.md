@@ -310,7 +310,18 @@ Creates / alters (apply **after** Phase 2 materials seed):
 - Idempotent **demo batch** (week_start `2026-09-15`, unsent) with ≤5 shortlist items: ready materials from Phase 2 seed + one draft (`phase5-admin-draft`) for ADMIN-03 demos; ≥1 item has ≥2 `score_factors` labels — honesty comment in SQL: «demo batch для Phase 5»
 - Seed is **not** the PIPE-01 ranking pipeline — product UI stays silent on seed vs pipeline (D-78)
 
-**Digest mailer: stub vs live SMTP (D-15/D-16):** Live `APP_CONTAINER=live` wires **`StubMailer`** while `MAILER=stub` (the default) — the stub reports `delivery_status=stubbed` with `delivered_count=0` and the honest copy «Выпуск опубликован. Доставка писем: stub (0 из M)»; it never implies real delivery. With `MAILER=smtp` **and** a complete `SMTP_*` set, `resolve_mailer` constructs the real `SmtpMailer` (one message per recipient, D-05). With `MAILER=smtp` and `SMTP_*` incomplete the app **fails fast at startup** with `ConfigurationError` (D-16) — never a silent stub fallback. Flipping to live SMTP stays an **ops** decision after the relay smoke below passes; it is not required to merge or run the code.
+**Digest mailer: stub vs live SMTP (D-15/D-16):** Live `APP_CONTAINER=live` wires **`StubMailer`** while `MAILER=stub` (the default) — the stub reports `delivery_status=stubbed` with `delivered_count=0` and the honest copy «Выпуск опубликован. Доставка писем: stub (0 из M)»; it never implies real delivery. With `MAILER=smtp` **and** a complete `SMTP_*` set, `resolve_mailer` constructs the real `SmtpMailer` (one message per recipient, D-05) and the admin response carries honest `recipient_count` (planned M) + `delivered_count` (delivered N) with a two-sentence message (never an org-wide delivery claim, D-09/D-10/D-11/D-12). With `MAILER=smtp` and `SMTP_*` incomplete the app **fails fast at startup** with `ConfigurationError` (D-16) — never a silent stub fallback. Flipping to live SMTP stays an **ops** decision after the relay smoke below passes; it is not required to merge or run the code.
+
+**MAIL-05 (config boundary):** the digest adapter receives ready primitives from `Settings` and **never reads the process environment** — only `Settings.from_env` reads `MAILER` / `SMTP_*`. `SMTP_TLS_MODE` defaults to `starttls` on port `587` (D-13); connect (10s) and per-send (30s) timeouts are fixed in `Settings`, not env keys (D-14). Env var **names** only are documented here — never commit `SMTP_PASS` or any relay credential (T-21-09).
+
+**Digest SMTP lane smoke + one-command rollback (D-13/D-15, ops):**
+
+1. Set `MAILER=smtp` plus the **complete** `SMTP_*` set from §4.1.1 (`SMTP_HOST`, `SMTP_PORT`, `SMTP_USER`, `SMTP_PASS`, `SMTP_FROM`, optional `SMTP_FROM_NAME`, `SMTP_TLS_MODE`) on the API host, then restart the API. A clean start proves the config loaded; an incomplete set fails fast with `ConfigurationError`.
+2. As admin, POST `/admin/shortlist/send` and confirm the response `message` reports real «Доставлено N из M» (not the `stub` line) and `delivered_count` reflects N.
+3. Confirm per-recipient privacy: one SMTP message per addressee with a single `To` and no cross-employee `Bcc` (D-05), and that the relay logs show the expected number of messages.
+4. **Rollback:** set `MAILER=stub` (or unset `MAILER`) and restart the API — `StubMailer` resumes with no config change and no DB write. No migration or data change is involved either way.
+
+The Phase 20 criterion-4 corporate-relay **proof on the GoTrue lane remains an inherited ops gap (D-15)** — this digest code merges and runs under the `MAILER=stub` default without it. Do **not** claim that relay proof is complete here.
 
 **Promote admin profile** for live admin proof (profiles default to `employee`):
 
@@ -395,7 +406,7 @@ Record apply method below when confirmed.
 npx playwright test tests/admin.spec.js --reporter=line
 ```
 
-Covers employee 403 deep-link, empty shortlist, select-all/top-3, preview fail/success gate, draft-in-pool block, stub send «Отправка записана» + `/issues/{n}` CTA, already-sent lock. ADMIN-08 returnUrl path: `tests/auth.spec.js` (`returnUrl=/issues/13` + open-redirect rejection). Live SMTP remains out of scope — stub honesty only (§4e above).
+Covers employee 403 deep-link, empty shortlist, select-all/top-3, preview fail/success gate, draft-in-pool block, stub send «Выпуск опубликован. Доставка писем: stub (0 из 0)» + `/issues/{n}` CTA, already-sent lock. ADMIN-08 returnUrl path: `tests/auth.spec.js` (`returnUrl=/issues/13` + open-redirect rejection). Live SMTP remains out of scope — stub honesty only (§4e above).
 
 ---
 

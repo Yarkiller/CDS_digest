@@ -439,7 +439,7 @@ export default function AdminDigestPage() {
         intro: contextText,
         blocks,
       })
-      setBanner(result.message || 'Отправка записана')
+      setBanner(result.message || 'Выпуск опубликован')
       setIssueUrl(typeof result.issue_url === 'string' ? result.issue_url : '')
       setBatchSent(true)
       setDigestRest(true)
