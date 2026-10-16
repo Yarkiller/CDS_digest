@@ -13,7 +13,10 @@ from backend.application.use_cases.preview_digest_email import (
 )
 from backend.domain.errors import EmptySendPoolError, InvalidPreviewCompositionError
 from backend.domain.shortlist import ShortlistBatch, ShortlistItem
-from backend.tests_support.in_memory import InMemoryShortlistRepository
+from backend.tests_support.in_memory import (
+    InMemoryProfileRepository,
+    InMemoryShortlistRepository,
+)
 
 
 def _item(
@@ -406,6 +409,7 @@ def _parity_composition_fixture(*, with_dek: bool):
             lambda: InMemoryIssueRepository(),
         ),
         "pings": InMemoryPingRecorder(),
+        "profiles": InMemoryProfileRepository(),
         "now": datetime(2026, 9, 21, 15, 0, tzinfo=timezone.utc),
     }
 
@@ -429,6 +433,7 @@ def test_preview_email_html_matches_send_html() -> None:
             fx_send["publisher"],
             fx_send["mailer"],
             fx_send["pings"],
+            fx_send["profiles"],
             actor_user_id="admin-uuid-1",
             now=fx_send["now"],
             intro=fx_send["intro"],

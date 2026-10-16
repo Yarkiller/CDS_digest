@@ -2,7 +2,9 @@
 
 from __future__ import annotations
 
-from typing import Protocol
+from typing import Protocol, Sequence
+
+from backend.domain.recipient import Recipient
 
 
 class Mailer(Protocol):
@@ -14,10 +16,14 @@ class Mailer(Protocol):
         subject: str,
         body_text: str,
         recipient_count: int,
+        recipients: Sequence[Recipient] = (),
         body_html: str | None = None,
     ) -> dict[str, object]:
-        """Return {delivery_status, recipient_count, issue_url} — stub always 'stubbed'.
+        """Deliver one message per recipient (D-05) and report honest delivery.
 
-        Optional ``body_html`` is additive (A4) so existing keyword callers stay valid.
+        Return keys: ``delivery_status`` (``stubbed`` | ``sent`` | ``partial`` | ``failed``),
+        ``recipient_count`` (planned M echo, D-06), ``delivered_count`` (actual N, D-10),
+        ``issue_url``, and an optional ``stop_reason`` (D-08). ``recipients`` and ``body_html``
+        are additive keyword params so existing stub callers stay valid.
         """
         ...

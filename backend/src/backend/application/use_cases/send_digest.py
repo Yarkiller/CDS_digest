@@ -10,6 +10,7 @@ from typing import Sequence
 from backend.application.ports.digest_publisher import DigestPublisher
 from backend.application.ports.mailer import Mailer
 from backend.application.ports.ping_recorder import PingRecorder
+from backend.application.ports.profile_repository import ProfileRepository
 from backend.application.ports.shortlist_repository import ShortlistRepository
 from backend.application.use_cases.email_render import DEFAULT_SITE_URL, render_email_html
 from backend.application.use_cases.preview_digest_email import (
@@ -25,6 +26,7 @@ from backend.domain.errors import (
     EmptySendPoolError,
     InvalidPreviewCompositionError,
     InvalidSendOrderError,
+    MailDeliveryError,
     PersistenceError,
 )
 from backend.domain.shortlist import ShortlistItem, visible_shortlist_items
@@ -39,7 +41,36 @@ class SendDigestResult:
     issue_url: str
     delivery_status: str
     recipient_count: int
+    delivered_count: int
     message: str
+
+
+def _compose_delivery_message(
+    *,
+    delivery_status: str,
+    recipient_count: int,
+    delivered_count: int,
+) -> str:
+    """Two honest sentences: publish confirmation + delivery line (D-09/D-12 / MAIL-03)."""
+    if delivery_status == "stubbed":
+        return (
+            "Выпуск опубликован. "
+            f"Доставка писем: stub ({delivered_count} из {recipient_count})"
+        )
+    if delivery_status == "partial":
+        return (
+            "Выпуск опубликован. "
+            f"Доставлено {delivered_count} из {recipient_count} (частично)"
+        )
+    if delivery_status == "failed":
+        return (
+            "Выпуск опубликован. "
+            f"Письма не доставлены ({delivered_count} из {recipient_count})"
+        )
+    # sent (D-07): an empty live audience is honestly `sent` with N=0 (RESEARCH Q3).
+    if recipient_count == 0:
+        return "Выпуск опубликован. Получателей нет (0 из 0)"
+    return f"Выпуск опубликован. Доставлено {delivered_count} из {recipient_count}"
 
 
 def _approved_drafts(items: tuple[ShortlistItem, ...]) -> list[int]:
@@ -93,6 +124,7 @@ def send_digest(
     publisher: DigestPublisher,
     mailer: Mailer,
     pings: PingRecorder,
+    profiles: ProfileRepository,
     *,
     actor_user_id: str,
     now: datetime | None = None,
@@ -152,12 +184,18 @@ def send_digest(
     except EmptySendPoolError as exc:
         raise EmptySendPoolError(batch_id=batch.id) from exc
 
+    # MAIL-01/D-01/D-02: resolve the audience from profiles BEFORE the claim so the planned
+    # count M can be stamped on the batch (D-06 option i) and echoed to the mailer.
+    recipients = list(profiles.list_digest_recipients())
+    recipient_count = len(recipients)
+
     publication = publisher.claim_and_publish(
         batch_id=batch.id,
         sent_at=clock,
         period_label=batch.week_start.isoformat(),
         title=f"Digest CDS — {batch.week_start.isoformat()}",
         material_ids=ordered_ids,
+        recipient_count=recipient_count,
     )
 
     issue_url = publication.issue_url
@@ -173,33 +211,58 @@ def send_digest(
         blocks=_html_content_blocks(ordered_materials=materials, blocks=blocks),
         site_url=site_url,
     )
+    mail_result: dict[str, object] | None = None
     try:
-        mailer.send_digest(
+        mail_result = mailer.send_digest(
             batch_id=publication.batch_id,
             issue_url=issue_url,
             subject=subject,
             body_text=body_text,
-            recipient_count=publication.recipient_count,
+            recipient_count=recipient_count,
+            recipients=recipients,
             body_html=body_html,
         )
-    except PersistenceError:
+    except (MailDeliveryError, PersistenceError):
         logger.exception(
             "digest_send mail failed after publish batch_id=%s",
             publication.batch_id,
         )
 
+    if mail_result is not None:
+        delivery_status = str(mail_result.get("delivery_status") or "sent")
+        raw_delivered = mail_result.get("delivered_count")
+        delivered_count = raw_delivered if isinstance(raw_delivered, int) else 0
+        stop_reason = mail_result.get("stop_reason")
+    else:
+        # MAIL-04 / D-88: a mail failure after publish is contained — the digest stays
+        # published and the response honestly reports a failed delivery (never 500).
+        delivery_status = "failed"
+        delivered_count = 0
+        stop_reason = None
+
+    message = _compose_delivery_message(
+        delivery_status=delivery_status,
+        recipient_count=recipient_count,
+        delivered_count=delivered_count,
+    )
+
+    ping_payload: dict[str, object] = {
+        "action": "send",
+        "batch_id": publication.batch_id,
+        "issue_number": publication.issue_number,
+        "issue_url": issue_url,
+        "delivery_status": delivery_status,
+        "recipient_count": recipient_count,
+        "delivered_count": delivered_count,
+    }
+    if stop_reason:
+        ping_payload["stop_reason"] = stop_reason
+
     try:
         pings.record(
             user_id=actor_user_id,
             kind="digest_send",
-            payload={
-                "action": "send",
-                "batch_id": publication.batch_id,
-                "issue_number": publication.issue_number,
-                "issue_url": issue_url,
-                "delivery_status": publication.delivery_status,
-                "recipient_count": publication.recipient_count,
-            },
+            payload=ping_payload,
         )
     except PersistenceError:
         logger.exception(
@@ -211,7 +274,8 @@ def send_digest(
         batch_id=publication.batch_id,
         issue_number=publication.issue_number,
         issue_url=issue_url,
-        delivery_status=publication.delivery_status,
-        recipient_count=publication.recipient_count,
-        message="Отправка записана",
+        delivery_status=delivery_status,
+        recipient_count=recipient_count,
+        delivered_count=delivered_count,
+        message=message,
     )

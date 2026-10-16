@@ -59,6 +59,18 @@ class PersistenceError(DomainError):
         super().__init__(message)
 
 
+class MailDeliveryError(DomainError):
+    """Raised when a mail adapter cannot deliver a digest message (MAIL-04 / D-88).
+
+    Adapters map SMTP/transport failures (``smtplib.SMTPException`` / ``OSError`` /
+    ``TimeoutError``) onto this domain type; ``send_digest`` catches it alongside
+    ``PersistenceError`` after publish so an already-published digest is never 500-ed.
+    """
+
+    def __init__(self, message: str) -> None:
+        super().__init__(message)
+
+
 class KnowledgeQueryValidationError(DomainError):
     """Raised for blank or overlong knowledge search queries (KNOW-01)."""
 

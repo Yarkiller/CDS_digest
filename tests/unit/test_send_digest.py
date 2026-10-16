@@ -7,19 +7,23 @@ from datetime import date, datetime, timezone
 import pytest
 
 from backend.application.use_cases.send_digest import send_digest
+from backend.domain.current_user import CurrentUser
 from backend.domain.errors import (
     AlreadySentError,
     DraftInSendPoolError,
     EmptySendPoolError,
     InvalidSendOrderError,
+    MailDeliveryError,
     PersistenceError,
 )
+from backend.domain.recipient import Recipient
 from backend.domain.shortlist import ShortlistBatch, ShortlistItem
 from backend.infrastructure.stub_mailer import StubMailer
 from backend.tests_support.in_memory import (
     InMemoryDigestPublisher,
     InMemoryIssueRepository,
     InMemoryPingRecorder,
+    InMemoryProfileRepository,
     InMemoryShortlistRepository,
 )
 
@@ -62,6 +66,79 @@ def _publisher(
 ) -> InMemoryDigestPublisher:
     """Atomic claim+publish backed by the same in-memory repos the assertions inspect."""
     return InMemoryDigestPublisher(lambda: shortlist, lambda: issues)
+
+
+def _profiles(*entries: tuple[str, str]) -> InMemoryProfileRepository:
+    """In-memory profiles seeded with (email, role) rows — D-01 includes every role."""
+    repo = InMemoryProfileRepository()
+    for index, (email, role) in enumerate(entries, start=1):
+        repo._by_id[f"user-{index}"] = CurrentUser(
+            id=f"user-{index}", email=email, role=role, display_name=None
+        )
+    return repo
+
+
+class _RecordingPublisher(InMemoryDigestPublisher):
+    """InMemoryDigestPublisher that captures the claim kwargs (planned M at claim, D-06)."""
+
+    def __init__(self, *args, **kwargs) -> None:
+        super().__init__(*args, **kwargs)
+        self.claim_kwargs: dict = {}
+
+    def claim_and_publish(self, **kwargs):  # type: ignore[override]
+        self.claim_kwargs = dict(kwargs)
+        return super().claim_and_publish(**kwargs)
+
+
+class _StatusMailer:
+    """Fake Mailer returning a fixed delivery dict (D-07 live statuses; SmtpMailer stand-in)."""
+
+    def __init__(self, *, delivery_status: str, delivered_count: int) -> None:
+        self.delivery_status = delivery_status
+        self.delivered_count = delivered_count
+        self.last_recipients: tuple[Recipient, ...] = ()
+        self.last_recipient_count: int | None = None
+
+    def send_digest(
+        self,
+        *,
+        batch_id: int,
+        issue_url: str,
+        subject: str,
+        body_text: str,
+        recipient_count: int,
+        recipients: tuple[Recipient, ...] = (),
+        body_html: str | None = None,
+    ) -> dict[str, object]:
+        self.last_recipients = tuple(recipients)
+        self.last_recipient_count = recipient_count
+        return {
+            "delivery_status": self.delivery_status,
+            "recipient_count": recipient_count,
+            "delivered_count": self.delivered_count,
+            "issue_url": issue_url,
+        }
+
+
+class _MailFailingMailer(StubMailer):
+    """Mailer that raises a domain mail error after publish (MAIL-04 / D-88 probe)."""
+
+    def send_digest(self, **kwargs):  # type: ignore[override]
+        raise MailDeliveryError("smtp delivery failed (simulated)")
+
+
+class _FailingIssueRepository(InMemoryIssueRepository):
+    """IssueRepository whose publish always fails (CR-01 atomicity probe)."""
+
+    def publish(self, *args, **kwargs):  # type: ignore[override]
+        raise PersistenceError("digest_issues publish failed (simulated)")
+
+
+class _FailingPingRecorder(InMemoryPingRecorder):
+    """PingRecorder that always fails after publish (CR-02 false-failure probe)."""
+
+    def record(self, *args, **kwargs):  # type: ignore[override]
+        raise PersistenceError("ping audit failed (simulated)")
 
 
 def test_in_memory_get_current_batch_hides_sent_and_latest_exposes_it() -> None:
@@ -107,6 +184,7 @@ def test_send_happy_path_publishes_issue_claims_sent_and_stubs_mail() -> None:
         _publisher(shortlist, issues),
         mailer,
         pings,
+        _profiles(),
         actor_user_id=actor,
         now=now,
     )
@@ -114,7 +192,8 @@ def test_send_happy_path_publishes_issue_claims_sent_and_stubs_mail() -> None:
     assert result.issue_number >= 1
     assert result.issue_url == f"/issues/{result.issue_number}"
     assert result.delivery_status == "stubbed"
-    assert result.message == "Отправка записана"
+    assert result.message == "Выпуск опубликован. Доставка писем: stub (0 из 0)"
+    assert result.delivered_count == 0
 
     # WR-03: the claimed batch leaves the unsent pool (matches live `sent_at IS NULL`);
     # get_latest_batch still exposes it with the stamped sent_at.
@@ -138,6 +217,101 @@ def test_send_happy_path_publishes_issue_claims_sent_and_stubs_mail() -> None:
     assert audit.payload.get("action") == "send"
     assert audit.payload.get("batch_id") == 42
     assert audit.payload.get("delivery_status") == "stubbed"
+
+
+def test_send_resolves_audience_from_profiles_and_reports_stub_honesty() -> None:
+    """MAIL-01/MAIL-03 (D-01/D-02/D-06/D-12): M = usable profiles emails; planned M stamped."""
+    shortlist = InMemoryShortlistRepository(batch=_batch(_item(material_id=101)))
+    issues = InMemoryIssueRepository()
+    mailer = StubMailer()
+    pings = InMemoryPingRecorder()
+    publisher = _RecordingPublisher(lambda: shortlist, lambda: issues)
+    profiles = _profiles(
+        ("admin@sberbank.ru", "admin"),          # D-01: admins are not excluded
+        ("employee@sberbank.ru", "employee"),     # D-01: every usable profile email
+        ("not-an-email", "employee"),             # D-02: malformed → excluded from M
+        ("", "employee"),                         # D-02: empty → excluded from M
+    )
+
+    result = send_digest(
+        shortlist,
+        publisher,
+        mailer,
+        pings,
+        profiles,
+        actor_user_id="admin-uuid-1",
+        now=datetime(2026, 9, 21, 15, 0, tzinfo=timezone.utc),
+    )
+
+    # M is the usable audience, not every profile row (D-02).
+    assert result.recipient_count == 2
+    assert result.delivered_count == 0
+    assert result.delivery_status == "stubbed"
+    assert result.message == "Выпуск опубликован. Доставка писем: stub (0 из 2)"
+
+    # Planned M is stamped at claim (D-06 option i) and echoed by the stub mailer.
+    assert publisher.claim_kwargs.get("recipient_count") == 2
+    assert mailer.last_recipient_count == 2
+    assert len(mailer.last_recipients) == 2
+
+    # ping payload carries the honesty triplet (D-06).
+    ping = pings.entries[-1]
+    assert ping.payload.get("recipient_count") == 2
+    assert ping.payload.get("delivered_count") == 0
+    assert ping.payload.get("delivery_status") == "stubbed"
+
+
+def test_send_with_empty_audience_still_publishes_sent_status() -> None:
+    """MAIL-01a (D-04 / RESEARCH Q3): M=0 still publishes; live path status is `sent`, N=0."""
+    shortlist = InMemoryShortlistRepository(batch=_batch(_item(material_id=101)))
+    issues = InMemoryIssueRepository()
+    mailer = _StatusMailer(delivery_status="sent", delivered_count=0)
+    pings = InMemoryPingRecorder()
+    # Only empty / malformed addresses → usable audience is empty (D-02).
+    profiles = _profiles(("", "employee"), ("no-at", "employee"), ("@", "admin"))
+
+    result = send_digest(
+        shortlist,
+        _publisher(shortlist, issues),
+        mailer,
+        pings,
+        profiles,
+        actor_user_id="admin-uuid-1",
+        now=datetime(2026, 9, 21, 15, 0, tzinfo=timezone.utc),
+    )
+
+    assert result.recipient_count == 0
+    assert result.delivered_count == 0
+    assert result.delivery_status == "sent"
+    assert result.message == "Выпуск опубликован. Получателей нет (0 из 0)"
+    assert issues.get_by_number(result.issue_number) is not None
+
+
+def test_send_mail_failure_after_publish_still_returns_success() -> None:
+    """MAIL-04 / D-88: MailDeliveryError after claim+publish must not fail the send."""
+    shortlist = InMemoryShortlistRepository(batch=_batch(_item(material_id=101)))
+    issues = InMemoryIssueRepository()
+    pings = InMemoryPingRecorder()
+    profiles = _profiles(("employee@sberbank.ru", "employee"))
+
+    result = send_digest(
+        shortlist,
+        _publisher(shortlist, issues),
+        _MailFailingMailer(),
+        pings,
+        profiles,
+        actor_user_id="admin-uuid-1",
+        now=datetime(2026, 9, 21, 15, 0, tzinfo=timezone.utc),
+    )
+
+    assert result.recipient_count == 1
+    assert result.delivered_count == 0
+    assert result.delivery_status == "failed"
+    assert result.message == "Выпуск опубликован. Письма не доставлены (0 из 1)"
+    assert issues.get_by_number(result.issue_number) is not None
+    ping = pings.entries[-1]
+    assert ping.payload.get("delivery_status") == "failed"
+    assert ping.payload.get("delivered_count") == 0
 
 
 def test_send_blocks_approved_draft_in_pool() -> None:
@@ -164,6 +338,7 @@ def test_send_blocks_approved_draft_in_pool() -> None:
             _publisher(shortlist, issues),
             mailer,
             pings,
+            _profiles(),
             actor_user_id="admin-uuid-1",
         )
 
@@ -191,6 +366,7 @@ def test_send_empty_approved_ready_raises() -> None:
             _publisher(shortlist, issues),
             StubMailer(),
             InMemoryPingRecorder(),
+            _profiles(),
             actor_user_id="admin-uuid-1",
         )
 
@@ -211,6 +387,7 @@ def test_send_already_sent_raises_and_does_not_republish() -> None:
             _publisher(shortlist, issues),
             mailer,
             pings,
+            _profiles(),
             actor_user_id="admin-uuid-1",
         )
 
@@ -219,13 +396,6 @@ def test_send_already_sent_raises_and_does_not_republish() -> None:
     # Sent batch stays hidden from the unsent pool; still visible via get_latest_batch (D-89).
     assert shortlist.get_current_batch() is None
     assert shortlist.get_latest_batch().sent_at == sent_at
-
-
-class _FailingIssueRepository(InMemoryIssueRepository):
-    """IssueRepository whose publish always fails (CR-01 atomicity probe)."""
-
-    def publish(self, *args, **kwargs):  # type: ignore[override]
-        raise PersistenceError("digest_issues publish failed (simulated)")
 
 
 def test_send_publish_failure_releases_claim_for_retry() -> None:
@@ -241,6 +411,7 @@ def test_send_publish_failure_releases_claim_for_retry() -> None:
             _publisher(shortlist, issues),
             mailer,
             pings,
+            _profiles(),
             actor_user_id="admin-uuid-1",
             now=datetime(2026, 9, 21, 15, 0, tzinfo=timezone.utc),
         )
@@ -263,12 +434,14 @@ def test_send_repeat_after_success_is_idempotent_409_path() -> None:
     mailer = StubMailer()
     pings = InMemoryPingRecorder()
     publisher = _publisher(shortlist, issues)
+    profiles = _profiles()
 
     first = send_digest(
         shortlist,
         publisher,
         mailer,
         pings,
+        profiles,
         actor_user_id="admin-uuid-1",
         now=datetime(2026, 9, 21, 15, 0, tzinfo=timezone.utc),
     )
@@ -282,6 +455,7 @@ def test_send_repeat_after_success_is_idempotent_409_path() -> None:
             publisher,
             mailer,
             pings,
+            profiles,
             actor_user_id="admin-uuid-1",
         )
 
@@ -308,6 +482,7 @@ def test_send_material_ids_reversed_order_becomes_publication_and_mail_order() -
         _publisher(shortlist, issues),
         mailer,
         pings,
+        _profiles(),
         actor_user_id="admin-uuid-1",
         now=datetime(2026, 9, 21, 15, 0, tzinfo=timezone.utc),
         material_ids=[102, 101],
@@ -340,6 +515,7 @@ def test_send_material_ids_mismatched_set_raises() -> None:
             _publisher(shortlist, issues),
             mailer,
             pings,
+            _profiles(),
             actor_user_id="admin-uuid-1",
             material_ids=[101],
         )
@@ -350,6 +526,7 @@ def test_send_material_ids_mismatched_set_raises() -> None:
             _publisher(shortlist, issues),
             mailer,
             pings,
+            _profiles(),
             actor_user_id="admin-uuid-1",
             material_ids=[101, 102, 999],
         )
@@ -357,13 +534,6 @@ def test_send_material_ids_mismatched_set_raises() -> None:
     assert shortlist.get_current_batch().sent_at is None
     assert issues.get_latest_published() is None
     assert mailer.last_body_text is None
-
-
-class _FailingPingRecorder(InMemoryPingRecorder):
-    """PingRecorder that always fails after publish (CR-02 false-failure probe)."""
-
-    def record(self, *args, **kwargs):  # type: ignore[override]
-        raise PersistenceError("ping audit failed (simulated)")
 
 
 def test_send_audit_failure_after_publish_still_returns_success() -> None:
@@ -378,11 +548,12 @@ def test_send_audit_failure_after_publish_still_returns_success() -> None:
         _publisher(shortlist, issues),
         mailer,
         pings,
+        _profiles(),
         actor_user_id="admin-uuid-1",
         now=datetime(2026, 9, 21, 15, 0, tzinfo=timezone.utc),
     )
 
-    assert result.message == "Отправка записана"
+    assert result.message == "Выпуск опубликован. Доставка писем: stub (0 из 0)"
     assert result.issue_url.startswith("/issues/")
     assert shortlist.get_current_batch() is None
     assert shortlist.get_latest_batch().sent_at is not None
@@ -412,6 +583,7 @@ def test_send_body_includes_intro_and_interstitial_text_blocks() -> None:
         _publisher(shortlist, issues),
         mailer,
         pings,
+        _profiles(),
         actor_user_id="admin-uuid-1",
         now=datetime(2026, 9, 21, 15, 0, tzinfo=timezone.utc),
         material_ids=[102, 101],
@@ -430,6 +602,7 @@ def test_send_body_includes_intro_and_interstitial_text_blocks() -> None:
     bridge_at = body.index("связка")
     first_at = body.index("First by rank")
     assert intro_at < second_at < bridge_at < first_at
+
 
 def test_send_validates_against_top_five_visible_pool() -> None:
     """WR-05: send pool must match GET ≤5 so SPA material_ids cannot hit InvalidSendOrderError."""
@@ -459,6 +632,7 @@ def test_send_validates_against_top_five_visible_pool() -> None:
         _publisher(shortlist, issues),
         mailer,
         pings,
+        _profiles(),
         actor_user_id="admin-uuid-1",
         now=datetime(2026, 9, 21, 15, 0, tzinfo=timezone.utc),
         material_ids=visible_ids,
@@ -504,6 +678,7 @@ def test_send_records_body_html_with_interstitial_and_omits_issue_url() -> None:
         _publisher(shortlist, issues),
         mailer,
         pings,
+        _profiles(),
         actor_user_id="admin-uuid-1",
         now=datetime(2026, 9, 21, 15, 0, tzinfo=timezone.utc),
         intro="Para one\n\nPara two",
@@ -545,6 +720,7 @@ def test_send_body_html_uses_site_url_for_chitat_href() -> None:
         _publisher(shortlist, InMemoryIssueRepository()),
         mailer,
         InMemoryPingRecorder(),
+        _profiles(),
         actor_user_id="admin-uuid-1",
         now=datetime(2026, 9, 21, 15, 0, tzinfo=timezone.utc),
         blocks=[PreviewMaterialBlock(material_id=101)],
@@ -570,6 +746,7 @@ def test_send_omits_reader_link_in_html_and_plain_body_when_slug_blank() -> None
         _publisher(shortlist, InMemoryIssueRepository()),
         mailer,
         InMemoryPingRecorder(),
+        _profiles(),
         actor_user_id="admin-uuid-1",
         now=datetime(2026, 9, 21, 15, 0, tzinfo=timezone.utc),
         blocks=[PreviewMaterialBlock(material_id=101)],
@@ -600,4 +777,3 @@ def test_post_shortlist_send_passes_settings_site_url() -> None:
     assert "settings" in send_fn
     assert "payload.site_url" not in send_fn
     assert "body.site_url" not in send_fn
-

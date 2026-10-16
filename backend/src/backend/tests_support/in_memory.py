@@ -1,5 +1,6 @@
 from __future__ import annotations
 
+import logging
 import math
 import re
 from dataclasses import dataclass, field, replace
@@ -14,6 +15,7 @@ from backend.domain.errors import (
     ShortlistNotFoundError,
     VoteConflictError,
 )
+from backend.domain.recipient import Recipient, is_usable_email
 from backend.domain.issue import Issue, IssueItem
 from backend.domain.knowledge import KnowledgeChunk, KnowledgeHit
 from backend.domain.material import Material, MaterialStatus
@@ -22,6 +24,8 @@ from backend.domain.razbor import Razbor
 from backend.domain.shortlist import ShortlistBatch, ShortlistItem
 from backend.domain.vote import BallotTopic, PersonalVote
 from backend.domain.voting_cycle import VotingCycle
+
+_logger = logging.getLogger(__name__)
 
 
 def _cosine(a: list[float], b: list[float]) -> float:
@@ -327,6 +331,22 @@ class InMemoryProfileRepository:
         self._by_id[user_id] = user
         return user
 
+    def list_digest_recipients(self) -> list[Recipient]:
+        """D-01/D-02: every profile with a usable email; malformed rows are logged, not counted."""
+        recipients: list[Recipient] = []
+        for user in self._by_id.values():
+            if is_usable_email(user.email):
+                recipients.append(
+                    Recipient(email=user.email, display_name=user.display_name)
+                )
+            else:
+                _logger.info(
+                    "digest audience: excluding profile id=%s email=%r (unusable)",
+                    user.id,
+                    user.email,
+                )
+        return recipients
+
 
 class InMemoryMaterialRepository:
     def __init__(self, materials: list[Material] | None = None) -> None:
@@ -546,6 +566,7 @@ class InMemoryDigestPublisher:
         period_label: str,
         title: str,
         material_ids: list[int] | None = None,
+        recipient_count: int | None = None,
     ) -> DigestPublication:
         shortlist = self._shortlist_provider()
         issues = self._issues_provider()
@@ -590,12 +611,13 @@ class InMemoryDigestPublisher:
         except Exception:
             shortlist.release_claim(batch_id=batch_id)
             raise
+        planned = self._recipient_count if recipient_count is None else recipient_count
         return DigestPublication(
             batch_id=claimed.id,
             issue_number=published.number,
             issue_url=f"/issues/{published.number}",
             delivery_status=self._delivery_status,
-            recipient_count=self._recipient_count,
+            recipient_count=planned,
         )
 
 

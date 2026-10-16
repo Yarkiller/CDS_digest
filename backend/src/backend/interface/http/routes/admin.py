@@ -539,6 +539,7 @@ def post_shortlist_send(
             container.publisher,
             container.mailer,
             container.pings,
+            container.profiles,
             actor_user_id=admin.id,
             material_ids=payload.material_ids,
             intro=payload.intro,

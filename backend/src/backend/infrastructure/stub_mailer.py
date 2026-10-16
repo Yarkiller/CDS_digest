@@ -3,6 +3,9 @@
 from __future__ import annotations
 
 import logging
+from typing import Sequence
+
+from backend.domain.recipient import Recipient
 
 logger = logging.getLogger(__name__)
 
@@ -17,6 +20,7 @@ class StubMailer:
         self.last_body_text: str | None = None
         self.last_body_html: str | None = None
         self.last_recipient_count: int | None = None
+        self.last_recipients: tuple[Recipient, ...] = ()
 
     def send_digest(
         self,
@@ -26,6 +30,7 @@ class StubMailer:
         subject: str,
         body_text: str,
         recipient_count: int,
+        recipients: Sequence[Recipient] = (),
         body_html: str | None = None,
     ) -> dict[str, object]:
         self.last_batch_id = batch_id
@@ -34,6 +39,7 @@ class StubMailer:
         self.last_body_text = body_text
         self.last_body_html = body_html
         self.last_recipient_count = recipient_count
+        self.last_recipients = tuple(recipients)
         logger.info(
             "stub_mailer digest batch_id=%s issue_url=%s recipient_count=%s\n%s",
             batch_id,
@@ -43,13 +49,14 @@ class StubMailer:
         )
         return {
             "delivery_status": "stubbed",
-            "recipient_count": 0,
+            "recipient_count": recipient_count,
+            "delivered_count": 0,
             "issue_url": issue_url,
         }
 
 
 class SmtpMailer:
-    """Placeholder for Phase 6+ SMTP — send is intentionally unimplemented (D-87)."""
+    """Placeholder for Phase 21 Plan 02 SMTP — send is intentionally unimplemented (D-87)."""
 
     def send_digest(
         self,
@@ -59,6 +66,7 @@ class SmtpMailer:
         subject: str,
         body_text: str,
         recipient_count: int,
+        recipients: Sequence[Recipient] = (),
         body_html: str | None = None,
     ) -> dict[str, object]:
         raise NotImplementedError("SmtpMailer is not implemented; use MAILER=stub")

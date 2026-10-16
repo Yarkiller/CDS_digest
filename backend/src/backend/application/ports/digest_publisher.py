@@ -32,12 +32,16 @@ class DigestPublisher(Protocol):
         period_label: str,
         title: str,
         material_ids: list[int] | None = None,
+        recipient_count: int = 0,
     ) -> DigestPublication:
         """Atomically claim the unsent batch (``sent_at IS NULL``), publish its approved∩ready
         issue, and stamp delivery columns — all in one transaction.
 
         When ``material_ids`` is provided, issue item positions follow that order (G-05-1)
         inside the same claim+publish transaction (live: ``p_material_ids`` on the RPC).
+
+        ``recipient_count`` stamps the **planned** audience M (D-06 option i); actual N and the
+        live status are reported on the API result / ``pings`` — never via ``update_delivery``.
 
         Raises:
             AlreadySentError: batch already claimed or missing (lost the race, D-89).

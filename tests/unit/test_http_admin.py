@@ -776,7 +776,7 @@ def test_admin_send_happy_path_publishes_and_returns_issue_link() -> None:
 
     assert response.status_code == 200
     body = response.json()
-    assert body["message"] == "Отправка записана"
+    assert body["message"] == "Выпуск опубликован. Доставка писем: stub (0 из 1)"
     assert body["delivery_status"] == "stubbed"
     assert body["issue_url"].startswith("/issues/")
     # WR-03: sent batch leaves the unsent pool; sent_at is visible via get_latest_batch.
@@ -827,7 +827,7 @@ def test_admin_send_material_ids_order_honored_and_mismatch_is_400() -> None:
         json={"material_ids": [102, 101]},
     )
     assert ok.status_code == 200
-    assert ok.json()["message"] == "Отправка записана"
+    assert ok.json()["message"] == "Выпуск опубликован. Доставка писем: stub (0 из 1)"
     published = container.issues.get_by_number(ok.json()["issue_number"])
     assert published is not None
     assert [item.title for item in published.items] == ["Second by rank", "First by rank"]
@@ -975,7 +975,7 @@ def test_admin_mark_ready_promotes_draft_and_clears_send_gate() -> None:
     send_response = client.post("/admin/shortlist/send", headers=headers)
     assert send_response.status_code == 200
     detail = send_response.json()
-    assert detail["message"] == "Отправка записана"
+    assert detail["message"] == "Выпуск опубликован. Доставка писем: stub (0 из 1)"
 
 
 def test_admin_mark_ready_missing_material_returns_404() -> None:
