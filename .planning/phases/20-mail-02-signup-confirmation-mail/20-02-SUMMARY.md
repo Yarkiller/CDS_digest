@@ -101,7 +101,7 @@ Each task was committed atomically:
 1. **Task 1: Close g-01-3b-signup-mailer with shipped path-(B) fix reference** - `6ab457e` (docs)
 2. **Task 2: Extend runbook §4.1 with relay shape, smoke, rollback, and Phase 21 gap** - `21f6889` (docs)
 
-**Plan metadata:** (pending final docs commit)
+**Plan metadata:** `f94a814` (docs: complete plan)
 
 ## Files Created/Modified
 
