@@ -1141,33 +1141,91 @@ test.describe("Admin pipeline config — empty/dirty/reset/nav/no-execution (PIP
   });
 
   test("pipeline config dirty gating arms the unsaved-leave guard", async ({ page }) => {
+    // Listener-registry spy — must run before gotoAsRole so it wraps every mount.
+    await page.addInitScript(() => {
+      window.__DIGEST_BEFOREUNLOAD_REGISTRY__ = [];
+      const origAdd = window.addEventListener.bind(window);
+      const origRemove = window.removeEventListener.bind(window);
+      window.addEventListener = (type, listener, options) => {
+        if (type === "beforeunload") {
+          window.__DIGEST_BEFOREUNLOAD_REGISTRY__.push(listener);
+        }
+        return origAdd(type, listener, options);
+      };
+      window.removeEventListener = (type, listener, options) => {
+        if (type === "beforeunload") {
+          window.__DIGEST_BEFOREUNLOAD_REGISTRY__ =
+            window.__DIGEST_BEFOREUNLOAD_REGISTRY__.filter((l) => l !== listener);
+        }
+        return origRemove(type, listener, options);
+      };
+    });
+
     await gotoAsRole(page, "admin", "/admin/pipeline");
     const editor = page.getByTestId("pipeline-config-editor");
 
-    const cleanPrevented = await page.evaluate(() => {
-      const event = new Event("beforeunload", { cancelable: true });
-      window.dispatchEvent(event);
-      return event.defaultPrevented;
-    });
-    expect(cleanPrevented).toBe(false);
-
-    await editor.fill("template: lecture\n");
-    await expect(page.getByTestId("pipeline-config-reload")).toBeEnabled();
-
-    let message = null;
-    page.once("dialog", async (dialog) => {
-      message = dialog.message();
+    const unloadTypes = [];
+    page.on("dialog", async (dialog) => {
+      unloadTypes.push(dialog.type());
       await dialog.dismiss();
     });
-    const dirtyPrevented = await page.evaluate(() => {
-      const event = new Event("beforeunload", { cancelable: true });
-      window.dispatchEvent(event);
-      return event.defaultPrevented;
-    });
-    expect(dirtyPrevented).toBe(true);
-    await expect.poll(() => message).toBe(
-      "Есть несохранённые изменения. Уйти без сохранения?",
+
+    // Clean: sticky activation (click) then reload — must not raise beforeunload.
+    await editor.click();
+    unloadTypes.length = 0;
+    await page.reload({ waitUntil: "load" });
+    expect(unloadTypes.filter((t) => t === "beforeunload")).toEqual([]);
+    await expect(page.getByTestId("pipeline-config-editor")).toBeVisible();
+
+    // Dirty: exactly one registered handler; source has no confirm/alert.
+    await page.getByTestId("pipeline-config-editor").fill("template: lecture\n");
+    await expect(page.getByTestId("pipeline-config-reload")).toBeEnabled();
+
+    // Count only app-owned unload arming handlers (Vite HMR may also register
+    // a willUnload stub — exclude that noise from the contract assertion).
+    const appHandlers = await page.evaluate(() =>
+      (window.__DIGEST_BEFOREUNLOAD_REGISTRY__ || [])
+        .map((fn) => String(fn))
+        .filter(
+          (s) =>
+            s.includes("preventDefault") ||
+            s.includes("returnValue") ||
+            s.includes("confirm") ||
+            s.includes("alert"),
+        ),
     );
+    expect(appHandlers).toHaveLength(1);
+    expect(appHandlers[0]).not.toMatch(/confirm/);
+    expect(appHandlers[0]).not.toMatch(/alert/);
+
+    // Dirty unload: real reload attempt; dismiss cancels nav so the page stays alive.
+    unloadTypes.length = 0;
+    await Promise.all([
+      page.waitForEvent("dialog"),
+      page.reload({ waitUntil: "load" }).catch(() => null),
+    ]);
+    expect(unloadTypes.filter((t) => t === "beforeunload")).toEqual(["beforeunload"]);
+    await expect(page).toHaveURL(/\/admin\/pipeline/);
+    await expect(page.getByTestId("pipeline-config-editor")).toHaveValue(
+      "template: lecture\n",
+    );
+
+    // Successful save removes the app handler.
+    await page.getByTestId("pipeline-config-save").click();
+    await expect(page.getByTestId("pipeline-config-status")).toHaveText("Сохранено");
+    const afterSave = await page.evaluate(
+      () =>
+        (window.__DIGEST_BEFOREUNLOAD_REGISTRY__ || [])
+          .map((fn) => String(fn))
+          .filter(
+            (s) =>
+              s.includes("preventDefault") ||
+              s.includes("returnValue") ||
+              s.includes("confirm") ||
+              s.includes("alert"),
+          ).length,
+    );
+    expect(afterSave).toBe(0);
   });
 
   test("pipeline config dirty editor blocks in-app nav and Cancel keeps the draft", async ({
