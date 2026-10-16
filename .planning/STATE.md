@@ -5,16 +5,16 @@ milestone_name: Live mail, scheduled ingestion & backlog debt
 current_phase: 19
 current_phase_name: Unsaved-changes guard for the pipeline editor
 status: executing
-stopped_at: Phase 19 context gathered
-last_updated: "2026-10-16T06:18:24.435Z"
-last_activity: 2026-10-15
-last_activity_desc: Phase 18 complete, transitioned to Phase 19
-state_head: 6cd16d15951102e0c8e51b90664ea4dff0893a03
+stopped_at: Completed 19-01-PLAN.md
+last_updated: "2026-10-16T06:41:25.964Z"
+last_activity: 2026-10-16
+last_activity_desc: Phase 19 execution started
+state_head: 6240fe91cedb588c6b1c9076368c969908dbcdaf
 progress:
   total_phases: 8
   completed_phases: 2
   total_plans: 8
-  completed_plans: 6
+  completed_plans: 7
   percent: 25
 ---
 
@@ -29,10 +29,10 @@ See: .planning/PROJECT.md (updated 2026-10-15 — after Phase 18)
 
 ## Current Position
 
-Phase: 19 (Unsaved-changes guard for the pipeline editor) — READY TO EXECUTE
-Plan: Not started
+Phase: 19 (Unsaved-changes guard for the pipeline editor) — EXECUTING
+Plan: 2 of 2
 Status: Ready to execute
-Last activity: 2026-10-15 — Phase 18 complete, transitioned to Phase 19
+Last activity: 2026-10-16 — Phase 19 execution started
 
 Progress: [███░░░░░░░] 25%
 
@@ -67,6 +67,7 @@ Progress: [███░░░░░░░] 25%
 | Phase 18 P01 | 9min | 3 tasks | 5 files |
 | Phase 18 P02 | 21 min | 3 tasks | 4 files |
 | Phase 18 P03 | 57min | 2 tasks | 5 files |
+| Phase 19 P01 | 16min | 2 tasks | 1 files |
 
 ## Accumulated Context
 
@@ -111,6 +112,8 @@ v1.3 roadmap locks:
 - [Phase 18]: CR-01 (post-execution code review, reproduced in the browser and fixed): MaterialPage now resets `redirectToReader` and `forbidden` on every load — The instance is reused across the /admin/materials/:id -> /materials/:id handoff the flag itself triggers (both routes are children of one layout route in App.jsx), so a stale `true` re-rendered `<Navigate>` to the URL already current and the reader route rendered nothing; the pre-existing D-12 test could not see it because `gotoAsRole` ends in `page.reload()` after the redirect has already moved the document (WR-02)
 - [Phase 18]: The RED that catches CR-01 drives the real user journey (shortlist «Превью материала» -> «Открыть материал →») and asserts the rendered reader surface, not just the URL — URL equality is necessary but not sufficient, since it also holds while the page renders nothing
 - [Phase 18]: IN-01…IN-05 (code-review info findings) are recorded `deferred` with reasons in `18-REVIEW-DISPOSITION.md` and the verifier concurred — inert unused prop, `no-store` absent on error paths (no leak), private `_SLUG_PATTERN` crossing route modules + a duplicated guard, a duplicated mock role resolver, and 401 mapped to a retryable NETWORK error on the preview surface
+- [Phase 19]: D-09: router migration alone, proven at Wave-0 baseline 110 before any useBlocker wiring
+- [Phase 19]: No errorElement on createBrowserRouter migration (behaviour-preserving)
 
 ### Pending Todos
 
@@ -141,9 +144,9 @@ Carried product deferrals beyond v1.3: leaderboard, quiz, Whisper/Foundry ASR, i
 
 ## Session Continuity
 
-Last session: 2026-10-15T13:47:26.364Z
-Stopped at: Phase 19 context gathered
-Resume file: .planning/phases/19-unsaved-changes-guard-for-the-pipeline-editor/19-CONTEXT.md
+Last session: 2026-10-16T06:41:25.883Z
+Stopped at: Completed 19-01-PLAN.md
+Resume file: None
 Next: `/gsd-plan-phase 19`
 
 ## Operator Next Steps

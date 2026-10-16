@@ -132,7 +132,9 @@ Backlog tech debt comes first (lowest blast radius first), then mail, then inges
   3. The dirty flag clears after a successful save and stays armed after a server reject.
   4. `App.jsx` is migrated from declarative `<BrowserRouter>` to a data router (`createBrowserRouter` + `RouterProvider`) as its own behaviour-preserving plan gated by the full Playwright suite — the migration and the guard are never combined in one plan, and no double-prompt occurs.
 
-**Plans:** 2 plans
+**Plans:** 1/2 plans executed
+- [x] 19-01-PLAN.md
+- [ ] 19-02-PLAN.md
 
 **Wave 1** — the data-router migration, behaviour-preserving (ADUX-09 criterion 4 / D-09):
 - [ ] `19-01-PLAN.md` — Tracer: `web/src/App.jsx` on a module-scope `createBrowserRouter` + `RouterProvider`, gated by the full Playwright `web` suite at the Wave-0 recorded count (the stated TDD exception for a refactor)
@@ -236,7 +238,7 @@ Phases execute in numeric order: 17 → 18 → 19 → 20 → 21 → 22 → 23 �
 |-------|----------------|--------|-----------|
 | 17. YAML merge-key acceptance | 3/3 | Complete    | 2026-10-14 |
 | 18. Reader-route honesty | 3/3 | Complete    | 2026-10-15 |
-| 19. Unsaved-changes guard | 0/TBD | Not started | - |
+| 19. Unsaved-changes guard | 1/2 | In Progress|  |
 | 20. MAIL-02 signup mail | 0/TBD | Not started | - |
 | 21. MAIL-01 live SMTP digest | 0/TBD | Not started | - |
 | 22. Admin nav grouping | 0/TBD | Not started | - |
