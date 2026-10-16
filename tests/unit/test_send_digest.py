@@ -287,6 +287,86 @@ def test_send_with_empty_audience_still_publishes_sent_status() -> None:
     assert issues.get_by_number(result.issue_number) is not None
 
 
+def _three_profiles() -> InMemoryProfileRepository:
+    return _profiles(
+        ("alpha@sberbank.ru", "employee"),
+        ("beta@sberbank.ru", "employee"),
+        ("gamma@sberbank.ru", "admin"),
+    )
+
+
+def test_send_live_sent_message_is_two_honest_sentences() -> None:
+    """D-09/D-10: live `sent` (N=M>0) → two sentences «Доставлено N из M», never stub-Labelled."""
+    shortlist = InMemoryShortlistRepository(batch=_batch(_item(material_id=101)))
+    issues = InMemoryIssueRepository()
+    mailer = _StatusMailer(delivery_status="sent", delivered_count=3)
+
+    result = send_digest(
+        shortlist,
+        _publisher(shortlist, issues),
+        mailer,
+        InMemoryPingRecorder(),
+        _three_profiles(),
+        actor_user_id="admin-uuid-1",
+        now=datetime(2026, 9, 21, 15, 0, tzinfo=timezone.utc),
+    )
+
+    assert result.delivery_status == "sent"
+    assert result.recipient_count == 3
+    assert result.delivered_count == 3
+    assert result.message == "Выпуск опубликован. Доставлено 3 из 3"
+    assert result.message.count(".") == 1
+    assert "stub" not in result.message
+
+
+def test_send_live_partial_message_reflects_planned_vs_delivered() -> None:
+    """D-09/D-10: live `partial` (0<N<M) → two sentences with N из M, not stub copy."""
+    shortlist = InMemoryShortlistRepository(batch=_batch(_item(material_id=101)))
+    issues = InMemoryIssueRepository()
+    mailer = _StatusMailer(delivery_status="partial", delivered_count=1)
+
+    result = send_digest(
+        shortlist,
+        _publisher(shortlist, issues),
+        mailer,
+        InMemoryPingRecorder(),
+        _three_profiles(),
+        actor_user_id="admin-uuid-1",
+        now=datetime(2026, 9, 21, 15, 0, tzinfo=timezone.utc),
+    )
+
+    assert result.delivery_status == "partial"
+    assert result.recipient_count == 3
+    assert result.delivered_count == 1
+    assert result.message == "Выпуск опубликован. Доставлено 1 из 3 (частично)"
+    assert result.message.count(".") == 1
+    assert "stub" not in result.message
+
+
+def test_send_live_failed_message_is_full_mail_fail_copy() -> None:
+    """D-09/D-10: live `failed` (N=0, M>0) → two sentences «Письма не доставлены»."""
+    shortlist = InMemoryShortlistRepository(batch=_batch(_item(material_id=101)))
+    issues = InMemoryIssueRepository()
+    mailer = _StatusMailer(delivery_status="failed", delivered_count=0)
+
+    result = send_digest(
+        shortlist,
+        _publisher(shortlist, issues),
+        mailer,
+        InMemoryPingRecorder(),
+        _three_profiles(),
+        actor_user_id="admin-uuid-1",
+        now=datetime(2026, 9, 21, 15, 0, tzinfo=timezone.utc),
+    )
+
+    assert result.delivery_status == "failed"
+    assert result.recipient_count == 3
+    assert result.delivered_count == 0
+    assert result.message == "Выпуск опубликован. Письма не доставлены (0 из 3)"
+    assert result.message.count(".") == 1
+    assert "stub" not in result.message
+
+
 def test_send_mail_failure_after_publish_still_returns_success() -> None:
     """MAIL-04 / D-88: MailDeliveryError after claim+publish must not fail the send."""
     shortlist = InMemoryShortlistRepository(batch=_batch(_item(material_id=101)))
