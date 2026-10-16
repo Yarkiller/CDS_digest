@@ -92,19 +92,18 @@ class SupabaseProfileRepository:
         Runs on the service_role client wired by composition (RESEARCH Pitfall 7: the
         ``profiles_select_own`` RLS policy would hide every other row under a user JWT).
         Empty/malformed emails are excluded and logged; they never count toward M (D-02).
+
+        WR-02: the select is paged with ``.range()`` until a short page is returned, so the
+        PostgREST server-side ``max-rows`` cap can never silently truncate the audience
+        (which would under-count planned M against D-01).
         """
         try:
-            result = (
-                self._client.table("profiles")
-                .select("id,email,display_name")
-                .execute()
-            )
+            rows = self._list_all_profile_rows()
         except PersistenceError:
             raise
         except Exception as exc:  # noqa: BLE001 — map all SDK failures at boundary
             raise PersistenceError(f"profiles list_digest_recipients failed: {exc}") from exc
 
-        rows = getattr(result, "data", None) or []
         recipients: list[Recipient] = []
         for row in rows:
             email = str(row.get("email") or "")
@@ -121,3 +120,22 @@ class SupabaseProfileRepository:
             )
             recipients.append(Recipient(email=email, display_name=display_name))
         return recipients
+
+    def _list_all_profile_rows(self) -> list[dict[str, Any]]:
+        """Page the profiles select until a short page proves the audience is exhausted."""
+        page_size = 1000
+        rows: list[dict[str, Any]] = []
+        start = 0
+        while True:
+            result = (
+                self._client.table("profiles")
+                .select("id,email,display_name")
+                .range(start, start + page_size - 1)
+                .execute()
+            )
+            page = list(getattr(result, "data", None) or [])
+            rows.extend(page)
+            if len(page) < page_size:
+                break
+            start += page_size
+        return rows

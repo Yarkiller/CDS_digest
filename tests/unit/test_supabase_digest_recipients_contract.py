@@ -23,22 +23,43 @@ class _FakeResult:
         self.data = data
 
 
+_POSTGREST_MAX_ROWS = 1000
+"""Mirror Supabase's server-side ``max-rows`` cap: an unbounded select is silently capped."""
+
+
 class _FakeSelect:
-    def __init__(self, rows: list[dict[str, Any]], error: Exception | None = None) -> None:
+    def __init__(
+        self,
+        rows: list[dict[str, Any]],
+        *,
+        error: Exception | None = None,
+        range_log: list[tuple[int, int]] | None = None,
+    ) -> None:
         self._rows = rows
         self._error = error
+        self._range_log = range_log if range_log is not None else []
+        self._range: tuple[int, int] | None = None
 
     def select(self, _cols: str = "*") -> "_FakeSelect":
+        return self
+
+    def range(self, start: int, end: int) -> "_FakeSelect":
+        self._range = (start, end)
+        self._range_log.append((start, end))
         return self
 
     def execute(self) -> _FakeResult:
         if self._error is not None:
             raise self._error
-        return _FakeResult(list(self._rows))
+        if self._range is not None:
+            start, end = self._range
+            return _FakeResult(list(self._rows[start : end + 1]))
+        # No explicit range → PostgREST applies its max-rows cap (the silent-truncation bug).
+        return _FakeResult(list(self._rows[:_POSTGREST_MAX_ROWS]))
 
 
 class _FakeProfileClient:
-    """Minimal supabase Client stub exposing table(...).select(...).execute()."""
+    """Minimal supabase Client stub exposing table(...).select(...).range(...).execute()."""
 
     def __init__(
         self,
@@ -49,10 +70,11 @@ class _FakeProfileClient:
         self.rows = list(rows or [])
         self.error = error
         self.tables: list[str] = []
+        self.ranges: list[tuple[int, int]] = []
 
     def table(self, name: str) -> _FakeSelect:
         self.tables.append(name)
-        return _FakeSelect(self.rows, self.error)
+        return _FakeSelect(self.rows, error=self.error, range_log=self.ranges)
 
 
 class _FakeRpc:
@@ -106,6 +128,27 @@ def test_list_digest_recipients_maps_sdk_failure_to_persistence_error() -> None:
 
     with pytest.raises(PersistenceError):
         repo.list_digest_recipients()
+
+
+def test_list_digest_recipients_pages_until_a_short_page() -> None:
+    """WR-02/D-01: audience paging defeats the PostgREST max-rows cap (no silent truncation).
+
+    The ``profiles`` table can exceed Supabase's default 1000-row cap; an unbounded select
+    would silently return only the first page, under-counting planned M. The adapter must
+    page with ``.range()`` until a short page proves the end of the audience.
+    """
+    from supabase_integration.profile_repository import SupabaseProfileRepository
+
+    rows = [
+        {"id": str(i), "email": f"user{i}@sberbank.ru", "display_name": None}
+        for i in range(1500)
+    ]
+    client = _FakeProfileClient(rows=rows)
+
+    recipients = list(SupabaseProfileRepository(client).list_digest_recipients())
+
+    assert len(recipients) == 1500
+    assert client.ranges == [(0, 999), (1000, 1999)]
 
 
 def test_claim_and_publish_forwards_planned_recipient_count() -> None:
