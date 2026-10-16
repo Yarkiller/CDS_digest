@@ -191,9 +191,9 @@ Backlog tech debt comes first (lowest blast radius first), then mail, then inges
 **Plans:** 3 plans
 
 Plans:
-- [ ] 21-01-PLAN.md — Tracer: audience honesty + mail containment with StubMailer (MAIL-01/03/04)
+- [ ] 21-01-PLAN.md — Tracer: audience honesty + D-09 variants + mail containment with StubMailer (MAIL-01/03/04)
 - [ ] 21-02-PLAN.md — SmtpMailer + Settings SMTP_* + ConfigurationError resolve (MAIL-01/04/05)
-- [ ] 21-03-PLAN.md — HTTP delivered_count + SPA adminApi + runbook SMTP_* (MAIL-01/03/05)
+- [ ] 21-03-PLAN.md — Recipients adapters + HTTP delivered_count + SPA adminApi + runbook SMTP_* (MAIL-01/03/05)
 
 **Tripwires**: `test_send_digest.py` `"stubbed"` asserts → **AMEND** (stub is no longer the delivered status); `test_send_audit_failure_after_publish_still_returns_success` → **PRESERVE** (D-88); `test_stub_mailer.py` → **PRESERVE** (the stub remains a test double); `test_composition_container.py` and `test_live_container_wiring.py` → **AMEND** (new recipients/mailer wiring).
 

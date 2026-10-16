@@ -387,23 +387,19 @@ Forward `p_recipient_count=M` from `SupabaseDigestPublisher` / in-memory publish
 | A4 | Optional `SMTP_FROM_NAME` / `SMTP_CA_BUNDLE` are nice-to-have; not required for D-16 minimum set | Settings | Corporate CA may need bundle later — document as follow-up if smoke fails TLS verify |
 | A5 | Phase 20 relay **proof gap** remains ops-only; code merges with `MAILER=stub` | D-15 | Live `MAILER=smtp` in prod without smoke still fails at runtime — runbook must stay clear |
 
-## Open Questions
+## Open Questions (RESOLVED)
 
-1. **Batch row `delivery_status` after live send (option i)**
+1. **Batch row `delivery_status` after live send (option i)** — RESOLVED
    - What we know: D-06 forbids `update_delivery`; claim can still pass `p_delivery_status` (default `stubbed`).
-   - What's unclear: whether claim should pass a mode-hint (`stubbed` only) forever, leaving live truth solely in API/`pings`.
-   - Recommendation: At claim, pass `p_recipient_count=M` and leave `p_delivery_status` default `stubbed` (or pass `stubbed` explicitly for stub mode). Document that batch `delivery_status` is **not** the post-send truth in v1.3; API/`pings` are. Planner should not invent option (ii).
+   - **Chosen answer:** At claim, pass `p_recipient_count=M` and leave `p_delivery_status` at default `stubbed` (or pass `stubbed` explicitly for stub mode). Batch `delivery_status` is **not** the post-send truth in v1.3; API/`pings`/`SendDigestResult` carry live status + N. Do not invent option (ii). Plans 01–03 follow this.
 
-2. **Mailer return key for delivered N**
+2. **Mailer return key for delivered N** — RESOLVED
    - What we know: Port docstring today returns `{delivery_status, recipient_count, issue_url}` with stub `recipient_count: 0` [VERIFIED: stub_mailer.py:44-48].
-   - What's unclear: reuse `recipient_count` for N (breaking planned-M echo) vs add `delivered_count` key.
-   - Recommendation: Return both — `recipient_count` echoes planned M, `delivered_count` is N; API maps 1:1 (D-10). Amend stub to accept `recipients` and keep `delivered_count=0`, `delivery_status=stubbed`.
+   - **Chosen answer:** Return both — `recipient_count` echoes planned M, `delivered_count` is N; API maps 1:1 (D-10). Amend stub to accept `recipients` and keep `delivered_count=0`, `delivery_status=stubbed`. Plans 01–03 follow this.
 
-3. **M=0 delivery_status token**
+3. **M=0 delivery_status token** — RESOLVED
    - What we know: D-04/D-07 define sent/partial/failed for M>0; stub uses `stubbed`.
-   - What's unclear: exact status string when M=0 on live path (`failed` vs a dedicated `noop` / keep `sent` with N=0).
-   - Recommendation (discretion): For `MAILER=smtp` and M=0, use a non-alarming honest status such as `sent` with N=0 **or** keep `stubbed` only for stub mode — prefer `sent` + message «Выпуск опубликован. Получателей нет (0 из 0)» so operators do not read it as SMTP outage. Confirm in plan copy table.
-
+   - **Chosen answer (locked):** For `MAILER=smtp` and M=0, use `delivery_status=sent` with N=0 and non-alarming two-sentence copy (discretion under D-04/D-07/D-09), e.g. «Выпуск опубликован. Получателей нет (0 из 0)». Do **not** use `failed` or invent a `noop` token. Stub mode keeps `stubbed` only when `MAILER=stub`. Locked in Plan 01 acceptance.
 ## Environment Availability
 
 | Dependency | Required By | Available | Version | Fallback |
