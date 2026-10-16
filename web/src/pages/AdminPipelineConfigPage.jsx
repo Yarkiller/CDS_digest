@@ -1,5 +1,7 @@
 import { useEffect, useState } from 'react'
 import ServiceUnavailable from '../components/ServiceUnavailable.jsx'
+import UnsavedChangesDialog from '../components/UnsavedChangesDialog.jsx'
+import { useUnsavedChangesGuard } from '../hooks/useUnsavedChangesGuard.js'
 import ForbiddenPage from './ForbiddenPage.jsx'
 import { getAccessToken } from '../services/authApi.js'
 import { MeApiError, fetchMe } from '../services/meApi.js'
@@ -105,6 +107,7 @@ export default function AdminPipelineConfigPage() {
   }, [roleState, loadKey])
 
   const dirty = yaml !== savedYaml
+  const blocker = useUnsavedChangesGuard(dirty)
 
   useEffect(() => {
     if (!dirty) return undefined
@@ -348,6 +351,12 @@ export default function AdminPipelineConfigPage() {
         value={yaml}
         placeholder="# YAML конфига пайплайна"
         onChange={(e) => onEdit(e.target.value)}
+      />
+
+      <UnsavedChangesDialog
+        open={blocker.state === 'blocked'}
+        onStay={() => blocker.reset()}
+        onLeave={() => blocker.proceed()}
       />
     </section>
   )
