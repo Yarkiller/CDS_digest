@@ -1170,6 +1170,63 @@ test.describe("Admin pipeline config — empty/dirty/reset/nav/no-execution (PIP
     );
   });
 
+  test("pipeline config dirty editor blocks in-app nav and Cancel keeps the draft", async ({
+    page,
+  }) => {
+    await gotoAsRole(page, "admin", "/admin/pipeline");
+    const editor = page.getByTestId("pipeline-config-editor");
+    await editor.fill("template: lecture\n");
+
+    const archive = page
+      .getByRole("navigation", { name: /основная навигация/i })
+      .getByRole("link", { name: /^Архив$/ });
+    await archive.click();
+
+    const dialog = page.getByRole("dialog");
+    await expect(dialog).toBeVisible();
+    await expect(page.getByTestId("unsaved-changes-message")).toHaveText(
+      "Есть несохранённые изменения. Уйти без сохранения?",
+    );
+    await expect(page).toHaveURL(/\/admin\/pipeline$/);
+
+    await page.getByTestId("unsaved-changes-stay").click();
+    await expect(page.getByRole("dialog")).toHaveCount(0);
+    await expect(page).toHaveURL(/\/admin\/pipeline$/);
+    await expect(editor).toHaveValue("template: lecture\n");
+
+    await archive.click();
+    await expect(page.getByRole("dialog")).toBeVisible();
+    await page.keyboard.press("Escape");
+    await expect(page.getByRole("dialog")).toHaveCount(0);
+    await expect(page).toHaveURL(/\/admin\/pipeline$/);
+    await expect(editor).toHaveValue("template: lecture\n");
+  });
+
+  test("pipeline config dirty editor confirm navigates once without a second prompt", async ({
+    page,
+  }) => {
+    const nativeTypes = [];
+    page.on("dialog", async (dialog) => {
+      nativeTypes.push(dialog.type());
+      await dialog.dismiss();
+    });
+
+    await gotoAsRole(page, "admin", "/admin/pipeline");
+    await page.getByTestId("pipeline-config-editor").fill("template: lecture\n");
+
+    await page
+      .getByRole("navigation", { name: /основная навигация/i })
+      .getByRole("link", { name: /^Архив$/ })
+      .click();
+
+    await expect(page.getByRole("dialog")).toBeVisible();
+    await page.getByTestId("unsaved-changes-leave").click();
+
+    await expect(page).toHaveURL(/\/archive$/);
+    await expect(page.getByRole("dialog")).toHaveCount(0);
+    expect(nativeTypes).toEqual([]);
+  });
+
   test("pipeline config reset confirm reverts to the last saved version", async ({ page }) => {
     await gotoAsRole(page, "admin", "/admin/pipeline");
     const editor = page.getByTestId("pipeline-config-editor");
