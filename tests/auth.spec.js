@@ -241,4 +241,22 @@ test.describe("SPA auth contracts", () => {
     await expect(page.getByRole("button", { name: /повторить/i })).toBeVisible();
     await expect(page).toHaveURL(/\/register/);
   });
+
+  test("post-register copy never claims a confirmation letter", async ({ page }) => {
+    await page.goto("/register");
+    await page.waitForFunction(() => Boolean(window.__DIGEST_AUTH_HARNESS__));
+    await page.evaluate(() => window.__DIGEST_AUTH_HARNESS__.armSignUpWithoutSession());
+
+    await page.getByLabel(/^логин$/i).fill("Ник");
+    await page.getByLabel(/^email$/i).fill("analyst@sberbank.ru");
+    await page.getByLabel(/^пароль$/i).fill("correct-horse");
+    await page.getByRole("button", { name: /зарегистрироваться/i }).click();
+
+    const alert = page.getByRole("alert");
+    await expect(alert).toContainText(
+      /Регистрация завершена\. Аккаунт активен — войдите/i,
+    );
+    await expect(alert).not.toContainText(/письм/i);
+    await expect(page).toHaveURL(/\/register/);
+  });
 });
