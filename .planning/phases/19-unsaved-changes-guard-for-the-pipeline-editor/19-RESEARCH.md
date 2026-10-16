@@ -4,19 +4,6 @@
 **Domain:** Frontend-only React 19 / react-router-dom 7 data-router behaviour (brownfield debt close-out, **zero new packages**)
 **Confidence:** HIGH (framework contracts + the in-repo surfaces, all read this session) / MEDIUM (browser-owned `beforeunload` behaviour, verified against MDN + Playwright docs)
 
-## Project Constraints (from CLAUDE.md / AGENTS.md / .cursor/rules)
-
-`./CLAUDE.md` and `./.claude/CLAUDE.md` **do not exist** in this repo (`Test-Path` → `False`, both paths, checked this session). The binding directives therefore come from `AGENTS.md` (loaded at workspace level) and `.cursor/rules/`:
-
-| Directive | Source | Effect on this phase |
-|---|---|---|
-| `NO PRODUCTION CODE WITHOUT A FAILING TEST FIRST` | `AGENTS.md`, `.cursor/rules/tdd.mdc` | A failing automated test must exist before the handler fix, the hook, the dialog, and the page wiring. The **router migration is the one carve-out**: it is a behaviour-preserving refactor, so its gate is the *existing* Playwright suite (green → refactor → green), not a new RED test. Never write a fake RED for it. |
-| Tests assert behaviour, not mocks | `AGENTS.md` | The amended tripwire must assert the handler **contract** via a real browser prompt, not a synthetic-event dialog assertion. |
-| Frontend reaches the backend only through `web/src/services/`; UI owns no business rules | `.cursor/rules/architecture.mdc` | This phase adds **no** service call, no port, no backend surface. The guard is pure presentation/navigation state. |
-| Ports & Adapters, inward dependencies | `.cursor/rules/architecture.mdc` | Not engaged — no domain/application/infrastructure layer is touched. |
-| Use Context7 for library/API docs | `.cursor/rules/context7.mdc` | Satisfied — every react-router-dom claim below came from Context7 (`/remix-run/react-router`) plus a read of the installed package bits. |
-| Exceptions to TDD (configs, generated files, throwaway prototypes) need explicit agreement | `.cursor/rules/tdd.mdc` | Do **not** self-authorise the migration carve-out; record it in the plan as the stated exception. |
-
 <user_constraints>
 ## User Constraints (from CONTEXT.md)
 
@@ -62,6 +49,19 @@
 |----|-------------|------------------|
 | ADUX-09 | The admin pipeline editor warns before losing unsaved changes on in-app SPA navigation **and** on reload/close, using the existing Russian copy; no warning when clean; the dirty flag clears after a successful save and stays armed after a server reject | In-app path: `useBlocker` under the migrated data router (§Pattern 1/2, §Code Examples) + `UnsavedChangesDialog` (§Pattern 3). Reload/close path: the two-statement `armBeforeUnload` contract (§Pattern 4). Dirty signal already exists and is correct (`AdminPipelineConfigPage.jsx:107`) — the guard consumes it, never re-derives it (§Anti-Patterns A1). Gate: amended tripwire + 4 new Playwright journeys (§Validation Architecture) |
 </phase_requirements>
+
+## Project Constraints (from CLAUDE.md / AGENTS.md / .cursor/rules)
+
+`./CLAUDE.md` and `./.claude/CLAUDE.md` **do not exist** in this repo (`Test-Path` → `False`, both paths, checked this session). The binding directives therefore come from `AGENTS.md` (loaded at workspace level) and `.cursor/rules/`:
+
+| Directive | Source | Effect on this phase |
+|---|---|---|
+| `NO PRODUCTION CODE WITHOUT A FAILING TEST FIRST` | `AGENTS.md`, `.cursor/rules/tdd.mdc` | A failing automated test must exist before the handler fix, the hook, the dialog, and the page wiring. The **router migration is the one carve-out**: it is a behaviour-preserving refactor, so its gate is the *existing* Playwright suite (green → refactor → green), not a new RED test. Never write a fake RED for it. |
+| Tests assert behaviour, not mocks | `AGENTS.md` | The amended tripwire must assert the handler **contract** via a real browser prompt, not a synthetic-event dialog assertion. |
+| Frontend reaches the backend only through `web/src/services/`; UI owns no business rules | `.cursor/rules/architecture.mdc` | This phase adds **no** service call, no port, no backend surface. The guard is pure presentation/navigation state. |
+| Ports & Adapters, inward dependencies | `.cursor/rules/architecture.mdc` | Not engaged — no domain/application/infrastructure layer is touched. |
+| Use Context7 for library/API docs | `.cursor/rules/context7.mdc` | Satisfied — every react-router-dom claim below came from Context7 (`/remix-run/react-router`) plus a read of the installed package bits. |
+| Exceptions to TDD (configs, generated files, throwaway prototypes) need explicit agreement | `.cursor/rules/tdd.mdc` | Do **not** self-authorise the migration carve-out; record it in the plan as the stated exception. |
 
 ## Summary
 
