@@ -391,6 +391,28 @@ def test_smtp_mailer_applies_send_timeout_to_socket() -> None:
     assert factory.connection.sock.timeouts == [30.0]
 
 
+def test_smtp_mailer_send_timeout_failure_maps_to_mail_delivery_error() -> None:
+    """WR-01 / MAIL-04: an ``OSError`` applying the send timeout maps at the adapter boundary.
+
+    The timeout is applied during connection setup, so a stale/closed fd must surface as
+    ``MailDeliveryError`` — never an escaping ``OSError`` that 500s a published digest.
+    """
+    class RefusingTimeoutSock:
+        def settimeout(self, value: float) -> None:
+            raise OSError("bad file descriptor")
+
+    class RefusingTimeoutConnection(FakeSmtpConnection):
+        def __init__(self) -> None:
+            super().__init__()
+            self.sock = RefusingTimeoutSock()
+
+    factory = FakeSmtpFactory(RefusingTimeoutConnection())
+    mailer = _mailer(factory, send_timeout=30.0)
+
+    with pytest.raises(MailDeliveryError):
+        _send(mailer, _recipients(1))
+
+
 def test_smtp_mailer_logs_never_contain_the_relay_password(
     caplog: pytest.LogCaptureFixture,
 ) -> None:

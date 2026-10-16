@@ -139,7 +139,6 @@ class SmtpMailer:
         consecutive_failures = 0
         stop_reason: str | None = None
         try:
-            self._apply_send_timeout(connection)
             for recipient in audience:
                 try:
                     # CR-01: building the message lives inside the guard — a malformed ``To``
@@ -191,8 +190,14 @@ class SmtpMailer:
         return result
 
     def _open_connection(self) -> SmtpConnection:
-        """Connect + TLS + auth; any transport failure is a ``MailDeliveryError`` (MAIL-04)."""
+        """Connect + TLS + auth + send timeout; any setup failure is a ``MailDeliveryError``.
+
+        WR-01: the per-send timeout is applied here (not in ``send_digest``) so an ``OSError``
+        from ``socket.settimeout()`` is mapped at the boundary like connect/login — it can never
+        escape the adapter and 500 an already-published digest (MAIL-04 / D-88).
+        """
         use_ssl = self._tls_mode == "ssl"
+        connection: SmtpConnection | None = None
         try:
             connection = self._smtp_factory(
                 self._host,
@@ -203,7 +208,10 @@ class SmtpMailer:
             if self._tls_mode == "starttls":
                 connection.starttls(context=ssl.create_default_context())
             connection.login(self._user, self._password)
+            self._apply_send_timeout(connection)
         except (smtplib.SMTPException, OSError, TimeoutError) as exc:
+            if connection is not None:
+                self._close(connection)
             raise MailDeliveryError(
                 f"smtp connect/login failed for {self._host}:{self._port}: {exc}"
             ) from exc
