@@ -62,7 +62,7 @@ class PersistenceError(DomainError):
 class MailDeliveryError(DomainError):
     """Raised when a mail adapter cannot deliver a digest message (MAIL-04 / D-88).
 
-    Adapters map SMTP/transport failures (``smtplib.SMTPException`` / ``OSError`` /
+    Mail adapters map transport failures (``SMTPException`` / ``OSError`` /
     ``TimeoutError``) onto this domain type; ``send_digest`` catches it alongside
     ``PersistenceError`` after publish so an already-published digest is never 500-ed.
     """

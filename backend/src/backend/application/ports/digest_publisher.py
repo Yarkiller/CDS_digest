@@ -41,7 +41,8 @@ class DigestPublisher(Protocol):
         inside the same claim+publish transaction (live: ``p_material_ids`` on the RPC).
 
         ``recipient_count`` stamps the **planned** audience M (D-06 option i); actual N and the
-        live status are reported on the API result / ``pings`` — never via ``update_delivery``.
+        live status are reported on the API result / ``pings`` — the batch row is never
+        rewritten after mail.
 
         Raises:
             AlreadySentError: batch already claimed or missing (lost the race, D-89).
