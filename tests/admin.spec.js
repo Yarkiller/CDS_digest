@@ -1278,6 +1278,42 @@ test.describe("Admin pipeline config — empty/dirty/reset/nav/no-execution (PIP
     expect(nativeTypes).toEqual([]);
   });
 
+  test("pipeline config save disarms the guard and a reject keeps it armed", async ({ page }) => {
+    const nativeTypes = [];
+    page.on("dialog", async (dialog) => {
+      nativeTypes.push(dialog.type());
+      await dialog.dismiss();
+    });
+
+    await gotoAsRole(page, "admin", "/admin/pipeline");
+    const editor = page.getByTestId("pipeline-config-editor");
+    await editor.fill("template: lecture\n");
+    await page.evaluate(() => {
+      window.__DIGEST_PIPELINE_CONFIG_HARNESS__.armRejectNextSave([
+        { path: "template", message: "недопустимое значение" },
+      ]);
+    });
+
+    await page.getByTestId("pipeline-config-save").click();
+    await expect(page.getByTestId("pipeline-config-errors")).toBeVisible();
+
+    const archive = page
+      .getByRole("navigation", { name: /основная навигация/i })
+      .getByRole("link", { name: /^Архив$/ });
+    await archive.click();
+    await expect(page.getByRole("dialog")).toBeVisible();
+    await page.getByTestId("unsaved-changes-stay").click();
+    await expect(page.getByRole("dialog")).toHaveCount(0);
+
+    await page.getByTestId("pipeline-config-save").click();
+    await expect(page.getByTestId("pipeline-config-status")).toHaveText("Сохранено");
+
+    await archive.click();
+    await expect(page).toHaveURL(/\/archive$/);
+    await expect(page.getByRole("dialog")).toHaveCount(0);
+    expect(nativeTypes).toEqual([]);
+  });
+
   test("pipeline config reset confirm reverts to the last saved version", async ({ page }) => {
     await gotoAsRole(page, "admin", "/admin/pipeline");
     const editor = page.getByTestId("pipeline-config-editor");
