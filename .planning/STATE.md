@@ -3,19 +3,19 @@ gsd_state_version: "1.0"
 milestone: v1.3
 milestone_name: Live mail, scheduled ingestion & backlog debt
 current_phase: 21
-current_phase_name: mail-01-live-smtp-digest-delivery
-current_plan: Not started
+current_phase_name: MAIL-01 live SMTP digest delivery
+current_plan: 2
 status: executing
-stopped_at: Phase 21 context gathered
-last_updated: "2026-10-16T14:26:52.817Z"
+stopped_at: Completed 21-01-PLAN.md
+last_updated: "2026-10-16T14:40:18.888Z"
 last_activity: 2026-10-16
-last_activity_desc: Phase 18 complete, transitioned to Phase 21
-state_head: c27b5f2bf740c7cba78af3bb84d4703114a1dddf
+last_activity_desc: Phase 21 execution started
+state_head: a6c57da4448aa3accea96a40736f28f2798732bc
 progress:
   total_phases: 8
   completed_phases: 4
   total_plans: 13
-  completed_plans: 10
+  completed_plans: 11
   percent: 50
 ---
 
@@ -26,15 +26,15 @@ progress:
 See: .planning/PROJECT.md (updated 2026-10-16 — after Phase 20)
 
 **Core value:** Trusted weekly prepared-article issue + one honest vote toward the next разбор
-**Current focus:** Phase 18 — Reader-route honesty for draft materials
+**Current focus:** Phase 21 — MAIL-01 live SMTP digest delivery
 
 ## Current Position
 
-Phase: 21 (mail-01-live-smtp-digest-delivery) — READY TO EXECUTE
-Current Plan: Not started
+Phase: 21 (MAIL-01 live SMTP digest delivery) — EXECUTING
+Current Plan: 2
 Total Plans in Phase: 3
 Status: Ready to execute
-Last activity: 2026-10-16 — Phase 18 complete, transitioned to Phase 21
+Last activity: 2026-10-16 — Phase 21 execution started
 
 Progress: [█████░░░░░] 50%
 
@@ -75,6 +75,7 @@ Progress: [█████░░░░░] 50%
 | Phase 19 P02 | 22min | 3 tasks | 6 files |
 | Phase 20 P01 | 4min | 2 tasks | 4 files |
 | Phase 20 P02 | 5min | 2 tasks | 2 files |
+| Phase 21 P01 | 11min | 2 tasks | 12 files |
 
 ## Accumulated Context
 
@@ -130,6 +131,8 @@ v1.3 roadmap locks:
 - [Phase 20]: D-12: Close g-01-3b in place with Resolution citing 20-01 honest copy
 - [Phase 20]: D-03/D-13: Runbook records GOTRUE_SMTP_*/SMTP_* shape only; no new ADR (D-04)
 - [Phase 20]: D-05/D-06: Rollback GOTRUE_MAILER_AUTOCONFIRM=true; criterion-4 proof → Phase 21
+- [Phase 21]: 21-01: delivery_status is read from the mailer result, not the batch row — the batch keeps planned M only; live N/status ride SendDigestResult + the digest_send ping payload (D-06 option i)
+- [Phase 21]: 21-01: empty/malformed-only audience (M=0) still publishes; the live path honestly reports delivery_status=sent with delivered_count=0 and non-alarming copy (D-04 / RESEARCH Q3)
 
 ### Pending Todos
 
@@ -160,9 +163,9 @@ Carried product deferrals beyond v1.3: leaderboard, quiz, Whisper/Foundry ASR, i
 
 ## Session Continuity
 
-Last session: 2026-10-16T12:04:24.012Z
-Stopped at: Phase 21 context gathered
-Resume file: .planning/phases/21-mail-01-live-smtp-digest-delivery/21-CONTEXT.md
+Last session: 2026-10-16T14:40:18.753Z
+Stopped at: Completed 21-01-PLAN.md
+Resume file: None
 Next: `/gsd-plan-phase 19`
 
 ## Operator Next Steps

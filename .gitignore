@@ -35,6 +35,7 @@ test-results/
 .planning/config.json
 .planning/state.json
 .planning/estimation-calibration.json
+.planning/milestone.lock
 
 # Vercel CLI local state
 .vercel/
