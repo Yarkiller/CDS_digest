@@ -5,17 +5,17 @@ milestone_name: Live mail, scheduled ingestion & backlog debt
 current_phase: 21
 current_phase_name: MAIL-01 live SMTP digest delivery
 current_plan: 3
-status: executing
-stopped_at: Completed 21-02-PLAN.md (SmtpMailer + SMTP settings fail-fast)
-last_updated: "2026-10-16T14:52:36.733Z"
+status: verifying
+stopped_at: Completed 21-03-PLAN.md (recipients adapters + HTTP delivered_count + SPA + runbook)
+last_updated: "2026-10-16T15:02:40.255Z"
 last_activity: 2026-10-16
 last_activity_desc: Phase 21 execution started
-state_head: 3d7e77112cd765b46037cbae3239f2748c4038dd
+state_head: caf1bb42270a3c647dd9ec38f9a223c91140e037
 progress:
   total_phases: 8
   completed_phases: 4
   total_plans: 13
-  completed_plans: 12
+  completed_plans: 13
   percent: 50
 ---
 
@@ -33,7 +33,7 @@ See: .planning/PROJECT.md (updated 2026-10-16 — after Phase 20)
 Phase: 21 (MAIL-01 live SMTP digest delivery) — EXECUTING
 Current Plan: 3
 Total Plans in Phase: 3
-Status: Ready to execute
+Status: Phase complete — ready for verification
 Last activity: 2026-10-16 — Phase 21 execution started
 
 Progress: [█████░░░░░] 50%
@@ -77,6 +77,7 @@ Progress: [█████░░░░░] 50%
 | Phase 20 P02 | 5min | 2 tasks | 2 files |
 | Phase 21 P01 | 11min | 2 tasks | 12 files |
 | Phase 21 P02 | 12 | 2 tasks | 11 files |
+| Phase 21 P03 | 9min | 3 tasks | 10 files |
 
 ## Accumulated Context
 
@@ -136,6 +137,10 @@ v1.3 roadmap locks:
 - [Phase 21]: 21-01: empty/malformed-only audience (M=0) still publishes; the live path honestly reports delivery_status=sent with delivered_count=0 and non-alarming copy (D-04 / RESEARCH Q3)
 - [Phase 21]: resolve_mailer moved to composition/mailer_factory.py: adapter selection is wiring, so infrastructure must not import composition (architecture.mdc); stub_mailer.py keeps StubMailer + SmtpMailer re-export only
 - [Phase 21]: Settings.smtp_port is int|None (None = unset) so D-16 can require SMTP_PORT explicitly instead of silently defaulting to 587; non-numeric SMTP_PORT raises ConfigurationError in from_env
+- [Phase 21]: 21-03: SupabaseDigestPublisher forwards the planned audience M via p_recipient_count and leaves p_delivery_status at the RPC default (option i: no update_delivery, no migration, D-06)
+- [Phase 21]: 21-03: list_digest_recipients runs on the service_role client wired in live.py — a user-scoped client would return M=0 under the profiles_select_own RLS policy (RESEARCH Pitfall 7); no RLS widened
+- [Phase 21]: 21-03: SendDigestResponse.delivered_count is additive (default 0) and a contained mail partial/failure after a successful publish stays HTTP 200 with honest N/M (D-11)
+- [Phase 21]: 21-03: runbook 4e records digest SMTP smoke/rollback + the MAIL-05 config boundary; Phase 20 criterion-4 relay proof stays an open ops gap (D-15), not claimed done
 
 ### Pending Todos
 
@@ -166,8 +171,8 @@ Carried product deferrals beyond v1.3: leaderboard, quiz, Whisper/Foundry ASR, i
 
 ## Session Continuity
 
-Last session: 2026-10-16T14:52:36.620Z
-Stopped at: Completed 21-02-PLAN.md (SmtpMailer + SMTP settings fail-fast)
+Last session: 2026-10-16T15:02:30.260Z
+Stopped at: Completed 21-03-PLAN.md (recipients adapters + HTTP delivered_count + SPA + runbook)
 Resume file: None
 Next: `/gsd-plan-phase 19`
 

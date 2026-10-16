@@ -1,10 +1,10 @@
 ---
 schema_version: 1
-open_count: 0
+open_count: 1
 waived_count: 8
 fixed_count: 11
-total_count: 19
-last_updated: 2026-10-13T18:06:47.759Z
+total_count: 20
+last_updated: 2026-10-16T15:01:10.477Z
 ---
 
 # Broken Windows Ledger
@@ -34,6 +34,7 @@ last_updated: 2026-10-13T18:06:47.759Z
 | 17 | 11 | deviation | tests/unit/test_cli_ingest_contract.py |  | Unexpected GREEN Task1: CLI sent-batch contract passed without cli.py change (prior plans) | waived | Observation only: a contract test passed without a code change, no defect to fix | 2026-10-02T13:36:12.392Z | 2026-10-13T18:06:47.183Z |
 | 18 | 15 | deviation | ingestion-service/src/ingestion_service/adapters/stderr_diagnostics.py |  | Deviation: sink emits via injected emitter (cli.py typer.echo err=True) not direct typer import, to satisfy test_ingestion_service_has_no_typer_import | waived | Intentional shipped design: sink emits via injected emitter to keep ingestion-service typer free | 2026-10-04T08:12:39.822Z | 2026-10-13T18:06:47.759Z |
 | 19 | 16 | stub | backend/src/backend/interface/http/routes/admin.py | 552 | 16-01 tracer: PUT /admin/pipeline/config has no PipelineConfigValidationError reject branch yet; structured 400 {errors:[...]} lands in 16-02 behind the same validator port | fixed |  | 2026-10-04T10:43:11.118Z | 2026-10-13T18:06:30.673Z |
+| 20 | 21 | unrun-verify |  |  | Playwright tests/admin.spec.js stub-banner assertions amended but not executed | open |  | 2026-10-16T15:01:10.477Z |  |
 
 ````json
 [
@@ -268,6 +269,19 @@ last_updated: 2026-10-13T18:06:47.759Z
     "recorded_at": "2026-10-04T10:43:11.118Z",
     "resolved_at": "2026-10-13T18:06:30.673Z",
     "milestone": "v1.2"
+  },
+  {
+    "id": 20,
+    "kind": "unrun-verify",
+    "phase": "21",
+    "file": "",
+    "line": null,
+    "description": "Playwright tests/admin.spec.js stub-banner assertions amended but not executed",
+    "status": "open",
+    "reason": "",
+    "recorded_at": "2026-10-16T15:01:10.477Z",
+    "resolved_at": null,
+    "milestone": "v1.3"
   }
 ]
 ````

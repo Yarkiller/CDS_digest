@@ -30,7 +30,7 @@ Ordering rule: **backlog tech debt first** (999.7 → 999.1 → 999.6), then mai
 
 - [x] **MAIL-02**: The signup-confirmation root cause is diagnosed and documented, and the delivered end state is honest — either a working confirmation email through the corporate relay, or an explicitly autoconfirmed flow whose copy never claims that mail was sent
 - [x] **MAIL-01**: The weekly digest is delivered by a real SMTP mailer in place of `StubMailer`, to the audience derived from `profiles`; mail stays best-effort **after** publish — a mail failure never converts an already-published digest into a failed send (CR-02/D-88)
-- [ ] **MAIL-03**: `recipient_count` is honest — both the planned `profiles` audience size and the actually delivered count are recorded, and the response reports them (e.g. «доставлено N из M»); the copy never claims the whole organisation
+- [x] **MAIL-03**: `recipient_count` is honest — both the planned `profiles` audience size and the actually delivered count are recorded, and the response reports them (e.g. «доставлено N из M»); the copy never claims the whole organisation
 - [x] **MAIL-04**: Mailer failures are contained — SMTP exceptions (`SMTPException`/`OSError`/timeout) map to a domain error caught alongside `PersistenceError`, with bounded timeouts, so a published digest is not 500-ed
 - [x] **MAIL-05**: SMTP configuration (`SMTP_*`) is read only from the VM environment through `settings`/composition; no `os.environ` in adapters and no secret in app code
 
@@ -109,7 +109,7 @@ Deferred. Not in this milestone's roadmap.
 | ADUX-12 | Phase 22 | Pending |
 | MAIL-02 | Phase 20 | Complete |
 | MAIL-01 | Phase 21 | Complete |
-| MAIL-03 | Phase 21 | Pending |
+| MAIL-03 | Phase 21 | Complete |
 | MAIL-04 | Phase 21 | Complete |
 | MAIL-05 | Phase 21 | Complete |
 | SRC-01 | Phase 23 | Pending |
