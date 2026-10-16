@@ -1,8 +1,11 @@
-"""StubMailer — the default digest mailer double (D-87 / D-15).
+"""StubMailer — the default digest mailer double (D-15).
 
 ``SmtpMailer`` is re-exported from ``backend.infrastructure.smtp_mailer`` so the historical
 import path stays stable; ``StubMailer`` remains the ``MAILER=stub`` implementation and the
 in-memory test double (assumption-delta: live SMTP is added alongside, never instead).
+
+Adapter selection (``resolve_mailer``) lives in ``backend.composition.mailer_factory``:
+picking an adapter is wiring, and infrastructure must not depend on composition.
 """
 
 from __future__ import annotations
@@ -13,7 +16,7 @@ from typing import Sequence
 from backend.domain.recipient import Recipient
 from backend.infrastructure.smtp_mailer import SmtpMailer
 
-__all__ = ["SmtpMailer", "StubMailer", "resolve_mailer"]
+__all__ = ["SmtpMailer", "StubMailer"]
 
 logger = logging.getLogger(__name__)
 
@@ -61,16 +64,3 @@ class StubMailer:
             "delivered_count": 0,
             "issue_url": issue_url,
         }
-
-
-def resolve_mailer(mailer_mode: str) -> StubMailer:
-    """Wire mailer from MAILER mode; smtp fails fast at startup (D-87)."""
-    mode = (mailer_mode or "stub").strip().lower() or "stub"
-    if mode == "stub":
-        return StubMailer()
-    if mode == "smtp":
-        raise RuntimeError(
-            "SMTP не настроен, используйте stub (MAILER=stub). "
-            "Live SMTP is deferred past Phase 5."
-        )
-    raise RuntimeError(f"Unknown MAILER={mode!r}; use stub")

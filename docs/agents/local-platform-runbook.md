@@ -136,12 +136,17 @@ GOTRUE_SMTP_SENDER_NAME="Digest CDS"
 **Phase 21 digest lane** (backend / composition env — separate process namespace, same relay host is fine):
 
 ```dotenv
+MAILER="smtp"
 SMTP_HOST="<corporate-relay-host>"
 SMTP_PORT="<587-or-ops-chosen>"
 SMTP_USER="<relay-user>"
 SMTP_PASS="<relay-pass>"
-SMTP_TLS_MODE="<starttls-or-ops-chosen>"
+SMTP_FROM="<digest-from@corporate-domain>"
+SMTP_FROM_NAME="Digest CDS"
+SMTP_TLS_MODE="starttls"
 ```
+
+Posture (D-13/D-14): `SMTP_TLS_MODE` defaults to **starttls on port 587** (`ssl` = implicit TLS, `none` = no TLS). Connect (10s) and per-send (30s) timeouts are **fixed in `Settings`** — they are deliberately *not* env keys, so no env var can widen the hang window. `SMTP_HOST`, `SMTP_PORT`, `SMTP_USER`, `SMTP_PASS`, and `SMTP_FROM` are all required: `MAILER=smtp` with any of them missing fails fast at startup with `ConfigurationError` (D-16) — there is no silent fallback to `StubMailer`.
 
 Do **not** paste real secrets into this runbook or any tracked file. Do **not** route signup confirmation through the backend `Mailer` port (`send_digest`) — GoTrue owns confirmation mail.
 
@@ -305,7 +310,7 @@ Creates / alters (apply **after** Phase 2 materials seed):
 - Idempotent **demo batch** (week_start `2026-09-15`, unsent) with ≤5 shortlist items: ready materials from Phase 2 seed + one draft (`phase5-admin-draft`) for ADMIN-03 demos; ≥1 item has ≥2 `score_factors` labels — honesty comment in SQL: «demo batch для Phase 5»
 - Seed is **not** the PIPE-01 ranking pipeline — product UI stays silent on seed vs pipeline (D-78)
 
-**Stub mailer vs SMTP (D-87):** Live `APP_CONTAINER=live` wires **`StubMailer`** (`MAILER=stub`, default). `MAILER=smtp` **fail-fast** at startup (`resolve_mailer`) — no live SMTP this phase. Success copy is «Отправка записана»; never imply subscriber delivery counts.
+**Digest mailer: stub vs live SMTP (D-15/D-16):** Live `APP_CONTAINER=live` wires **`StubMailer`** while `MAILER=stub` (the default) — the stub reports `delivery_status=stubbed` with `delivered_count=0` and the honest copy «Выпуск опубликован. Доставка писем: stub (0 из M)»; it never implies real delivery. With `MAILER=smtp` **and** a complete `SMTP_*` set, `resolve_mailer` constructs the real `SmtpMailer` (one message per recipient, D-05). With `MAILER=smtp` and `SMTP_*` incomplete the app **fails fast at startup** with `ConfigurationError` (D-16) — never a silent stub fallback. Flipping to live SMTP stays an **ops** decision after the relay smoke below passes; it is not required to merge or run the code.
 
 **Promote admin profile** for live admin proof (profiles default to `employee`):
 

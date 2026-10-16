@@ -3,11 +3,24 @@
 from __future__ import annotations
 
 import os
-from dataclasses import dataclass
+from collections.abc import Mapping
+from dataclasses import dataclass, field
+
+from backend.composition.config_error import ConfigurationError
 
 
 def _split_csv(value: str) -> tuple[str, ...]:
     return tuple(part.strip() for part in value.split(",") if part.strip())
+
+
+def _read_smtp_port(env: Mapping[str, str]) -> int | None:
+    """D-16: ``SMTP_PORT`` must be an explicit integer, otherwise it stays unset."""
+    raw = (env.get("SMTP_PORT") or "").strip()
+    if not raw:
+        return None
+    if not raw.isdigit():
+        raise ConfigurationError(f"SMTP_PORT must be an integer, got {raw!r}")
+    return int(raw)
 
 
 @dataclass(frozen=True)
@@ -23,10 +36,24 @@ class Settings:
     app_container: str = "memory"
     # Local filesystem root for authenticated .ipynb FileResponse (RAZB-03 / A5)
     notebook_root: str = ""
-    # stub (default, D-87) | smtp (fail-fast at resolve — not implemented)
+    # stub (default, D-15) | smtp (live relay; resolve fails fast when SMTP_* incomplete, D-16)
     mailer: str = "stub"
     # Absolute site origin for email material links (D-11 / RESEARCH Q2)
     site_url: str = "http://127.0.0.1:5173"
+    # --- Live SMTP relay (MAIL-05: read from the process env only in Settings.from_env) ---
+    smtp_host: str = ""
+    # None = "SMTP_PORT not configured"; D-16 requires an explicit value for MAILER=smtp.
+    smtp_port: int | None = None
+    smtp_user: str = ""
+    # repr=False: a logged Settings must never disclose the relay credential (T-21-04).
+    smtp_pass: str = field(default="", repr=False)
+    smtp_from: str = ""
+    smtp_from_name: str = ""
+    # D-13: starttls (relay port 587) by default; operator may override with ssl | none.
+    smtp_tls_mode: str = "starttls"
+    # D-14: bounded timeouts are fixed here and injected as primitives — never env-driven.
+    smtp_connect_timeout: float = 10.0
+    smtp_send_timeout: float = 30.0
 
     @property
     def cors_origins(self) -> tuple[str, ...]:
@@ -43,6 +70,7 @@ class Settings:
         if mode not in ("memory", "live"):
             mode = "memory"
         mailer = (env.get("MAILER") or "stub").strip().lower() or "stub"
+        smtp_port = _read_smtp_port(env)
         default_site = "http://127.0.0.1:5173"
         site_url = (
             (env.get("SITE_URL") or "").strip()
@@ -61,4 +89,12 @@ class Settings:
             notebook_root=env.get("NOTEBOOK_ROOT", ""),
             mailer=mailer,
             site_url=site_url,
+            smtp_host=env.get("SMTP_HOST", ""),
+            smtp_port=smtp_port,
+            smtp_user=env.get("SMTP_USER", ""),
+            smtp_pass=env.get("SMTP_PASS", ""),
+            smtp_from=env.get("SMTP_FROM", ""),
+            smtp_from_name=env.get("SMTP_FROM_NAME", ""),
+            smtp_tls_mode=(env.get("SMTP_TLS_MODE") or "starttls").strip().lower()
+            or "starttls",
         )

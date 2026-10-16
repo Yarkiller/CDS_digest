@@ -3,10 +3,10 @@
 from __future__ import annotations
 
 from backend.composition.container import AppContainer
+from backend.composition.mailer_factory import resolve_mailer
 from backend.composition.settings import Settings
 from backend.application.ports.query_embedder import StubQueryEmbedder
 from backend.infrastructure.local_notebook_storage import LocalNotebookStorage
-from backend.infrastructure.stub_mailer import resolve_mailer
 from backend.infrastructure.yaml_pipeline_config_validator import YamlPipelineConfigValidator
 from supabase_integration import (
     SupabaseDigestPublisher,
@@ -60,8 +60,8 @@ def build_live_container(settings: Settings) -> AppContainer:
         # PIPE-03: validated config persists to the pipeline_config singleton behind the port (D-08/D-10)
         pipeline_config=SupabasePipelineConfigRepository(admin_client),
         pipeline_config_validator=YamlPipelineConfigValidator(),
-        # StubMailer via resolve_mailer — MAILER=smtp fail-fast (D-87 / COVERAGE OPT-OUT)
-        mailer=resolve_mailer(settings.mailer),
+        # StubMailer or live SmtpMailer via resolve_mailer — MAILER=smtp fail-fast (D-15/D-16)
+        mailer=resolve_mailer(settings),
         # Atomic claim+publish via claim_and_publish_digest RPC (CR-01/WR-01, migration 005)
         publisher=SupabaseDigestPublisher(admin_client),
     )
