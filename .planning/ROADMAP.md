@@ -132,7 +132,22 @@ Backlog tech debt comes first (lowest blast radius first), then mail, then inges
   3. The dirty flag clears after a successful save and stays armed after a server reject.
   4. `App.jsx` is migrated from declarative `<BrowserRouter>` to a data router (`createBrowserRouter` + `RouterProvider`) as its own behaviour-preserving plan gated by the full Playwright suite — the migration and the guard are never combined in one plan, and no double-prompt occurs.
 
-**Plans**: TBD
+**Plans:** 2 plans
+
+**Wave 1** — the data-router migration, behaviour-preserving (ADUX-09 criterion 4 / D-09):
+- [ ] `19-01-PLAN.md` — Tracer: `web/src/App.jsx` on a module-scope `createBrowserRouter` + `RouterProvider`, gated by the full Playwright `web` suite at the Wave-0 recorded count (the stated TDD exception for a refactor)
+
+**Wave 2** — the unsaved-changes guard, RED-first (ADUX-09 criteria 1-3), depends on 19-01:
+- [ ] `19-02-PLAN.md` — Tracer: the in-app SPA blocker + `UnsavedChangesDialog`; then the two-statement `armBeforeUnload` backstop with the amended tripwire; then the save/reject dirty-contract pins
+
+**Cross-cutting constraints**:
+- The migration and the guard are **never combined in one plan** (PITFALLS Technical Debt Patterns row = Never); the guard is wired only after the migration is green.
+- The migration has **no RED test** by design — it is gated by the existing suite with the passed count measured on the untouched tree before the edit (never assume STATE.md's 110).
+- The leave copy «Есть несохранённые изменения. Уйти без сохранения?» has **one home** (`web/src/utils/unsavedChangesGuard.js`), rendered only by the dialog; the reset `window.confirm` copy is unchanged (D-08).
+- Correct `beforeunload` = exactly `preventDefault()` + truthy `returnValue`, attached only while dirty, removed on unmount and after a successful save, with no `window.confirm`/`alert` (D-05); no app copy on the reload/close path (D-06).
+- The dirty signal is the existing `dirty === yaml !== savedYaml` — never a second "touched" flag (D-12); the guard blocks **every** dirty in-app navigation, including the `RequireAuth` 401 → `/login` redirect, with no pathname carve-out (D-04).
+- The guard must stay extractable for Phase 23 (`ADUX-10`), which owns the ingest-sources editor.
+
 **Tripwires**: `tests/admin.spec.js` dirty-gating → **AMEND** (the existing synthetic-`beforeunload` test green-lights the broken handler; amend it to assert the correct handler contract, never delete). **ADUX-10 is deliberately NOT owned here** — the ingest-sources editor guard ships in Phase 23 (sources); the gap is intentional, not forgotten.
 
 ### Phase 20: MAIL-02 signup confirmation mail
