@@ -25,9 +25,6 @@ function errorPrefix(error) {
 /** Reset-to-saved confirm copy (UI-SPEC; D-12). */
 const RESET_CONFIRM = 'Отменить изменения и вернуть последнюю сохранённую версию?'
 
-/** Unsaved-changes leave confirm copy (UI-SPEC; D-12). */
-const UNSAVED_LEAVE_CONFIRM = 'Есть несохранённые изменения. Уйти без сохранения?'
-
 /**
  * Admin pipeline config — view + edit the raw YAML config without running the
  * pipeline (PIPE-01/PIPE-03; D-10/D-11/D-12/D-13). Minimal tracer surface:
@@ -108,20 +105,6 @@ export default function AdminPipelineConfigPage() {
 
   const dirty = yaml !== savedYaml
   const blocker = useUnsavedChangesGuard(dirty)
-
-  useEffect(() => {
-    if (!dirty) return undefined
-    function onBeforeUnload(event) {
-      if (typeof window.confirm === 'function' && !window.confirm(UNSAVED_LEAVE_CONFIRM)) {
-        event.preventDefault()
-        event.returnValue = ''
-      }
-    }
-    window.addEventListener('beforeunload', onBeforeUnload)
-    return () => {
-      window.removeEventListener('beforeunload', onBeforeUnload)
-    }
-  }, [dirty])
 
   function reloadRole() {
     setRoleKey((k) => k + 1)

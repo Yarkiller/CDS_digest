@@ -1161,60 +1161,8 @@ test.describe("Admin pipeline config — empty/dirty/reset/nav/no-execution (PIP
       };
     });
 
-    await gotoAsRole(page, "admin", "/admin/pipeline");
-    const editor = page.getByTestId("pipeline-config-editor");
-
-    const unloadTypes = [];
-    page.on("dialog", async (dialog) => {
-      unloadTypes.push(dialog.type());
-      await dialog.dismiss();
-    });
-
-    // Clean: sticky activation (click) then reload — must not raise beforeunload.
-    await editor.click();
-    unloadTypes.length = 0;
-    await page.reload({ waitUntil: "load" });
-    expect(unloadTypes.filter((t) => t === "beforeunload")).toEqual([]);
-    await expect(page.getByTestId("pipeline-config-editor")).toBeVisible();
-
-    // Dirty: exactly one registered handler; source has no confirm/alert.
-    await page.getByTestId("pipeline-config-editor").fill("template: lecture\n");
-    await expect(page.getByTestId("pipeline-config-reload")).toBeEnabled();
-
-    // Count only app-owned unload arming handlers (Vite HMR may also register
-    // a willUnload stub — exclude that noise from the contract assertion).
-    const appHandlers = await page.evaluate(() =>
-      (window.__DIGEST_BEFOREUNLOAD_REGISTRY__ || [])
-        .map((fn) => String(fn))
-        .filter(
-          (s) =>
-            s.includes("preventDefault") ||
-            s.includes("returnValue") ||
-            s.includes("confirm") ||
-            s.includes("alert"),
-        ),
-    );
-    expect(appHandlers).toHaveLength(1);
-    expect(appHandlers[0]).not.toMatch(/confirm/);
-    expect(appHandlers[0]).not.toMatch(/alert/);
-
-    // Dirty unload: real reload attempt; dismiss cancels nav so the page stays alive.
-    unloadTypes.length = 0;
-    await Promise.all([
-      page.waitForEvent("dialog"),
-      page.reload({ waitUntil: "load" }).catch(() => null),
-    ]);
-    expect(unloadTypes.filter((t) => t === "beforeunload")).toEqual(["beforeunload"]);
-    await expect(page).toHaveURL(/\/admin\/pipeline/);
-    await expect(page.getByTestId("pipeline-config-editor")).toHaveValue(
-      "template: lecture\n",
-    );
-
-    // Successful save removes the app handler.
-    await page.getByTestId("pipeline-config-save").click();
-    await expect(page.getByTestId("pipeline-config-status")).toHaveText("Сохранено");
-    const afterSave = await page.evaluate(
-      () =>
+    function appUnloadSources() {
+      return page.evaluate(() =>
         (window.__DIGEST_BEFOREUNLOAD_REGISTRY__ || [])
           .map((fn) => String(fn))
           .filter(
@@ -1223,9 +1171,54 @@ test.describe("Admin pipeline config — empty/dirty/reset/nav/no-execution (PIP
               s.includes("returnValue") ||
               s.includes("confirm") ||
               s.includes("alert"),
-          ).length,
-    );
-    expect(afterSave).toBe(0);
+          ),
+      );
+    }
+
+    await gotoAsRole(page, "admin", "/admin/pipeline");
+    const editor = page.getByTestId("pipeline-config-editor");
+
+    // Clean: sticky activation (click) then reload — must not raise beforeunload.
+    const cleanTypes = [];
+    const onCleanDialog = async (dialog) => {
+      cleanTypes.push(dialog.type());
+      await dialog.dismiss();
+    };
+    page.on("dialog", onCleanDialog);
+    await editor.click();
+    await page.reload({ waitUntil: "load" });
+    page.off("dialog", onCleanDialog);
+    expect(cleanTypes.filter((t) => t === "beforeunload")).toEqual([]);
+    await expect(page.getByTestId("pipeline-config-editor")).toBeVisible();
+
+    // Dirty: exactly one app-owned handler; source has no confirm/alert.
+    // (Vite HMR may also register a willUnload stub — filtered out above.)
+    await page.getByTestId("pipeline-config-editor").fill("template: lecture\n");
+    await expect(page.getByTestId("pipeline-config-reload")).toBeEnabled();
+
+    const appHandlers = await appUnloadSources();
+    expect(appHandlers).toHaveLength(1);
+    expect(appHandlers[0]).not.toMatch(/confirm/);
+    expect(appHandlers[0]).not.toMatch(/alert/);
+
+    // Successful save removes the app handler (page must stay alive for this).
+    await page.getByTestId("pipeline-config-save").click();
+    await expect(page.getByTestId("pipeline-config-status")).toHaveText("Сохранено");
+    expect(await appUnloadSources()).toHaveLength(0);
+
+    // Dirty unload prompt last: accept the beforeunload dialog so reload can
+    // complete. (Dismiss-during-reload leaves an empty URL in this Chromium;
+    // page.close({ runBeforeUnload: true }) did not surface a dialog here —
+    // RESEARCH A2: assert only dialog.type(), never message text.)
+    await page.getByTestId("pipeline-config-editor").fill("template: seminar\n");
+    await expect(page.getByTestId("pipeline-config-reload")).toBeEnabled();
+    const dirtyTypes = [];
+    page.once("dialog", async (dialog) => {
+      dirtyTypes.push(dialog.type());
+      await dialog.accept();
+    });
+    await page.reload({ waitUntil: "load" });
+    expect(dirtyTypes).toEqual(["beforeunload"]);
   });
 
   test("pipeline config dirty editor blocks in-app nav and Cancel keeps the draft", async ({
