@@ -220,6 +220,24 @@ def test_smtp_mailer_counts_per_recipient_timeout_without_leaking_it() -> None:
     assert result["delivered_count"] == 0
 
 
+def test_smtp_mailer_counts_malformed_recipient_address_as_one_failure() -> None:
+    """CR-01/D-08/MAIL-04: a header-injection address is ONE failed recipient, never an escape.
+
+    ``_build_message`` must run inside the per-recipient guard so the stdlib ``ValueError``
+    for a CR/LF ``To`` is contained (D-88) instead of 500-ing an already-published digest.
+    """
+    recipients = [Recipient(email="victim@x.ru\r\nBcc: attacker@y.ru")]
+    factory = FakeSmtpFactory(FakeSmtpConnection())
+    mailer = _mailer(factory)
+
+    result = _send(mailer, recipients)
+
+    assert result["delivery_status"] == "failed"
+    assert result["delivered_count"] == 0
+    # The malformed message never reached the wire; it was counted, not sent.
+    assert factory.connection.attempts == 0
+
+
 # --- D-08: consecutive-failure stop with streak reset --------------------------------
 
 

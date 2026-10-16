@@ -141,15 +141,18 @@ class SmtpMailer:
         try:
             self._apply_send_timeout(connection)
             for recipient in audience:
-                message = self._build_message(
-                    recipient,
-                    subject=subject,
-                    body_text=body_text,
-                    body_html=body_html,
-                )
                 try:
+                    # CR-01: building the message lives inside the guard — a malformed ``To``
+                    # (stdlib ``ValueError`` on CR/LF) is ONE failed recipient (D-08), never a
+                    # run-killer that escapes and 500s an already-published digest (D-88).
+                    message = self._build_message(
+                        recipient,
+                        subject=subject,
+                        body_text=body_text,
+                        body_html=body_html,
+                    )
                     connection.send_message(message)
-                except (smtplib.SMTPException, OSError, TimeoutError) as exc:
+                except (smtplib.SMTPException, OSError, TimeoutError, ValueError) as exc:
                     consecutive_failures += 1
                     logger.warning(
                         "smtp_mailer per-recipient failure batch_id=%s delivered=%s/%s "
