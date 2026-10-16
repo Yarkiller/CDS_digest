@@ -18,7 +18,7 @@ Ordering rule: **backlog tech debt first** (999.7 → 999.1 → 999.6), then mai
 
 ### Unsaved-changes guard for the pipeline editor (backlog 999.6)
 
-- [ ] **ADUX-09**: The admin pipeline editor warns before losing unsaved changes on in-app SPA navigation **and** on reload/close, using the existing Russian copy; no warning when clean; the dirty flag clears after a successful save and stays armed after a server reject
+- [x] **ADUX-09**: The admin pipeline editor warns before losing unsaved changes on in-app SPA navigation **and** on reload/close, using the existing Russian copy; no warning when clean; the dirty flag clears after a successful save and stays armed after a server reject
 - [ ] **ADUX-10**: The guard covers every editable surface on `/admin/pipeline`, including the ingest-sources editor shipped in the sources phase
 
 ### Pipeline config validator (backlog 999.7)
@@ -104,7 +104,7 @@ Deferred. Not in this milestone's roadmap.
 | PIPE-05 | Phase 17 | Complete |
 | ADUX-07 | Phase 18 | Complete |
 | ADUX-08 | Phase 18 | Complete |
-| ADUX-09 | Phase 19 | Pending |
+| ADUX-09 | Phase 19 | Complete |
 | ADUX-10 | Phase 23 | Pending |
 | ADUX-12 | Phase 22 | Pending |
 | MAIL-02 | Phase 20 | Pending |
