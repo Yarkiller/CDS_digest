@@ -105,18 +105,64 @@ Restart `npm run dev` after creating/editing it — Vite only reads env files at
 
 ### 4.1 Auth mailer / autoconfirm (G-01-3b — required for `/register`)
 
-On `knowledge-db.ru`, GoTrue had `mailer_autoconfirm=false` and a broken SMTP path. Signup then returned **500** `Error sending confirmation email` and **no Auth user was created**.
+On `knowledge-db.ru`, GoTrue had `mailer_autoconfirm=false` and a broken SMTP path. Signup then returned **500** `Error sending confirmation email` and **no Auth user was created**. Diagnosis closed: [`.planning/debug/g-01-3b-signup-mailer.md`](../../.planning/debug/g-01-3b-signup-mailer.md).
 
-**Phase 1 unblock (do this now):** enable autoconfirm so signup does not depend on email:
+**Shipped end state this session (path B):** runtime keeps autoconfirm ON. SPA `/register` null-session copy is honest — «Регистрация завершена. Аккаунт активен — войдите.» — and never claims a confirmation letter was sent. Path **(A)** (working confirmation email through the corporate relay) remains the **target** end state once the procedure below is proven.
+
+**Phase 1 / path (B) unblock (current):** enable autoconfirm so signup does not depend on email:
 
 1. Open Supabase Studio → **Authentication** → **Providers** → **Email**.
 2. Turn **Confirm email** **OFF** (equivalent env: `GOTRUE_MAILER_AUTOCONFIRM=true` + restart Auth/GoTrue on the VM).
-3. Verify: `GET https://knowledge-db.ru/auth/v1/settings` shows `"mailer_autoconfirm":true`.
+3. Verify: `GET https://knowledge-db.ru/auth/v1/settings` shows `"mailer_autoconfirm":true`. Trust this live probe over file contents alone (GoTrue README: `true` means autoconfirm **without** sending mail).
 4. Smoke: `POST /auth/v1/signup` with a new `@sberbank.ru` / `@omega.sbrf.ru` address returns **2xx** and the user appears under Authentication → Users.
 
-**SMTP (ops ticket — not Phase 1):** keep a ticket to configure a working mailer. Until SMTP is healthy, **do not ship product features that depend on outbound email** (password-reset links, invite-by-email, confirmation flows). Self-service `/register` is allowed only because autoconfirm removes the email dependency. Revisit SMTP after Phase 1.
+**SPA authApi error-mapping honesty (still deferred):** map mailer/confirmation failures away from the generic «Сервис входа временно недоступен» NETWORK banner when path (A) is active — not required under path (B).
 
-**SPA follow-up (deferred):** map mailer/confirmation failures to honest Russian copy — never the generic «Сервис входа временно недоступен» NETWORK banner (see `.planning/debug/g-01-3b-signup-mailer.md`).
+#### 4.1.1 Relay choice and env shape (path A — document only)
+
+**Relay choice (D-03):** one corporate SMTP relay serving GoTrue signup confirmation and the future Phase 21 digest lane, under ADR-0002 contour isolation. Host, port, TLS mode, CA bundle, and credentials are **operator-supplied on the VM** — never committed to git.
+
+**GoTrue lane** (Auth container env — placeholders only):
+
+```dotenv
+GOTRUE_SMTP_HOST="<corporate-relay-host>"
+GOTRUE_SMTP_PORT="<587-or-ops-chosen>"
+GOTRUE_SMTP_USER="<relay-user>"
+GOTRUE_SMTP_PASS="<relay-pass>"
+GOTRUE_SMTP_ADMIN_EMAIL="<from@corporate-domain>"
+GOTRUE_SMTP_SENDER_NAME="Digest CDS"
+```
+
+**Phase 21 digest lane** (backend / composition env — separate process namespace, same relay host is fine):
+
+```dotenv
+SMTP_HOST="<corporate-relay-host>"
+SMTP_PORT="<587-or-ops-chosen>"
+SMTP_USER="<relay-user>"
+SMTP_PASS="<relay-pass>"
+SMTP_TLS_MODE="<starttls-or-ops-chosen>"
+```
+
+Do **not** paste real secrets into this runbook or any tracked file. Do **not** route signup confirmation through the backend `Mailer` port (`send_digest`) — GoTrue owns confirmation mail.
+
+#### 4.1.2 Path (A) enablement, smoke, and one-command rollback
+
+**Operator blocker before flipping to (A) — Pitfall 16:** the SPA corporate-domain gate is bypassable via direct `POST /auth/v1/signup`. With healthy SMTP and confirm-email ON, open confirmation spam is possible. Treat a GoTrue-edge domain control (or equivalent) as a precondition before enabling path (A). Do not weaken ADR-0003 / `tests/unit/test_auth_email_domain.py`.
+
+**Enablement (ops on VM only — not executed in Phase 20):**
+
+1. Set `GOTRUE_SMTP_*` on the Auth/GoTrue container to the corporate relay (values from the operator vault).
+2. Reload/restart Auth so SMTP is loaded.
+3. Smoke relay **before** flipping autoconfirm: prove the relay accepts mail from the GoTrue sender (operator-chosen probe). Do **not** set `GOTRUE_MAILER_AUTOCONFIRM=false` until that smoke passes.
+4. Only then set `GOTRUE_MAILER_AUTOCONFIRM=false` (Studio: Confirm email **ON**) and reload Auth.
+5. Verify: `GET https://knowledge-db.ru/auth/v1/settings` shows `"mailer_autoconfirm":false`.
+6. Signup smoke: `POST /auth/v1/signup` under confirm-email ON expects confirmation **delivery** (and a persisted unconfirmed user), **not** signup HTTP 500 `unexpected_failure` / «Error sending confirmation email».
+
+**One-command rollback (D-05):** set `GOTRUE_MAILER_AUTOCONFIRM=true` and reload/restart Auth/GoTrue. Verify `GET /auth/v1/settings` → `"mailer_autoconfirm":true`. No DB change required.
+
+#### 4.1.3 Criterion-4 gap → Phase 21 precondition (D-06)
+
+**Acknowledged gap:** ROADMAP Phase 20 criterion 4 (live corporate-relay smoke-test proof on the GoTrue lane) is **not** completed this session. No speculative half-enabled `GOTRUE_SMTP_*` path was committed. Phase 21 (MAIL-01 live digest SMTP) **inherits** «relay chosen and proven on the GoTrue lane» as a precondition before live digest send. Until that proof exists, keep path (B) autoconfirm and do not claim confirmation mail is delivered.
 
 **Ops fallback — shared VM dashboard seed:** if you need a pre-created test account without going through `/register`:
 
