@@ -57,7 +57,7 @@ Backlog tech debt comes first (lowest blast radius first), then mail, then inges
 
 - [x] **Phase 17: YAML merge-key acceptance in the strict validator** - The strict pipeline-config validator accepts valid `<<` merge-key documents, bounded so they cannot exhaust CPU, without weakening duplicate-key rejection (completed 2026-10-14)
 - [x] **Phase 18: Reader-route honesty for draft materials** - An admin reads any draft at an admin-gated preview surface while the public reader route stays ready-only and draft ≡ missing (opaque 404) (completed 2026-10-15)
-- [ ] **Phase 19: Unsaved-changes guard for the pipeline editor** - The admin pipeline editor warns before losing unsaved changes on in-app SPA navigation and on reload/close
+- [x] **Phase 19: Unsaved-changes guard for the pipeline editor** - The admin pipeline editor warns before losing unsaved changes on in-app SPA navigation and on reload/close (completed 2026-10-16)
 - [ ] **Phase 20: MAIL-02 signup confirmation mail** - The root cause is diagnosed and the delivered end state is honest (working relay mail, or explicitly autoconfirmed copy)
 - [ ] **Phase 21: MAIL-01 live SMTP digest delivery** - The weekly digest is delivered by a real SMTP mailer to the `profiles` audience, with honest counts and contained failures
 - [ ] **Phase 22: Admin nav grouping** - The pipeline config is reached from a single «Админ» entry with an in-page tab-bar, not a second top-level nav item
@@ -132,7 +132,7 @@ Backlog tech debt comes first (lowest blast radius first), then mail, then inges
   3. The dirty flag clears after a successful save and stays armed after a server reject.
   4. `App.jsx` is migrated from declarative `<BrowserRouter>` to a data router (`createBrowserRouter` + `RouterProvider`) as its own behaviour-preserving plan gated by the full Playwright suite — the migration and the guard are never combined in one plan, and no double-prompt occurs.
 
-**Plans:** 2/2 plans executed
+**Plans:** 2/2 plans complete
 - [x] 19-01-PLAN.md
 - [x] 19-02-PLAN.md
 
@@ -165,7 +165,14 @@ Backlog tech debt comes first (lowest blast radius first), then mail, then inges
   4. The corporate SMTP relay is chosen and proven by a smoke test with a one-command rollback, serving both GoTrue and MAIL-01.
   5. If autoconfirm is flipped off, the shipped `tests/auth.spec.js` post-register assertion is deliberately **amended** (never deleted) alongside a regression for the re-introduced signup path.
 
-**Plans**: TBD
+**Plans:** 2 plans
+
+**Wave 1** (no dependencies)
+- [ ] 20-01-PLAN.md — Tracer: honest (B) post-register copy + harness + Playwright D-09/D-10 (MAIL-02)
+
+**Wave 2** *(blocked on Wave 1)*
+- [ ] 20-02-PLAN.md — Close g-01-3b diagnosis; runbook relay shape/smoke/rollback; criterion-4 gap → Phase 21 (MAIL-02)
+
 **Tripwires**: `tests/auth.spec.js` post-register assertion → **AMEND** (deliberate, with a relay smoke and one-command rollback); `test_auth_email_domain.py` → **PRESERVE** (the fixed two-domain gate is unchanged).
 
 ### Phase 21: MAIL-01 live SMTP digest delivery
@@ -238,8 +245,8 @@ Phases execute in numeric order: 17 → 18 → 19 → 20 → 21 → 22 → 23 �
 |-------|----------------|--------|-----------|
 | 17. YAML merge-key acceptance | 3/3 | Complete    | 2026-10-14 |
 | 18. Reader-route honesty | 3/3 | Complete    | 2026-10-15 |
-| 19. Unsaved-changes guard | 2/2 | In Progress|  |
-| 20. MAIL-02 signup mail | 0/TBD | Not started | - |
+| 19. Unsaved-changes guard | 2/2 | Complete    | 2026-10-16 |
+| 20. MAIL-02 signup mail | 0/2 | Planned | - |
 | 21. MAIL-01 live SMTP digest | 0/TBD | Not started | - |
 | 22. Admin nav grouping | 0/TBD | Not started | - |
 | 23. Admin-managed ingest sources | 0/TBD | Not started | - |

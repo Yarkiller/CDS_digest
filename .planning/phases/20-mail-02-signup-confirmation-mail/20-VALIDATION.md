@@ -40,22 +40,20 @@ created: "2026-10-16"
 
 | Task ID | Plan | Wave | Requirement | Threat Ref | Secure Behavior | Test Type | Automated Command | File Exists | Status |
 |---------|------|------|-------------|------------|-----------------|-----------|-------------------|-------------|--------|
-| 20-xx-xx | TBD | TBD | MAIL-02 | T-20-xx | Honest post-register copy; no letter claim | e2e | `npx playwright test tests/auth.spec.js --project=web -g "honest\|письм\|Регистрация завершена"` | ❌ W0 | ⬜ pending |
-| 20-xx-xx | TBD | TBD | MAIL-02 | T-20-xx | Copy never claims confirmation letter | e2e / static | same file, D-10 regression | ❌ W0 | ⬜ pending |
-| 20-xx-xx | TBD | TBD | MAIL-02 | — | Autoconfirm happy path redirects + shell identity | e2e | existing `shows Логин as shell identity after register` | ✅ | ⬜ pending |
-| 20-xx-xx | TBD | TBD | MAIL-02 | — | Two-domain gate unchanged | unit | `uv run pytest tests/unit/test_auth_email_domain.py -x` | ✅ | ⬜ pending |
+| 20-01-01 | 20-01 | 1 | MAIL-02 | T-20-01, T-20-02 | Honest (B) copy + letter-claim forbid under null-session harness | e2e | `npx playwright test tests/auth.spec.js --project=web -g "post-register copy\|Регистрация завершена\|confirmation letter"` | ❌ W0 | ⬜ pending |
+| 20-01-02 | 20-01 | 1 | MAIL-02 | T-20-03 | Autoconfirm happy path + full auth.spec green; domain gate PRESERVE | e2e + unit | `npx playwright test tests/auth.spec.js --project=web` then `uv run pytest tests/unit/test_auth_email_domain.py -x` | ✅ happy path / ✅ domain | ⬜ pending |
+| 20-02-01 | 20-02 | 2 | MAIL-02 | T-20-08 | Debug session closed with fix ref (not deleted) | doc + rg | `git ls-files -- ".planning/debug/**/g-01-3b-signup-mailer.md"` + `rg` Resolution/diagnosis | ✅ | ⬜ pending |
+| 20-02-02 | 20-02 | 2 | MAIL-02 | T-20-05, T-20-06, T-20-07 | Runbook SMTP shape/smoke/rollback; criterion-4 → Phase 21 | doc + unit | `rg` GOTRUE_SMTP_/rollback/Phase 21 in runbook; `uv run pytest tests/unit/test_auth_email_domain.py -x` | ✅ | ⬜ pending |
 
 *Status: ⬜ pending · ✅ green · ❌ red · ⚠️ flaky*
-
-*Planner fills concrete Task IDs / Plan / Wave / Threat Ref when PLAN.md files are written.*
 
 ---
 
 ## Wave 0 Requirements
 
-- [ ] Amend/add `tests/auth.spec.js` coverage for honest `CONFIRM_MESSAGE` (D-09) — current suite has **no** assertion on the letter-claim string
-- [ ] New D-10 regression (negative letter-claim assert and/or constant scan)
-- [ ] Optional harness `armSignUpWithoutSession` in `authApi.js` + `main.jsx` (discretion) — only if DOM assertion chosen
+- [ ] Amend/add `tests/auth.spec.js` coverage for honest `CONFIRM_MESSAGE` (D-09) — owned by **20-01** Task 1 (RED first)
+- [ ] New D-10 regression (negative letter-claim assert) — owned by **20-01** Task 1 (same test)
+- [ ] Harness `armSignUpWithoutSession` in `authApi.js` + `main.jsx` — owned by **20-01** Task 1 (DOM path chosen)
 - [ ] Framework install: none
 
 ---
