@@ -87,6 +87,15 @@ No SUMMARY.md `## Threat Flags` section was present for either plan.
 | Audit Date | Threats Total | Closed | Open (blocking) | Open (non-blocking) | Run By |
 |------------|---------------|--------|-----------------|---------------------|--------|
 | 2026-10-16 | 9 | 9 | 0 | 0 | verify-work → secure-phase L1 (gsd-security-auditor) |
+| 2026-10-16 | 9 | 9 | 0 | 0 | /gsd-secure-phase 20 re-audit — L1 short-circuit (threats_open: 0 · register at plan time · ASVS 1); evidence re-grepped |
+
+### Security Audit 2026-10-16 (re-run)
+
+| Metric | Count |
+|--------|-------|
+| Threats found | 9 |
+| Closed | 9 |
+| Open | 0 |
 
 ---
 
