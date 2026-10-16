@@ -48,3 +48,12 @@ def test_in_memory_container_publish_and_index() -> None:
     assert user.id == "user-uuid-1"
     assert user.email == "alice@sberbank.ru"
     assert user.role == "employee"
+
+
+def test_in_memory_container_keeps_stub_mailer_as_default() -> None:
+    """D-15 tripwire: local/in-memory composition never swaps the port's default double."""
+    from backend.infrastructure.stub_mailer import StubMailer
+
+    container = build_in_memory_container([])
+
+    assert isinstance(container.mailer, StubMailer)

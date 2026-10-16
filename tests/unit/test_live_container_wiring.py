@@ -130,8 +130,12 @@ def test_build_live_container_wires_pipeline_config(monkeypatch: pytest.MonkeyPa
     assert isinstance(container.pipeline_config_validator, YamlPipelineConfigValidator)
 
 
-def test_build_live_container_rejects_smtp_mailer(monkeypatch: pytest.MonkeyPatch) -> None:
-    """D-87: MAILER=smtp fail-fast at live container build."""
+def test_build_live_container_rejects_incomplete_smtp_mailer(
+    monkeypatch: pytest.MonkeyPatch,
+) -> None:
+    """D-16: MAILER=smtp without SMTP_* fail-fasts at live container build."""
+    from backend.composition.config_error import ConfigurationError
+
     monkeypatch.setattr(
         "backend.composition.live.create_service_role_client",
         MagicMock(return_value=object()),
@@ -141,8 +145,34 @@ def test_build_live_container_rejects_smtp_mailer(monkeypatch: pytest.MonkeyPatc
         supabase_secret_key="secret-key",
         mailer="smtp",
     )
-    with pytest.raises(RuntimeError, match="SMTP"):
+    with pytest.raises(ConfigurationError, match="SMTP_HOST"):
         build_live_container(settings)
+
+
+def test_build_live_container_wires_smtp_mailer_when_settings_complete(
+    monkeypatch: pytest.MonkeyPatch,
+) -> None:
+    """D-15: with complete SMTP_* the live container wires the real SmtpMailer."""
+    from backend.infrastructure.smtp_mailer import SmtpMailer
+
+    monkeypatch.setattr(
+        "backend.composition.live.create_service_role_client",
+        MagicMock(return_value=object()),
+    )
+    settings = Settings(
+        supabase_url="https://example.test",
+        supabase_secret_key="secret-key",
+        mailer="smtp",
+        smtp_host="relay.example.test",
+        smtp_port=587,
+        smtp_user="digest-bot",
+        smtp_pass="s3cret",
+        smtp_from="digest@knowledge-db.ru",
+    )
+
+    container = build_live_container(settings)
+
+    assert isinstance(container.mailer, SmtpMailer)
 
 
 def test_settings_exposes_jwks_url_and_issuer_from_env() -> None:
