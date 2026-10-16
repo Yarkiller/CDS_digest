@@ -4,18 +4,18 @@ milestone: v1.3
 milestone_name: Live mail, scheduled ingestion & backlog debt
 current_phase: 21
 current_phase_name: MAIL-01 live SMTP digest delivery
-current_plan: 2
+current_plan: 3
 status: executing
-stopped_at: Completed 21-01-PLAN.md
-last_updated: "2026-10-16T14:40:18.888Z"
+stopped_at: Completed 21-02-PLAN.md (SmtpMailer + SMTP settings fail-fast)
+last_updated: "2026-10-16T14:52:36.733Z"
 last_activity: 2026-10-16
 last_activity_desc: Phase 21 execution started
-state_head: a6c57da4448aa3accea96a40736f28f2798732bc
+state_head: 3d7e77112cd765b46037cbae3239f2748c4038dd
 progress:
   total_phases: 8
   completed_phases: 4
   total_plans: 13
-  completed_plans: 11
+  completed_plans: 12
   percent: 50
 ---
 
@@ -31,7 +31,7 @@ See: .planning/PROJECT.md (updated 2026-10-16 — after Phase 20)
 ## Current Position
 
 Phase: 21 (MAIL-01 live SMTP digest delivery) — EXECUTING
-Current Plan: 2
+Current Plan: 3
 Total Plans in Phase: 3
 Status: Ready to execute
 Last activity: 2026-10-16 — Phase 21 execution started
@@ -76,6 +76,7 @@ Progress: [█████░░░░░] 50%
 | Phase 20 P01 | 4min | 2 tasks | 4 files |
 | Phase 20 P02 | 5min | 2 tasks | 2 files |
 | Phase 21 P01 | 11min | 2 tasks | 12 files |
+| Phase 21 P02 | 12 | 2 tasks | 11 files |
 
 ## Accumulated Context
 
@@ -133,6 +134,8 @@ v1.3 roadmap locks:
 - [Phase 20]: D-05/D-06: Rollback GOTRUE_MAILER_AUTOCONFIRM=true; criterion-4 proof → Phase 21
 - [Phase 21]: 21-01: delivery_status is read from the mailer result, not the batch row — the batch keeps planned M only; live N/status ride SendDigestResult + the digest_send ping payload (D-06 option i)
 - [Phase 21]: 21-01: empty/malformed-only audience (M=0) still publishes; the live path honestly reports delivery_status=sent with delivered_count=0 and non-alarming copy (D-04 / RESEARCH Q3)
+- [Phase 21]: resolve_mailer moved to composition/mailer_factory.py: adapter selection is wiring, so infrastructure must not import composition (architecture.mdc); stub_mailer.py keeps StubMailer + SmtpMailer re-export only
+- [Phase 21]: Settings.smtp_port is int|None (None = unset) so D-16 can require SMTP_PORT explicitly instead of silently defaulting to 587; non-numeric SMTP_PORT raises ConfigurationError in from_env
 
 ### Pending Todos
 
@@ -163,8 +166,8 @@ Carried product deferrals beyond v1.3: leaderboard, quiz, Whisper/Foundry ASR, i
 
 ## Session Continuity
 
-Last session: 2026-10-16T14:40:18.753Z
-Stopped at: Completed 21-01-PLAN.md
+Last session: 2026-10-16T14:52:36.620Z
+Stopped at: Completed 21-02-PLAN.md (SmtpMailer + SMTP settings fail-fast)
 Resume file: None
 Next: `/gsd-plan-phase 19`
 
