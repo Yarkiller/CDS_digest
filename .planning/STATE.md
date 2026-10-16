@@ -3,18 +3,18 @@ gsd_state_version: "1.0"
 milestone: v1.3
 milestone_name: Live mail, scheduled ingestion & backlog debt
 current_phase: 21
-current_phase_name: MAIL-01 live SMTP digest delivery
+current_phase_name: mail-01-live-smtp-digest-delivery
 current_plan: Not started
-status: planning
+status: executing
 stopped_at: Phase 21 context gathered
-last_updated: "2026-10-16T12:04:24.144Z"
+last_updated: "2026-10-16T14:26:52.817Z"
 last_activity: 2026-10-16
 last_activity_desc: Phase 18 complete, transitioned to Phase 21
-state_head: 989407b9f12b680935afcbfa071b5f4aab59d322
+state_head: c27b5f2bf740c7cba78af3bb84d4703114a1dddf
 progress:
   total_phases: 8
   completed_phases: 4
-  total_plans: 10
+  total_plans: 13
   completed_plans: 10
   percent: 50
 ---
@@ -30,10 +30,10 @@ See: .planning/PROJECT.md (updated 2026-10-16 — after Phase 20)
 
 ## Current Position
 
-Phase: 21 — MAIL-01 live SMTP digest delivery
+Phase: 21 (mail-01-live-smtp-digest-delivery) — READY TO EXECUTE
 Current Plan: Not started
 Total Plans in Phase: 3
-Status: Ready to plan
+Status: Ready to execute
 Last activity: 2026-10-16 — Phase 18 complete, transitioned to Phase 21
 
 Progress: [█████░░░░░] 50%
