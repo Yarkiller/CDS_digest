@@ -60,7 +60,7 @@ Backlog tech debt comes first (lowest blast radius first), then mail, then inges
 - [x] **Phase 19: Unsaved-changes guard for the pipeline editor** - The admin pipeline editor warns before losing unsaved changes on in-app SPA navigation and on reload/close (completed 2026-10-16)
 - [x] **Phase 20: MAIL-02 signup confirmation mail** - The root cause is diagnosed and the delivered end state is honest (working relay mail, or explicitly autoconfirmed copy) (completed 2026-10-16)
 - [ ] **Phase 21: MAIL-01 live SMTP digest delivery** - The weekly digest is delivered by a real SMTP mailer to the `profiles` audience, with honest counts and contained failures
-- [ ] **Phase 22: Admin nav grouping** - The pipeline config is reached from a single «Админ» entry with an in-page tab-bar, not a second top-level nav item
+- [x] **Phase 22: Admin nav grouping** - The pipeline config is reached from a single «Админ» entry with an in-page tab-bar, not a second top-level nav item (completed 2026-10-17)
 - [ ] **Phase 23: Admin-managed ingest sources** - An admin manages the DB-stored YouTube channel/playlist source list on the pipeline page, validated server-side
 - [ ] **Phase 24: Scheduled ingestion** - A systemd timer drives the existing `ingest` CLI against enabled sources, writing drafts + shortlist rows only
 
@@ -213,7 +213,7 @@ Plans:
   3. 16-UI-SPEC A-2 is updated so it no longer mandates the second top-level «Пайплайн» item, and its "no second navigation bar" rule is honoured because the tab-bar is in-page.
   4. A failing Playwright test was written first per the backlog TDD note before the nav change.
 
-**Plans**: 2/3 plans executed
+**Plans**: 3/3 plans complete
 
 Plans:
 
@@ -224,7 +224,7 @@ Plans:
 - [x] 22-02-PLAN.md — Dirty→tab UnsavedChangesDialog journey + 16-UI-SPEC A-2 supersession
 
 **Wave 3** *(blocked on Wave 1, Wave 2 completion; gap closure)*
-- [ ] 22-03-PLAN.md — Gap closure: deterministic layout backstops (640px edge), false dirty prompt on the active tab, shell `aria-current`, sr-only `h1`
+- [x] 22-03-PLAN.md — Gap closure: deterministic layout backstops (640px edge), false dirty prompt on the active tab, shell `aria-current`, sr-only `h1`
 
 **Cross-cutting constraints:**
 - At sm+ the two tab labels stay on one row without horizontal page scroll at 1280px and at the sm edge (~640px)
@@ -276,7 +276,7 @@ Phases execute in numeric order: 17 → 18 → 19 → 20 → 21 → 22 → 23 �
 | 19. Unsaved-changes guard | 2/2 | Complete    | 2026-10-16 |
 | 20. MAIL-02 signup mail | 2/2 | Complete    | 2026-10-16 |
 | 21. MAIL-01 live SMTP digest | 3/3 | In Progress|  |
-| 22. Admin nav grouping | 2/3 | In Progress|  |
+| 22. Admin nav grouping | 3/3 | Complete   | 2026-10-17 |
 | 23. Admin-managed ingest sources | 0/TBD | Not started | - |
 | 24. Scheduled ingestion | 0/TBD | Not started | - |
 
