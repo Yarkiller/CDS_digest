@@ -347,3 +347,11 @@ Phases execute in numeric order: 17 → 18 → 19 → 20 → 21 → 22 → 23 �
 **Deferred at:** 2026-10-05 at v1.2 milestone close
 **Follow-ups:**
 - [ ] WR-01: `_StrictSafeLoader.construct_mapping` pre-constructs key nodes before `flatten_mapping`, so a valid YAML merge-key document (`<<`) is rejected with a cryptic internal-tag error instead of merging. Fails closed (still a structured 400 `{errors:[...]}`, zero writes) and the fixed 4-key `extra="forbid"` schema cannot yield a valid config from such a document, so it is not a v1.2 must-have. Fix: run `flatten_mapping` (or pre-resolve merge keys) BEFORE duplicate-key detection so `<<` documents behave like `SafeLoader` while duplicate-key rejection stays intact. Advisory only — fails closed. (deferred 2026-10-05)
+
+### Backlog 999.2: Follow-up — Phase 23 deferred UAT follow-up: Test 1 (BACKLOG)
+
+**Goal:** Resolve the UAT checkpoint deferred during Phase 23 verification
+**Source phase:** 23
+**Deferred at:** 2026-10-17 during /gsd-verify-work 23 session completion
+**Follow-ups:**
+- [ ] Test 1: AdminLayout chrome: убрать надпись «АДМИН» над вкладками Дайджест|Пайплайн; уменьшить пустоту сверху; уменьшить кегль вкладок до уровня остальных заголовков (как «Источники ингеста»); чуть увеличить расстояние между вкладками Дайджест и Пайплайн (deferred 2026-10-17)
