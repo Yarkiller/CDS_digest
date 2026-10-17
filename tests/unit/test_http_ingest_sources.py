@@ -29,6 +29,13 @@ SOURCES_URL = "/admin/ingest-sources"
 
 # D-14 valid channel: UC + 22 [A-Za-z0-9_-] = 24 chars total
 VALID_CHANNEL_ID = "UC_x5XG1OV2P6uZZ5FSMdItQ"
+# D-14 valid playlist: PL + 32 [A-Za-z0-9_-] = 34 chars total
+VALID_PLAYLIST_ID = "PLrAXtmRdnEQy6nuLMHjMZOz59Oq8S_1rX"
+
+_INVALID_SOURCE_ID_MSG = "Укажите канонический id: UC… для канала или PL… для плейлиста."
+_KIND_MISMATCH_MSG = "Тип источника не совпадает с префиксом идентификатора."
+_LABEL_TOO_LONG_MSG = "Название не длиннее 120 символов."
+_DUPLICATE_MSG = "Этот источник уже добавлен"
 
 
 def _ingest_repo_cls() -> type:
@@ -232,3 +239,285 @@ def test_build_in_memory_container_wires_ingest_sources() -> None:
     container = build_in_memory_container()
     assert hasattr(container, "ingest_sources")
     assert isinstance(container.ingest_sources, repo_cls)
+
+
+def _assert_400_errors_zero_writes(
+    response,
+    repo,
+    *,
+    writes_before: int,
+    expected_errors: list[dict[str, str]],
+) -> None:
+    """D-19/D-20: top-level {errors:[…]} without detail; zero repository writes."""
+    assert response.status_code == 400
+    body = response.json()
+    assert "detail" not in body
+    assert body["errors"] == expected_errors
+    for row in body["errors"]:
+        assert set(row.keys()) == {"path", "message"}
+        assert "line" not in row
+    assert repo.write_count == writes_before
+    assert len(repo.adds) == writes_before  # adds only grow on successful POST
+
+
+@pytest.mark.parametrize(
+    ("kind", "source_id"),
+    [
+        ("channel", "dQw4w9WgXcQ"),  # 11-char video id
+        ("channel", "@handle"),
+        ("channel", "https://youtube.com/channel/UC_x5XG1OV2P6uZZ5FSMdItQ"),
+        ("channel", "UC" + ("x" * 21)),  # UC + 21 ≠ 24
+        ("playlist", "PL" + ("y" * 31)),  # PL + 31 ≠ 34
+    ],
+)
+def test_post_invalid_source_id_returns_400_and_writes_nothing(
+    kind: str,
+    source_id: str,
+) -> None:
+    """SRC-02 / D-14/D-20: invalid ids → 400 {errors:[…]} and write_count unchanged."""
+    client, headers, container = _admin_env()
+    repo = container.ingest_sources
+    before = repo.write_count
+
+    response = client.post(
+        SOURCES_URL,
+        headers=headers,
+        json={"kind": kind, "source_id": source_id, "label": None},
+    )
+
+    _assert_400_errors_zero_writes(
+        response,
+        repo,
+        writes_before=before,
+        expected_errors=[{"path": "source_id", "message": _INVALID_SOURCE_ID_MSG}],
+    )
+
+
+@pytest.mark.parametrize(
+    ("kind", "source_id"),
+    [
+        ("channel", VALID_PLAYLIST_ID),
+        ("playlist", VALID_CHANNEL_ID),
+    ],
+)
+def test_post_kind_prefix_mismatch_returns_400_and_writes_nothing(
+    kind: str,
+    source_id: str,
+) -> None:
+    """SRC-02 / D-06: kind/prefix mismatch → 400 path source_id; zero writes."""
+    client, headers, container = _admin_env()
+    repo = container.ingest_sources
+    before = repo.write_count
+
+    response = client.post(
+        SOURCES_URL,
+        headers=headers,
+        json={"kind": kind, "source_id": source_id, "label": None},
+    )
+
+    _assert_400_errors_zero_writes(
+        response,
+        repo,
+        writes_before=before,
+        expected_errors=[{"path": "source_id", "message": _KIND_MISMATCH_MSG}],
+    )
+
+
+def test_post_duplicate_returns_400_and_writes_nothing() -> None:
+    """SRC-02 / D-15: duplicate (kind, source_id) → 400; write_count unchanged after first add."""
+    client, headers, container = _admin_env()
+    repo = container.ingest_sources
+
+    first = client.post(
+        SOURCES_URL,
+        headers=headers,
+        json={"kind": "channel", "source_id": VALID_CHANNEL_ID, "label": None},
+    )
+    assert first.status_code == 201
+    after_add = repo.write_count
+    assert after_add == 1
+
+    duplicate = client.post(
+        SOURCES_URL,
+        headers=headers,
+        json={"kind": "channel", "source_id": VALID_CHANNEL_ID, "label": "again"},
+    )
+
+    _assert_400_errors_zero_writes(
+        duplicate,
+        repo,
+        writes_before=after_add,
+        expected_errors=[{"path": "source_id", "message": _DUPLICATE_MSG}],
+    )
+
+
+def test_post_label_too_long_returns_400_and_writes_nothing() -> None:
+    """SRC-02 / D-07: label length 121 → 400 path label; zero writes."""
+    client, headers, container = _admin_env()
+    repo = container.ingest_sources
+    before = repo.write_count
+
+    response = client.post(
+        SOURCES_URL,
+        headers=headers,
+        json={
+            "kind": "channel",
+            "source_id": VALID_CHANNEL_ID,
+            "label": "x" * 121,
+        },
+    )
+
+    _assert_400_errors_zero_writes(
+        response,
+        repo,
+        writes_before=before,
+        expected_errors=[{"path": "label", "message": _LABEL_TOO_LONG_MSG}],
+    )
+
+
+def test_post_unknown_field_returns_422() -> None:
+    """D-18: extra=forbid on create → 422 for unknown JSON fields."""
+    client, headers, container = _admin_env()
+    before = container.ingest_sources.write_count
+
+    response = client.post(
+        SOURCES_URL,
+        headers=headers,
+        json={
+            "kind": "channel",
+            "source_id": VALID_CHANNEL_ID,
+            "label": None,
+            "extra_field": True,
+        },
+    )
+
+    assert response.status_code == 422
+    assert container.ingest_sources.write_count == before
+
+
+def test_patch_disable_then_delete_hard_removes_row() -> None:
+    """SRC-01 / D-10/D-18: PATCH is_enabled=false → 200; DELETE → 204 and gone from GET."""
+    client, headers, container = _admin_env()
+
+    created = client.post(
+        SOURCES_URL,
+        headers=headers,
+        json={"kind": "channel", "source_id": VALID_CHANNEL_ID, "label": "Ch"},
+    )
+    assert created.status_code == 201
+    source_pk = created.json()["id"]
+
+    patched = client.patch(
+        f"{SOURCES_URL}/{source_pk}",
+        headers=headers,
+        json={"is_enabled": False},
+    )
+    assert patched.status_code == 200
+    assert patched.json()["id"] == source_pk
+    assert patched.json()["is_enabled"] is False
+    assert patched.json()["source_id"] == VALID_CHANNEL_ID
+
+    listed = client.get(SOURCES_URL, headers=headers)
+    assert listed.status_code == 200
+    assert listed.json()["sources"][0]["is_enabled"] is False
+
+    deleted = client.delete(f"{SOURCES_URL}/{source_pk}", headers=headers)
+    assert deleted.status_code == 204
+    assert deleted.content in (b"", b"null") or deleted.text in ("", "null")
+
+    after = client.get(SOURCES_URL, headers=headers)
+    assert after.status_code == 200
+    assert after.json() == {"sources": []}
+    assert container.ingest_sources.write_count >= 3  # add + set_enabled + delete
+
+
+def test_delete_missing_id_returns_404() -> None:
+    """SRC-01 idempotency: DELETE unknown id → 404 (domain not-found mapped)."""
+    client, headers, _container = _admin_env()
+
+    response = client.delete(f"{SOURCES_URL}/999999", headers=headers)
+
+    assert response.status_code == 404
+    assert response.json()["detail"] == "ingest_source_not_found"
+
+
+def test_readd_after_delete_succeeds() -> None:
+    """SRC-01: after hard DELETE, same (kind, source_id) can be POSTed again → 201."""
+    client, headers, _container = _admin_env()
+    payload = {"kind": "playlist", "source_id": VALID_PLAYLIST_ID, "label": None}
+
+    first = client.post(SOURCES_URL, headers=headers, json=payload)
+    assert first.status_code == 201
+    source_pk = first.json()["id"]
+
+    deleted = client.delete(f"{SOURCES_URL}/{source_pk}", headers=headers)
+    assert deleted.status_code == 204
+
+    second = client.post(SOURCES_URL, headers=headers, json=payload)
+    assert second.status_code == 201
+    assert second.json()["source_id"] == VALID_PLAYLIST_ID
+    assert second.json()["kind"] == "playlist"
+    assert second.json()["id"] != source_pk
+
+
+def test_patch_delete_require_admin_unauth_401_and_employee_403() -> None:
+    """T-23-09: PATCH/DELETE admin-gated; 401 unauthenticated, 403 non-admin."""
+    private_key = ec.generate_private_key(ec.SECP256R1())
+    jwk = _public_jwk(private_key)
+    repo_cls = _ingest_repo_cls()
+
+    anon_container = build_in_memory_container()
+    anon_container.ingest_sources = repo_cls()
+    anon_client = _client(jwk, anon_container)
+
+    assert anon_client.patch(
+        f"{SOURCES_URL}/1",
+        json={"is_enabled": False},
+    ).status_code == 401
+    assert anon_client.delete(f"{SOURCES_URL}/1").status_code == 401
+
+    employee_container = build_in_memory_container()
+    employee_container.ingest_sources = repo_cls()
+    _seed_profile(
+        employee_container,
+        user_id="user-uuid-1",
+        email="alice@sberbank.ru",
+        role="employee",
+    )
+    employee_client = _client(jwk, employee_container)
+    employee_token = _mint(private_key, email="alice@sberbank.ru")
+    employee_headers = {"Authorization": f"Bearer {employee_token}"}
+
+    patch = employee_client.patch(
+        f"{SOURCES_URL}/1",
+        headers=employee_headers,
+        json={"is_enabled": False},
+    )
+    assert patch.status_code == 403
+    assert patch.json()["detail"] == "forbidden"
+
+    delete = employee_client.delete(f"{SOURCES_URL}/1", headers=employee_headers)
+    assert delete.status_code == 403
+    assert delete.json()["detail"] == "forbidden"
+
+
+def test_patch_unknown_field_returns_422() -> None:
+    """D-18: extra=forbid on patch → 422 for unknown JSON fields."""
+    client, headers, container = _admin_env()
+    created = client.post(
+        SOURCES_URL,
+        headers=headers,
+        json={"kind": "channel", "source_id": VALID_CHANNEL_ID, "label": None},
+    )
+    assert created.status_code == 201
+    source_pk = created.json()["id"]
+    before = container.ingest_sources.write_count
+
+    response = client.patch(
+        f"{SOURCES_URL}/{source_pk}",
+        headers=headers,
+        json={"is_enabled": False, "label": "nope"},
+    )
+
+    assert response.status_code == 422
+    assert container.ingest_sources.write_count == before
