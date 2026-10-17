@@ -117,7 +117,7 @@ Each task was committed atomically (TDD RED→GREEN for Task 2; Task 1 was the D
 2. **Task 2: Migration 012 + adapter + live wire** — `a158484` (test RED), `72a5c5e` (feat GREEN)
 3. **Task 3: [BLOCKING] Apply migration 012 on shared VM** — `ffb8dd9` (docs: §4i Applied stamp)
 
-**Plan metadata:** _(final docs commit after STATE/ROADMAP update)_
+**Plan metadata:** `2e25050` (docs: complete plan)
 
 ## Files Created/Modified
 
