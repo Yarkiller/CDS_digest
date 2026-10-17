@@ -10,6 +10,7 @@ from backend.infrastructure.local_notebook_storage import LocalNotebookStorage
 from backend.infrastructure.yaml_pipeline_config_validator import YamlPipelineConfigValidator
 from supabase_integration import (
     SupabaseDigestPublisher,
+    SupabaseIngestSourceRepository,
     SupabaseIssueRepository,
     SupabaseKnowledgeChunkRepository,
     SupabaseMaterialRepository,
@@ -60,6 +61,8 @@ def build_live_container(settings: Settings) -> AppContainer:
         # PIPE-03: validated config persists to the pipeline_config singleton behind the port (D-08/D-10)
         pipeline_config=SupabasePipelineConfigRepository(admin_client),
         pipeline_config_validator=YamlPipelineConfigValidator(),
+        # SRC-03 / D-21 / D-24: ingest sources behind the port (pipeline_ingest_sources, migration 012)
+        ingest_sources=SupabaseIngestSourceRepository(admin_client),
         # StubMailer or live SmtpMailer via resolve_mailer — MAILER=smtp fail-fast (D-15/D-16)
         mailer=resolve_mailer(settings),
         # Atomic claim+publish via claim_and_publish_digest RPC (CR-01/WR-01, migration 005)

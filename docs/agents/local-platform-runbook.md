@@ -500,6 +500,53 @@ Record apply method below when confirmed.
 
 ---
 
+## 4i. Phase 23 admin ingest sources (SRC-01/SRC-03, D-16/D-17)
+
+Checked-in idempotent SQL: `supabase-integration/migrations/012_phase23_ingest_sources.sql`.
+
+**Why:** SRC-01 requires the admin channel/playlist subscription list to persist behind the
+`IngestSourceRepository` port and survive reload on the live DB. The table is
+**`public.pipeline_ingest_sources`** — do **not** reuse or alter `public.ingestion_sources`
+from migration 001 (that table models fetched content items and is the FK target of
+`materials` / `ingestion_jobs` / `source_texts`) (D-16). The SPA never touches storage —
+it reaches sources only through `web/src/services/ingestSourcesApi.js` (SRC-03).
+
+**What it does (safe on shared VM):**
+
+- `create table if not exists public.pipeline_ingest_sources` — `bigint generated always as identity` PK, `kind text not null check (kind in ('channel', 'playlist'))`, `source_id text not null`, `label text`, `is_enabled boolean not null default true`, `created_at`/`updated_at timestamptz not null default now()`, `unique (kind, source_id)`
+- `alter table public.pipeline_ingest_sources enable row level security;` — deny-by-default with **no** permissive policy (only the service_role composition adapter reaches it; admin gating is backend `require_admin`, D-17)
+- Idempotent: re-running creates nothing new and mutates no rows
+
+There is **no `supabase/config.toml`** in this repo, so Studio SQL / `psql` is the established
+path (same as §4h). Prefer non-interactive `supabase db push` with `SUPABASE_ACCESS_TOKEN`
+when that path works for this project; otherwise use Studio / `psql` below.
+
+**Apply once on the shared VM** (`knowledge-db.ru`):
+
+1. Open Supabase Studio → **SQL Editor** → **New query**  
+   URL (self-hosted): `https://knowledge-db.ru/project/default/sql/new`
+2. Paste the **entire** file [`012_phase23_ingest_sources.sql`](../../supabase-integration/migrations/012_phase23_ingest_sources.sql) and **Run** once. Expect success / no rows returned.
+3. Optional: when `POSTGRES_URL` is configured for Supabase MCP, `raw_sql` may run the same DDL — **never** `db reset`.
+
+**Do not** `TRUNCATE` / wipe `pipeline_ingest_sources` / alter `ingestion_sources` / `db reset` on the shared VM. Never expose `SUPABASE_SECRET_KEY` via `VITE_`.
+
+**Verify after apply** (Studio SQL):
+
+```sql
+select count(*) from public.pipeline_ingest_sources;                            -- expect 0+ (empty OK)
+select relrowsecurity from pg_class where relname = 'pipeline_ingest_sources';  -- expect t
+select count(*) from pg_policies where tablename = 'pipeline_ingest_sources';   -- expect 0
+-- Confirm ingestion_sources was not altered (structure still present; no Phase-23 columns):
+select count(*) from information_schema.columns
+  where table_schema = 'public' and table_name = 'ingestion_sources';           -- expect > 0
+```
+
+Record apply method below when confirmed.
+
+**Applied:** _pending — apply via Studio SQL / psql (or `supabase db push` with token) per [BLOCKING] gate in plan 23-03; date this line when verified._
+
+---
+
 ## 5. Live FE↔BE proof checklist (D-10)
 
 With API on `:8000`, Vite on `:5173`, `APP_CONTAINER=live`, and `VITE_USE_MOCKS=false`:
