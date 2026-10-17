@@ -1388,6 +1388,76 @@ test.describe("Admin pipeline config — empty/dirty/reset/nav/no-execution (PIP
     expect(nativeTypes).toEqual([]);
   });
 
+  test("pipeline config dirty editor blocks in-page section nav and Дайджест leave keeps the draft", async ({
+    page,
+  }) => {
+    // D-13 / D-14 / D-15: the in-page section switch is ordinary SPA navigation, so the
+    // Phase 19 guard must fire on a tab leave exactly as it does for the shell Архив link.
+    await gotoAsRole(page, "admin", "/admin/pipeline");
+    const editor = page.getByTestId("pipeline-config-editor");
+    await editor.fill("template: lecture\n");
+
+    // Scope to the section landmark so the shell nav can never satisfy this click.
+    const sectionNav = page.getByTestId("admin-section-nav");
+    const digestTab = sectionNav.getByTestId("admin-tab-digest");
+    await digestTab.click();
+
+    const dialog = page.getByRole("dialog");
+    await expect(dialog).toBeVisible();
+    await expect(page.getByTestId("unsaved-changes-message")).toHaveText(
+      "Есть несохранённые изменения. Уйти без сохранения?",
+    );
+    await expect(page).toHaveURL(/\/admin\/pipeline$/);
+
+    // «Остаться» keeps both the draft and the URL, and the pipeline tab stays active.
+    await page.getByTestId("unsaved-changes-stay").click();
+    await expect(page.getByRole("dialog")).toHaveCount(0);
+    await expect(page).toHaveURL(/\/admin\/pipeline$/);
+    await expect(editor).toHaveValue("template: lecture\n");
+    await expect(page.getByTestId("admin-tab-pipeline")).toHaveAttribute("aria-current", "page");
+
+    // «Уйти без сохранения» lands on the digest section with the dialog closed.
+    await digestTab.click();
+    await expect(page.getByRole("dialog")).toBeVisible();
+    await page.getByTestId("unsaved-changes-leave").click();
+
+    await expect(page).toHaveURL(/\/admin\/digest$/);
+    await expect(page.getByRole("dialog")).toHaveCount(0);
+    await expect(page.getByTestId("admin-digest-page")).toBeVisible();
+    await expect(page.getByTestId("admin-tab-digest")).toHaveAttribute("aria-current", "page");
+  });
+
+  test("pipeline config dirty editor blocks the narrow section select leave", async ({ page }) => {
+    // D-19: below sm the select navigates via navigate(), so the same guard fires.
+    await page.setViewportSize({ width: 480, height: 800 });
+    await gotoAsRole(page, "admin", "/admin/pipeline");
+    const editor = page.getByTestId("pipeline-config-editor");
+    await editor.fill("template: lecture\n");
+
+    const select = page.getByTestId("admin-section-select");
+    await expect(select).toBeVisible();
+    await select.selectOption("/admin/digest");
+
+    await expect(page.getByRole("dialog")).toBeVisible();
+    await expect(page.getByTestId("unsaved-changes-message")).toHaveText(
+      "Есть несохранённые изменения. Уйти без сохранения?",
+    );
+    await expect(page).toHaveURL(/\/admin\/pipeline$/);
+
+    await page.getByTestId("unsaved-changes-stay").click();
+    await expect(page.getByRole("dialog")).toHaveCount(0);
+    await expect(page).toHaveURL(/\/admin\/pipeline$/);
+    await expect(editor).toHaveValue("template: lecture\n");
+    await expect(select).toHaveValue("/admin/pipeline");
+
+    await select.selectOption("/admin/digest");
+    await expect(page.getByRole("dialog")).toBeVisible();
+    await page.getByTestId("unsaved-changes-leave").click();
+
+    await expect(page).toHaveURL(/\/admin\/digest$/);
+    await expect(page.getByTestId("admin-section-select")).toHaveValue("/admin/digest");
+  });
+
   test("pipeline config save disarms the guard and a reject keeps it armed", async ({ page }) => {
     const nativeTypes = [];
     page.on("dialog", async (dialog) => {
