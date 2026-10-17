@@ -6,11 +6,11 @@ current_phase: 21
 current_phase_name: MAIL-01 live SMTP digest delivery
 current_plan: Not started
 status: planning
-stopped_at: Phase 19 complete, ready to plan Phase 21
-last_updated: "2026-10-17T20:25:08.556Z"
+stopped_at: Phase 20 complete, ready to plan Phase 21
+last_updated: "2026-10-17T20:29:13.752Z"
 last_activity: 2026-10-17
-last_activity_desc: Phase 19 complete, transitioned to Phase 21
-state_head: d907366d035606ef62230eb475f7efbd5bca908b
+last_activity_desc: Phase 20 complete, transitioned to Phase 21
+state_head: 20ad7d3af8899878cde37e68430616de7521d3c8
 progress:
   total_phases: 8
   completed_phases: 6
@@ -26,7 +26,7 @@ progress:
 See: .planning/PROJECT.md (updated 2026-10-16 — after Phase 20)
 
 **Core value:** Trusted weekly prepared-article issue + one honest vote toward the next разбор
-**Current focus:** Phase 19 — Unsaved-changes guard for the pipeline editor
+**Current focus:** Phase 20 — MAIL-02 signup confirmation mail
 
 ## Current Position
 
@@ -34,7 +34,7 @@ Phase: 21 — MAIL-01 live SMTP digest delivery
 Current Plan: Not started
 Total Plans in Phase: 2
 Status: Ready to plan
-Last activity: 2026-10-17 — Phase 19 complete, transitioned to Phase 21
+Last activity: 2026-10-17 — Phase 20 complete, transitioned to Phase 21
 
 Progress: [████████░░] 75%
 
@@ -193,7 +193,7 @@ Carried product deferrals beyond v1.3: leaderboard, quiz, Whisper/Foundry ASR, i
 ## Session Continuity
 
 Last session: 2026-10-17T17:47:34.957Z
-Stopped at: Phase 19 complete, ready to plan Phase 21
+Stopped at: Phase 20 complete, ready to plan Phase 21
 Resume file: None
 Next: `/gsd-plan-phase 19`
 
