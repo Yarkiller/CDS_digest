@@ -404,27 +404,25 @@ playlist → https://www.youtube.com/playlist?list={source_id}
 | # | Claim | Section | Risk if Wrong |
 |---|-------|---------|---------------|
 | A1 | Older 18-char `PL…` playlists are intentionally out of D-14 scope and need no regex widen in this phase | Pitfalls / Open Questions | Rare admin cannot add legacy playlist; would need discuss reopen |
-| A2 | Detail codes `ingest_sources_not_configured` / `ingest_sources_unavailable` are the preferred strings for 503 (mirroring pipeline_config) | Architecture / D-21 | Naming only — pick once and pin in tests |
+| A2 | Detail codes `ingest_sources_not_configured` / `ingest_sources_unavailable` are the preferred strings for 503 (mirroring pipeline_config) | Architecture / D-21 — RESOLVED in Open Questions | Naming pinned in 23-01 HTTP tests |
 | A3 | Keeping routes in `admin.py` is preferable to a new router module | Discretion | File size / merge conflict risk only |
 
 **If this table is empty:** N/A — three low-risk assumptions remain for planner naming/discretion.
 
-## Open Questions
+## Open Questions (RESOLVED)
 
-1. **503 detail code spelling**
+1. **503 detail code spelling** — RESOLVED
    - What we know: D-21 requires own detail codes in the `pipeline_config_*` style.
-   - What's unclear: Exact strings (`ingest_sources_not_configured` vs `ingest_source_repository_not_configured`).
-   - Recommendation: Use `ingest_sources_not_configured` / `ingest_sources_unavailable`; pin in HTTP tests.
+   - Resolution: Pin `ingest_sources_not_configured` (missing repo → 503) and `ingest_sources_unavailable` (PersistenceError → 503). Planned in `23-01-PLAN.md` tracer behavior/action and HTTP harness.
+   - Not chosen: `ingest_source_repository_not_configured` (rejected for plural `ingest_sources_*` mirror of pipeline_config).
 
-2. **Shared error type vs reuse `PipelineConfigError`**
+2. **Shared error type vs reuse `PipelineConfigError`** — RESOLVED
    - What we know: D-19 allows extract or duplicate; shape must match.
-   - What's unclear: Prefer domain type name for ingest validation.
-   - Recommendation: Reuse `PipelineConfigError` rows inside a new `IngestSourceValidationError` exception (same as `PipelineConfigValidationError` pattern) [VERIFIED pattern: `errors.py:191-200`].
+   - Resolution: `IngestSourceValidationError` in `backend/src/backend/domain/errors.py` carrying `tuple[PipelineConfigError, ...]` (same pattern as `PipelineConfigValidationError`). HTTP mapper emits top-level `{"errors":[e.to_dict() for e in exc.errors]}` with no `line` key. Planned in `23-01-PLAN.md` / expanded reject matrix in `23-02-PLAN.md`.
 
-3. **UI-SPEC artifact**
+3. **UI-SPEC artifact** — RESOLVED
    - What we know: Phase has `UI hint: yes`; Phase 16 UI-SPEC covers YAML; copy table can be extended.
-   - What's unclear: Whether `/gsd-ui-phase` runs before execute.
-   - Recommendation: Planner should either schedule a thin UI-SPEC supplement or explicitly defer to CONTEXT copy strings (D-11…D-13) as the contract.
+   - Resolution: Contract is `.planning/phases/23-admin-managed-ingest-sources/23-UI-SPEC.md` (already authored). Plans `23-01` / `23-04` cite it for copy, testids, and backstops; CONTEXT D-11…D-13 remain the locked copy source.
 
 ## Environment Availability
 

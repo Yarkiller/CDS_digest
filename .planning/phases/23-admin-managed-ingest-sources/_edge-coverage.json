@@ -1,0 +1,104 @@
+{
+  "items": [
+    {
+      "requirement_id": "SRC-01",
+      "category": "adjacency",
+      "status": "resolved",
+      "verification": "explicit",
+      "resolution": "23-01 must_haves: Adjacency (specless SRC-01) — same source_id different kinds stay separate rows",
+      "reason": null,
+      "probe": "When two things are exactly equal or just touch, do they merge, collide, or separate?"
+    },
+    {
+      "requirement_id": "SRC-01",
+      "category": "empty",
+      "status": "resolved",
+      "verification": "explicit",
+      "resolution": "23-01 must_haves: Empty (specless SRC-01) — GET {sources:[]} + «Пока нет источников» (D-12)",
+      "reason": null,
+      "probe": "What is the result for empty, single-element, or null input?"
+    },
+    {
+      "requirement_id": "SRC-01",
+      "category": "ordering",
+      "status": "resolved",
+      "verification": "explicit",
+      "resolution": "23-01 must_haves: Ordering (specless SRC-01) — created_at asc then id asc",
+      "reason": null,
+      "probe": "When elements compare equal, is output order specified and stable?"
+    },
+    {
+      "requirement_id": "SRC-01",
+      "category": "idempotency",
+      "status": "resolved",
+      "verification": "explicit",
+      "resolution": "23-01 GET/POST idempotency + 23-02 DELETE missing→404 and re-add after delete",
+      "reason": null,
+      "probe": "What happens if this runs twice on the same input?"
+    },
+    {
+      "requirement_id": "SRC-01",
+      "category": "concurrency",
+      "status": "resolved",
+      "verification": "explicit",
+      "resolution": "23-03 must_haves: unique (kind, source_id) DB backstop for races past use-case pre-check",
+      "reason": null,
+      "probe": "If interrupted or run in parallel, what is guaranteed?"
+    },
+    {
+      "requirement_id": "SRC-02",
+      "category": "concurrency",
+      "status": "resolved",
+      "verification": "explicit",
+      "resolution": "23-02 must_haves: Concurrency (specless SRC-02) — validation before any write; rejects never increment write/add log",
+      "reason": null,
+      "probe": "If interrupted or run in parallel, what is guaranteed?"
+    },
+    {
+      "requirement_id": "SRC-03",
+      "category": "unclassified",
+      "status": "resolved",
+      "verification": "explicit",
+      "resolution": "23-01/23-03 SRC-03 truths — port + composition wire; SPA only via ingestSourcesApi.js; no supabase in pages/components",
+      "reason": null,
+      "probe": "unclassified — review manually"
+    },
+    {
+      "requirement_id": "ADUX-10",
+      "category": "adjacency",
+      "status": "resolved",
+      "verification": "explicit",
+      "resolution": "23-01 must_haves: Adjacency dirty (specless ADUX-10) — yamlDirty OR sourceFormDirty into one signal/dialog (D-03)",
+      "reason": null,
+      "probe": "When two things are exactly equal or just touch, do they merge, collide, or separate?"
+    },
+    {
+      "requirement_id": "ADUX-10",
+      "category": "empty",
+      "status": "resolved",
+      "verification": "explicit",
+      "resolution": "23-01 must_haves: Empty dirty (specless ADUX-10) — blank trimmed id/label leave sourceFormDirty false; kind alone does not arm (D-04)",
+      "reason": null,
+      "probe": "What is the result for empty, single-element, or null input?"
+    },
+    {
+      "requirement_id": "ADUX-10",
+      "category": "ordering",
+      "status": "resolved",
+      "verification": "explicit",
+      "resolution": "23-04 must_haves: Ordering (specless ADUX-10) — dirty OR commutative; yaml-only/sources-only/both arm same dialog",
+      "reason": null,
+      "probe": "When elements compare equal, is output order specified and stable?"
+    }
+  ],
+  "coverage": {
+    "applicable": 10,
+    "resolved": 10,
+    "unresolved": 0,
+    "unclassified": 0,
+    "byVerification": {
+      "explicit": 10,
+      "backstop": 0
+    }
+  }
+}
