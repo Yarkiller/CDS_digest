@@ -73,6 +73,16 @@ export function armRejectNextAdd(errors = []) {
   writeArm({ ...readArm(), rejectAdd: Array.isArray(errors) ? errors : [] })
 }
 
+/** Arm the next setEnabled (PATCH) to fail as a network/5xx error (mock). */
+export function armFailNextSetEnabled() {
+  writeArm({ ...readArm(), failSetEnabled: true })
+}
+
+/** Arm the next delete to fail as a network/5xx error (mock). */
+export function armFailNextDelete() {
+  writeArm({ ...readArm(), failDelete: true })
+}
+
 /** Clear every armed mock control (Playwright reset); the saved mock list is kept. */
 export function resetIngestSourcesHarness() {
   if (typeof window === 'undefined') return
@@ -296,7 +306,7 @@ export async function setIngestSourceEnabled(id, isEnabled, accessToken) {
       const next = { ...arm }
       delete next.failSetEnabled
       writeArm(next)
-      throw new IngestSourcesError('Не удалось обновить источник', {
+      throw new IngestSourcesError('Не удалось обновить источник. Повторите действие.', {
         code: 'NETWORK',
         retryable: true,
       })
@@ -339,7 +349,7 @@ export async function setIngestSourceEnabled(id, isEnabled, accessToken) {
       body: JSON.stringify({ is_enabled: enabled }),
     })
   } catch {
-    throw new IngestSourcesError('Не удалось обновить источник', {
+    throw new IngestSourcesError('Не удалось обновить источник. Повторите действие.', {
       code: 'NETWORK',
       retryable: true,
     })
@@ -358,7 +368,11 @@ export async function setIngestSourceEnabled(id, isEnabled, accessToken) {
         retryable: false,
       })
     }
-    throw mapHttpError(response, 'Не удалось обновить источник', body)
+    throw mapHttpError(
+      response,
+      'Не удалось обновить источник. Повторите действие.',
+      body,
+    )
   }
 
   return response.json()
@@ -380,7 +394,7 @@ export async function deleteIngestSource(id, accessToken) {
       const next = { ...arm }
       delete next.failDelete
       writeArm(next)
-      throw new IngestSourcesError('Не удалось удалить источник', {
+      throw new IngestSourcesError('Не удалось обновить источник. Повторите действие.', {
         code: 'NETWORK',
         retryable: true,
       })
@@ -412,7 +426,7 @@ export async function deleteIngestSource(id, accessToken) {
       headers: { Authorization: `Bearer ${token}` },
     })
   } catch {
-    throw new IngestSourcesError('Не удалось удалить источник', {
+    throw new IngestSourcesError('Не удалось обновить источник. Повторите действие.', {
       code: 'NETWORK',
       retryable: true,
     })
@@ -431,6 +445,10 @@ export async function deleteIngestSource(id, accessToken) {
     } catch {
       body = null
     }
-    throw mapHttpError(response, 'Не удалось удалить источник', body)
+    throw mapHttpError(
+      response,
+      'Не удалось обновить источник. Повторите действие.',
+      body,
+    )
   }
 }

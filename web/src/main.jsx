@@ -38,7 +38,9 @@ import {
 } from './services/pipelineConfigApi.js'
 import {
   armFailNextAdd,
+  armFailNextDelete,
   armFailNextLoad as armFailNextIngestSourcesLoad,
+  armFailNextSetEnabled,
   armRejectNextAdd,
   resetIngestSourcesHarness,
   resetIngestSourcesMockStore,
@@ -78,6 +80,8 @@ window.__DIGEST_PIPELINE_CONFIG_HARNESS__ = {
 window.__DIGEST_INGEST_SOURCES_HARNESS__ = {
   armFailNextLoad: armFailNextIngestSourcesLoad,
   armFailNextAdd,
+  armFailNextSetEnabled,
+  armFailNextDelete,
   armRejectNextAdd,
   resetIngestSourcesHarness,
   resetIngestSourcesMockStore,

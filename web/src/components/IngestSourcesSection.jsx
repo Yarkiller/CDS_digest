@@ -2,7 +2,9 @@ import { useEffect, useState } from 'react'
 import {
   IngestSourcesError,
   addIngestSource,
+  deleteIngestSource,
   listIngestSources,
+  setIngestSourceEnabled,
 } from '../services/ingestSourcesApi.js'
 
 function errorPrefix(error) {
@@ -13,6 +15,20 @@ function errorPrefix(error) {
 function kindLabel(kind) {
   return kind === 'playlist' ? 'Плейлист' : 'Канал'
 }
+
+function youtubeHref(kind, sourceId) {
+  const id = String(sourceId ?? '')
+  if (kind === 'playlist') {
+    return `https://www.youtube.com/playlist?list=${id}`
+  }
+  return `https://www.youtube.com/channel/${id}`
+}
+
+function deleteConfirmMessage(sourceId) {
+  return `Удалить источник ${sourceId}? Это действие нельзя отменить.`
+}
+
+const ROW_ACTION_ERROR = 'Не удалось обновить источник. Повторите действие.'
 
 /**
  * Admin ingest-sources section — list + add above the YAML editor (SRC-01, D-01/D-02).
@@ -35,6 +51,10 @@ export default function IngestSourcesSection({
   const [addError, setAddError] = useState('')
   const [validationErrors, setValidationErrors] = useState([])
   const [rejected, setRejected] = useState(false)
+  /** @type {[number | null, function]} row id with in-flight PATCH/DELETE */
+  const [busyRowId, setBusyRowId] = useState(null)
+  /** @type {[Record<number, string>, function]} per-row inline errors */
+  const [rowErrors, setRowErrors] = useState({})
 
   useEffect(() => {
     let cancelled = false
@@ -91,6 +111,52 @@ export default function IngestSourcesSection({
     }
   }
 
+  async function onToggle(row) {
+    if (busyRowId != null) return
+    const id = Number(row.id)
+    setBusyRowId(id)
+    setRowErrors((prev) => {
+      const next = { ...prev }
+      delete next[id]
+      return next
+    })
+    try {
+      const updated = await setIngestSourceEnabled(id, !row.is_enabled)
+      setSources((prev) => prev.map((s) => (Number(s.id) === id ? updated : s)))
+    } catch (err) {
+      setRowErrors((prev) => ({
+        ...prev,
+        [id]: err instanceof IngestSourcesError ? err.message : ROW_ACTION_ERROR,
+      }))
+    } finally {
+      setBusyRowId(null)
+    }
+  }
+
+  async function onDelete(row) {
+    if (busyRowId != null) return
+    const ok = window.confirm(deleteConfirmMessage(row.source_id))
+    if (!ok) return
+    const id = Number(row.id)
+    setBusyRowId(id)
+    setRowErrors((prev) => {
+      const next = { ...prev }
+      delete next[id]
+      return next
+    })
+    try {
+      await deleteIngestSource(id)
+      setSources((prev) => prev.filter((s) => Number(s.id) !== id))
+    } catch (err) {
+      setRowErrors((prev) => ({
+        ...prev,
+        [id]: err instanceof IngestSourcesError ? err.message : ROW_ACTION_ERROR,
+      }))
+    } finally {
+      setBusyRowId(null)
+    }
+  }
+
   const enabledCount = sources.filter((s) => s.is_enabled).length
   const showZeroEnabled = sources.length > 0 && enabledCount === 0
 
@@ -98,7 +164,7 @@ export default function IngestSourcesSection({
     <section
       data-testid="ingest-sources-section"
       className="mt-6 mb-6 rounded-2xl border border-rule bg-paper p-4 md:p-6"
-      aria-busy={loadState === 'loading' || adding}
+      aria-busy={loadState === 'loading' || adding || busyRowId != null}
     >
       <h2
         data-testid="ingest-sources-heading"
@@ -143,19 +209,55 @@ export default function IngestSourcesSection({
 
       {loadState === 'ready' && sources.length > 0 ? (
         <ul data-testid="ingest-sources-list" className="mt-4 space-y-3">
-          {sources.map((row) => (
-            <li
-              key={row.id}
-              data-testid="ingest-source-row"
-              className="rounded-xl border border-rule bg-paper-2/40 p-3"
-            >
-              <p className="font-mono text-base text-ink-2 break-words">{row.source_id}</p>
-              <p className="mt-1 text-xs text-muted">
-                {kindLabel(row.kind)} · {row.is_enabled ? 'включён' : 'выключен'}
-                {row.label ? ` · ${row.label}` : ''}
-              </p>
-            </li>
-          ))}
+          {sources.map((row) => {
+            const id = Number(row.id)
+            const rowBusy = busyRowId === id
+            return (
+              <li
+                key={row.id}
+                data-testid="ingest-source-row"
+                className="rounded-xl border border-rule bg-paper-2/40 p-3"
+              >
+                <p className="break-words font-mono text-base text-ink-2">{row.source_id}</p>
+                <p className="mt-1 break-words text-xs text-muted">
+                  {kindLabel(row.kind)} · {row.is_enabled ? 'включён' : 'выключен'}
+                  {row.label ? ` · ${row.label}` : ''}
+                </p>
+                <div className="mt-2 flex flex-wrap items-center gap-2">
+                  <button
+                    type="button"
+                    className="inline-flex min-h-11 items-center rounded-xl border border-rule px-3 text-sm font-normal text-ink-2 disabled:cursor-not-allowed disabled:opacity-45"
+                    disabled={rowBusy}
+                    onClick={() => onToggle(row)}
+                  >
+                    {row.is_enabled ? 'Выключить' : 'Включить'}
+                  </button>
+                  <button
+                    type="button"
+                    className="inline-flex min-h-11 items-center rounded-xl border border-[oklch(70%_0.12_25)] px-3 text-sm font-normal text-[oklch(45%_0.14_25)] disabled:cursor-not-allowed disabled:opacity-45"
+                    disabled={rowBusy}
+                    onClick={() => onDelete(row)}
+                  >
+                    Удалить
+                  </button>
+                  <a
+                    href={youtubeHref(row.kind, row.source_id)}
+                    target="_blank"
+                    rel="noopener noreferrer"
+                    className="inline-flex min-h-11 items-center underline text-sm font-normal text-ink-2"
+                  >
+                    Открыть на YouTube
+                  </a>
+                </div>
+                {rowErrors[id] ? (
+                  <p role="alert" className="mt-2 text-sm text-[oklch(45%_0.14_25)]">
+                    {rowErrors[id]}
+                  </p>
+                ) : null}
+                {rowBusy ? <span className="sr-only">Обновление…</span> : null}
+              </li>
+            )
+          })}
         </ul>
       ) : null}
 
@@ -215,7 +317,7 @@ export default function IngestSourcesSection({
         </p>
         <details className="text-sm text-ink-2">
           <summary className="min-h-11 cursor-pointer font-normal">Где взять id?</summary>
-          <div className="mt-2 space-y-2 text-sm text-muted">
+          <div className="mt-2 space-y-2 break-words text-sm text-muted">
             <p>
               Канал: YouTube Studio → «Настройки» → «Канал» → «Расширенные настройки» →
               «Идентификатор канала» (UC…).
