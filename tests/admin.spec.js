@@ -1970,6 +1970,82 @@ test.describe("Admin pipeline — ingest sources (SRC-01, D-01/D-02)", () => {
   });
 });
 
+test.describe("Admin pipeline — ingest sourceFormDirty (ADUX-10, D-03/D-04)", () => {
+  test("sourceFormDirty id arms Phase 19 guard on Дайджест leave", async ({ page }) => {
+    await gotoAsRole(page, "admin", "/admin/pipeline");
+    await resetIngestSourcesMock(page);
+
+    await page.getByTestId("ingest-sources-id").fill("UC_x5XG1OV2P6uZZ5FSMdItQ");
+
+    const digestTab = page.getByTestId("admin-section-nav").getByTestId("admin-tab-digest");
+    await digestTab.click();
+
+    const dialog = page.getByRole("dialog");
+    await expect(dialog).toBeVisible();
+    await expect(page.getByTestId("unsaved-changes-message")).toHaveText(
+      "Есть несохранённые изменения. Уйти без сохранения?",
+    );
+    await expect(page).toHaveURL(/\/admin\/pipeline$/);
+    await expect(page.getByRole("dialog")).toHaveCount(1);
+
+    await page.getByTestId("unsaved-changes-stay").click();
+    await expect(page.getByRole("dialog")).toHaveCount(0);
+    await expect(page).toHaveURL(/\/admin\/pipeline$/);
+    await expect(page.getByTestId("ingest-sources-id")).toHaveValue("UC_x5XG1OV2P6uZZ5FSMdItQ");
+
+    await digestTab.click();
+    await expect(page.getByRole("dialog")).toBeVisible();
+    await page.getByTestId("unsaved-changes-leave").click();
+    await expect(page).toHaveURL(/\/admin\/digest$/);
+    await expect(page.getByRole("dialog")).toHaveCount(0);
+  });
+
+  test("sourceFormDirty label arms Phase 19 guard; kind-only does not", async ({ page }) => {
+    await gotoAsRole(page, "admin", "/admin/pipeline");
+    await resetIngestSourcesMock(page);
+
+    await page.getByTestId("ingest-sources-kind").selectOption("playlist");
+    const digestTab = page.getByTestId("admin-section-nav").getByTestId("admin-tab-digest");
+    await digestTab.click();
+    await expect(page.getByRole("dialog")).toHaveCount(0);
+    await expect(page).toHaveURL(/\/admin\/digest$/);
+
+    await page.getByTestId("admin-section-nav").getByTestId("admin-tab-pipeline").click();
+    await expect(page).toHaveURL(/\/admin\/pipeline$/);
+    await expect(page.getByTestId("ingest-sources-section")).toBeVisible();
+
+    await page.getByTestId("ingest-sources-label").fill("Only label");
+    await digestTab.click();
+    await expect(page.getByRole("dialog")).toBeVisible();
+    await expect(page.getByTestId("unsaved-changes-message")).toHaveText(
+      "Есть несохранённые изменения. Уйти без сохранения?",
+    );
+    await expect(page).toHaveURL(/\/admin\/pipeline$/);
+    await page.getByTestId("unsaved-changes-stay").click();
+    await expect(page.getByTestId("ingest-sources-label")).toHaveValue("Only label");
+  });
+
+  test("successful add clears sourceFormDirty so leave proceeds without dialog", async ({
+    page,
+  }) => {
+    await gotoAsRole(page, "admin", "/admin/pipeline");
+    await resetIngestSourcesMock(page);
+
+    const channelId = "UC_x5XG1OV2P6uZZ5FSMdItQ";
+    await page.getByTestId("ingest-sources-id").fill(channelId);
+    await page.getByTestId("ingest-sources-label").fill("Temp");
+    await page.getByTestId("ingest-sources-add").click();
+    await expect(page.getByTestId("ingest-source-row").filter({ hasText: channelId })).toBeVisible();
+    await expect(page.getByTestId("ingest-sources-id")).toHaveValue("");
+    await expect(page.getByTestId("ingest-sources-label")).toHaveValue("");
+
+    const digestTab = page.getByTestId("admin-section-nav").getByTestId("admin-tab-digest");
+    await digestTab.click();
+    await expect(page.getByRole("dialog")).toHaveCount(0);
+    await expect(page).toHaveURL(/\/admin\/digest$/);
+  });
+});
+
 test.describe("Admin Digest — предпросмотр черновика в читательском рендере (ADUX-07, ADUX-08)", () => {
   test("черновик открывается на предпросмотре с баннером", async ({ page }) => {
     await gotoAsRole(page, "admin", "/admin/materials/sql-dashboards-for-audit-reporting");
