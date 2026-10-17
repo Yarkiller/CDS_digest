@@ -412,17 +412,19 @@ Also update Route/nav contract at `[VERIFIED: 16-UI-SPEC.md:188-191]` which stil
 
 **If this table is empty:** N/A — two low-risk assumptions logged.
 
-## Open Questions
+## Open Questions (RESOLVED)
 
 1. **Should H1-asserting Playwright tests be amended in the same plan wave as shell tripwires?**
    - What we know: D-06 removes headings that tests currently require.
    - What's unclear: plan wave split vs single RED commit.
    - Recommendation: same wave — otherwise intermediate commits cannot be green.
+   - **RESOLVED:** Same plan wave — `22-01` amends H1 asserts and shell tripwires together (RED first in Tasks 1–2). Split waves would leave intermediate commits red.
 
 2. **Optional narrow-select dirty journey?**
    - What we know: D-14 requires tab journey; UI-SPEC says optionally mirror select.
    - What's unclear: whether select path is must-have for phase gate.
    - Recommendation: implement select `navigate()`; add select dirty assertion only if cheap after tab journey is green.
+   - **RESOLVED:** Select `navigate()` is in scope (`22-01` AdminLayout). Select dirty Playwright assertion is optional after the tab journey; `22-02` covers the dirty→tab stay/leave journey as the phase gate — select dirty is not required for phase gate.
 
 ## Environment Availability
 
