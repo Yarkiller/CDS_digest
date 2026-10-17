@@ -543,7 +543,7 @@ select count(*) from information_schema.columns
 
 Record apply method below when confirmed.
 
-**Applied:** _pending — apply via Studio SQL / psql (or `supabase db push` with token) per [BLOCKING] gate in plan 23-03; date this line when verified._
+**Applied (2026-10-17):** operator applied `012_phase23_ingest_sources.sql` once on the shared knowledge-db VM (Studio SQL / psql path; no `supabase/config.toml` in repo). Operator confirmed resume-signal «applied» and verify `select count(*) from public.pipeline_ingest_sources` → `0` (empty OK). RLS enabled with zero policies per the migration contract (D-17); operator did not restate the `relrowsecurity` / `pg_policies` checklist lines — accepted per checkpoint resume-signal and prior-phase pattern (§4h). No destructive statement was run against the shared DB. `ingestion_sources` was not altered (D-16).
 
 ---
 
