@@ -16,6 +16,8 @@ reviewed_at: "2026-10-04T12:00:00+03:00"
 **Requirements covered:** PIPE-01, PIPE-02, PIPE-03
 **Phase goal:** Admin can view, validate, and persist pipeline config without running the pipeline.
 
+> **Superseded in part (2026-10-17, ADUX-12 / Phase 22):** assumption **A-2** and the nav bullets of «Page & Component Contracts → Route, page & nav» are superseded by `.planning/phases/22-admin-nav-grouping/22-UI-SPEC.md`. AppShell keeps a **single** «Админ» entry → `/admin/digest`; sections switch with **in-page** underline tabs «Дайджест | Пайплайн» inside `AdminLayout`; route `/admin/pipeline` is unchanged and no new route is added. Every other Phase 16 contract (editor, toolbar, validation, save, copy) remains in force.
+
 ---
 
 ## Decisions surfaced (must be locked by discuss/plan before execution)
@@ -25,7 +27,7 @@ Phase 16 has **no `16-CONTEXT.md` and no `16-RESEARCH.md`** at the time of autho
 | # | Question | Contract ASSUMPTION (flag: lock before execute) | Why this default |
 |---|----------|---------------------------------------------------|------------------|
 | A-1 | **Representation:** raw YAML text editor vs structured field form vs hybrid? | **Raw YAML** in a single monospace `<textarea>` (source of truth is the YAML document). No structured field builder in MVP. | `CONTEXT.md` domain language says Админ «управляет YAML-конфигами»; `ROADMAP.md` says «View/edit/validate/persist pipeline **YAML**». Raw YAML is the smallest thing that satisfies PIPE-01 MVP; a structured builder multiplies schema/form surface and can land later. **If the discuss phase picks structured fields, this contract's editor section is replaced but spacing/typography/color/copy rules still hold.** |
-| A-2 | **Route + nav placement:** where does the surface live? | **New admin route `/admin/pipeline`** rendered by a new `AdminPipelineConfigPage.jsx`; a new `Админ`-gated nav item **«Пайплайн»** in `AppShell.jsx`. Digest page stays untouched. | Keeps `/admin/digest` send flow isolated; a config surface is a distinct task. Exact path/label is Claude's discretion as long as PIPE-01…03 hold. |
+| A-2 | ~~**Route + nav placement:** where does the surface live?~~ **SUPERSEDED by ADUX-12 / Phase 22** — see `.planning/phases/22-admin-nav-grouping/22-UI-SPEC.md`. | **Route `/admin/pipeline` retained** (no new route). AppShell keeps a **single** `Админ`-gated entry **«Админ»** → `/admin/digest`; the two admin sections switch through **in-page** underline tabs «Дайджест \| Пайплайн» rendered by `AdminLayout` for `/admin/digest` + `/admin/pipeline` only. Digest send flow stays isolated; `/admin/materials/:id` stays a sibling without the tab row. | The original assumption (a second top-level AppShell item «Пайплайн») is retired by ADUX-12 / Phase 22. «Do not add a second navigation bar» **still holds** because the tab row is in-page content, not shell chrome (D-05). |
 
 **No execution UI:** this phase ships **no** run / trigger / scheduler / «Запустить» control anywhere. Execution is `PIPE-EXEC-*` (v1.3). This is a hard contract rule (see Page & Component Contracts → Out of scope UI).
 
@@ -135,7 +137,7 @@ All copy is **Russian**, calm editorial/ops tone. Carry forward Phase 5 / 13 / 1
 | Element | Copy |
 |---------|------|
 | Page eyebrow | **«Админ»** (existing pattern) |
-| Page H1 | **«Конфиг пайплайна»** |
+| Page H1 | ~~**«Конфиг пайплайна»**~~ — **retired by ADUX-12 / Phase 22 (D-06):** the active in-page tab «Пайплайн» carries the heading |
 | Page subhead/hint | **«Просмотр и правка без запуска пайплайна»** — reinforces scope honesty (no run) |
 | Primary CTA (phase focal) | **«Сохранить конфиг»** — disabled while clean (`dirty === false`) or while saving |
 | Secondary CTA | **«Отменить изменения»** — reloads the last saved version; disabled while clean; confirms when dirty |
@@ -185,10 +187,11 @@ UI requirements: render one row per error in the summary list; echo `path` / `С
 
 ## Page & Component Contracts
 
-### Route, page & nav (PIPE-01, assumption A-2)
-- New page `web/src/pages/AdminPipelineConfigPage.jsx`; route `/admin/pipeline` inside the existing auth-gated `<Route element={<RequireAuth><AppShell /></RequireAuth>}>` block in `App.jsx`.
-- `AppShell.jsx` gains one `Админ`-gated nav item **«Пайплайн»** (`appRole === 'admin'`), matching the existing `linkClass` pill. Do not add a second navigation bar (design canon).
-- Page shell mirrors `AdminDigestPage`: `<section data-testid="admin-pipeline-page">`, muted eyebrow «Админ», H1 «Конфиг пайплайна», then the toolbar + editor panel. `pb-32` not required (no sticky send footer here).
+### Route, page & nav (PIPE-01, assumption A-2) — **nav superseded by ADUX-12 / Phase 22**
+- Route `/admin/pipeline` is **retained** and rendered by `web/src/pages/AdminPipelineConfigPage.jsx`, nested inside the existing auth-gated `<Route element={<RequireAuth><AppShell /></RequireAuth>}>` block in `App.jsx` (pathless `AdminLayout` parent for `admin/digest` + `admin/pipeline`).
+- ~~`AppShell.jsx` gains one `Админ`-gated nav item **«Пайплайн»** (`appRole === 'admin'`), matching the existing `linkClass` pill.~~ **Obsolete (ADUX-12 / Phase 22):** AppShell has exactly one admin-gated pill **«Админ»** → `/admin/digest`, active on any `/admin/*`. Sections switch through in-page underline tabs «Дайджест | Пайплайн» in `AdminLayout` (`nav aria-label="Разделы админки"`), collapsing to a native `<select>` below `sm` that navigates via `navigate()` so the Phase 19 leave guard still fires.
+- **«Do not add a second navigation bar» remains true (D-05):** the tab row is in-page content in the page column, not AppShell chrome; it uses underlines, never pill fills.
+- Page shell: `<section data-testid="admin-pipeline-page">` … the page H1 «Конфиг пайплайна» and the duplicated eyebrow are **removed** (D-06); the active in-page tab carries the H1 weight. Toolbar + editor panel unchanged. `pb-32` not required (no sticky send footer here).
 - Non-admin → `ForbiddenPage`; role-load failure → `ServiceUnavailable` (reuse Phase 5 patterns).
 
 ### Config loader (PIPE-01 / PIPE-03)
