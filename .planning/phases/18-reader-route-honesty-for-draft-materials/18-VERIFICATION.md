@@ -1,6 +1,6 @@
 ---
 phase: 18-reader-route-honesty-for-draft-materials
-verified: 2026-10-17T08:44:25Z
+verified: 2026-10-17T08:50:00Z
 status: passed
 score: 20/20 must-haves verified
 covered_files:
@@ -35,29 +35,29 @@ prohibitions:
     verification: judgment
     requirement_id: ADUX-07
     judge_verdict: "NOT VIOLATED (non-authoritative LLM judge)"
-    enforced_by: "tests/unit/test_http_materials.py#test_materials_draft_slug_returns_404_not_403; #test_materials_draft_slug_returns_404_for_admin_token_too; tests/admin.spec.js#черновик открывается на предпросмотре с баннером; 18-UAT.md test 1 result:pass"
+    enforced_by: "tests/unit/test_http_materials.py#test_materials_draft_slug_returns_404_not_403; #test_materials_draft_slug_returns_404_for_admin_token_too; preview/send pools both still filter `approved ∩ material_status == ready`; tests/admin.spec.js#черновик открывается на предпросмотре с баннером; 18-UAT.md test 1 result:pass"
     flagged: false
-    human_signed_off: "18-UAT.md (2026-10-15) — result: pass"
+    human_signed_off: "18-UAT.md (2026-10-15, still accurate 2026-10-17) — result: pass"
   - statement: "MUST NOT expose an unpublished material's `related` or `tags` — a draft's neighbours and taxonomy can themselves be unpublished and internal, so the draft preview payload ships both as empty lists rather than a filtered projection."
     verification: judgment
     requirement_id: ADUX-08
     judge_verdict: "NOT VIOLATED (non-authoritative LLM judge)"
-    enforced_by: "tests/unit/test_http_admin.py#test_admin_material_preview_draft_returns_200_reader_dto; 18-UAT.md test 2 result:pass"
+    enforced_by: "tests/unit/test_http_admin.py#test_admin_material_preview_draft_returns_200_reader_dto; DTO builder admin.py:276-293 ships tags=[]/related=[]; Playwright count-0 assertions on material-tags/material-related/«Связанные материалы»; 18-UAT.md test 2 result:pass"
     flagged: false
-    human_signed_off: "18-UAT.md (2026-10-15) — result: pass"
+    human_signed_off: "18-UAT.md (2026-10-15, still accurate 2026-10-17) — result: pass"
   - statement: "MUST NOT turn the preview surface into a second copy of the reader contract — `MaterialReaderResponse` gains no `status`/`preview` field, `get_material_for_reader` is never widened, and 'draft ≡ missing' on the reader route stays true."
     verification: judgment
     requirement_id: ADUX-07
     judge_verdict: "NOT VIOLATED (non-authoritative LLM judge)"
-    enforced_by: "MaterialReaderResponse status-free; git diff 3754f87..HEAD get_material_for_reader.py empty; test_admin_material_preview_slug_key_parity_with_reader; 18-UAT.md test 3 result:pass"
+    enforced_by: "MaterialReaderResponse (materials.py:29-43) status-free; `git diff 3754f87 HEAD -- get_material_for_reader.py routes/materials.py` empty; tests/unit/test_http_admin.py#test_admin_material_preview_slug_key_parity_with_reader; 18-UAT.md test 3 result:pass"
     flagged: false
-    human_signed_off: "18-UAT.md (2026-10-15) — result: pass"
+    human_signed_off: "18-UAT.md (2026-10-15, still accurate 2026-10-17) — result: pass"
 re_verification:
   previous_status: passed
   previous_score: 20/20
   previous_verified: 2026-10-16T10:59:33Z
   previous_covered_digest: "v2:sha256:03d0aafe335eb998ece09c5d11402d810d82de9fe22d5266fe870ff672fd98d9"
-  reason: "stale covered_digest (#4682) — covered source changed after prior verifier run (Phase 21: AdminDigestPage.jsx, adminApi.js, admin.spec.js, admin.py digest send/delivered_count; preview wiring preserved)"
+  reason: "stale covered_digest (#4682) — covered source changed after the prior verifier ran (Phase 19 createBrowserRouter migration of web/src/App.jsx; CR-01/WR-01 fix in web/src/pages/MaterialPage.jsx; Phase 21 admin/SendDigest wiring in admin.py + AdminDigestPage.jsx; Phase 21 `profiles` argument on the send_digest call site in tests/unit/test_preview_digest.py)"
   gaps_closed: []
   gaps_remaining: []
   regressions: []
@@ -67,30 +67,37 @@ advisory: []
 # Phase 18: Reader-route honesty for draft materials Verification Report
 
 **Phase Goal:** An admin can open any draft (or ready) material at an admin-gated preview and read it in the normal reader rendering, while ordinary readers still get an opaque 404 and no unpublished content is exposed.
-**Verified:** 2026-10-17T08:44:25Z
+**Verified:** 2026-10-17T08:50:00Z
 **Status:** passed
-**Re-verification:** Yes — stale digest refresh (#4682); prior pass was already `passed` with UAT-signed judgment prohibitions; covered source drifted via Phase 21 digest-send work
+**Re-verification:** Yes — stale-digest refresh (#4682); re-derived `covered_digest`, re-ran all automated evidence in this session.
 
-> **Headline:** all four ROADMAP success criteria and all 20 derived must-have truths remain **✓ VERIFIED**. `behavior_unverified` is **0**. Judgment prohibitions remain **human-signed-off** via `18-UAT.md` (`status: complete`, 3/3 pass). `covered_digest` refreshed (`03d0aafe…` → `b5b6f084…`). Phase goal still achieved.
+> **Headline:** all four ROADMAP success criteria and all 20 must-have truths are **✓ VERIFIED** against freshly re-run evidence, not SUMMARY claims. `behavior_unverified` is **0**, `overrides_applied` is **0**, no gaps and no human-verification items remain. The three judgment-tier prohibitions remain discharged by `18-UAT.md` (status `complete`, 3/3 pass) and its claims were re-checked against the current tree. `covered_digest` refreshed: `03d0aafe…` → **`b5b6f084…`**.
 
-## Evidence base (independently re-run this session, not taken from SUMMARYs)
+## Evidence base (independently re-run this session)
 
 | Check | Command | Result |
 |---|---|---|
-| Phase-18 unit files | `.venv\Scripts\python.exe -m pytest -q tests/unit/test_get_material_for_preview.py tests/unit/test_http_admin.py tests/unit/test_http_materials.py tests/unit/test_email_render.py` | **77 passed**, 1 warning, 6.71 s |
-| Named tripwires + preview DTO/`no-store` | 5 named pytest cases (draft 404×2, reader no-`no-store`, draft 200 DTO, draft `no-store`) | **5 passed** |
-| Phase-18 Playwright subset | Orchestrator/session: `npx playwright test --project=web` preview/draft honesty subset | **11 passed** (accepted this session; not re-run by verifier) |
-| Reader route / use case immutability | `git diff 3754f87 HEAD -- …/routes/materials.py …/get_material_for_reader.py` | **empty** (0 lines) |
-| Preserved `web-app.spec.js` | `git diff 3754f87 HEAD -- tests/web-app.spec.js` | **empty** |
-| Note on `test_preview_digest.py` | Diff vs 3754f87 is Phase-21 `profiles` fixture wiring only — not reader-route contract | non-blocking |
-| `gsd-tools` artifacts (18-01/02/03) | `query verify.artifacts` ×3 | **all_passed** (5+4+5) |
-| `gsd-tools` key-links (18-01/02/03) | `query verify.key-links` ×3 | **all_verified** (5+4+3) |
+| Phase-18 unit files | `.venv\Scripts\python.exe -m pytest -q tests/unit/test_get_material_for_preview.py tests/unit/test_http_admin.py tests/unit/test_http_materials.py tests/unit/test_email_render.py` | **77 passed**, 1 warning, 2.65 s |
+| Named tripwires + DTO/`no-store` | 6 named pytest cases (draft 404, admin-token 404, reader no-`no-store`, draft 200 DTO, draft `no-store`, employee 403) | **6 passed**, 1.67 s |
+| Email anchor cases | `pytest -k "read_link_opens_in_new_context or blank_slug_emits_no_anchor_attributes or is_idempotent"` | **3 passed**, 22 deselected |
+| Full backend unit suite (run once) | `.venv\Scripts\python.exe -m pytest -q` | **969 passed**, 1 warning, 13.03 s |
+| Phase-18 Playwright — email preview block | `npx playwright test --project=web tests/admin.spec.js -g "email preview honesty" --workers=1` | **3 passed** (18.1 s) |
+| Phase-18 Playwright — ban-list + material preview blocks | `npx playwright test --project=web tests/admin.spec.js -g "ban-list surfaces\|material preview honesty" --workers=1` | **6 passed** (18.0 s) |
+| Phase-18 Playwright — draft preview block | `npx playwright test --project=web tests/admin.spec.js -g "предпросмотр черновика" --workers=1` | **5 passed** (40.1 s) |
+| Reader route / use case immutability | `git diff 3754f87 HEAD -- routes/materials.py get_material_for_reader.py preview_digest_email.py tests/web-app.spec.js` | **empty** (0 lines) |
+| Preserved tripwire | `git diff -U0 3754f87 HEAD -- tests/unit/test_http_materials.py` | additions only — `test_materials_draft_slug_returns_404_not_403` has **no changed line** |
+| `gsd-tools` artifacts (18-01/02/03) | `query verify.artifacts` ×3 | **all_passed** (5 + 4 + 5) |
+| `gsd-tools` key-links (18-01/02/03) | `query verify.key-links` ×3 | **all_verified** (5 + 4 + 3) |
 | Debt-marker gate | `Select-String 'TBD\|FIXME\|XXX'` over 12 covered impl/test files | **0 matches** |
-| Skipped-test gate | skip/xit/@pytest.mark.skip on requirement-linked tests | **0 matches** |
-| Acceptance greps | `email_render.py` `/admin/`; `AdminDigestPage.jsx` `allow-scripts\|allow-same-origin` | 0 / 0 |
-| Decision-coverage gate | `gsd-tools query check.decision-coverage-verify` | **12/12 honored** |
-| Fingerprint | `gsd-tools query verification.fingerprint` | `v2:sha256:b5b6f084…` (refreshed) |
-| Post-prior source change | `git log --since=2026-10-16T10:59:33Z` on covered files | Phase 21 touched `AdminDigestPage.jsx`, `adminApi.js`, `admin.spec.js`, `admin.py`; preview route/`sandbox`/shortlist `/admin/materials/{slug}` **still present** |
+| Acceptance greps | `email_render.py` `/admin/`; `AdminDigestPage.jsx` `allow-scripts\|allow-same-origin`; `MaterialPage.jsx` `material.status\|dto.status\|material_status`, `fetch(`, `fetchMe\|meApi` | **0 / 0 / 0 / 0 (only `clearFailNextContentFetch()`) / 0** |
+| `no-store` scope | `Select-String 'no-store' admin.py` | **1** (the preview route's header line only) |
+| Decision-coverage gate | `gsd-tools query check.decision-coverage-verify` | **12/12 honored**, `not_honored: []` |
+| Fingerprint | `gsd-tools query verification.fingerprint` (18 files) | `v2:sha256:b5b6f084…` (refreshed) |
+| Test-quality audit | skip patterns + remaining `toHaveAttribute("sandbox","")` | **0 skips**, **0 remnants** |
+
+**Environment fault observed and contained (not a regression).** Two long combined Playwright invocations died mid-run with mass `page.goto: net::ERR_CONNECTION_REFUSED` against `127.0.0.1:5174` (5 and 9 failures respectively), matching the operational blocker recorded in `STATE.md` and the identical fault documented in `18-03-SUMMARY.md`. Port 5174 was confirmed free (`Get-NetTCPConnection -LocalPort 5174 -State Listen` → no rows) before every run; the two failing invocations were the only ones where the Vite dev server died after startup. The same specs split into three smaller invocations (each with a fresh server) all pass — 3 + 6 + 5 = **14 green**, including every failed case. No production or test file was modified between runs.
+
+**Post-prior-pass source drift (accounted for, not a gap).** `tests/unit/test_preview_digest.py` is no longer byte-identical to the `3754f87` baseline: Phase 21 added an `InMemoryProfileRepository()` argument to the `send_digest(...)` call site and its fixture. The parity assertion itself (`assert send_html == preview.html`) is unchanged and green — the D-11 preview≡send invariant is still tested.
 
 ## Goal Achievement
 
@@ -99,57 +106,57 @@ advisory: []
 | # | Truth | Status | Evidence |
 | --- | ----- | ------ | -------- |
 | **SC1** | | | |
-| 1 | Admin `GET /admin/materials/{slug}` for a draft → 200 with reader DTO key set, `tags==[]`, `related==[]`, no `status` | ✓ VERIFIED | `test_admin_material_preview_draft_returns_200_reader_dto` (re-run green); `admin.py:276-294` `_to_preview_response`; route `admin.py:359-390` |
-| 2 | Preview renders draft in **normal reader rendering** + banner «Черновик — предпросмотр, не опубликовано» | ✓ VERIFIED | Playwright subset green this session; `App.jsx:37` reuses `MaterialPage`; banner `MaterialPage.jsx:182-188` |
-| 3 | Shortlist «Открыть материал →» on a **draft** opens admin preview with banner | ✓ VERIFIED | Playwright draft shortlist case; link `AdminDigestPage.jsx:998` → `/admin/materials/${slug}` |
-| 4 | Preview gated by `require_admin`; employee → 403, anonymous → 401 | ✓ VERIFIED | suite cases in `test_http_admin.py`; `Depends(require_admin)` at `admin.py:374` |
+| 1 | Admin `GET /admin/materials/{slug}` for a draft → 200 with reader DTO key set, `tags==[]`, `related==[]`, no `status` | ✓ VERIFIED | `test_admin_material_preview_draft_returns_200_reader_dto` green (77-pass run); `_to_preview_response` `admin.py:276-293`; route `:359-390`; `MaterialReaderResponse` `materials.py:29-43` has no `status` |
+| 2 | Preview renders draft in **normal reader rendering** + banner «Черновик — предпросмотр, не опубликовано» | ✓ VERIFIED | Playwright `черновик открывается на предпросмотре с баннером` green; `App.jsx:37` reuses `MaterialPage`; banner `MaterialPage.jsx:181-189` |
+| 3 | Shortlist «Открыть материал →» on a **draft** opens admin preview with banner | ✓ VERIFIED | Playwright `черновик: «Открыть материал →» ведёт на админ-предпросмотр…` green; link `AdminDigestPage.jsx:996-1003` |
+| 4 | Preview gated by `require_admin`; employee → 403, anonymous → 401 | ✓ VERIFIED | `test_admin_material_preview_employee_returns_403` (named run) + `…anonymous_returns_401`; `Depends(require_admin)` at `admin.py:374`, resolved before the body |
 | **SC2** | | | |
-| 5 | `GET /materials/{slug}` and `get_material_for_reader` byte-identical to pre-phase | ✓ VERIFIED | `git diff 3754f87 HEAD` empty for both |
-| 6 | Draft slug on reader → opaque 404 `material_not_found` (never 403) | ✓ VERIFIED | `test_materials_draft_slug_returns_404_not_403` (named re-run green) |
-| 7 | Reader route has **no role branch** — admin token still 404 | ✓ VERIFIED | `test_materials_draft_slug_returns_404_for_admin_token_too` (named re-run green) |
-| 8 | 403 only from role gate; unknown/`ready` → 404 for admin (no slug oracle) | ✓ VERIFIED | preview suite in 77-pass unit run |
-| 9 | Malformed slug refused at validation (never 200/403) | ✓ VERIFIED | `test_admin_material_preview_malformed_slug_never_succeeds`; `_SLUG_PATTERN` imported from `materials.py` |
+| 5 | `GET /materials/{slug}` and `get_material_for_reader` byte-identical to pre-phase | ✓ VERIFIED | `git diff 3754f87 HEAD` empty for both; `get_material_for_reader` still `status != READY → MaterialNotFoundError` |
+| 6 | Draft slug on reader → opaque 404 `material_not_found` (never 403) | ✓ VERIFIED | `test_materials_draft_slug_returns_404_not_403` green (named run); function body unchanged vs baseline |
+| 7 | Reader route has **no role branch** — admin token still 404 | ✓ VERIFIED | `test_materials_draft_slug_returns_404_for_admin_token_too` green (named run) |
+| 8 | 403 only from role gate; unknown/`ready` → 404 for admin (no slug oracle) | ✓ VERIFIED | `…unknown_slug_returns_404`, `…ready_slug_returns_404`, `…outcomes_are_status_driven` green in 77-pass run |
+| 9 | Malformed slug refused at validation (never 200/403) | ✓ VERIFIED | `test_admin_material_preview_malformed_slug_never_succeeds` green; `_SLUG_PATTERN` imported from `materials.py:18` |
 | **SC3** | | | |
-| 10 | Only draft-preview 200 carries `Cache-Control: no-store` | ✓ VERIFIED | `test_admin_material_preview_draft_has_no_store` + `test_materials_ready_response_is_not_no_store` (named re-run); `admin.py:389` |
-| 11 | Preview exposes no unpublished `related`/`tags` | ✓ VERIFIED | DTO test asserts both `[]`; `_to_preview_response` hardcodes empties |
-| 12 | Repeat preview reads identical; no write path | ✓ VERIFIED | `test_admin_material_preview_repeat_is_identical_and_writes_nothing`; use case is pure read |
+| 10 | Only draft-preview 200 carries `Cache-Control: no-store` | ✓ VERIFIED | `test_admin_material_preview_draft_has_no_store` + `test_materials_ready_response_is_not_no_store` green (named run); one `no-store` occurrence in `admin.py:389` |
+| 11 | Preview exposes no unpublished `related`/`tags` | ✓ VERIFIED | DTO test asserts both `[]`; Playwright asserts `material-tags` / `material-related` / `«Связанные материалы»` count 0 |
+| 12 | Repeat preview reads identical; no write path | ✓ VERIFIED | `test_admin_material_preview_repeat_is_identical_and_writes_nothing` green; use case is a pure read (`get_by_slug` only) |
 | **SC4** | | | |
-| 13 | Email «Читать →» has `target="_blank" rel="noopener noreferrer"` (backend + mock) | ✓ VERIFIED | `email_render.py:54`; `adminApi.js:572`; email_render unit suite in 77-pass |
-| 14 | Iframe `sandbox="allow-popups allow-popups-to-escape-sandbox"`; CTA opens top-level context | ✓ VERIFIED | Playwright D-11 case (session); `AdminDigestPage.jsx:875`; greps for withheld tokens → 0 |
-| 15 | Shared email href stays `{base}/materials/{slug}`; no `/admin/` in renderer | ✓ VERIFIED | `email_render.py:52`; grep `/admin/` → 0 |
-| 16 | Blank slug emits no anchor; renderers idempotent | ✓ VERIFIED | blank-slug / idempotent cases in `test_email_render.py` (suite green) |
+| 13 | Email «Читать →» has `target="_blank" rel="noopener noreferrer"` (backend + mock) | ✓ VERIFIED | `email_render.py:52-54`; `adminApi.js:568-573`; email_render unit suite in 77-pass |
+| 14 | Iframe `sandbox="allow-popups allow-popups-to-escape-sandbox"`; CTA opens top-level context | ✓ VERIFIED | Playwright `превью письма: «Читать →» открывает новую вкладку…` green (popup event); `AdminDigestPage.jsx:875`; withheld-token greps → 0 |
+| 15 | Shared email href stays `{base}/materials/{slug}`; no `/admin/` in renderer | ✓ VERIFIED | `email_render.py:51`; grep `/admin/` → 0; `preview_digest_email.py` diff empty |
+| 16 | Blank slug emits no anchor; renderers idempotent | ✓ VERIFIED | `…blank_slug_emits_no_anchor_attributes`, `…is_idempotent`, `…read_link_opens_in_new_context` green |
 | **Cross-cutting** | | | |
-| 17 | Ready/unknown preview slug → client `<Navigate replace>` to reader (CR-01 reset) | ✓ VERIFIED | Playwright ready-redirect + CR-01 cases (session); `MaterialPage.jsx:101-103,128-130` |
-| 18 | Ordinary reader on preview URL → `ForbiddenPage` for existing and nonexistent slug | ✓ VERIFIED | Playwright employee Forbidden cases (session); `MaterialPage.jsx:112-125` |
-| 19 | Reader route `/materials/:id` behaviourally unchanged | ✓ VERIFIED | `App.jsx:32` `<MaterialPage />` no props; `web-app.spec.js` diff empty vs baseline |
-| 20 | SPA reaches preview only via `adminApi.fetchMaterialPreview` | ✓ VERIFIED | `MaterialPage.jsx:70`; `adminApi.js:327-376`; key-link verify WIRED |
+| 17 | Ready/unknown preview slug → client `<Navigate replace>` to reader (CR-01 reset) | ✓ VERIFIED | Playwright `ready-материал уходит на читательский маршрут без баннера` + `клик по «Открыть материал →» на готовой строке рендерит читательский маршрут, а не пустоту` green; resets at `MaterialPage.jsx:80-88`; redirect `:128-130` |
+| 18 | Ordinary reader on preview URL → `ForbiddenPage` for existing and nonexistent slug | ✓ VERIFIED | Two Playwright employee cases green (draft slug + absent slug, identical screen); `MaterialPage.jsx:124-126` |
+| 19 | Reader route `/materials/:id` behaviourally unchanged | ✓ VERIFIED | `App.jsx:32` `<MaterialPage />` no props; `tests/web-app.spec.js` diff vs 3754f87 empty |
+| 20 | SPA reaches preview only via `adminApi.fetchMaterialPreview` | ✓ VERIFIED | `MaterialPage.jsx:70`; `adminApi.js:327-376`; `/admin/materials/` in `web/src` only in `adminApi.js` (preview + pre-existing ready routes) and the shortlist link; key-link verify WIRED |
 
-**Score:** 20/20 truths verified (**0** present-but-behavior-unverified)
+**Score:** 20/20 truths verified (**0** present-but-behavior-unverified, **0** overridden)
 
-**Behavior-dependent truths:** truth 17 (NOT_FOUND → reader handoff + effect reset) remains ✓ VERIFIED via Playwright CR-01 case (green in this session's 11-pass run).
+**Behavior-dependent truths:** truth 17 (NOT_FOUND → reader handoff + effect reset) and truth 14 (sandbox popup escape) are the only truths whose correctness hinges on runtime behaviour. Both are ✓ VERIFIED by passing Playwright cases that assert the rendered reader surface (`material-not-found` visible) and the `popup` event respectively — not by symbol presence. Truth 17's test is the CR-01 click-path test, which explicitly pins the rendered surface rather than only the URL (WR-02 fix).
 
 **Coincidental-reliance:** none flagged.
 
 ### Advisory (New Scope, Unevidenced)
 
-None — re-verification Step 7 scan found no new-scope unevidenced blockers. Phase 21 edits to covered files preserved preview route, sandbox tokens, and shortlist `/admin/materials/{slug}` link; unit + named tripwires green.
+None — the re-verification Step 7 scan found no new-scope unevidenced findings. Files changed since the prior pass (`App.jsx`, `MaterialPage.jsx`, `admin.py`, `AdminDigestPage.jsx`, `adminApi.js`, `tests/admin.spec.js`) were re-read; the drift is Phase 19/21 wiring and the CR-01 fix, and every phase-18 invariant they touch still holds under re-run evidence.
 
 ### Required Artifacts
 
 | Artifact | Expected | Status | Details |
 | -------- | -------- | ------ | ------- |
-| `get_material_for_preview.py` | draft-only read | ✓ VERIFIED | DRAFT only; no SDK imports; `verify.artifacts` passed |
-| `admin.py` preview route + `_to_preview_response` | `require_admin` + `no-store` + empty tags/related | ✓ VERIFIED | `:276-294`, `:359-390` (survived Phase 21 send edits) |
-| `test_get_material_for_preview.py` | use-case RED gate | ✓ VERIFIED | in 77-pass |
-| `test_http_admin.py` | preview HTTP cases | ✓ VERIFIED | suite green |
-| `test_http_materials.py` | admin-token 404 + no-`no-store`; tripwire | ✓ VERIFIED | named tripwires green |
-| `test_email_render.py` | target/rel + blank-slug | ✓ VERIFIED | in 77-pass |
-| `adminApi.js` | `fetchMaterialPreview` + mock anchors | ✓ VERIFIED | `:327-376`, `:572` |
-| `App.jsx` | `admin/materials/:id` → preview | ✓ VERIFIED | `:37` |
-| `MaterialPage.jsx` | banner, redirect, forbidden, CR-01 reset | ✓ VERIFIED | `:59-188` |
+| `get_material_for_preview.py` | draft-only read | ✓ VERIFIED | 15 lines; `DRAFT` only; no `fastapi`/`httpx`/`supabase` imports; `verify.artifacts` passed |
+| `admin.py` preview route + `_to_preview_response` | `require_admin` + `no-store` + empty tags/related | ✓ VERIFIED | `:276-293`, `:359-390`, header at `:389` |
+| `test_get_material_for_preview.py` | use-case RED gate | ✓ VERIFIED | 3 tests collected, green |
+| `test_http_admin.py` | preview HTTP cases | ✓ VERIFIED | 14 `-k preview` cases collected, green |
+| `test_http_materials.py` | admin-token 404 + no-`no-store`; tripwire preserved | ✓ VERIFIED | 3 matching cases green; tripwire untouched (diff = additions only) |
+| `test_email_render.py` | target/rel + blank-slug + idempotency | ✓ VERIFIED | 3 named cases green; full file in 77-pass |
+| `adminApi.js` | `fetchMaterialPreview` + mock anchor attrs | ✓ VERIFIED | `:327-376`, `:572`; no `meApi` import, no `redirect`/`opaqueredirect` |
+| `App.jsx` | `admin/materials/:id` → preview | ✓ VERIFIED | `:37` (post–Phase-19 `createBrowserRouter`; still wired) |
+| `MaterialPage.jsx` | banner, redirect, forbidden, CR-01 reset | ✓ VERIFIED | `:59-130`, banner `:181-189` |
 | `AdminDigestPage.jsx` | sandbox + shortlist repoint | ✓ VERIFIED | `:875`, `:998` |
-| `email_render.py` | anchor attrs; href unchanged | ✓ VERIFIED | `:52-54` |
-| `tests/admin.spec.js` | Phase-18 specs | ✓ VERIFIED | 11 matching specs green this session; no skips |
+| `email_render.py` | anchor attrs; href unchanged | ✓ VERIFIED | `:52-54`; one `{base}/materials/{clean_slug}` |
+| `tests/admin.spec.js` | Phase-18 specs | ✓ VERIFIED | 14 matching specs green across three clean runs; no skips |
 
 ### Key Link Verification
 
@@ -158,30 +165,34 @@ None — re-verification Step 7 scan found no new-scope unevidenced blockers. Ph
 | `App.jsx` | `MaterialPage.jsx` | `<MaterialPage preview />` on `admin/materials/:id` | ✓ WIRED | `App.jsx:37`; gsd-tools verified |
 | `MaterialPage.jsx` | `adminApi.js` | `fetchMaterialPreview` when `preview` | ✓ WIRED | `:70` |
 | `adminApi.js` | `admin.py` | `GET …/admin/materials/{slug}` | ✓ WIRED | `:362` |
-| `admin.py` | `get_material_for_preview` | call + `MaterialNotFoundError`→404 | ✓ WIRED | `:377-382` |
+| `admin.py` | `get_material_for_preview` | call + `MaterialNotFoundError`→404 | ✓ WIRED | `:377-383` |
 | `get_material_for_preview` | `MaterialRepository.get_by_slug` | existing port | ✓ WIRED | `:12` |
-| `MaterialPage.jsx` | `ForbiddenPage` | FORBIDDEN → component | ✓ WIRED | `:124-125` |
-| `MaterialPage.jsx` | reader route | NOT_FOUND → `<Navigate>` | ✓ WIRED | `:128-130` |
-| `AdminDigestPage.jsx` | preview route | shortlist Link | ✓ WIRED | `:998` |
-| `email_render.py` | `adminApi.js` mock | shared `rel="noopener noreferrer"` | ✓ WIRED | gsd-tools 18-03 |
+| `MaterialPage.jsx` | `ForbiddenPage` | FORBIDDEN → component | ✓ WIRED | `:124-126` |
+| `MaterialPage.jsx` | reader route | NOT_FOUND → `<Navigate replace>` | ✓ WIRED | `:128-130` |
+| `AdminDigestPage.jsx` | preview route | shortlist `Link to` | ✓ WIRED | `:998` |
+| `email_render.py` | `adminApi.js` mock | shared `rel="noopener noreferrer"` | ✓ WIRED | `email_render.py:54` / `adminApi.js:572`; gsd-tools 18-03 |
 
 ### Data-Flow Trace (Level 4)
 
 | Artifact | Data Variable | Source | Produces Real Data | Status |
 | -------- | ------------- | ------ | ------------------ | ------ |
 | `MaterialPage` preview | `material` fields | `fetchMaterialPreview` → live admin GET or mock shortlist draft | Yes | ✓ FLOWING |
-| Banner | `preview` prop | route | n/a (route-derived by design) | ✓ FLOWING |
+| Banner | `preview` prop | route | n/a (route-derived by design, `MaterialReaderResponse` has no `status`) | ✓ FLOWING |
 | `tags`/`related` | D-08 constants `[]` | `_to_preview_response` | intentional empty | ✓ FLOWING (D-08) |
 
 ### Behavioral Spot-Checks
 
 | Behavior | Command | Result | Status |
 | -------- | ------- | ------ | ------ |
-| Phase-18 unit files | pytest 4 files | 77 passed | ✓ PASS |
-| Named tripwires + DTO/`no-store` | 5 named tests | 5 passed | ✓ PASS |
-| Phase-18 Playwright subset | session 11 matching specs | 11 passed | ✓ PASS |
-| Reader immutability | git diff vs 3754f87 (materials + get_material_for_reader) | empty | ✓ PASS |
-| Debt markers | Select-String | 0 | ✓ PASS |
+| Phase-18 unit files | `pytest -q` (4 files) | 77 passed | ✓ PASS |
+| Named tripwires + DTO/`no-store` | 6 named tests | 6 passed | ✓ PASS |
+| Email anchor attributes / blank slug / purity | `pytest -k "read_link_opens_in_new_context or blank_slug_emits_no_anchor_attributes or is_idempotent"` | 3 passed | ✓ PASS |
+| Full backend suite | `pytest -q` | 969 passed | ✓ PASS |
+| Draft preview SPA block | `playwright … -g "предпросмотр черновика" --workers=1` | 5 passed | ✓ PASS |
+| Email preview + sandbox escape | `playwright … -g "email preview honesty" --workers=1` | 3 passed | ✓ PASS |
+| Ban-list + material preview blocks | `playwright … -g "ban-list surfaces\|material preview honesty" --workers=1` | 6 passed | ✓ PASS |
+| Reader immutability | `git diff 3754f87 HEAD` (reader route/use case/preview pool) | empty | ✓ PASS |
+| Debt markers | `Select-String 'TBD\|FIXME\|XXX'` (12 files) | 0 | ✓ PASS |
 
 ### Probe Execution
 
@@ -194,17 +205,17 @@ N/A — no phase-declared or conventional `scripts/*/tests/probe-*.sh`.
 | **ADUX-07** | 18-01, 18-02, 18-03 | Admin-gated preview in normal reader rendering; public route ready-only opaque 404 | ✓ SATISFIED | Truths 1–9, 17–20; REQUIREMENTS.md `[x]` / Complete |
 | **ADUX-08** | 18-01, 18-03 | Shortlist/email links → preview; `no-store`; banner; empty related/tags; CTA escapes sandbox | ✓ SATISFIED | Truths 3, 10–16; REQUIREMENTS.md `[x]` / Complete |
 
-**Orphaned requirements:** none — REQUIREMENTS.md maps only ADUX-07/ADUX-08 to Phase 18; both claimed by plans.
+**Orphaned requirements:** none — both IDs mapped to Phase 18 in REQUIREMENTS.md are declared in plan frontmatter and satisfied.
 
 ### Test Quality Audit
 
 | Test File | Linked Req | Active | Skipped | Circular | Assertion Level | Verdict |
 | --------- | ---------- | ------ | ------- | -------- | --------------- | ------- |
 | `test_get_material_for_preview.py` | ADUX-07 | 3 | 0 | No | Behavioral | ✓ PASS |
-| `test_http_admin.py` | ADUX-07/08 | preview-related | 0 | No | Value/Status | ✓ PASS |
-| `test_http_materials.py` | ADUX-07 | 2+ tripwire | 0 | No | Value | ✓ PASS |
-| `test_email_render.py` | ADUX-08 | target/rel + blank | 0 | No | Value | ✓ PASS |
-| `tests/admin.spec.js` | ADUX-07/08 | Phase-18 specs | 0 | No | Behavioral | ✓ PASS |
+| `test_http_admin.py` | ADUX-07/08 | 14 preview-related | 0 | No | Value/Status | ✓ PASS |
+| `test_http_materials.py` | ADUX-07 | 3 matching (tripwire + admin-token + no-`no-store`) | 0 | No | Value | ✓ PASS |
+| `test_email_render.py` | ADUX-08 | target/rel + blank + idempotent | 0 | No | Value | ✓ PASS |
+| `tests/admin.spec.js` | ADUX-07/08 | 14 matching specs | 0 | No | Behavioral | ✓ PASS |
 
 **Disabled tests on requirements:** 0. **Circular patterns:** 0. **Insufficient assertions:** 0.
 
@@ -217,18 +228,19 @@ N/A — no phase-declared or conventional `scripts/*/tests/probe-*.sh`.
 | File | Line | Pattern | Severity | Impact |
 | ---- | ---- | ------- | -------- | ------ |
 | — | — | No `TBD`/`FIXME`/`XXX` in covered files | — | Clean |
-| — | — | No stub/hollow preview path; D-08 empties are intentional | — | Not a stub |
+| — | — | No stub/hollow preview path; D-08 empties are intentional and test-pinned | — | Not a stub |
 | — | — | No skipped requirement-linked tests | — | Not a blocker |
+| — | — | IN-01…IN-05 remain deferred per `18-REVIEW-DISPOSITION.md` (info severity, informational only) | — | Non-blocking |
 
 ### Human Verification Required
 
-N/A — judgment-tier prohibitions remain signed off in `18-UAT.md` (`status: complete`, 3/3 pass). No outstanding human items; `human_verification` empty → status may be `passed`.
+N/A — judgment-tier prohibitions were signed off in `18-UAT.md` (`status: complete`, started 2026-10-15T12:58:00Z, updated 2026-10-15T13:25:00Z, 3/3 pass). Each UAT expectation was re-checked against the current tree this session (reader-route 404 for every token, preview/send pools still filter `ready`, empty `tags`/`related`, status-free `MaterialReaderResponse`, unchanged `get_material_for_reader`) and all three remain accurate. `human_verification` empty → status may be `passed`.
 
 ### Gaps Summary
 
-**None.** Stale-digest re-verification (#4682) confirms the phase goal still holds after covered-source drift (Phase 21 digest-send edits on `admin.py` / SPA digest surfaces). Automated evidence re-run green; UAT still discharges judgment prohibitions.
+**None.** Stale-digest re-verification (#4682) confirms the phase goal still holds after covered-source drift (`App.jsx` Phase 19 router migration, `MaterialPage.jsx` CR-01 fix, Phase 21 admin/send wiring). Automated evidence was re-run in this process and is green; the pre-existing UAT remains accurate; `covered_digest` refreshed from `03d0aafe…` to `b5b6f084…`.
 
 ---
 
-_Verified: 2026-10-17T08:44:25Z_
+_Verified: 2026-10-17T08:50:00Z_
 _Verifier: Claude (gsd-verifier)_

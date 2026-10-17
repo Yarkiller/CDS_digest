@@ -1,6 +1,6 @@
 ---
 phase: 20-mail-02-signup-confirmation-mail
-verified: 2026-10-16T09:00:00Z
+verified: 2026-10-17T08:44:19Z
 status: passed
 score: 10/10 must-haves verified
 covered_files:
@@ -15,10 +15,22 @@ covered_files:
   - web/src/main.jsx
   - web/src/pages/RegisterPage.jsx
   - web/src/services/authApi.js
-
-covered_digest: "v2:sha256:23a8479648763f36991ac9d27fe611d2bac8f883c286d3adb855e2f572e0f90c"
+covered_digest: "v2:sha256:b31f8f4b397fbe1f977474b75243e62820b063387817763e083abb196c07e62b"
 behavior_unverified: 0
 overrides_applied: 0
+re_verification:
+  previous_status: passed
+  previous_score: 10/10
+  previous_verified: 2026-10-16T09:00:00Z
+  previous_covered_digest: "v2:sha256:23a8479648763f36991ac9d27fe611d2bac8f883c286d3adb855e2f572e0f90c"
+  reason: "stale covered_digest refresh (GSD #4682) — regenerated from current codebase; plans not re-executed; no production code modified"
+  gaps_closed: []
+  gaps_remaining: []
+  regressions: []
+  uat_preserved: true
+  uat_ref: "20-UAT.md status:complete (7/7 pass, updated 2026-10-16T13:04:00Z)"
+  security_preserved: true
+  security_ref: "20-SECURITY.md threats_open:0 status:verified"
 deferred:
   - truth: "ROADMAP SC4: The corporate SMTP relay is chosen and proven by a smoke test with a one-command rollback, serving both GoTrue and MAIL-01."
     addressed_in: "Phase 21"
@@ -26,62 +38,40 @@ deferred:
 advisory:
   - finding: "CR-01: armSignUpWithoutSession short-circuits live Auth signup before useLiveAuth()"
     category: security
-    reason: "Harness arm returns null before live GoTrue call; window.__DIGEST_AUTH_HARNESS__ is always exported. Can show false «Аккаунт активен» if armed in a live build. Does not fail path-(B) must-haves (Playwright mocks path is what D-09/D-10 exercise). Disposition open in 20-REVIEW-DISPOSITION.md — fix via /gsd-code-review 20 --fix if desired."
+    reason: "Harness arm returns null before live GoTrue call; window.__DIGEST_AUTH_HARNESS__ is always exported. Can show false «Аккаунт активен» if armed in a live build. Does not fail path-(B) must-haves (Playwright mocks path is what D-09/D-10 exercise). Disposition open in 20-REVIEW-DISPOSITION.md — fix via /gsd-code-review 20 --fix if desired. Mapped to AR-20-01 in 20-SECURITY.md."
     evidence_status: "reproduced by code inspection web/src/services/authApi.js:129-132; no must-have requires mock-only gating"
   - finding: "WR-01: Path-(A) runbook enablement omits SPA CONFIRM_MESSAGE update before flipping confirm-email ON"
     category: other
     reason: "Under confirm-email ON, successful signUp often returns session:null; current CONFIRM_MESSAGE («Аккаунт активен») would then lie. Affects future path-(A) ops honesty, not the shipped path-(B) end state. Note for Phase 21 / path-(A) flip — do not invent production work in this verify."
-    evidence_status: "docs/agents/local-platform-runbook.md §4.1.2 steps 4–6 lack SPA-copy precondition"
-human_verification:
-  - test: "Ack prohibition: signup confirmation never routes through backend Mailer.send_digest"
-    expected: "No signup→Mailer wiring; GoTrue owns confirmation (criterion 3)."
-    why_human: "Judgment-tier flagged prohibition (PLAN 20-01/20-02) — LLM-judge found held (no Mailer imports under web/src; runbook states fence); needs interactive human ack."
-  - test: "Ack prohibition: Russian post-register success copy never claims a confirmation letter under path (B)"
-    expected: "CONFIRM_MESSAGE is «Регистрация завершена. Аккаунт активен — войдите.»; Playwright forbids /письм/i on role=alert."
-    why_human: "Judgment-tier flagged prohibition — LLM-judge held via RegisterPage + green Playwright; needs human ack."
-  - test: "Ack prohibition: tests/auth.spec.js post-register assertions amended/added, not deleted"
-    expected: "«shows Логин as shell identity after register» still present; new letter-claim test added."
-    why_human: "Judgment-tier flagged prohibition — LLM-judge held by file presence; needs human ack."
-  - test: "Ack prohibition: tests/unit/test_auth_email_domain.py untouched (D-11 PRESERVE)"
-    expected: "No phase edits; pytest -x green (5 passed)."
-    why_human: "Judgment-tier flagged prohibition — LLM-judge held (git log last touch pre-phase; pytest green); needs human ack."
-  - test: "Ack prohibition: runbook/UI docs do not claim confirmation mail is delivered under current autoconfirm (B) ship"
-    expected: "Runbook §4.1 states path B + criterion-4 gap; no claim of live confirmation delivery."
-    why_human: "Judgment-tier flagged prohibition (20-02) — LLM-judge held by §4.1.3 wording; needs human ack."
-  - test: "Ack prohibition: g-01-3b-signup-mailer.md closed not deleted; no speculative SMTP secrets / half-enabled GOTRUE_SMTP_* in app code"
-    expected: "Debug file tracked with status:resolved; placeholders only in runbook; no new ADR."
-    why_human: "Judgment-tier flagged prohibitions (20-02 D-12/D-06) — LLM-judge held; needs human ack."
-  - test: "Optional UAT: open /register once under current autoconfirm and confirm visible copy never promises a letter"
-    expected: "Any null-session or success messaging matches honest (B) copy; no «письм» claim."
-    why_human: "User-facing honesty — Playwright covers mock null-session; live visual is outside automated gate."
+    evidence_status: "docs/agents/local-platform-runbook.md §4.1.2 steps lack SPA-copy precondition"
 ---
 
 # Phase 20: MAIL-02 signup confirmation mail Verification Report
 
 **Phase Goal:** The signup-confirmation mail root cause is diagnosed and documented, and the delivered end state is honest — either a working confirmation email through the corporate relay, or an explicitly autoconfirmed flow whose Russian copy never claims that mail was sent.
 
-**Verified:** 2026-10-16T09:00:00Z
-**Status:** human_needed
-**Re-verification:** No — initial verification
+**Verified:** 2026-10-17T08:44:19Z
+**Status:** passed
+**Re-verification:** Yes — stale `covered_digest` refresh (GSD #4682); must-haves re-checked against current codebase; plans not re-executed
 
 ## Goal Achievement
 
-Phase ships path **(B)** (honest autoconfirm copy) per CONTEXT/D-02. ROADMAP criterion 4 (live relay smoke proof) is an **acknowledged deferred gap → Phase 21**, not silently dropped. Automated must-haves for the in-session contract are all verified; flagged judgment-tier prohibitions require human ack before `passed`.
+Phase ships path **(B)** (honest autoconfirm copy) per CONTEXT/D-02. ROADMAP criterion 4 (live relay smoke proof) remains an **acknowledged deferred gap → Phase 21**, not silently dropped. Prior judgment-tier prohibition acks and optional live glance are preserved via `20-UAT.md` (`status: complete`, 7/7 pass). Security contract preserved via `20-SECURITY.md` (`threats_open: 0`).
 
 ### Observable Truths
 
 | # | Truth | Status | Evidence |
-| --- | --- | --- | --- |
-| 1 | Diagnosis recorded; `.planning/debug/g-01-3b-signup-mailer.md` closed with fix (ROADMAP SC1 / D-12 / D-14) | ✓ VERIFIED | File tracked; `status: resolved`; Root cause retains `unexpected_failure` / confirmation email; Resolution cites CONFIRM_MESSAGE + path (A) target |
+| --- | ------- | ---------- | -------------- |
+| 1 | Diagnosis recorded; `.planning/debug/g-01-3b-signup-mailer.md` closed with fix (ROADMAP SC1 / D-12 / D-14) | ✓ VERIFIED | Tracked; `status: resolved`; Root cause retains `unexpected_failure` / confirmation email; `## Resolution` cites CONFIRM_MESSAGE + path (A) target |
 | 2 | Exactly one honest end state: path (B) autoconfirm copy never claims mail sent (ROADMAP SC2 / D-02 / D-07 / D-10) | ✓ VERIFIED | `CONFIRM_MESSAGE` exact D-07 string; Playwright `post-register copy never claims a confirmation letter` **1 passed** (assert + `not.toContainText(/письм/i)` + stay on `/register`) |
-| 3 | Signup confirmation not routed through backend `Mailer` (ROADMAP SC3) | ✓ VERIFIED | No `Mailer`/`send_digest` under `web/src`; auth stays `supabase.auth.signUp`; runbook restates fence |
+| 3 | Signup confirmation not routed through backend `Mailer` (ROADMAP SC3) | ✓ VERIFIED | No `Mailer`/`send_digest` under `web/src`; auth stays `supabase.auth.signUp`; runbook restates fence; UAT ack #1 pass |
 | 4 | Corporate relay chosen **and proven** by smoke test (ROADMAP SC4) | deferred | Documented procedure + rollback exist; live proof → Phase 21 (D-06 / §4.1.3). See Deferred Items |
-| 5 | `tests/auth.spec.js` post-register amended never deleted; letter-claim regression (ROADMAP SC5 / D-09 / D-10) | ✓ VERIFIED | Happy-path `shows Логин as shell identity after register` retained; new letter-claim test added (not substituted by deletion) |
-| 6 | D-08: `CONFIRM_MESSAGE` only in `RegisterPage.jsx`; authApi error-mapping strings unchanged | ✓ VERIFIED | Constant in RegisterPage only; phase commit `8c027f1` adds harness only — no AuthApiError/NETWORK string edits |
-| 7 | D-11: `tests/unit/test_auth_email_domain.py` PRESERVE | ✓ VERIFIED | `uv run pytest … -x` → 5 passed; last commit on file predates phase (`2f02dc5`); no working-tree edits |
+| 5 | `tests/auth.spec.js` post-register amended never deleted; letter-claim regression (ROADMAP SC5 / D-09 / D-10) | ✓ VERIFIED | Happy-path `shows Логин as shell identity after register` retained; new letter-claim test present; UAT ack #3 pass |
+| 6 | D-08: `CONFIRM_MESSAGE` only in `RegisterPage.jsx`; authApi error-mapping strings unchanged | ✓ VERIFIED | Constant in RegisterPage only; NETWORK/CREDENTIALS strings still present in authApi (no rewrite of mapping contract) |
+| 7 | D-11: `tests/unit/test_auth_email_domain.py` PRESERVE | ✓ VERIFIED | `uv run pytest … -x` → 5 passed; last commit `2f02dc5` (2026-09-19) predates phase; working tree clean for that file |
 | 8 | D-03 / D-05 / D-13: Runbook §4.1 relay shape, smoke, one-command rollback | ✓ VERIFIED | `GOTRUE_SMTP_*`, `SMTP_*`, smoke via `/auth/v1/settings` + signup, rollback `GOTRUE_MAILER_AUTOCONFIRM=true` + reload |
 | 9 | D-06: Criterion-4 live proof explicitly recorded as Phase 21 precondition | ✓ VERIFIED | §4.1.3 plain-language gap; ROADMAP Phase 21 Depends on matches |
-| 10 | D-01 / D-04: Path (A) remains target; no separate relay ADR this phase | ✓ VERIFIED | Debug Resolution + runbook state (A) target; `docs/adr/` has no new relay ADR (only 0001–0004) |
+| 10 | D-01 / D-04: Path (A) remains target; no separate relay ADR from this phase | ✓ VERIFIED | Debug Resolution + runbook state (A) target; Phase 20 did not add a relay ADR (later `0005-haskimail-*` is Phase 21 transport — out of phase-20 ship) |
 
 **Score:** 10/10 truths verified (0 present, behavior-unverified). SC4 excluded from score as deferred.
 
@@ -91,19 +81,19 @@ Phase ships path **(B)** (honest autoconfirm copy) per CONTEXT/D-02. ROADMAP cri
 |---|------|-------------|----------|
 | 1 | ROADMAP SC4 live corporate-relay smoke-test proof | Phase 21 | Phase 21 Depends on «relay chosen and proven on the GoTrue lane»; Plan 20-02 D-06; runbook §4.1.3 |
 
-### Advisory (Code review — does not fail must-haves)
+### Advisory (New Scope / Prior Review — Unevidenced for must-have FAIL)
 
 | # | Finding | Category | Why Advisory |
 |---|---------|----------|--------------|
-| 1 | CR-01 harness short-circuits live `signUp` | security | Open in disposition; latent if harness armed in live build; path-(B) Playwright contract still holds under mocks |
-| 2 | WR-01 path-(A) runbook missing SPA copy precondition | other | Future flip risk; shipped end state is (B); Phase 21 / ops follow-up |
+| 1 | CR-01 harness short-circuits live `signUp` | security | Open in disposition / AR-20-01; latent if harness armed in live build; path-(B) Playwright contract still holds under mocks |
+| 2 | WR-01 path-(A) runbook missing SPA copy precondition | other | Future flip risk; shipped end state is (B); ops follow-up |
 
 ### Required Artifacts
 
 | Artifact | Expected | Status | Details |
 | -------- | -------- | ------ | ------- |
-| `web/src/pages/RegisterPage.jsx` | D-07 CONFIRM_MESSAGE + !session ErrorPanel | ✓ VERIFIED | Exists, substantive, wired; data = constant → alert |
-| `web/src/services/authApi.js` | `armSignUpWithoutSession` + reset | ✓ VERIFIED | One-shot null return; error mapping untouched |
+| `web/src/pages/RegisterPage.jsx` | D-07 CONFIRM_MESSAGE + !session ErrorPanel | ✓ VERIFIED | Exists, substantive, wired; `gsd verify.artifacts` passed |
+| `web/src/services/authApi.js` | `armSignUpWithoutSession` + reset | ✓ VERIFIED | One-shot null return; error mapping strings present |
 | `web/src/main.jsx` | harness export | ✓ VERIFIED | `__DIGEST_AUTH_HARNESS__.armSignUpWithoutSession` |
 | `tests/auth.spec.js` | D-09/D-10 coverage | ✓ VERIFIED | New test + happy-path preserved |
 | `.planning/debug/g-01-3b-signup-mailer.md` | Closed diagnosis | ✓ VERIFIED | Resolved + Resolution; not deleted |
@@ -112,7 +102,7 @@ Phase ships path **(B)** (honest autoconfirm copy) per CONTEXT/D-02. ROADMAP cri
 ### Key Link Verification
 
 | From | To | Via | Status | Details |
-| ---- | -- | --- | ------ | ------- |
+| ---- | -- | ---- | ------ | ------- |
 | `tests/auth.spec.js` | `authApi.js` | `armSignUpWithoutSession` | ✓ WIRED | gsd verify.key-links |
 | `RegisterPage.jsx` | `ErrorPanel.jsx` | `CONFIRM_MESSAGE` → `role=alert` | ✓ WIRED | pattern + ErrorPanel `role="alert"` |
 | `main.jsx` | `authApi.js` | `__DIGEST_AUTH_HARNESS__` | ✓ WIRED | import + export |
@@ -132,7 +122,7 @@ Phase ships path **(B)** (honest autoconfirm copy) per CONTEXT/D-02. ROADMAP cri
 
 | Behavior | Command | Result | Status |
 | -------- | ------- | ------ | ------ |
-| Honest copy + letter-claim forbid | `npx playwright test tests/auth.spec.js --project=web -g "post-register copy never claims a confirmation letter"` | 1 passed (4.3s) | ✓ PASS |
+| Honest copy + letter-claim forbid | `npx playwright test tests/auth.spec.js --project=web -g "post-register copy never claims a confirmation letter"` | 1 passed (6.4s) | ✓ PASS |
 | Domain tripwire PRESERVE | `uv run pytest tests/unit/test_auth_email_domain.py -x` | 5 passed | ✓ PASS |
 
 ### Probe Execution
@@ -146,11 +136,11 @@ Phase ships path **(B)** (honest autoconfirm copy) per CONTEXT/D-02. ROADMAP cri
 | Requirement | Source Plan | Description | Status | Evidence |
 | ----------- | ---------- | ----------- | ------ | -------- |
 | MAIL-02 | 20-01, 20-02 | Diagnosed root cause + honest end state (B), or (A) when proven | ✓ SATISFIED (in-session B) | Path (B) ship + diagnosis closed; SC4 → Phase 21 deferred, not orphaned |
-| MAIL-02 | REQUIREMENTS.md | Mapped to Phase 20 Complete | ✓ SATISFIED | No orphaned Phase-20 IDs beyond MAIL-02 |
+| MAIL-02 | REQUIREMENTS.md | Mapped to Phase 20 Complete (`[x]`) | ✓ SATISFIED | No orphaned Phase-20 IDs beyond MAIL-02 |
 
 ### Decision Coverage
 
-All trackable CONTEXT.md decisions honored (14/14). `gsd_run query check.decision-coverage-verify` → no `not_honored`.
+All trackable CONTEXT.md decisions honored (14/14). `gsd_run query check.decision-coverage-verify` → `not_honored: []`. Message: «All trackable CONTEXT.md decisions are honored by shipped artifacts.»
 
 ### Test Quality Audit
 
@@ -161,7 +151,7 @@ All trackable CONTEXT.md decisions honored (14/14). `gsd_run query check.decisio
 
 **Disabled tests on requirements:** 0
 **Circular patterns detected:** 0
-**Insufficient assertions:** 0 (IN-02 advisory: missing non-retryable button assert — warning only, not blocker)
+**Insufficient assertions:** 0 (IN-02 advisory from REVIEW: missing non-retryable button assert — warning only, not blocker)
 
 ### Anti-Patterns Found
 
@@ -172,37 +162,13 @@ All trackable CONTEXT.md decisions honored (14/14). `gsd_run query check.decisio
 
 ### Human Verification Required
 
-### 1. Flagged prohibition ack (Mailer fence)
-
-**Test:** Confirm signup never uses backend `Mailer` / `send_digest`.
-**Expected:** Auth confirmation remains GoTrue-owned.
-**Why human:** Judgment-tier flagged prohibition — interactive ack required (LLM-judge: held).
-
-### 2. Flagged prohibition ack (honest copy)
-
-**Test:** Confirm post-register Russian copy never promises a letter under path (B).
-**Expected:** D-07 string; no letter claim.
-**Why human:** Judgment-tier flagged prohibition (LLM-judge: held via Playwright).
-
-### 3. Flagged prohibition ack (test amend / domain PRESERVE / debug retention / no SMTP secrets)
-
-**Test:** Spot-check that assertions were amended not deleted, domain unit file untouched, debug closed not deleted, runbook placeholders only.
-**Expected:** All holds.
-**Why human:** Bundle of judgment-tier flagged prohibitions (LLM-judge: held).
-
-### 4. Optional live `/register` glance
-
-**Test:** Open register once under current autoconfirm.
-**Expected:** No confirmation-letter promise in UI.
-**Why human:** User-facing; mocks already covered by Playwright.
+N/A — prior `20-UAT.md` is `status: complete` with 7/7 pass (judgment-tier prohibition acks + optional `/register` glance). Sign-offs preserved; not re-opened by this digest refresh.
 
 ### Gaps Summary
 
-No blocking gaps for the in-session path-(B) goal. ROADMAP SC4 live relay proof is **deferred** to Phase 21 with explicit documentation. Status is `human_needed` solely for flagged judgment-tier prohibition acknowledgements (and optional live glance) — not because must-have truths failed.
-
-CR-01 / WR-01 noted as advisory; they do not reverse verified must-haves for the shipped (B) contract. Do not invent production work from this verify pass.
+No blocking gaps for the in-session path-(B) goal. ROADMAP SC4 live relay proof remains **deferred** to Phase 21 with explicit documentation. Stale `covered_digest` refreshed (`23a84796…` → `b31f8f4b…`). CR-01 / WR-01 remain advisory only.
 
 ---
 
-_Verified: 2026-10-16T09:00:00Z_
+_Verified: 2026-10-17T08:44:19Z_
 _Verifier: Claude (gsd-verifier)_

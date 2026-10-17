@@ -1,6 +1,6 @@
 ---
 phase: 19-unsaved-changes-guard-for-the-pipeline-editor
-verified: 2026-10-16T07:20:00Z
+verified: 2026-10-17T08:45:00Z
 status: passed
 score: 8/8 must-haves verified
 covered_files:
@@ -15,29 +15,32 @@ covered_files:
   - web/src/hooks/useUnsavedChangesGuard.js
   - web/src/pages/AdminPipelineConfigPage.jsx
   - web/src/utils/unsavedChangesGuard.js
-
-covered_digest: "v2:sha256:714b6fe7a7045a7c7f0fea134a60aeca8312fcaa92880d27c92e583cde6f1449"
+covered_digest: "v2:sha256:098a5454ccfe858442d311751e771e3e49bf2e388eef0a5b3791660929f4c1f8"
 behavior_unverified: 0
 overrides_applied: 0
 decision_coverage:
   honored: 12
   total: 12
   not_honored: []
-human_verification:
-  - test: "On /admin/pipeline, edit YAML → shell «Архив» → «Остаться» → edit again → «Уйти без сохранения»; then dirty again and reload/close the tab"
-    expected: "SPA path shows only the in-app modal (never a native dialog for that leave); reload/close shows exactly one browser beforeunload prompt; after successful save neither path prompts"
-    why_human: "Plan 19-02 flagged concurrency/idempotency edges for human confirmation at verify; automated journeys cover the happy path but not interrupted leave + repeated arm/disarm cycles in one manual session"
-  - test: "Confirm judgment prohibitions: migration commit precedes guard wiring; no window.confirm inside beforeunload; draft never leaves without «Уйти без сохранения»"
-    expected: "Git history shows 19-01 (6240fe9) before 19-02 guard commits; unload handler source has no confirm/alert; Cancel/Escape keep the draft"
-    why_human: "PLAN must_haves.prohibitions are verification:judgment — interactive verify requires explicit human resolution (unverified-prohibition — human review recommended)"
+re_verification:
+  previous_status: passed
+  previous_score: 8/8
+  previous_covered_digest: "v2:sha256:714b6fe7a7045a7c7f0fea134a60aeca8312fcaa92880d27c92e583cde6f1449"
+  stale_digest_refresh: true
+  reason: "GSD #4682 — prior VERIFICATION covered_digest was stale; regenerated from current codebase without re-executing plans"
+  gaps_closed: []
+  gaps_remaining: []
+  regressions: []
+  uat_preserved: "19-UAT.md status=complete (2/2 pass) — human edge + judgment-prohibition sign-offs retained"
+  security_preserved: "19-SECURITY.md threats_open: 0"
 ---
 
 # Phase 19: Unsaved-changes guard for the pipeline editor — Verification Report
 
 **Phase Goal:** The admin pipeline editor warns before losing unsaved changes on in-app SPA navigation and on reload/close.
-**Verified:** 2026-10-16T07:20:00Z
-**Status:** human_needed
-**Re-verification:** No — initial verification
+**Verified:** 2026-10-17T08:45:00Z
+**Status:** passed
+**Re-verification:** Yes — stale `covered_digest` refresh (GSD #4682); no plan re-execution; UAT/SECURITY sign-offs preserved
 
 ## Goal Achievement
 
@@ -52,9 +55,13 @@ human_verification:
 | 5 | Guard packaged as reusable util + hook + dialog with one home for leave copy | ✓ VERIFIED | `unsavedChangesGuard.js` / `useUnsavedChangesGuard.js` / `UnsavedChangesDialog.jsx`; page has no local `UNSAVED_LEAVE_CONFIRM` |
 | 6 | `useUnsavedChangesGuard(dirty)` called above every early return | ✓ VERIFIED | Hook at line 107; first early return at 164 |
 | 7 | Route set / RequireAuth layout preserved; no `errorElement` | ✓ VERIFIED | `App.jsx` pathless layout + full child list incl. `admin/pipeline`, `admin/materials/:id`, `* replace`; no `errorElement`/`BrowserRouter`/`Routes` |
-| 8 | Tripwire amended (no synthetic beforeunload dialog alibi); reset `window.confirm` path untouched | ✓ VERIFIED | Tripwire title kept; no `new Event("beforeunload")` / `defaultPrevented` in `tests/admin.spec.js`; page still uses `RESET_CONFIRM` + `window.confirm` only for reset |
+| 8 | Tripwire amended (no synthetic beforeunload dialog alibi); reset `window.confirm` path untouched | ✓ VERIFIED | Tripwire title kept; no `new Event("beforeunload")` in `tests/admin.spec.js`; page still uses `RESET_CONFIRM` + `window.confirm` only for reset |
 
 **Score:** 8/8 truths verified (0 present, behavior-unverified)
+
+### Advisory (New Scope, Unevidenced)
+
+None — re-verification Step 7 found no new-scope unevidenced blockers.
 
 ### Required Artifacts
 
@@ -97,9 +104,9 @@ No hollow/static mock path on the leave message or dirty signal.
 | Behavior | Command | Result | Status |
 | -------- | ------- | ------ | ------ |
 | `armBeforeUnload` body contract | `node --test tests/unit/test_unsaved_changes_guard.js` | 3 passed | ✓ PASS |
-| Save clears / reject keeps armed + no double prompt | `npx playwright test --project=web tests/admin.spec.js -g "save disarms"` | 1 passed (3.7s) | ✓ PASS |
+| Save clears / reject keeps armed + no double prompt | `npx playwright test --project=web tests/admin.spec.js -g "save disarms"` | 1 passed (6.0s) | ✓ PASS |
 
-Full `npm run test:web` not re-run this session (SUMMARY claimed 113 after 19-02); spot-checks + source contract used instead.
+Full `npm run test:web` not re-run this session (prior SUMMARY claimed 113 after 19-02); spot-checks + source contract used instead.
 
 ### Probe Execution
 
@@ -139,27 +146,17 @@ All trackable CONTEXT.md decisions honored (12/12). `gsd_run query check.decisio
 | `UnsavedChangesDialog.jsx` | 11–20 | Escape effect depends on unstable `onStay` identity (REVIEW WR-02) | ℹ️ Info | Possible Escape miss under parent re-render while open |
 | — | — | `TBD`/`FIXME`/`XXX` in phase files | none | — |
 
-No 🛑 Blocker debt markers. No synthetic-beforeunload alibi remains. No `window.confirm` inside unload handler.
+No 🛑 Blocker debt markers. No synthetic-beforeunload alibi remains. No `window.confirm` inside unload handler. Re-verification evidence gate: REVIEW WR-01/WR-02 predate this pass and are not carried-forward gaps — advisory/info only.
 
 ### Human Verification Required
 
-### 1. Flagged edge: idempotency + no double-prompt (plan 19-02)
-
-**Test:** Dirty editor → shell nav → Stay → Leave once; then dirty → reload/close; then save and confirm neither path prompts.
-**Expected:** One in-app modal per SPA leave; one native beforeunload on reload/close only; never both for one decision; listeners do not accumulate across dirty↔clean cycles.
-**Why human:** Plan must_haves explicitly deferred these edges to verify-time human confirmation; automation covers sequential happy paths.
-
-### 2. Judgment prohibitions
-
-**Test:** Review git ordering (19-01 before guard), unload handler source, and Cancel/Escape draft retention once in the browser.
-**Expected:** Prohibitions hold (no combined plan, no confirm-in-unload, no silent draft discard).
-**Why human:** `verification: judgment` prohibitions require explicit human resolution in interactive verify.
+None pending. Prior `19-UAT.md` completed both deferred items (idempotency/no-double-prompt edge + judgment prohibitions) with **2/2 pass** on 2026-10-16. Sign-offs preserved; not re-opened for digest refresh.
 
 ### Gaps Summary
 
-None blocking. Automated must-haves are met in the codebase. Status is `human_needed` solely for plan-flagged edge confirmation and judgment-tier prohibitions — not for missing implementation.
+None. Automated must-haves hold in the current codebase. `covered_digest` refreshed (`714b6fe7…` → `098a5454…`). Phase goal achieved.
 
 ---
 
-_Verified: 2026-10-16T07:20:00Z_
+_Verified: 2026-10-17T08:45:00Z_
 _Verifier: Claude (gsd-verifier)_

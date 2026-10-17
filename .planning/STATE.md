@@ -4,13 +4,13 @@ milestone: v1.3
 milestone_name: Live mail, scheduled ingestion & backlog debt
 current_phase: 21
 current_phase_name: MAIL-01 live SMTP digest delivery
-current_plan: 3
-status: verifying
-stopped_at: Completed 21-03-PLAN.md (recipients adapters + HTTP delivered_count + SPA + runbook)
-last_updated: "2026-10-16T15:02:40.255Z"
-last_activity: 2026-10-16
-last_activity_desc: Phase 21 execution started
-state_head: caf1bb42270a3c647dd9ec38f9a223c91140e037
+current_plan: Not started
+status: planning
+stopped_at: Phase 20 complete, ready to plan Phase 21
+last_updated: "2026-10-17T08:47:46.634Z"
+last_activity: 2026-10-17
+last_activity_desc: Phase 20 complete, transitioned to Phase 21
+state_head: 814f5b129b79bc1474b01e9dc7dcda5c23ea5d64
 progress:
   total_phases: 8
   completed_phases: 4
@@ -30,11 +30,11 @@ See: .planning/PROJECT.md (updated 2026-10-16 — after Phase 20)
 
 ## Current Position
 
-Phase: 21 (MAIL-01 live SMTP digest delivery) — EXECUTING
-Current Plan: 3
+Phase: 21 — MAIL-01 live SMTP digest delivery
+Current Plan: Not started
 Total Plans in Phase: 3
-Status: Phase complete — ready for verification
-Last activity: 2026-10-16 — Phase 21 execution started
+Status: Ready to plan
+Last activity: 2026-10-17 — Phase 20 complete, transitioned to Phase 21
 
 Progress: [█████░░░░░] 50%
 
@@ -172,7 +172,7 @@ Carried product deferrals beyond v1.3: leaderboard, quiz, Whisper/Foundry ASR, i
 ## Session Continuity
 
 Last session: 2026-10-16T15:02:30.260Z
-Stopped at: Completed 21-03-PLAN.md (recipients adapters + HTTP delivered_count + SPA + runbook)
+Stopped at: Phase 20 complete, ready to plan Phase 21
 Resume file: None
 Next: `/gsd-plan-phase 19`
 
