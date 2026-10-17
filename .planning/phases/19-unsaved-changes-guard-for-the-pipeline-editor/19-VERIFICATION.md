@@ -1,6 +1,6 @@
 ---
 phase: 19-unsaved-changes-guard-for-the-pipeline-editor
-verified: 2026-10-17T08:45:00Z
+verified: 2026-10-17T08:47:31Z
 status: passed
 score: 8/8 must-haves verified
 covered_files:
@@ -25,9 +25,9 @@ decision_coverage:
 re_verification:
   previous_status: passed
   previous_score: 8/8
-  previous_covered_digest: "v2:sha256:714b6fe7a7045a7c7f0fea134a60aeca8312fcaa92880d27c92e583cde6f1449"
+  previous_covered_digest: "v2:sha256:098a5454ccfe858442d311751e771e3e49bf2e388eef0a5b3791660929f4c1f8"
   stale_digest_refresh: true
-  reason: "GSD #4682 — prior VERIFICATION covered_digest was stale; regenerated from current codebase without re-executing plans"
+  reason: "GSD #4682 — prior VERIFICATION marked stale; re-verified must-haves against current codebase and regenerated covered_digest (content hash unchanged)"
   gaps_closed: []
   gaps_remaining: []
   regressions: []
@@ -38,7 +38,7 @@ re_verification:
 # Phase 19: Unsaved-changes guard for the pipeline editor — Verification Report
 
 **Phase Goal:** The admin pipeline editor warns before losing unsaved changes on in-app SPA navigation and on reload/close.
-**Verified:** 2026-10-17T08:45:00Z
+**Verified:** 2026-10-17T08:47:31Z
 **Status:** passed
 **Re-verification:** Yes — stale `covered_digest` refresh (GSD #4682); no plan re-execution; UAT/SECURITY sign-offs preserved
 
@@ -47,11 +47,11 @@ re_verification:
 ### Observable Truths
 
 | # | Truth | Status | Evidence |
-| --- | --- | --- | --- |
-| 1 | With unsaved edits, in-app SPA navigation prompts with «Есть несохранённые изменения. Уйти без сохранения?», and Cancel keeps the draft | ✓ VERIFIED | `UnsavedChangesDialog` renders `UNSAVED_LEAVE_CONFIRM`; page wires `blocker.reset()` / `proceed()`; Playwright `blocks in-app nav` asserts copy, URL stay, Stay + Escape keep draft |
-| 2 | Dirty editor arms correct `beforeunload` (`preventDefault()` + truthy `returnValue`); clean prompts on neither path | ✓ VERIFIED | `armBeforeUnload` body is exactly those two statements; hook effect keyed on `[dirty]`; unit test 3/3 passed this session; amended tripwire asserts clean=no beforeunload, dirty=`type()==='beforeunload'`, registry 1→0 on save |
-| 3 | Dirty flag clears after successful save and stays armed after server reject | ✓ VERIFIED | Guard consumes `dirty = yaml !== savedYaml`; `INVALID_CONFIG` leaves `savedYaml` untouched; Playwright `save disarms` **passed this session** (reject→modal still; save→`/archive` with no modal) |
-| 4 | `App.jsx` on data router as its own plan; migration never combined with guard; no double-prompt | ✓ VERIFIED | Module-scope `createBrowserRouter` + `RouterProvider`; git: `6240fe9` (19-01) then `6c64dbe`…`7dfb49d` (19-02); SPA journeys assert empty native dialog types |
+| --- | ------- | ---------- | -------------- |
+| 1 | With unsaved edits, in-app SPA navigation prompts with «Есть несохранённые изменения. Уйти без сохранения?», and Cancel keeps the draft | ✓ VERIFIED | `UnsavedChangesDialog` renders `UNSAVED_LEAVE_CONFIRM`; page wires `blocker.reset()` / `proceed()`; Playwright journey `blocks in-app nav` asserts copy, URL stay, Stay + Escape keep draft |
+| 2 | Dirty editor arms correct `beforeunload` (`preventDefault()` + truthy `returnValue`); clean prompts on neither path | ✓ VERIFIED | `armBeforeUnload` body is exactly those two statements; hook effect keyed on `[dirty]`; unit test 3/3 passed this session; tripwire asserts clean=no beforeunload, dirty=`type()==='beforeunload'`, registry 1→0 on save |
+| 3 | Dirty flag clears after successful save and stays armed after server reject | ✓ VERIFIED | Guard consumes `dirty = yaml !== savedYaml`; `INVALID_CONFIG` leaves `savedYaml` untouched; Playwright `save disarms` **passed this session** (3.2s) |
+| 4 | `App.jsx` on data router as its own plan; migration never combined with guard; no double-prompt | ✓ VERIFIED | Module-scope `createBrowserRouter` + `RouterProvider`; git: `6240fe9` (19-01) then `6c64dbe`…`b0fe019` (19-02); SPA journeys assert empty native dialog types |
 | 5 | Guard packaged as reusable util + hook + dialog with one home for leave copy | ✓ VERIFIED | `unsavedChangesGuard.js` / `useUnsavedChangesGuard.js` / `UnsavedChangesDialog.jsx`; page has no local `UNSAVED_LEAVE_CONFIRM` |
 | 6 | `useUnsavedChangesGuard(dirty)` called above every early return | ✓ VERIFIED | Hook at line 107; first early return at 164 |
 | 7 | Route set / RequireAuth layout preserved; no `errorElement` | ✓ VERIFIED | `App.jsx` pathless layout + full child list incl. `admin/pipeline`, `admin/materials/:id`, `* replace`; no `errorElement`/`BrowserRouter`/`Routes` |
@@ -104,9 +104,9 @@ No hollow/static mock path on the leave message or dirty signal.
 | Behavior | Command | Result | Status |
 | -------- | ------- | ------ | ------ |
 | `armBeforeUnload` body contract | `node --test tests/unit/test_unsaved_changes_guard.js` | 3 passed | ✓ PASS |
-| Save clears / reject keeps armed + no double prompt | `npx playwright test --project=web tests/admin.spec.js -g "save disarms"` | 1 passed (6.0s) | ✓ PASS |
+| Save clears / reject keeps armed + no double prompt | `npx playwright test --project=web tests/admin.spec.js -g "save disarms"` | 1 passed (3.2s); port 5174 was free | ✓ PASS |
 
-Full `npm run test:web` not re-run this session (prior SUMMARY claimed 113 after 19-02); spot-checks + source contract used instead.
+Full `npm run test:web` not re-run this session; spot-checks + source contract used instead.
 
 ### Probe Execution
 
@@ -125,7 +125,7 @@ No ORPHANED requirements for Phase 19: only ADUX-09 is mapped; ADUX-10 is explic
 
 ### Decision Coverage
 
-All trackable CONTEXT.md decisions honored (12/12). `gsd_run query check.decision-coverage-verify` — non-blocking gate.
+All trackable CONTEXT.md decisions honored (12/12). `gsd_run query check.decision-coverage-verify` — non-blocking gate. Message: "All trackable CONTEXT.md decisions are honored by shipped artifacts."
 
 ### Test Quality Audit
 
@@ -154,9 +154,9 @@ None pending. Prior `19-UAT.md` completed both deferred items (idempotency/no-do
 
 ### Gaps Summary
 
-None. Automated must-haves hold in the current codebase. `covered_digest` refreshed (`714b6fe7…` → `098a5454…`). Phase goal achieved.
+None. Automated must-haves hold in the current codebase. `covered_digest` regenerated (`098a5454…` — content hash unchanged vs prior refresh). Phase goal achieved.
 
 ---
 
-_Verified: 2026-10-17T08:45:00Z_
+_Verified: 2026-10-17T08:47:31Z_
 _Verifier: Claude (gsd-verifier)_
