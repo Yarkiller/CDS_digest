@@ -36,6 +36,13 @@ import {
   armRejectNextSave,
   resetPipelineConfigHarness,
 } from './services/pipelineConfigApi.js'
+import {
+  armFailNextAdd,
+  armFailNextLoad as armFailNextIngestSourcesLoad,
+  armRejectNextAdd,
+  resetIngestSourcesHarness,
+  resetIngestSourcesMockStore,
+} from './services/ingestSourcesApi.js'
 
 // Playwright harness (mirrors votingApi arm-fail pattern).
 window.__DIGEST_AUTH_HARNESS__ = {
@@ -67,6 +74,13 @@ window.__DIGEST_PIPELINE_CONFIG_HARNESS__ = {
   armRejectNextSave,
   armFailNextSave,
   resetPipelineConfigHarness,
+}
+window.__DIGEST_INGEST_SOURCES_HARNESS__ = {
+  armFailNextLoad: armFailNextIngestSourcesLoad,
+  armFailNextAdd,
+  armRejectNextAdd,
+  resetIngestSourcesHarness,
+  resetIngestSourcesMockStore,
 }
 
 createRoot(document.getElementById('root')).render(
