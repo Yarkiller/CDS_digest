@@ -43,7 +43,8 @@ class Settings:
     app_container: str = "memory"
     # Local filesystem root for authenticated .ipynb FileResponse (RAZB-03 / A5)
     notebook_root: str = ""
-    # stub (default, D-15) | smtp (live relay; resolve fails fast when SMTP_* incomplete, D-16)
+    # stub (default, D-15) | smtp (live relay) | haskimail (live HTTP API, ADR-0005)
+    # resolve_mailer fails fast when the selected mode's config is incomplete (D-16).
     mailer: str = "stub"
     # Absolute site origin for email material links (D-11 / RESEARCH Q2)
     site_url: str = "http://127.0.0.1:5173"
@@ -61,6 +62,17 @@ class Settings:
     # D-14: bounded timeouts are fixed here and injected as primitives — never env-driven.
     smtp_connect_timeout: float = 10.0
     smtp_send_timeout: float = 30.0
+    # --- Live Haskimail HTTP API (ADR-0005; MAIL-05: read env only in from_env) ---
+    # repr=False: a logged Settings must never disclose the server token.
+    haskimail_api_key: str = field(default="", repr=False)
+    # "" = use the adapter's canonical endpoint (https://api.haskimail.ru/email).
+    haskimail_api_url: str = ""
+    haskimail_from: str = ""
+    haskimail_from_name: str = ""
+    # Optional channel id; empty = the server's default transactional stream.
+    haskimail_message_stream: str = ""
+    # Fixed request timeout (D-14 analogue) — env cannot widen it.
+    haskimail_request_timeout: float = 30.0
 
     @property
     def cors_origins(self) -> tuple[str, ...]:
@@ -104,4 +116,9 @@ class Settings:
             smtp_from_name=env.get("SMTP_FROM_NAME", ""),
             smtp_tls_mode=(env.get("SMTP_TLS_MODE") or "starttls").strip().lower()
             or "starttls",
+            haskimail_api_key=env.get("HASKIMAIL_API_KEY", ""),
+            haskimail_api_url=env.get("HASKIMAIL_API_URL", "").strip(),
+            haskimail_from=env.get("HASKIMAIL_FROM", ""),
+            haskimail_from_name=env.get("HASKIMAIL_FROM_NAME", ""),
+            haskimail_message_stream=env.get("HASKIMAIL_MESSAGE_STREAM", ""),
         )

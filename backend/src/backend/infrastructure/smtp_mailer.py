@@ -23,14 +23,13 @@ from typing import Protocol, Sequence
 
 from backend.domain.errors import MailDeliveryError
 from backend.domain.recipient import Recipient
+from backend.infrastructure.delivery_policy import (
+    CONSECUTIVE_FAILURE_LIMIT,
+    STOP_REASON_CONSECUTIVE_FAILURES,
+    delivery_status,
+)
 
 logger = logging.getLogger(__name__)
-
-CONSECUTIVE_FAILURE_LIMIT = 3
-"""D-08: stop the per-recipient loop after this many consecutive transport failures."""
-
-STOP_REASON_CONSECUTIVE_FAILURES = "consecutive_failures"
-"""D-08: ``stop_reason`` value reported once the consecutive-failure limit trips."""
 
 
 class SmtpConnection(Protocol):
@@ -74,14 +73,8 @@ def _default_smtp_factory(
 
 
 def _delivery_status(delivered: int, planned: int) -> str:
-    """D-07: ``sent`` (N=M) / ``partial`` (0<N<M) / ``failed`` (N=0); M=0 is honestly sent."""
-    if planned <= 0:
-        return "sent"
-    if delivered <= 0:
-        return "failed"
-    if delivered >= planned:
-        return "sent"
-    return "partial"
+    """Deprecated alias — the policy now lives in ``delivery_policy`` (shared with HTTP)."""
+    return delivery_status(delivered, planned)
 
 
 class SmtpMailer:

@@ -49,6 +49,7 @@ source = { editable = "backend" }
 dependencies = [
     { name = "cryptography" },
     { name = "fastapi" },
+    { name = "haskimail" },
     { name = "httpx" },
     { name = "pyjwt" },
     { name = "python-multipart" },
@@ -61,6 +62,7 @@ dependencies = [
 requires-dist = [
     { name = "cryptography", specifier = "==50.0.1" },
     { name = "fastapi", specifier = "==0.141.1" },
+    { name = "haskimail", specifier = ">=1.0.0" },
     { name = "httpx", specifier = "==0.28.1" },
     { name = "pyjwt", specifier = "==2.14.0" },
     { name = "python-multipart", specifier = "==0.0.32" },
@@ -467,6 +469,18 @@ dependencies = [
 sdist = { url = "https://files.pythonhosted.org/packages/e7/85/7c366e69d84c17bb778fe41419e1fbcce3033d5b7ce29bbffff0a98b859f/h2-4.4.1.tar.gz", hash = "sha256:4e866ffb1a869ae14dd9b5e6beb5c24a13da0495ad72b65925ded182521c1516", size = 2157281, upload-time = "2026-08-03T11:45:09.509Z" }
 wheels = [
     { url = "https://files.pythonhosted.org/packages/7e/22/e85faf23bd72a92d1921e37d674ca56eb298a3c8be31fdecef0ff2b3aaac/h2-4.4.1-py3-none-any.whl", hash = "sha256:0e25f1462b23c9cb82d9eb02e28bc706dac2a68cb457c6a0d74d63c8a2a5d0e6", size = 62636, upload-time = "2026-08-03T11:44:59.164Z" },
+]
+
+[[package]]
+name = "haskimail"
+version = "1.0.0"
+source = { registry = "https://pypi.org/simple" }
+dependencies = [
+    { name = "requests" },
+]
+sdist = { url = "https://files.pythonhosted.org/packages/c0/e1/cb3f3f3f99bb76ba8e40560921f49d6417c8050b0a024692fa5a7198e708/haskimail-1.0.0.tar.gz", hash = "sha256:fe14000f95d8995a58697180d07b8f4767003ee324053a78bddba5d6a548de32", size = 59859, upload-time = "2026-06-01T12:55:07.823Z" }
+wheels = [
+    { url = "https://files.pythonhosted.org/packages/a1/46/4c27f1f2ddf89c579384fe0c4b645d4739004db2f1a7bff26b0d91e3a05e/haskimail-1.0.0-py3-none-any.whl", hash = "sha256:6383a6f8d43b40101174ade49e5fc801c0467d3944351f7f5d4639177a6df0fe", size = 12202, upload-time = "2026-06-01T12:55:06.471Z" },
 ]
 
 [[package]]
