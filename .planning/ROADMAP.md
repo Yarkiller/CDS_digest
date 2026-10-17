@@ -216,8 +216,16 @@ Plans:
 **Plans**: 2 plans
 
 Plans:
+**Wave 1**
 - [ ] 22-01-PLAN.md — Tracer: single «Админ» shell + AdminLayout «Дайджест | Пайплайн» + H1 removal (RED Playwright first)
+
+**Wave 2** *(blocked on Wave 1 completion)*
 - [ ] 22-02-PLAN.md — Dirty→tab UnsavedChangesDialog journey + 16-UI-SPEC A-2 supersession
+
+**Cross-cutting constraints:**
+- At sm+ the two tab labels stay on one row without horizontal page scroll at 1280px and at the sm edge (~640px)
+- Below sm the select remains fully usable within the content column without horizontal overflow
+- Single «Админ» pill remains visible in the wrapping shell nav when the header wraps on narrow widths
 
 **Tripwires**: `tests/admin.spec.js` nav assertions → **AMEND** if they assert the removed top-level «Пайплайн» item (the nav contract intentionally changed; disposition confirmed in-phase).
 **UI hint**: yes
