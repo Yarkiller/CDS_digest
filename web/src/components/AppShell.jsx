@@ -32,9 +32,10 @@ export default function AppShell() {
   const [identity, setIdentity] = useState(() => (isMocksEnabled() ? MOCK_SHELL_IDENTITY : ''))
   const [appRole, setAppRole] = useState(/** @type {string | null} */ (null))
   const { pathname } = useLocation()
-  // D-09: «Админ» lights up on digest, pipeline, and the materials preview alike —
-  // NavLink prefix matching on /admin/digest would only cover its own descendants.
-  const adminActive = pathname === '/admin' || pathname.startsWith('/admin/')
+  // D-09: «Админ» lights up on digest, pipeline, and the materials preview alike.
+  // IN-04: the /admin/ prefix is the single source of truth — there is no /admin route
+  // (D-04), and the catch-all redirects /admin to /, so an equality branch is dead code.
+  const adminActive = pathname.startsWith('/admin/')
 
   useEffect(() => {
     let cancelled = false
@@ -88,12 +89,17 @@ export default function AppShell() {
               Разборы
             </NavLink>
             {appRole === 'admin' ? (
-              <NavLink
+              <Link
                 to="/admin/digest"
-                className={() => linkClass({ isActive: adminActive })}
+                // WR-02: NavLink derives aria-current from `to="/admin/digest"`, so the pill
+                // was announced as inactive on pipeline/preview while looking active. Set it
+                // from the already-computed prefix instead — "true" (not "page") because the
+                // href targets digest while the whole admin section is the current context.
+                aria-current={adminActive ? 'true' : undefined}
+                className={linkClass({ isActive: adminActive })}
               >
                 Админ
-              </NavLink>
+              </Link>
             ) : null}
           </nav>
           <SearchPill />
