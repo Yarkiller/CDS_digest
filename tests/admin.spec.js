@@ -1813,6 +1813,49 @@ test.describe("Admin pipeline config — empty/dirty/reset/nav/no-execution (PIP
   });
 });
 
+test.describe("Admin pipeline — ingest sources (SRC-01, D-01/D-02)", () => {
+  test("ingest sources section above YAML — empty then add channel row", async ({ page }) => {
+    await gotoAsRole(page, "admin", "/admin/pipeline");
+    await page.waitForFunction(() => Boolean(window.__DIGEST_INGEST_SOURCES_HARNESS__));
+    await page.evaluate(() => {
+      window.__DIGEST_INGEST_SOURCES_HARNESS__.resetIngestSourcesMockStore();
+      window.__DIGEST_INGEST_SOURCES_HARNESS__.resetIngestSourcesHarness();
+    });
+    await page.reload();
+
+    await expect(page.getByTestId("admin-pipeline-page")).toBeVisible();
+    const section = page.getByTestId("ingest-sources-section");
+    await expect(section).toBeVisible();
+    await expect(page.getByTestId("ingest-sources-heading")).toHaveText("Источники ингеста");
+
+    const editor = page.getByTestId("pipeline-config-editor");
+    await expect(editor).toBeVisible();
+    const sectionBox = await section.boundingBox();
+    const editorBox = await editor.boundingBox();
+    expect(sectionBox).not.toBeNull();
+    expect(editorBox).not.toBeNull();
+    expect(sectionBox.y).toBeLessThan(editorBox.y);
+
+    await expect(page.getByTestId("ingest-sources-empty")).toBeVisible();
+    await expect(page.getByTestId("ingest-sources-empty")).toContainText("Пока нет источников");
+    await expect(page.getByTestId("ingest-sources-add")).toBeVisible();
+    await expect(page.getByTestId("ingest-sources-id")).toBeVisible();
+
+    const channelId = "UC_x5XG1OV2P6uZZ5FSMdItQ";
+    await page.getByTestId("ingest-sources-kind").selectOption("channel");
+    await page.getByTestId("ingest-sources-id").fill(channelId);
+    await page.getByTestId("ingest-sources-label").fill("Demo channel");
+    await page.getByTestId("ingest-sources-add").click();
+
+    const row = page.getByTestId("ingest-source-row").filter({ hasText: channelId });
+    await expect(row).toBeVisible();
+    await expect(row.locator(".font-mono")).toHaveText(channelId);
+    await expect(page.getByTestId("ingest-sources-id")).toHaveValue("");
+    await expect(page.getByTestId("ingest-sources-label")).toHaveValue("");
+    await expect(page.getByTestId("ingest-sources-empty")).toHaveCount(0);
+  });
+});
+
 test.describe("Admin Digest — предпросмотр черновика в читательском рендере (ADUX-07, ADUX-08)", () => {
   test("черновик открывается на предпросмотре с баннером", async ({ page }) => {
     await gotoAsRole(page, "admin", "/admin/materials/sql-dashboards-for-audit-reporting");
