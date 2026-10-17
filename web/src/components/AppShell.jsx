@@ -1,5 +1,5 @@
 import { useEffect, useState } from 'react'
-import { Link, NavLink, Outlet } from 'react-router-dom'
+import { Link, NavLink, Outlet, useLocation } from 'react-router-dom'
 import SearchPill from './SearchPill.jsx'
 import { getAccessToken } from '../services/authApi.js'
 import { isMocksEnabled } from '../services/authEnv.js'
@@ -31,6 +31,10 @@ async function resolveShellSession(token) {
 export default function AppShell() {
   const [identity, setIdentity] = useState(() => (isMocksEnabled() ? MOCK_SHELL_IDENTITY : ''))
   const [appRole, setAppRole] = useState(/** @type {string | null} */ (null))
+  const { pathname } = useLocation()
+  // D-09: «Админ» lights up on digest, pipeline, and the materials preview alike —
+  // NavLink prefix matching on /admin/digest would only cover its own descendants.
+  const adminActive = pathname === '/admin' || pathname.startsWith('/admin/')
 
   useEffect(() => {
     let cancelled = false
@@ -84,14 +88,12 @@ export default function AppShell() {
               Разборы
             </NavLink>
             {appRole === 'admin' ? (
-              <>
-                <NavLink to="/admin/digest" className={linkClass}>
-                  Админ
-                </NavLink>
-                <NavLink to="/admin/pipeline" className={linkClass}>
-                  Пайплайн
-                </NavLink>
-              </>
+              <NavLink
+                to="/admin/digest"
+                className={() => linkClass({ isActive: adminActive })}
+              >
+                Админ
+              </NavLink>
             ) : null}
           </nav>
           <SearchPill />

@@ -1,5 +1,6 @@
 import { createBrowserRouter, Navigate, RouterProvider } from 'react-router-dom'
 import AppShell from './components/AppShell.jsx'
+import AdminLayout from './components/AdminLayout.jsx'
 import RequireAuth from './components/RequireAuth.jsx'
 import ArchivePage from './pages/ArchivePage.jsx'
 import IssuePage from './pages/IssuePage.jsx'
@@ -33,9 +34,17 @@ const router = createBrowserRouter([
       { path: 'razbory', element: <RazboryListPage /> },
       { path: 'razbory/:id', element: <RazborPage /> },
       { path: 'profile', element: <ProfilePage /> },
-      { path: 'admin/digest', element: <AdminDigestPage /> },
+      {
+        // Pathless layout (D-01…D-04): shared admin chrome for digest + pipeline only.
+        // No `/admin` index and no redirect — the shell «Админ» entry owns the URL.
+        element: <AdminLayout />,
+        children: [
+          { path: 'admin/digest', element: <AdminDigestPage /> },
+          { path: 'admin/pipeline', element: <AdminPipelineConfigPage /> },
+        ],
+      },
+      // Sibling without the section switch (D-03, D-11).
       { path: 'admin/materials/:id', element: <MaterialPage preview /> },
-      { path: 'admin/pipeline', element: <AdminPipelineConfigPage /> },
       { path: '*', element: <Navigate to="/" replace /> },
     ],
   },
