@@ -200,9 +200,15 @@ test.describe("Admin Digest — shortlist triage (ADMIN-01…03, ADMIN-05, D-79,
     page,
   }) => {
     await gotoAsRole(page, "admin", "/admin/digest");
+    // D-06 / D-08: the active section tab replaces the former page H1 and carries its weight.
     await expect(
       page.getByRole("heading", { name: "Shortlist дайджеста", exact: true }),
-    ).toBeVisible();
+    ).toHaveCount(0);
+    await expect(page.getByTestId("admin-digest-page").getByText("Админ", { exact: true })).toHaveCount(0);
+    const digestTab = page.getByTestId("admin-tab-digest");
+    await expect(digestTab).toHaveAttribute("aria-current", "page");
+    await expect(digestTab).toHaveClass(/text-3xl/);
+    await expect(digestTab).toHaveClass(/font-semibold/);
     const list = page.getByTestId("admin-shortlist");
     await expect(list).toBeVisible();
     const rows = page.getByTestId("admin-shortlist-row");
@@ -1085,9 +1091,15 @@ test.describe("Admin pipeline config — view + save (PIPE-01/PIPE-03, D-11/D-13
   test("pipeline config happy path", async ({ page }) => {
     await gotoAsRole(page, "admin", "/admin/pipeline");
     await expect(page.getByTestId("admin-pipeline-page")).toBeVisible();
+    // D-06 / D-08: the active section tab owns the hierarchy; the page keeps only the hint.
     await expect(
       page.getByRole("heading", { name: "Конфиг пайплайна", exact: true }),
-    ).toBeVisible();
+    ).toHaveCount(0);
+    await expect(page.getByTestId("admin-pipeline-page").getByText("Админ", { exact: true })).toHaveCount(0);
+    const pipelineTab = page.getByTestId("admin-tab-pipeline");
+    await expect(pipelineTab).toHaveAttribute("aria-current", "page");
+    await expect(pipelineTab).toHaveClass(/text-3xl/);
+    await expect(pipelineTab).toHaveClass(/font-semibold/);
     // No-execution honesty (PIPE-EXEC-* deferred): the surface states its scope.
     await expect(page.getByText("Просмотр и правка без запуска пайплайна", { exact: true })).toBeVisible();
 
