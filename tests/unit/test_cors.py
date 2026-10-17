@@ -60,6 +60,21 @@ def test_put_method_is_advertised_in_cors_preflight() -> None:
     assert "PUT" in allowed
 
 
+def test_delete_method_is_advertised_in_cors_preflight() -> None:
+    """SRC-01 / D-18: DELETE /admin/ingest-sources/{id} preflight must allow DELETE."""
+    client = TestClient(create_app(_settings_with_cors("http://127.0.0.1:5173")))
+    response = client.options(
+        "/admin/ingest-sources/1",
+        headers={
+            "Origin": "http://127.0.0.1:5173",
+            "Access-Control-Request-Method": "DELETE",
+        },
+    )
+    assert response.status_code == 200
+    allowed = response.headers.get("access-control-allow-methods", "")
+    assert "DELETE" in allowed
+
+
 def test_disallowed_origin_does_not_receive_allow_origin() -> None:
     client = TestClient(
         create_app(_settings_with_cors("http://127.0.0.1:5173,http://localhost:5173"))
