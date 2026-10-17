@@ -105,6 +105,96 @@ test.describe("Admin Digest — role gate (D-75, D-76, D-77, ADMIN-01)", () => {
   });
 });
 
+test.describe("Admin nav grouping — in-page section switch (ADUX-12, D-01…D-12, D-16…D-19)", () => {
+  function shellNav(page) {
+    return page.getByRole("navigation", { name: /основная навигация/i });
+  }
+
+  function shellAdminLink(page) {
+    return shellNav(page).getByRole("link", { name: /^Админ$/ });
+  }
+
+  test("admin-section nav lists Дайджест then Пайплайн and marks digest active", async ({
+    page,
+  }) => {
+    await gotoAsRole(page, "admin", "/admin/digest");
+    const sectionNav = page.getByTestId("admin-section-nav");
+    await expect(sectionNav).toBeVisible();
+    await expect(sectionNav).toHaveAttribute("aria-label", "Разделы админки");
+
+    // zero-one-many (resolved explicit): exactly two destinations, ordered digest → pipeline
+    const sectionLinks = sectionNav.getByRole("link");
+    await expect(sectionLinks).toHaveCount(2);
+    await expect(sectionLinks.nth(0)).toHaveText("Дайджест");
+    await expect(sectionLinks.nth(1)).toHaveText("Пайплайн");
+
+    await expect(page.getByTestId("admin-tab-digest")).toHaveAttribute("href", "/admin/digest");
+    await expect(page.getByTestId("admin-tab-pipeline")).toHaveAttribute(
+      "href",
+      "/admin/pipeline",
+    );
+    await expect(page.getByTestId("admin-tab-digest")).toHaveAttribute("aria-current", "page");
+    await expect(page.getByTestId("admin-tab-pipeline")).not.toHaveAttribute(
+      "aria-current",
+      "page",
+    );
+
+    // Adjacency (resolved explicit): the shell landmark never owns a «Пайплайн» link
+    await expect(shellNav(page).getByRole("link", { name: "Пайплайн", exact: true })).toHaveCount(
+      0,
+    );
+  });
+
+  test("admin-section pipeline tab navigates and keeps the shell Админ entry active", async ({
+    page,
+  }) => {
+    await gotoAsRole(page, "admin", "/admin/digest");
+    await page.getByTestId("admin-tab-pipeline").click();
+
+    await expect(page).toHaveURL(/\/admin\/pipeline$/);
+    await expect(page.getByTestId("admin-pipeline-page")).toBeVisible();
+    await expect(page.getByTestId("admin-tab-pipeline")).toHaveAttribute("aria-current", "page");
+    await expect(page.getByTestId("admin-tab-digest")).not.toHaveAttribute(
+      "aria-current",
+      "page",
+    );
+
+    const adminLink = shellAdminLink(page);
+    await expect(adminLink).toHaveAttribute("href", "/admin/digest");
+    await expect(adminLink).toHaveClass(/bg-accent/);
+  });
+
+  test("admin-section nav is absent from materials preview while shell Админ stays active", async ({
+    page,
+  }) => {
+    await gotoAsRole(page, "admin", "/admin/materials/sql-dashboards-for-audit-reporting");
+    await expect(page.getByTestId("material-preview-banner")).toBeVisible();
+
+    // D-03 / D-11: preview is a sibling route — no tab-bar, but the shell pill lights up
+    await expect(page.getByTestId("admin-section-nav")).toHaveCount(0);
+    await expect(page.getByTestId("admin-section-select")).toHaveCount(0);
+    await expect(shellAdminLink(page)).toHaveClass(/bg-accent/);
+  });
+
+  test("narrow viewport swaps the section nav for the select backstop", async ({ page }) => {
+    await page.setViewportSize({ width: 480, height: 800 });
+    await gotoAsRole(page, "admin", "/admin/digest");
+
+    await expect(page.getByTestId("admin-section-nav")).toHaveCount(1);
+    await expect(page.getByTestId("admin-section-nav")).toBeHidden();
+
+    const select = page.getByTestId("admin-section-select");
+    await expect(select).toBeVisible();
+    await expect(select).toHaveAttribute("aria-label", "Разделы админки");
+    await expect(select).toHaveValue("/admin/digest");
+
+    await select.selectOption("/admin/pipeline");
+    await expect(page).toHaveURL(/\/admin\/pipeline$/);
+    await expect(page.getByTestId("admin-section-select")).toHaveValue("/admin/pipeline");
+    await expect(shellAdminLink(page)).toHaveClass(/bg-accent/);
+  });
+});
+
 test.describe("Admin Digest — shortlist triage (ADMIN-01…03, ADMIN-05, D-79, D-80)", () => {
   test("populated shortlist shows ≤5 rows with badges and score factors", async ({
     page,
@@ -134,7 +224,8 @@ test.describe("Admin Digest — shortlist triage (ADMIN-01…03, ADMIN-05, D-79,
       page.getByRole("heading", { name: "Кандидатов пока нет", exact: true }),
     ).toBeVisible();
     await expect(page.getByRole("button", { name: /обновить список/i })).toBeVisible();
-    // Scoped to the digest page content: the AppShell now has a global «Пайплайн» nav item.
+    // Scoped to the digest page content: «Пайплайн» lives only in the AdminLayout
+    // section switch (ADUX-12), never in the digest page body.
     await expect(
       page.getByTestId("admin-digest-page").getByText(/пайплайн/i),
     ).toHaveCount(0);
@@ -155,7 +246,8 @@ test.describe("Admin Digest — shortlist triage (ADMIN-01…03, ADMIN-05, D-79,
       page.getByRole("heading", { name: "Кандидатов пока нет", exact: true }),
     ).toBeVisible();
     await expect(page.getByRole("button", { name: /обновить список/i })).toBeVisible();
-    // Scoped to the digest page content: the AppShell now has a global «Пайплайн» nav item.
+    // Scoped to the digest page content: «Пайплайн» lives only in the AdminLayout
+    // section switch (ADUX-12), never in the digest page body.
     await expect(
       page.getByTestId("admin-digest-page").getByText(/пайплайн/i),
     ).toHaveCount(0);
@@ -1368,16 +1460,30 @@ test.describe("Admin pipeline config — empty/dirty/reset/nav/no-execution (PIP
     await expect(page.getByText("Не удалось загрузить конфиг", { exact: true })).toHaveCount(0);
   });
 
-  test("pipeline config nav item renders only for admin", async ({ page }) => {
+  test("pipeline config nav item renders only in the in-page section switch", async ({ page }) => {
     await gotoAsRole(page, "admin", "/");
-    const link = page.getByRole("link", { name: "Пайплайн", exact: true });
-    await expect(link).toBeVisible();
-    await expect(link).toHaveAttribute("href", "/admin/pipeline");
+    const shell = page.getByRole("navigation", { name: /основная навигация/i });
+    // ADUX-12 / D-10: the shell keeps exactly one admin entry and never a «Пайплайн» pill.
+    await expect(shell.getByRole("link", { name: /^Админ$/ })).toHaveAttribute(
+      "href",
+      "/admin/digest",
+    );
+    await expect(shell.getByRole("link", { name: "Пайплайн", exact: true })).toHaveCount(0);
+
+    await gotoAsRole(page, "admin", "/admin/digest");
+    const pipelineTab = page
+      .getByTestId("admin-section-nav")
+      .getByRole("link", { name: "Пайплайн", exact: true });
+    await expect(pipelineTab).toBeVisible();
+    await expect(pipelineTab).toHaveAttribute("href", "/admin/pipeline");
   });
 
   test("pipeline config nav item hidden for employee", async ({ page }) => {
     await gotoAsRole(page, "employee", "/");
-    await expect(page.getByRole("link", { name: "Пайплайн", exact: true })).toHaveCount(0);
+    const shell = page.getByRole("navigation", { name: /основная навигация/i });
+    await expect(shell.getByRole("link", { name: "Пайплайн", exact: true })).toHaveCount(0);
+    await expect(shell.getByRole("link", { name: /^Админ$/ })).toHaveCount(0);
+    await expect(page.getByTestId("admin-section-nav")).toHaveCount(0);
   });
 
   test("pipeline config no execution controls render", async ({ page }) => {
