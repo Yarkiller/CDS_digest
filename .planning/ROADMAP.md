@@ -213,7 +213,12 @@ Plans:
   3. 16-UI-SPEC A-2 is updated so it no longer mandates the second top-level «Пайплайн» item, and its "no second navigation bar" rule is honoured because the tab-bar is in-page.
   4. A failing Playwright test was written first per the backlog TDD note before the nav change.
 
-**Plans**: TBD
+**Plans**: 2 plans
+
+Plans:
+- [ ] 22-01-PLAN.md — Tracer: single «Админ» shell + AdminLayout «Дайджест | Пайплайн» + H1 removal (RED Playwright first)
+- [ ] 22-02-PLAN.md — Dirty→tab UnsavedChangesDialog journey + 16-UI-SPEC A-2 supersession
+
 **Tripwires**: `tests/admin.spec.js` nav assertions → **AMEND** if they assert the removed top-level «Пайплайн» item (the nav contract intentionally changed; disposition confirmed in-phase).
 **UI hint**: yes
 
