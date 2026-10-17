@@ -176,8 +176,6 @@ export default function AdminPipelineConfigPage() {
   if (roleState === 'error') {
     return (
       <section data-testid="admin-pipeline-page">
-        <p className="text-xs font-semibold uppercase tracking-wide text-muted">Админ</p>
-        <h1 className="mt-2 font-sans text-3xl font-semibold text-ink">Конфиг пайплайна</h1>
         <ServiceUnavailable onRetry={reloadRole} />
       </section>
     )
@@ -186,8 +184,6 @@ export default function AdminPipelineConfigPage() {
   if (loadState === 'loading') {
     return (
       <section aria-busy="true" data-testid="admin-pipeline-page">
-        <p className="text-xs font-semibold uppercase tracking-wide text-muted">Админ</p>
-        <h1 className="mt-2 font-sans text-3xl font-semibold text-ink">Конфиг пайплайна</h1>
         <p className="mt-2 text-sm text-muted">Просмотр и правка без запуска пайплайна</p>
         <p data-testid="pipeline-config-loading" className="mt-4 text-sm text-muted">
           Загрузка…
@@ -199,8 +195,6 @@ export default function AdminPipelineConfigPage() {
   if (loadState === 'error') {
     return (
       <section data-testid="admin-pipeline-page">
-        <p className="text-xs font-semibold uppercase tracking-wide text-muted">Админ</p>
-        <h1 className="mt-2 font-sans text-3xl font-semibold text-ink">Конфиг пайплайна</h1>
         <p className="mt-2 text-sm text-muted">Просмотр и правка без запуска пайплайна</p>
         <p className="mt-4 text-sm text-ink-2">{loadError || 'Не удалось загрузить конфиг'}</p>
         <button
@@ -228,8 +222,6 @@ export default function AdminPipelineConfigPage() {
 
   return (
     <section data-testid="admin-pipeline-page" className="pb-16">
-      <p className="text-xs font-semibold uppercase tracking-wide text-muted">Админ</p>
-      <h1 className="mt-2 font-sans text-3xl font-semibold text-ink">Конфиг пайплайна</h1>
       <p className="mt-2 text-sm text-muted">Просмотр и правка без запуска пайплайна</p>
 
       {!savedYaml ? (

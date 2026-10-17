@@ -482,8 +482,6 @@ export default function AdminDigestPage() {
   if (roleState === 'error') {
     return (
       <section data-testid="admin-digest-page">
-        <p className="text-xs font-semibold uppercase tracking-wide text-muted">Админ</p>
-        <h1 className="mt-2 font-sans text-3xl font-semibold text-ink">Shortlist дайджеста</h1>
         <ServiceUnavailable onRetry={reloadRole} />
       </section>
     )
@@ -492,8 +490,6 @@ export default function AdminDigestPage() {
   if (loadState === 'error') {
     return (
       <section data-testid="admin-digest-page">
-        <p className="text-xs font-semibold uppercase tracking-wide text-muted">Админ</p>
-        <h1 className="mt-2 font-sans text-3xl font-semibold text-ink">Shortlist дайджеста</h1>
         <ServiceUnavailable onRetry={reloadShortlist} />
       </section>
     )
@@ -502,8 +498,6 @@ export default function AdminDigestPage() {
   if (loadState === 'loading') {
     return (
       <section aria-busy="true" data-testid="admin-digest-page">
-        <p className="text-xs font-semibold uppercase tracking-wide text-muted">Админ</p>
-        <h1 className="mt-2 font-sans text-3xl font-semibold text-ink">Shortlist дайджеста</h1>
         <p className="mt-4 text-sm text-muted">Загрузка…</p>
       </section>
     )
@@ -517,8 +511,6 @@ export default function AdminDigestPage() {
 
   return (
     <section data-testid="admin-digest-page" className="pb-32">
-      <p className="text-xs font-semibold uppercase tracking-wide text-muted">Админ</p>
-      <h1 className="mt-2 font-sans text-3xl font-semibold text-ink">Shortlist дайджеста</h1>
       {showTriage && weekDek ? (
         <p className="mt-2 text-xs text-muted">{weekDek}</p>
       ) : null}
