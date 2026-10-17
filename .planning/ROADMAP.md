@@ -245,7 +245,7 @@ Plans:
   3. Sources are read/written through an `IngestSourceRepository` port whose Supabase adapter is wired only in composition; the SPA reaches them only through a service module (no deep Supabase coupling).
   4. The Phase 19 unsaved-changes guard stays green and now covers the ingest-sources editor on `/admin/pipeline` (ADUX-10 — owned by this phase, not Phase 19).
 
-**Plans**: 2/4 plans executed
+**Plans**: 3/4 plans executed
 Plans:
 **Wave 1**
 - [x] 23-01-PLAN.md — Tracer: list + add ingest source end-to-end (port → HTTP → SPA → section; dirty OR)
@@ -254,7 +254,7 @@ Plans:
 - [x] 23-02-PLAN.md — Validation rejects + PATCH/DELETE API + CORS DELETE (SRC-02)
 
 **Wave 3** *(blocked on Wave 2 completion)*
-- [ ] 23-03-PLAN.md — Migration 012 + Supabase adapter + live wire + BLOCKING apply
+- [x] 23-03-PLAN.md — Migration 012 + Supabase adapter + live wire + BLOCKING apply
 - [ ] 23-04-PLAN.md — Full sources UI + ADUX-10 dirty Playwright coverage
 
 **UI hint**: yes
@@ -288,7 +288,7 @@ Phases execute in numeric order: 17 → 18 → 19 → 20 → 21 → 22 → 23 �
 | 20. MAIL-02 signup mail | 2/2 | Complete    | 2026-10-16 |
 | 21. MAIL-01 live SMTP digest | 3/3 | In Progress|  |
 | 22. Admin nav grouping | 3/3 | Complete   | 2026-10-17 |
-| 23. Admin-managed ingest sources | 2/4 | In Progress|  |
+| 23. Admin-managed ingest sources | 3/4 | In Progress|  |
 | 24. Scheduled ingestion | 0/TBD | Not started | - |
 
 ## Backlog

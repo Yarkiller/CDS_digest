@@ -4,18 +4,18 @@ milestone: v1.3
 milestone_name: Live mail, scheduled ingestion & backlog debt
 current_phase: 23
 current_phase_name: Admin-managed ingest sources
-current_plan: 3
+current_plan: 4
 status: executing
-stopped_at: Completed 23-02-PLAN.md
-last_updated: "2026-10-17T16:48:54.730Z"
+stopped_at: Completed 23-03-PLAN.md
+last_updated: "2026-10-17T17:41:20.070Z"
 last_activity: 2026-10-17
 last_activity_desc: Phase 23 execution started
-state_head: fc47695eff3790f00bfc4091ec9b0ad688f57a93
+state_head: ffb8dd94a310fa552b3a8a7133fff23d23b78f47
 progress:
   total_phases: 8
   completed_phases: 5
   total_plans: 20
-  completed_plans: 18
+  completed_plans: 19
   percent: 63
 ---
 
@@ -31,7 +31,7 @@ See: .planning/PROJECT.md (updated 2026-10-16 — after Phase 20)
 ## Current Position
 
 Phase: 23 (Admin-managed ingest sources) — EXECUTING
-Current Plan: 3
+Current Plan: 4
 Total Plans in Phase: 4
 Status: Ready to execute
 Last activity: 2026-10-17 — Phase 23 execution started
@@ -82,6 +82,7 @@ Progress: [██████░░░░] 63%
 | Phase 22 P02 | 10min | 2 tasks | 2 files |
 | Phase 23 P01 | 9min | 2 tasks | 14 files |
 | Phase 23 P02 | 18min | 3 tasks | 7 files |
+| Phase 23 P03 | 22min | 3 tasks | 8 files |
 
 ## Accumulated Context
 
@@ -155,6 +156,8 @@ v1.3 roadmap locks:
 - [Phase 23]: YAML Save/Reset use yamlDirty; combined dirty is leave-guard only (ADUX-10)
 - [Phase 23]: D-10 confirmed hard-delete for ingest sources (user selected hard-delete)
 - [Phase 23]: Missing ingest-source PATCH/DELETE id maps to 404 ingest_source_not_found
+- [Phase 23]: D-16/D-17 schema door: new-table-012 — ship public.pipeline_ingest_sources via migration 012 with RLS enabled and zero policies (do not reuse ingestion_sources)
+- [Phase 23]: Operator applied migration 012 on shared VM (2026-10-17); count(*)=0; §4i Applied stamped; RLS/policy checklist accepted via resume-signal
 
 ### Pending Todos
 
@@ -185,8 +188,8 @@ Carried product deferrals beyond v1.3: leaderboard, quiz, Whisper/Foundry ASR, i
 
 ## Session Continuity
 
-Last session: 2026-10-17T16:48:54.606Z
-Stopped at: Completed 23-02-PLAN.md
+Last session: 2026-10-17T17:41:19.946Z
+Stopped at: Completed 23-03-PLAN.md
 Resume file: None
 Next: `/gsd-plan-phase 19`
 
