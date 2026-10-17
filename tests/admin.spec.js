@@ -1813,15 +1813,20 @@ test.describe("Admin pipeline config — empty/dirty/reset/nav/no-execution (PIP
   });
 });
 
+async function resetIngestSourcesMock(page) {
+  await page.waitForFunction(() => Boolean(window.__DIGEST_INGEST_SOURCES_HARNESS__));
+  await page.evaluate(() => {
+    window.__DIGEST_INGEST_SOURCES_HARNESS__.resetIngestSourcesMockStore();
+    window.__DIGEST_INGEST_SOURCES_HARNESS__.resetIngestSourcesHarness();
+  });
+  await page.reload();
+  await expect(page.getByTestId("ingest-sources-section")).toBeVisible();
+}
+
 test.describe("Admin pipeline — ingest sources (SRC-01, D-01/D-02)", () => {
   test("ingest sources section above YAML — empty then add channel row", async ({ page }) => {
     await gotoAsRole(page, "admin", "/admin/pipeline");
-    await page.waitForFunction(() => Boolean(window.__DIGEST_INGEST_SOURCES_HARNESS__));
-    await page.evaluate(() => {
-      window.__DIGEST_INGEST_SOURCES_HARNESS__.resetIngestSourcesMockStore();
-      window.__DIGEST_INGEST_SOURCES_HARNESS__.resetIngestSourcesHarness();
-    });
-    await page.reload();
+    await resetIngestSourcesMock(page);
 
     await expect(page.getByTestId("admin-pipeline-page")).toBeVisible();
     const section = page.getByTestId("ingest-sources-section");
@@ -1840,6 +1845,8 @@ test.describe("Admin pipeline — ingest sources (SRC-01, D-01/D-02)", () => {
     await expect(page.getByTestId("ingest-sources-empty")).toContainText("Пока нет источников");
     await expect(page.getByTestId("ingest-sources-add")).toBeVisible();
     await expect(page.getByTestId("ingest-sources-id")).toBeVisible();
+    // D-11/D-12: zero-enabled hint only when rows exist and none are enabled.
+    await expect(page.getByTestId("ingest-sources-zero-enabled")).toHaveCount(0);
 
     const channelId = "UC_x5XG1OV2P6uZZ5FSMdItQ";
     await page.getByTestId("ingest-sources-kind").selectOption("channel");
@@ -1853,6 +1860,113 @@ test.describe("Admin pipeline — ingest sources (SRC-01, D-01/D-02)", () => {
     await expect(page.getByTestId("ingest-sources-id")).toHaveValue("");
     await expect(page.getByTestId("ingest-sources-label")).toHaveValue("");
     await expect(page.getByTestId("ingest-sources-empty")).toHaveCount(0);
+  });
+
+  test("ingest source id-help disclosure shows channel and playlist recipes", async ({ page }) => {
+    await gotoAsRole(page, "admin", "/admin/pipeline");
+    await resetIngestSourcesMock(page);
+
+    await expect(page.getByTestId("ingest-sources-id-help")).toContainText(
+      "Только канонический id: UC… для канала или PL… для плейлиста.",
+    );
+    const disclosure = page.getByTestId("ingest-sources-section").locator("details");
+    await expect(disclosure.getByText("Где взять id?", { exact: true })).toBeVisible();
+    await disclosure.locator("summary").click();
+    await expect(disclosure).toContainText("Идентификатор канала");
+    await expect(disclosure).toContainText("UC…");
+    await expect(disclosure).toContainText("list=");
+    await expect(disclosure).toContainText("PL…");
+  });
+
+  test("ingest source disable enable delete and zero-enabled hint", async ({ page }) => {
+    await gotoAsRole(page, "admin", "/admin/pipeline");
+    await resetIngestSourcesMock(page);
+
+    const channelId = "UC_x5XG1OV2P6uZZ5FSMdItQ";
+    await page.getByTestId("ingest-sources-id").fill(channelId);
+    await page.getByTestId("ingest-sources-add").click();
+
+    const row = page.getByTestId("ingest-source-row").filter({ hasText: channelId });
+    await expect(row).toContainText("включён");
+    await expect(page.getByTestId("ingest-sources-zero-enabled")).toHaveCount(0);
+
+    const yt = row.getByRole("link", { name: "Открыть на YouTube", exact: true });
+    await expect(yt).toHaveAttribute("href", `https://www.youtube.com/channel/${channelId}`);
+    await expect(yt).toHaveAttribute("target", "_blank");
+    await expect(yt).toHaveAttribute("rel", "noopener noreferrer");
+
+    await row.getByRole("button", { name: "Выключить", exact: true }).click();
+    await expect(row).toContainText("выключен");
+    await expect(page.getByTestId("ingest-sources-zero-enabled")).toBeVisible();
+    await expect(page.getByTestId("ingest-sources-zero-enabled")).toHaveText(
+      "Нет включённых источников — новые видео собираться не будут",
+    );
+
+    await row.getByRole("button", { name: "Включить", exact: true }).click();
+    await expect(row).toContainText("включён");
+    await expect(page.getByTestId("ingest-sources-zero-enabled")).toHaveCount(0);
+
+    let confirmMessage = null;
+    page.once("dialog", async (dialog) => {
+      confirmMessage = dialog.message();
+      await dialog.accept();
+    });
+    await row.getByRole("button", { name: "Удалить", exact: true }).click();
+    await expect.poll(() => confirmMessage).toBe(
+      `Удалить источник ${channelId}? Это действие нельзя отменить.`,
+    );
+    await expect(page.getByTestId("ingest-source-row").filter({ hasText: channelId })).toHaveCount(0);
+    await expect(page.getByTestId("ingest-sources-empty")).toBeVisible();
+    await expect(page.getByTestId("ingest-sources-zero-enabled")).toHaveCount(0);
+  });
+
+  test("ingest source add reject keeps typed values and shows structured errors", async ({
+    page,
+  }) => {
+    await gotoAsRole(page, "admin", "/admin/pipeline");
+    await resetIngestSourcesMock(page);
+
+    await page.evaluate(() => {
+      window.__DIGEST_INGEST_SOURCES_HARNESS__.armRejectNextAdd([
+        { path: "source_id", message: "Этот источник уже добавлен" },
+      ]);
+    });
+
+    const channelId = "UC_x5XG1OV2P6uZZ5FSMdItQ";
+    await page.getByTestId("ingest-sources-id").fill(channelId);
+    await page.getByTestId("ingest-sources-label").fill("Keep me");
+    await page.getByTestId("ingest-sources-add").click();
+
+    const errors = page.getByTestId("ingest-sources-errors");
+    await expect(errors).toBeVisible();
+    await expect(errors).toContainText("Проверьте данные источника");
+    await expect(errors).toContainText("source_id:");
+    await expect(errors).toContainText("Этот источник уже добавлен");
+    await expect(page.getByTestId("ingest-sources-id")).toHaveValue(channelId);
+    await expect(page.getByTestId("ingest-sources-label")).toHaveValue("Keep me");
+    await expect(page.getByTestId("ingest-source-row")).toHaveCount(0);
+  });
+
+  test("ingest source toggle failure keeps prior state and shows inline error", async ({
+    page,
+  }) => {
+    await gotoAsRole(page, "admin", "/admin/pipeline");
+    await resetIngestSourcesMock(page);
+
+    const channelId = "UC_x5XG1OV2P6uZZ5FSMdItQ";
+    await page.getByTestId("ingest-sources-id").fill(channelId);
+    await page.getByTestId("ingest-sources-add").click();
+    const row = page.getByTestId("ingest-source-row").filter({ hasText: channelId });
+    await expect(row).toContainText("включён");
+
+    await page.evaluate(() => {
+      window.__DIGEST_INGEST_SOURCES_HARNESS__.armFailNextSetEnabled();
+    });
+    await row.getByRole("button", { name: "Выключить", exact: true }).click();
+
+    await expect(row).toContainText("включён");
+    await expect(row).toContainText("Не удалось обновить источник. Повторите действие.");
+    await expect(page.getByTestId("ingest-sources-zero-enabled")).toHaveCount(0);
   });
 });
 
