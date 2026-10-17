@@ -19,6 +19,7 @@ from backend.domain.recipient import Recipient, is_usable_email
 from backend.domain.issue import Issue, IssueItem
 from backend.domain.knowledge import KnowledgeChunk, KnowledgeHit
 from backend.domain.material import Material, MaterialStatus
+from backend.domain.ingest_source import IngestSource
 from backend.domain.pipeline_config import PipelineConfig
 from backend.domain.razbor import Razbor
 from backend.domain.shortlist import ShortlistBatch, ShortlistItem
@@ -678,3 +679,72 @@ class InMemoryPipelineConfigValidator:
 
     def validate(self, yaml_text: str) -> None:
         self.calls.append(yaml_text)
+
+
+class InMemoryIngestSourceRepository:
+    """In-memory IngestSourceRepository with write log for zero-write asserts (SRC-03, D-21).
+
+    Stable list order: created_at ascending then id ascending. Auto-increment ids.
+    """
+
+    def __init__(self, sources: list[IngestSource] | None = None) -> None:
+        self._sources: list[IngestSource] = list(sources or [])
+        self._next_id = (max((s.id for s in self._sources), default=0) + 1)
+        self.adds: list[IngestSource] = []
+        self.writes: list[str] = []
+
+    @property
+    def write_count(self) -> int:
+        return len(self.writes)
+
+    def list(self) -> list[IngestSource]:
+        return sorted(self._sources, key=lambda s: (s.created_at, s.id))
+
+    def add(
+        self,
+        *,
+        kind: str,
+        source_id: str,
+        label: str | None,
+        is_enabled: bool = True,
+    ) -> IngestSource:
+        now = datetime.now(timezone.utc)
+        row = IngestSource(
+            id=self._next_id,
+            kind=kind,
+            source_id=source_id,
+            label=label,
+            is_enabled=is_enabled,
+            created_at=now,
+            updated_at=now,
+        )
+        self._next_id += 1
+        self._sources.append(row)
+        self.adds.append(row)
+        self.writes.append("add")
+        return row
+
+    def set_enabled(self, source_id_pk: int, *, is_enabled: bool) -> IngestSource:
+        for index, row in enumerate(self._sources):
+            if row.id == source_id_pk:
+                updated = IngestSource(
+                    id=row.id,
+                    kind=row.kind,
+                    source_id=row.source_id,
+                    label=row.label,
+                    is_enabled=is_enabled,
+                    created_at=row.created_at,
+                    updated_at=datetime.now(timezone.utc),
+                )
+                self._sources[index] = updated
+                self.writes.append("set_enabled")
+                return updated
+        raise KeyError(f"ingest source {source_id_pk} not found")
+
+    def delete(self, source_id_pk: int) -> None:
+        for index, row in enumerate(self._sources):
+            if row.id == source_id_pk:
+                del self._sources[index]
+                self.writes.append("delete")
+                return
+        raise KeyError(f"ingest source {source_id_pk} not found")

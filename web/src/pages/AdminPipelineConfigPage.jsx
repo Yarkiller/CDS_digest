@@ -1,4 +1,5 @@
 import { useEffect, useState } from 'react'
+import IngestSourcesSection from '../components/IngestSourcesSection.jsx'
 import ServiceUnavailable from '../components/ServiceUnavailable.jsx'
 import UnsavedChangesDialog from '../components/UnsavedChangesDialog.jsx'
 import { useUnsavedChangesGuard } from '../hooks/useUnsavedChangesGuard.js'
@@ -43,6 +44,10 @@ export default function AdminPipelineConfigPage() {
   const [rejected, setRejected] = useState(false)
   const [validationErrors, setValidationErrors] = useState([])
   const [saving, setSaving] = useState(false)
+  // ADUX-10 / D-04: source form fields lifted for dirty OR with YAML.
+  const [sourceId, setSourceId] = useState('')
+  const [sourceLabel, setSourceLabel] = useState('')
+  const [sourceKind, setSourceKind] = useState('channel')
 
   useEffect(() => {
     let cancelled = false
@@ -103,7 +108,9 @@ export default function AdminPipelineConfigPage() {
     }
   }, [roleState, loadKey])
 
-  const dirty = yaml !== savedYaml
+  const yamlDirty = yaml !== savedYaml
+  const sourceFormDirty = sourceId.trim() !== '' || sourceLabel.trim() !== ''
+  const dirty = yamlDirty || sourceFormDirty
   const blocker = useUnsavedChangesGuard(dirty)
 
   function reloadRole() {
@@ -115,7 +122,7 @@ export default function AdminPipelineConfigPage() {
   }
 
   function onReset() {
-    if (!dirty) return
+    if (!yamlDirty) return
     if (!window.confirm(RESET_CONFIRM)) return
     setYaml(savedYaml)
     setSaveError('')
@@ -133,7 +140,7 @@ export default function AdminPipelineConfigPage() {
   }
 
   async function onSave() {
-    if (saving || !dirty) return
+    if (saving || !yamlDirty) return
     setSaving(true)
     setStatus('saving')
     setSaveError('')
@@ -224,6 +231,20 @@ export default function AdminPipelineConfigPage() {
     <section data-testid="admin-pipeline-page" className="pb-16">
       <p className="mt-2 text-sm text-muted">Просмотр и правка без запуска пайплайна</p>
 
+      <IngestSourcesSection
+        sourceId={sourceId}
+        label={sourceLabel}
+        kind={sourceKind}
+        onSourceIdChange={setSourceId}
+        onLabelChange={setSourceLabel}
+        onKindChange={setSourceKind}
+        onFormCleared={() => {
+          setSourceId('')
+          setSourceLabel('')
+          setSourceKind('channel')
+        }}
+      />
+
       {!savedYaml ? (
         <div
           data-testid="pipeline-config-empty"
@@ -241,7 +262,7 @@ export default function AdminPipelineConfigPage() {
           type="button"
           data-testid="pipeline-config-save"
           className="inline-flex min-h-11 items-center justify-center rounded-full bg-accent px-5 text-sm font-medium text-accent-ink disabled:cursor-not-allowed disabled:opacity-45"
-          disabled={!dirty || saving}
+          disabled={!yamlDirty || saving}
           onClick={onSave}
         >
           Сохранить конфиг
@@ -250,7 +271,7 @@ export default function AdminPipelineConfigPage() {
           type="button"
           data-testid="pipeline-config-reload"
           className="inline-flex min-h-11 items-center justify-center rounded-full border border-rule px-5 text-sm font-medium text-ink-2 disabled:cursor-not-allowed disabled:opacity-45"
-          disabled={!dirty || saving}
+          disabled={!yamlDirty || saving}
           onClick={onReset}
         >
           Отменить изменения

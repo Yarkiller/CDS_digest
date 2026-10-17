@@ -13,6 +13,7 @@ from backend.application.ports.material_repository import MaterialRepository
 from backend.application.ports.notebook_storage import NotebookStorage
 from backend.application.ports.ping_recorder import PingRecorder
 from backend.application.ports.profile_repository import ProfileRepository
+from backend.application.ports.ingest_sources import IngestSourceRepository
 from backend.application.ports.pipeline_config import (
     PipelineConfigRepository,
     PipelineConfigValidator,
@@ -34,6 +35,7 @@ from backend.infrastructure.stub_mailer import StubMailer
 from backend.infrastructure.yaml_pipeline_config_validator import YamlPipelineConfigValidator
 from backend.tests_support.in_memory import (
     InMemoryDigestPublisher,
+    InMemoryIngestSourceRepository,
     InMemoryIssueRepository,
     InMemoryKnowledgeChunkRepository,
     InMemoryMaterialRepository,
@@ -66,6 +68,8 @@ class AppContainer:
     # still constructs; build_in_memory_container wires the real adapter.
     pipeline_config: PipelineConfigRepository | None = None
     pipeline_config_validator: PipelineConfigValidator | None = None
+    # D-21: ingest sources port — None until wired (503 ingest_sources_not_configured).
+    ingest_sources: IngestSourceRepository | None = None
 
     def publish(self, material_id: int) -> Material:
         return publish_material(self.materials, material_id)
@@ -133,4 +137,5 @@ def build_in_memory_container(
     )
     container.pipeline_config = InMemoryPipelineConfigRepository()
     container.pipeline_config_validator = YamlPipelineConfigValidator()
+    container.ingest_sources = InMemoryIngestSourceRepository()
     return container

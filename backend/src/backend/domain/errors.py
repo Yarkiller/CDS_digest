@@ -198,3 +198,15 @@ class PipelineConfigValidationError(DomainError):
     def __init__(self, errors: tuple[PipelineConfigError, ...]) -> None:
         super().__init__("pipeline config validation failed")
         self.errors = errors
+
+
+class IngestSourceValidationError(DomainError):
+    """Raised when an ingest-source write fails server-side validation (SRC-02, D-14/D-19).
+
+    Carries the same ``PipelineConfigError`` row shape so HTTP maps to a top-level
+    ``{"errors": [...]}`` 400 payload (never nested under ``detail``).
+    """
+
+    def __init__(self, errors: tuple[PipelineConfigError, ...]) -> None:
+        super().__init__("ingest source validation failed")
+        self.errors = errors

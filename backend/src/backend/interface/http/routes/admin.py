@@ -14,6 +14,10 @@ from backend.application.use_cases.mark_material_ready import (
     mark_material_ready,
     mark_materials_ready,
 )
+from backend.application.use_cases.ingest_sources import (
+    add_ingest_source,
+    list_ingest_sources,
+)
 from backend.application.use_cases.pipeline_config import (
     get_pipeline_config,
     save_pipeline_config,
@@ -30,6 +34,7 @@ from backend.domain.errors import (
     AlreadySentError,
     DraftInSendPoolError,
     EmptySendPoolError,
+    IngestSourceValidationError,
     InvalidPreviewCompositionError,
     InvalidSendOrderError,
     InvalidShortlistDecisionError,
@@ -38,6 +43,7 @@ from backend.domain.errors import (
     PipelineConfigValidationError,
     ShortlistNotFoundError,
 )
+from backend.domain.ingest_source import IngestSource
 from backend.domain.material import Material
 from backend.domain.shortlist import AdminShortlist
 from backend.interface.http.deps import require_admin
@@ -190,6 +196,50 @@ class PipelineConfigResponse(BaseModel):
     updated_at: datetime | None = None
 
 
+class IngestSourceCreateRequest(BaseModel):
+    """POST /admin/ingest-sources body (D-18; extra=forbid → 422)."""
+
+    model_config = ConfigDict(extra="forbid")
+
+    kind: str
+    source_id: str
+    label: str | None = None
+
+
+class IngestSourceResponse(BaseModel):
+    """One ingest-source row DTO (D-08 / D-18)."""
+
+    model_config = ConfigDict(extra="forbid")
+
+    id: int
+    kind: str
+    source_id: str
+    label: str | None = None
+    is_enabled: bool
+    created_at: datetime
+    updated_at: datetime
+
+
+class IngestSourcesListResponse(BaseModel):
+    """GET /admin/ingest-sources envelope — exactly {sources:[…]} (D-18)."""
+
+    model_config = ConfigDict(extra="forbid")
+
+    sources: list[IngestSourceResponse]
+
+
+def _ingest_source_to_response(row: IngestSource) -> IngestSourceResponse:
+    return IngestSourceResponse(
+        id=row.id,
+        kind=row.kind,
+        source_id=row.source_id,
+        label=row.label,
+        is_enabled=row.is_enabled,
+        created_at=row.created_at,
+        updated_at=row.updated_at,
+    )
+
+
 def _require_shortlist(request: Request):
     container = request.app.state.container
     if container is None or getattr(container, "shortlist", None) is None:
@@ -208,6 +258,16 @@ def _require_pipeline_config(request: Request):
             detail="pipeline_config_not_configured",
         )
     return container.pipeline_config
+
+
+def _require_ingest_sources(request: Request):
+    container = request.app.state.container
+    if container is None or getattr(container, "ingest_sources", None) is None:
+        raise HTTPException(
+            status_code=status.HTTP_503_SERVICE_UNAVAILABLE,
+            detail="ingest_sources_not_configured",
+        )
+    return container.ingest_sources
 
 
 def _require_container(request: Request):
@@ -653,3 +713,66 @@ def put_pipeline_config(
             detail="pipeline_config_unavailable",
         ) from exc
     return PipelineConfigResponse(yaml=config.yaml, updated_at=config.updated_at)
+
+
+@router.get(
+    "/ingest-sources",
+    response_model=IngestSourcesListResponse,
+    summary="List admin-managed ingest sources",
+    description=(
+        "Returns {sources:[…]} for the admin-managed channel/playlist list (SRC-01, D-18). "
+        "Requires profiles.role=admin. Missing repo → 503 ingest_sources_not_configured."
+    ),
+)
+def get_ingest_sources(
+    request: Request,
+    _admin: CurrentUser = Depends(require_admin),
+) -> IngestSourcesListResponse:
+    repo = _require_ingest_sources(request)
+    try:
+        rows = list_ingest_sources(repo)
+    except PersistenceError as exc:
+        raise HTTPException(
+            status_code=status.HTTP_503_SERVICE_UNAVAILABLE,
+            detail="ingest_sources_unavailable",
+        ) from exc
+    return IngestSourcesListResponse(
+        sources=[_ingest_source_to_response(row) for row in rows],
+    )
+
+
+@router.post(
+    "/ingest-sources",
+    response_model=IngestSourceResponse,
+    status_code=status.HTTP_201_CREATED,
+    summary="Add an ingest source (immediate persist)",
+    description=(
+        "Validates then persists a channel/playlist source and returns the created row "
+        "(SRC-01, D-01/D-14/D-18). Requires admin. Validation rejects → top-level "
+        "{errors:[…]} 400 (never under detail). Unknown JSON fields → 422."
+    ),
+)
+def post_ingest_source(
+    body: IngestSourceCreateRequest,
+    request: Request,
+    _admin: CurrentUser = Depends(require_admin),
+) -> IngestSourceResponse | JSONResponse:
+    repo = _require_ingest_sources(request)
+    try:
+        row = add_ingest_source(
+            repo,
+            kind=body.kind,
+            source_id=body.source_id,
+            label=body.label,
+        )
+    except IngestSourceValidationError as exc:
+        return JSONResponse(
+            status_code=status.HTTP_400_BAD_REQUEST,
+            content={"errors": [error.to_dict() for error in exc.errors]},
+        )
+    except PersistenceError as exc:
+        raise HTTPException(
+            status_code=status.HTTP_503_SERVICE_UNAVAILABLE,
+            detail="ingest_sources_unavailable",
+        ) from exc
+    return _ingest_source_to_response(row)
