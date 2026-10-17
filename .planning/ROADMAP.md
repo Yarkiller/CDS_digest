@@ -61,7 +61,7 @@ Backlog tech debt comes first (lowest blast radius first), then mail, then inges
 - [x] **Phase 20: MAIL-02 signup confirmation mail** - The root cause is diagnosed and the delivered end state is honest (working relay mail, or explicitly autoconfirmed copy) (completed 2026-10-16)
 - [ ] **Phase 21: MAIL-01 live SMTP digest delivery** - The weekly digest is delivered by a real SMTP mailer to the `profiles` audience, with honest counts and contained failures
 - [x] **Phase 22: Admin nav grouping** - The pipeline config is reached from a single «Админ» entry with an in-page tab-bar, not a second top-level nav item (completed 2026-10-17)
-- [ ] **Phase 23: Admin-managed ingest sources** - An admin manages the DB-stored YouTube channel/playlist source list on the pipeline page, validated server-side
+- [x] **Phase 23: Admin-managed ingest sources** - An admin manages the DB-stored YouTube channel/playlist source list on the pipeline page, validated server-side (completed 2026-10-17)
 - [ ] **Phase 24: Scheduled ingestion** - A systemd timer drives the existing `ingest` CLI against enabled sources, writing drafts + shortlist rows only
 
 ## Phase Details
@@ -245,7 +245,7 @@ Plans:
   3. Sources are read/written through an `IngestSourceRepository` port whose Supabase adapter is wired only in composition; the SPA reaches them only through a service module (no deep Supabase coupling).
   4. The Phase 19 unsaved-changes guard stays green and now covers the ingest-sources editor on `/admin/pipeline` (ADUX-10 — owned by this phase, not Phase 19).
 
-**Plans**: 4/4 plans executed
+**Plans**: 4/4 plans complete
 Plans:
 **Wave 1**
 - [x] 23-01-PLAN.md — Tracer: list + add ingest source end-to-end (port → HTTP → SPA → section; dirty OR)
@@ -288,7 +288,7 @@ Phases execute in numeric order: 17 → 18 → 19 → 20 → 21 → 22 → 23 �
 | 20. MAIL-02 signup mail | 2/2 | Complete    | 2026-10-16 |
 | 21. MAIL-01 live SMTP digest | 3/3 | In Progress|  |
 | 22. Admin nav grouping | 3/3 | Complete   | 2026-10-17 |
-| 23. Admin-managed ingest sources | 4/4 | In Progress|  |
+| 23. Admin-managed ingest sources | 4/4 | Complete    | 2026-10-17 |
 | 24. Scheduled ingestion | 0/TBD | Not started | - |
 
 ## Backlog

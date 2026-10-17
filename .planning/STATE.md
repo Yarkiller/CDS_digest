@@ -2,21 +2,21 @@
 gsd_state_version: "1.0"
 milestone: v1.3
 milestone_name: Live mail, scheduled ingestion & backlog debt
-current_phase: 23
-current_phase_name: Admin-managed ingest sources
-current_plan: 4
-status: verifying
-stopped_at: Completed 23-04-PLAN.md
-last_updated: "2026-10-17T17:47:35.071Z"
+current_phase: 21
+current_phase_name: MAIL-01 live SMTP digest delivery
+current_plan: Not started
+status: planning
+stopped_at: Phase 23 complete, ready to plan Phase 21
+last_updated: "2026-10-17T20:09:49.581Z"
 last_activity: 2026-10-17
-last_activity_desc: Phase 23 execution started
-state_head: 686984543a230d998c6c17335391e2bbd017b082
+last_activity_desc: Phase 23 complete, transitioned to Phase 21
+state_head: 60811287db21540275177e7d976b1ace62ae992d
 progress:
   total_phases: 8
-  completed_phases: 5
+  completed_phases: 6
   total_plans: 20
   completed_plans: 20
-  percent: 63
+  percent: 75
 ---
 
 # Project State
@@ -26,22 +26,22 @@ progress:
 See: .planning/PROJECT.md (updated 2026-10-16 — after Phase 20)
 
 **Core value:** Trusted weekly prepared-article issue + one honest vote toward the next разбор
-**Current focus:** Phase 23 — Admin-managed ingest sources
+**Current focus:** Phase 21 — MAIL-01 live SMTP digest delivery
 
 ## Current Position
 
-Phase: 23 (Admin-managed ingest sources) — EXECUTING
-Current Plan: 4
+Phase: 21 — MAIL-01 live SMTP digest delivery
+Current Plan: Not started
 Total Plans in Phase: 4
-Status: Phase complete — ready for verification
-Last activity: 2026-10-17 — Phase 23 execution started
+Status: Ready to plan
+Last activity: 2026-10-17 — Phase 23 complete, transitioned to Phase 21
 
-Progress: [██████░░░░] 63%
+Progress: [████████░░] 75%
 
 ## Performance Metrics
 
 **Velocity:**
-- Total plans completed: 10 (40 v1 + 23 v1.1 + 26 v1.2)
+- Total plans completed: 14 (40 v1 + 23 v1.1 + 26 v1.2)
 - Prior milestones shipped: v1 (5 phases), v1.1 (6 phases), v1.2 (5 phases)
 - v1.3 plans completed: 3
 
@@ -61,6 +61,7 @@ Progress: [██████░░░░] 63%
 | 18 | 3 | - | - |
 | 19 | 2 | - | - |
 | 20 | 2 | - | - |
+| 23 | 4 | - | - |
 **Per-Plan Metrics:**
 
 | Plan | Duration | Tasks | Files |
@@ -192,7 +193,7 @@ Carried product deferrals beyond v1.3: leaderboard, quiz, Whisper/Foundry ASR, i
 ## Session Continuity
 
 Last session: 2026-10-17T17:47:34.957Z
-Stopped at: Completed 23-04-PLAN.md
+Stopped at: Phase 23 complete, ready to plan Phase 21
 Resume file: None
 Next: `/gsd-plan-phase 19`
 

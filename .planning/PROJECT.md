@@ -252,4 +252,4 @@ After each phase transition: move validated/invalidated requirements; log decisi
 After milestone: full review of Core Value, Out of Scope, and Context against shipped reality.
 
 ---
-*Last updated: 2026-10-16 after Phase 20*
+*Last updated: 2026-10-17 after Phase 23*
