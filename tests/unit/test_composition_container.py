@@ -57,3 +57,18 @@ def test_in_memory_container_keeps_stub_mailer_as_default() -> None:
     container = build_in_memory_container([])
 
     assert isinstance(container.mailer, StubMailer)
+
+
+def test_in_memory_container_wires_ingest_sources() -> None:
+    """D-21 / D-24 AMEND: in-memory build exposes InMemoryIngestSourceRepository."""
+    import pytest
+
+    try:
+        from backend.tests_support.in_memory import InMemoryIngestSourceRepository
+    except ImportError as exc:
+        pytest.fail(f"InMemoryIngestSourceRepository not importable: {exc}")
+
+    container = build_in_memory_container([])
+
+    assert hasattr(container, "ingest_sources")
+    assert isinstance(container.ingest_sources, InMemoryIngestSourceRepository)
