@@ -42,7 +42,7 @@ Ordering rule: **backlog tech debt first** (999.7 → 999.1 → 999.6), then mai
 
 ### Admin nav grouping (backlog 999.5)
 
-- [ ] **ADUX-12**: The pipeline config surface is reached from the admin area rather than a second top-level nav item — one «Админ» entry (→ `/admin/digest`) plus an in-page tab-bar «Дайджест | Пайплайн»; the `/admin/pipeline` route is unchanged and no new route is added
+- [x] **ADUX-12**: The pipeline config surface is reached from the admin area rather than a second top-level nav item — one «Админ» entry (→ `/admin/digest`) plus an in-page tab-bar «Дайджест | Пайплайн»; the `/admin/pipeline` route is unchanged and no new route is added
 
 ### Scheduled ingestion
 
@@ -106,7 +106,7 @@ Deferred. Not in this milestone's roadmap.
 | ADUX-08 | Phase 18 | Complete |
 | ADUX-09 | Phase 19 | Complete |
 | ADUX-10 | Phase 23 | Pending |
-| ADUX-12 | Phase 22 | Pending |
+| ADUX-12 | Phase 22 | Complete |
 | MAIL-02 | Phase 20 | Complete |
 | MAIL-01 | Phase 21 | Complete |
 | MAIL-03 | Phase 21 | Complete |
