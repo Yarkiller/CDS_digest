@@ -1,6 +1,6 @@
 ---
 phase: 21-mail-01-live-smtp-digest-delivery
-verified: 2026-10-17T08:49:40Z
+verified: 2026-10-17T20:32:02Z
 status: human_needed
 score: 12/12 must-haves verified
 covered_files:
@@ -34,7 +34,7 @@ covered_files:
   - tests/unit/test_haskimail_mailer.py
   - web/src/pages/AdminDigestPage.jsx
   - web/src/services/adminApi.js
-covered_digest: "v2:sha256:8bfd74dfcdf3d50bc5387d97f8e502528235da271432b032d81fc66fc15fa542"
+covered_digest: "v2:sha256:e574712d806f727687134390be68312e95530e1de25a6bd32bc4de763265c923"
 behavior_unverified: 0
 overrides_applied: 1
 overrides:
@@ -45,10 +45,10 @@ overrides:
 re_verification:
   previous_status: human_needed
   previous_score: 12/12
-  previous_verified: 2026-10-17T08:45:00Z
+  previous_verified: 2026-10-17T08:49:40Z
   previous_covered_digest: "v2:sha256:8bfd74dfcdf3d50bc5387d97f8e502528235da271432b032d81fc66fc15fa542"
-  reason: "stale-digest re-verification (GSD #4682) after manager session / Haskimail landing — no prior gaps:; full goal-backward recheck"
-  note: "covered_digest unchanged vs prior pass (covered file tree stable). Working tree clean of phase-21 production code (only unrelated 18-VERIFICATION.md dirty)."
+  reason: "stale-digest re-verification (GSD #4682) — prior covered_digest no longer matched tree; full goal-backward recheck; no prior gaps:"
+  note: "covered_digest changed (8bfd74df… → e574712d…) — covered file contents drifted since 08:49Z pass; automated must-haves still 12/12; UAT #6 still pending."
   gaps_closed: []
   gaps_remaining: []
   regressions: []
@@ -134,13 +134,13 @@ human_verification:
 # Phase 21: MAIL-01 live SMTP digest delivery Verification Report
 
 **Phase Goal:** The weekly digest is delivered by a real SMTP mailer to the `profiles`-derived audience, with an honest `recipient_count`, and a mail failure never turns an already-published digest into a 500.
-**Verified:** 2026-10-17T08:49:40Z
+**Verified:** 2026-10-17T20:32:02Z
 **Status:** human_needed
-**Re-verification:** Yes — stale-digest refresh (GSD #4682); prior VERIFICATION had no `gaps:` (initial-mode must-haves reused from ROADMAP SC + PLAN + prior truths). `covered_digest` identical to previous — tree stable; findings reconfirmed against code + pytest.
+**Re-verification:** Yes — stale-digest refresh (GSD #4682). Prior VERIFICATION had no `gaps:` (must-haves reused from ROADMAP SC + PLAN + prior truths). `covered_digest` **changed** vs 08:49Z pass (`8bfd74df…` → `e574712d…`); automated findings reconfirmed against code + named pytest.
 
 ## Goal Achievement
 
-Goal-backward check against the **current** tree (phase-21 production files clean; Haskimail commits `4568495` / `334783f`). Phase **intent** (real delivery to profiles audience, honest M/N, D-88 containment) holds. Literal ROADMAP wording «real SMTP» remains an accepted deviation via **ADR-0005** — preferred live transport is Haskimail HTTP API; `SmtpMailer` remains as `MAILER=smtp`. Outstanding: ops live Haskimail smoke (UAT #6 pending domain verification).
+Goal-backward check against the **current** tree. Phase **intent** (real delivery to profiles audience, honest M/N, D-88 containment) holds. Literal ROADMAP wording «real SMTP» remains an accepted deviation via **ADR-0005** — preferred live transport is Haskimail HTTP API; `SmtpMailer` remains as `MAILER=smtp`. Outstanding: ops live Haskimail smoke (UAT #6 pending domain verification) — status stays `human_needed` (not `passed`).
 
 **Phase 20 SC4 (deferred → Phase 21):** **not addressed** by Haskimail. Digest lane moved to HTTP API; GoTrue corporate-relay smoke is still an open ops gap (see advisory). Not counted as a Phase 21 ROADMAP SC failure (D-15 + ADR-0005).
 
@@ -149,15 +149,15 @@ Goal-backward check against the **current** tree (phase-21 production files clea
 | # | Truth | Status | Evidence |
 | --- | ----- | ------ | -------- |
 | 1 | Recipients resolved server-side from `profiles` through a repository port — all roles, `profiles.email` only, no admin exclusion (SC1 / D-01/D-03) | ✓ VERIFIED | `ProfileRepository.list_digest_recipients`; in-memory + Supabase adapters; `send_digest` calls before claim |
-| 2 | Empty/malformed emails excluded + logged, never counted in M; CR/LF/control/comma hardened (SC1 / D-02 / CR-01) | ✓ VERIFIED | `is_usable_email` + `tests/unit/test_recipient_email.py` in spot-check suite |
+| 2 | Empty/malformed emails excluded + logged, never counted in M; CR/LF/control/comma hardened (SC1 / D-02 / CR-01) | ✓ VERIFIED | `is_usable_email` in `recipient.py`; `tests/unit/test_recipient_email.py` in spot-check suite (89 passed with haskimail+smtp) |
 | 3 | Planned audience M stamped at claim (`recipient_count`) (SC1/SC4 / D-06 i / MAIL-03) | ✓ VERIFIED | `send_digest` → `claim_and_publish(recipient_count=M)`; Supabase RPC params include `p_recipient_count` |
 | 4 | Real live delivery behind extended `Mailer` port; one message per recipient, single `To`, no Bcc (SC2 / D-05) | ✓ PASSED (override) | Override: ADR-0005 — preferred path `HaskimailMailer` (HTTP API); `SmtpMailer` still present for `MAILER=smtp`. Both enforce one-To / D-08 via `delivery_policy` |
-| 5 | Planned M and delivered N recorded and reported; two-sentence honest copy, never org-wide claim (SC2 / MAIL-03 / D-09/D-10/D-12) | ✓ VERIFIED | `SendDigestResult` / HTTP `delivered_count` / ping payload; `_compose_delivery_message` variants; SPA mock stub copy |
+| 5 | Planned M and delivered N recorded and reported; two-sentence honest copy, never org-wide claim (SC2 / MAIL-03 / D-09/D-10/D-12) | ✓ VERIFIED | `SendDigestResult` / HTTP `delivered_count` / ping payload; `_compose_delivery_message` variants; SPA mock stub copy; no «всей организации» in message path |
 | 6 | Mail failure mapped to domain `MailDeliveryError`, caught with `PersistenceError` after publish → success, never 500 (SC3 / MAIL-04 / D-88) | ✓ VERIFIED | Both adapters map transport errors; `send_digest` catch; named containment + HTTP 200 tests green |
-| 7 | Bounded per-recipient policy (D-08): continue, stop after three consecutive, reset on success, `stop_reason` | ✓ VERIFIED | Shared `delivery_policy.py`; Smtp + Haskimail streak/stop tests green |
+| 7 | Bounded per-recipient policy (D-08): continue, stop after three consecutive, reset on success, `stop_reason` | ✓ VERIFIED | Shared `delivery_policy.py` (`CONSECUTIVE_FAILURE_LIMIT = 3`); Smtp + Haskimail streak/stop tests green |
 | 8 | HTTP stays 200 when claim+publish succeeded even if delivery is `partial`/`failed` (SC3 / D-11) | ✓ VERIFIED | `test_admin_send_stays_200_when_mail_{partial,failed}_after_publish` green |
 | 9 | Empty audience M=0 still publishes; live status honestly `sent` with N=0 (D-04) | ✓ VERIFIED | Both live adapters + use-case message «Получателей нет (0 из 0)» |
-| 10 | Config via `Settings`/composition only; no `os.environ` in adapters; fail-fast `ConfigurationError`; `MAILER` defaults stub (SC5 / MAIL-05 / D-13…D-16) | ✓ VERIFIED | `SMTP_*` + `HASKIMAIL_*` only in `Settings.from_env`; adapters env-free; incomplete smtp/haskimail → `ConfigurationError` |
+| 10 | Config via `Settings`/composition only; no `os.environ` in adapters; fail-fast `ConfigurationError`; `MAILER` defaults stub (SC5 / MAIL-05 / D-13…D-16) | ✓ VERIFIED | `SMTP_*` + `HASKIMAIL_*` only in `Settings.from_env`; adapters env-free (rg clean); incomplete smtp/haskimail → `ConfigurationError` |
 | 11 | Live adapters forward planned `p_recipient_count` (no `update_delivery`) and page profiles select (WR-02) | ✓ VERIFIED | `p_recipient_count` in publisher; `update_delivery` comment-only |
 | 12 | SPA `adminApi` + banner carry `delivered_count` + honest message; runbook documents digest SMTP contract without claiming GoTrue relay proof (MAIL-03/MAIL-05 / D-12/D-15) | ✓ VERIFIED | Mock stub message aligned; runbook §4.1 / §4e SMTP + D-15 ops gap. **Advisory:** Haskimail ops not yet in runbook |
 
@@ -185,7 +185,7 @@ None for Phase 21 ROADMAP success criteria. Phase 20 SC4 remains **open ops debt
 |---|---------|----------|--------------|
 | 1 | Phase 20 SC4 corporate-relay smoke still open | other | Haskimail closes digest transport alternate, not GoTrue dual-lane proof |
 | 2 | Runbook lacks `HASKIMAIL_*` operator section while preferred path is Haskimail | other | Docs lag; ADR + `.env.example` cover config; SMTP contract still present |
-| 3 | `21-SECURITY.md` missing | security | Not a PLAN must-have; noted only |
+| 3 | `21-SECURITY.md` missing | security | Not a PLAN must-have; noted only — no invented threats |
 
 ### Required Artifacts
 
@@ -234,7 +234,8 @@ None for Phase 21 ROADMAP success criteria. Phase 20 SC4 remains **open ops debt
 
 | Behavior | Command | Result | Status |
 | -------- | ------- | ------ | ------- |
-| Haskimail + SMTP + recipient email + containment + HTTP 200 subset | `uv run pytest tests/unit/test_haskimail_mailer.py tests/unit/test_smtp_mailer.py tests/unit/test_recipient_email.py …containment… -q` | **92 passed** | ✓ PASS |
+| Haskimail + SMTP + recipient email suite | `uv run pytest tests/unit/test_haskimail_mailer.py tests/unit/test_smtp_mailer.py tests/unit/test_recipient_email.py -q` | **89 passed** | ✓ PASS |
+| Containment + HTTP 200 + env-free + transport boundary | named tests (`test_send_mail_failure…`, `test_send_audit_failure…`, `test_admin_send_stays_200…`, `test_haskimail_mailer_never_reads…`, `test_transport_libraries…`) | **10 passed** | ✓ PASS |
 | Decision coverage gate | `gsd-tools query check.decision-coverage-verify` | 16/16 honored | ✓ PASS (non-blocking) |
 
 ### Probe Execution
@@ -290,7 +291,7 @@ Judgment-tier prohibitions were human-acked in `21-UAT.md` (tests 1–5 = pass);
 
 ### Gaps Summary
 
-No blocking gaps for Phase 21 code must-haves. Literal SMTP preference vs Haskimail is an **accepted ADR-0005 override**, not a failed truth. Status remains `human_needed` solely for the outstanding live Haskimail smoke (UAT #6). `covered_digest` reconfirmed unchanged (`8bfd74df…`).
+No blocking gaps for Phase 21 code must-haves. Literal SMTP preference vs Haskimail is an **accepted ADR-0005 override**, not a failed truth. Status remains `human_needed` solely for the outstanding live Haskimail smoke (UAT #6). Fresh `covered_digest` = `e574712d…` (no longer stale vs prior `8bfd74df…`).
 
 **Phase 20 SC4:** still open — Haskimail does not prove corporate relay for GoTrue; do not mark that deferred item closed.
 
@@ -298,5 +299,5 @@ No blocking gaps for Phase 21 code must-haves. Literal SMTP preference vs Haskim
 
 ---
 
-_Verified: 2026-10-17T08:49:40Z_
+_Verified: 2026-10-17T20:32:02Z_
 _Verifier: Claude (gsd-verifier)_
