@@ -213,14 +213,18 @@ Plans:
   3. 16-UI-SPEC A-2 is updated so it no longer mandates the second top-level «Пайплайн» item, and its "no second navigation bar" rule is honoured because the tab-bar is in-page.
   4. A failing Playwright test was written first per the backlog TDD note before the nav change.
 
-**Plans**: 2/2 plans executed
+**Plans**: 2/3 plans executed
 
 Plans:
+
 **Wave 1**
 - [x] 22-01-PLAN.md — Tracer: single «Админ» shell + AdminLayout «Дайджест | Пайплайн» + H1 removal (RED Playwright first)
 
 **Wave 2** *(blocked on Wave 1 completion)*
 - [x] 22-02-PLAN.md — Dirty→tab UnsavedChangesDialog journey + 16-UI-SPEC A-2 supersession
+
+**Wave 3** *(blocked on Wave 1, Wave 2 completion; gap closure)*
+- [ ] 22-03-PLAN.md — Gap closure: deterministic layout backstops (640px edge), false dirty prompt on the active tab, shell `aria-current`, sr-only `h1`
 
 **Cross-cutting constraints:**
 - At sm+ the two tab labels stay on one row without horizontal page scroll at 1280px and at the sm edge (~640px)
@@ -272,7 +276,7 @@ Phases execute in numeric order: 17 → 18 → 19 → 20 → 21 → 22 → 23 �
 | 19. Unsaved-changes guard | 2/2 | Complete    | 2026-10-16 |
 | 20. MAIL-02 signup mail | 2/2 | Complete    | 2026-10-16 |
 | 21. MAIL-01 live SMTP digest | 3/3 | In Progress|  |
-| 22. Admin nav grouping | 2/2 | In Progress|  |
+| 22. Admin nav grouping | 2/3 | In Progress|  |
 | 23. Admin-managed ingest sources | 0/TBD | Not started | - |
 | 24. Scheduled ingestion | 0/TBD | Not started | - |
 
