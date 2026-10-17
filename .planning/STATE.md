@@ -4,18 +4,18 @@ milestone: v1.3
 milestone_name: Live mail, scheduled ingestion & backlog debt
 current_phase: 22
 current_phase_name: Admin nav grouping
-current_plan: Not started
+current_plan: 2
 status: executing
-stopped_at: Phase 22 UI-SPEC approved
-last_updated: "2026-10-17T10:00:47.936Z"
+stopped_at: Completed 22-01-PLAN.md
+last_updated: "2026-10-17T10:31:46.312Z"
 last_activity: 2026-10-17
-last_activity_desc: Phase 20 complete, transitioned to Phase 21
-state_head: 4a05df8b013b47fe31fd01a677b343904201af6c
+last_activity_desc: Phase 22 plan 22-01 complete
+state_head: d51cf996e49d4fd0c2c905b01209c03199550919
 progress:
   total_phases: 8
   completed_phases: 4
   total_plans: 15
-  completed_plans: 13
+  completed_plans: 14
   percent: 50
 ---
 
@@ -26,15 +26,15 @@ progress:
 See: .planning/PROJECT.md (updated 2026-10-16 — after Phase 20)
 
 **Core value:** Trusted weekly prepared-article issue + one honest vote toward the next разбор
-**Current focus:** Phase 21 — MAIL-01 live SMTP digest delivery
+**Current focus:** Phase 22 — Admin nav grouping
 
 ## Current Position
 
-Phase: 22 (Admin nav grouping) — READY TO EXECUTE
-Current Plan: Not started
+Phase: 22 (Admin nav grouping) — EXECUTING
+Current Plan: 2
 Total Plans in Phase: 2
-Status: Ready to execute
-Last activity: 2026-10-17 — Phase 20 complete, transitioned to Phase 21
+Status: Executing — 22-01 complete, 22-02 pending
+Last activity: 2026-10-17 — 22-01 complete (single «Админ» + AdminLayout section switch)
 
 Progress: [█████░░░░░] 50%
 
@@ -54,7 +54,7 @@ Progress: [█████░░░░░] 50%
 | 19. Unsaved-changes guard | 0/? | not started | - |
 | 20. Signup mail (MAIL-02) | 0/? | context gathered | - |
 | 21. Live SMTP digest (MAIL-01) | 0/? | not started | - |
-| 22. Admin nav grouping | 0/? | not started | - |
+| 22. Admin nav grouping | 1/2 | In progress | - |
 | 23. Ingest sources | 0/? | not started | - |
 | 24. Scheduled ingestion | 0/? | not started | - |
 | 17 | 3 | - | - |
@@ -78,6 +78,7 @@ Progress: [█████░░░░░] 50%
 | Phase 21 P01 | 11min | 2 tasks | 12 files |
 | Phase 21 P02 | 12 | 2 tasks | 11 files |
 | Phase 21 P03 | 9min | 3 tasks | 10 files |
+| Phase 22 P01 | 22min | 2 tasks | 6 files |
 
 ## Accumulated Context
 
@@ -141,6 +142,10 @@ v1.3 roadmap locks:
 - [Phase 21]: 21-03: list_digest_recipients runs on the service_role client wired in live.py — a user-scoped client would return M=0 under the profiles_select_own RLS policy (RESEARCH Pitfall 7); no RLS widened
 - [Phase 21]: 21-03: SendDigestResponse.delivered_count is additive (default 0) and a contained mail partial/failure after a successful publish stays HTTP 200 with honest N/M (D-11)
 - [Phase 21]: 21-03: runbook 4e records digest SMTP smoke/rollback + the MAIL-05 config boundary; Phase 20 criterion-4 relay proof stays an open ops gap (D-15), not claimed done
+- [Phase 22]: 22-01: pathless AdminLayout parent keeps /admin/digest and /admin/pipeline byte-identical and adds no /admin index (D-01…D-04)
+- [Phase 22]: 22-01: shell «Админ» active state comes from the useLocation pathname prefix — NavLink prefix matching on /admin/digest never lights /admin/pipeline or the materials preview (D-09)
+- [Phase 22]: 22-01: the section switch is nav + NavLink (underline, no pill fill, no ARIA tab roles); the narrow select uses a hard-coded two-path whitelist and navigate() so the Phase 19 guard still fires (T-22-02, D-12, D-19)
+- [Phase 22]: 22-01: both child pages drop the page H1 and duplicate eyebrow on every branch; the active tab carries the text-3xl font-semibold hierarchy (D-06, D-08)
 
 ### Pending Todos
 
@@ -171,9 +176,9 @@ Carried product deferrals beyond v1.3: leaderboard, quiz, Whisper/Foundry ASR, i
 
 ## Session Continuity
 
-Last session: 2026-10-17T09:34:53.916Z
-Stopped at: Phase 22 UI-SPEC approved
-Resume file: C:/Users/Yarkiller/PycharmPET-Projects/Digital_CDS/.planning/phases/22-admin-nav-grouping/22-UI-SPEC.md
+Last session: 2026-10-17T10:31:46.209Z
+Stopped at: Completed 22-01-PLAN.md
+Resume file: None
 Next: `/gsd-plan-phase 19`
 
 ## Operator Next Steps
