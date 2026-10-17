@@ -264,6 +264,32 @@ test.describe("Admin nav grouping — in-page section switch (ADUX-12, D-01…D-
       page.getByRole("heading", { name: "Конфиг пайплайна", exact: true }),
     ).toHaveCount(0);
   });
+
+  test("shell Админ pill exposes aria-current on every admin path (WR-02, IN-04)", async ({
+    page,
+  }) => {
+    // WR-02: the pill was visually active on every /admin/* path but announced nothing.
+    await gotoAsRole(page, "admin", "/");
+    const homeLink = shellAdminLink(page);
+    await expect(homeLink).toHaveCount(1);
+    await expect(homeLink).toHaveAttribute("href", "/admin/digest");
+    expect(await homeLink.getAttribute("aria-current")).toBeNull();
+    await expect(homeLink).not.toHaveClass(/bg-accent/);
+
+    // "true", not "page": the href targets digest while the whole section is current.
+    for (const target of [
+      "/admin/digest",
+      "/admin/pipeline",
+      "/admin/materials/sql-dashboards-for-audit-reporting",
+    ]) {
+      await gotoAsRole(page, "admin", target);
+      const adminLink = shellAdminLink(page);
+      await expect(adminLink).toHaveCount(1);
+      await expect(adminLink).toHaveAttribute("href", "/admin/digest");
+      await expect(adminLink).toHaveAttribute("aria-current", "true");
+      await expect(adminLink).toHaveClass(/bg-accent/);
+    }
+  });
 });
 
 test.describe("Admin Digest — shortlist triage (ADMIN-01…03, ADMIN-05, D-79, D-80)", () => {
