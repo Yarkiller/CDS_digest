@@ -2,21 +2,21 @@
 gsd_state_version: "1.0"
 milestone: v1.3
 milestone_name: Live mail, scheduled ingestion & backlog debt
-current_phase: 22
+current_phase: 23
+current_phase_name: Admin-managed ingest sources
 current_plan: 3
 status: executing
-stopped_at: Phase 23 context gathered
-last_updated: "2026-10-17T13:18:53.259Z"
+stopped_at: Phase 23 UI-SPEC approved
+last_updated: "2026-10-17T16:22:33.887Z"
 last_activity: 2026-10-17
 last_activity_desc: Phase 22 marked complete
-state_head: 1beabac49de92a36e70b59731b8c8188a9d26320
+state_head: 83fae5211c479e6f9f9cd4bbb8461740a8532415
 progress:
   total_phases: 8
   completed_phases: 5
-  total_plans: 16
+  total_plans: 20
   completed_plans: 16
   percent: 63
-current_phase_name: Admin nav grouping
 ---
 
 # Project State
@@ -30,10 +30,10 @@ See: .planning/PROJECT.md (updated 2026-10-16 — after Phase 20)
 
 ## Current Position
 
-Phase: 22 — COMPLETE
+Phase: 23 (Admin-managed ingest sources) — READY TO EXECUTE
 Current Plan: 3
-Total Plans in Phase: 3
-Status: Phase 22 complete
+Total Plans in Phase: 4
+Status: Ready to execute
 Last activity: 2026-10-17 — Phase 22 marked complete
 
 Progress: [██████░░░░] 63%
@@ -179,9 +179,9 @@ Carried product deferrals beyond v1.3: leaderboard, quiz, Whisper/Foundry ASR, i
 
 ## Session Continuity
 
-Last session: 2026-10-17T13:18:53.126Z
-Stopped at: Phase 23 context gathered
-Resume file: .planning/phases/23-admin-managed-ingest-sources/23-CONTEXT.md
+Last session: 2026-10-17T15:57:47.021Z
+Stopped at: Phase 23 UI-SPEC approved
+Resume file: .planning/phases/23-admin-managed-ingest-sources/23-UI-SPEC.md
 Next: `/gsd-plan-phase 19`
 
 ## Operator Next Steps

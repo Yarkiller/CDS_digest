@@ -247,10 +247,16 @@ Plans:
 
 **Plans**: 4 plans
 Plans:
+**Wave 1**
 - [ ] 23-01-PLAN.md — Tracer: list + add ingest source end-to-end (port → HTTP → SPA → section; dirty OR)
+
+**Wave 2** *(blocked on Wave 1 completion)*
 - [ ] 23-02-PLAN.md — Validation rejects + PATCH/DELETE API + CORS DELETE (SRC-02)
+
+**Wave 3** *(blocked on Wave 2 completion)*
 - [ ] 23-03-PLAN.md — Migration 012 + Supabase adapter + live wire + BLOCKING apply
 - [ ] 23-04-PLAN.md — Full sources UI + ADUX-10 dirty Playwright coverage
+
 **UI hint**: yes
 
 ### Phase 24: Scheduled ingestion
