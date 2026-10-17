@@ -1,6 +1,6 @@
 ---
 phase: 20-mail-02-signup-confirmation-mail
-verified: 2026-10-17T08:44:19Z
+verified: 2026-10-17T20:30:00Z
 status: passed
 score: 10/10 must-haves verified
 covered_files:
@@ -15,15 +15,15 @@ covered_files:
   - web/src/main.jsx
   - web/src/pages/RegisterPage.jsx
   - web/src/services/authApi.js
-covered_digest: "v2:sha256:b31f8f4b397fbe1f977474b75243e62820b063387817763e083abb196c07e62b"
+covered_digest: "v2:sha256:ef89092646ec762636c6ab3f2b1afd78d0e21c6d737167cc882255596f3ecc5b"
 behavior_unverified: 0
 overrides_applied: 0
 re_verification:
   previous_status: passed
   previous_score: 10/10
-  previous_verified: 2026-10-16T09:00:00Z
-  previous_covered_digest: "v2:sha256:23a8479648763f36991ac9d27fe611d2bac8f883c286d3adb855e2f572e0f90c"
-  reason: "stale covered_digest refresh (GSD #4682) — regenerated from current codebase; plans not re-executed; no production code modified"
+  previous_verified: 2026-10-17T08:44:19Z
+  previous_covered_digest: "v2:sha256:b31f8f4b397fbe1f977474b75243e62820b063387817763e083abb196c07e62b"
+  reason: "stale covered_digest refresh (GSD #4682) — covered sources changed after prior verify (notably docs/agents/local-platform-runbook.md via Phase 21/23 docs); must-haves re-checked against current codebase; plans not re-executed; no production code modified this pass"
   gaps_closed: []
   gaps_remaining: []
   regressions: []
@@ -50,7 +50,7 @@ advisory:
 
 **Phase Goal:** The signup-confirmation mail root cause is diagnosed and documented, and the delivered end state is honest — either a working confirmation email through the corporate relay, or an explicitly autoconfirmed flow whose Russian copy never claims that mail was sent.
 
-**Verified:** 2026-10-17T08:44:19Z
+**Verified:** 2026-10-17T20:30:00Z
 **Status:** passed
 **Re-verification:** Yes — stale `covered_digest` refresh (GSD #4682); must-haves re-checked against current codebase; plans not re-executed
 
@@ -69,7 +69,7 @@ Phase ships path **(B)** (honest autoconfirm copy) per CONTEXT/D-02. ROADMAP cri
 | 5 | `tests/auth.spec.js` post-register amended never deleted; letter-claim regression (ROADMAP SC5 / D-09 / D-10) | ✓ VERIFIED | Happy-path `shows Логин as shell identity after register` retained; new letter-claim test present; UAT ack #3 pass |
 | 6 | D-08: `CONFIRM_MESSAGE` only in `RegisterPage.jsx`; authApi error-mapping strings unchanged | ✓ VERIFIED | Constant in RegisterPage only; NETWORK/CREDENTIALS strings still present in authApi (no rewrite of mapping contract) |
 | 7 | D-11: `tests/unit/test_auth_email_domain.py` PRESERVE | ✓ VERIFIED | `uv run pytest … -x` → 5 passed; last commit `2f02dc5` (2026-09-19) predates phase; working tree clean for that file |
-| 8 | D-03 / D-05 / D-13: Runbook §4.1 relay shape, smoke, one-command rollback | ✓ VERIFIED | `GOTRUE_SMTP_*`, `SMTP_*`, smoke via `/auth/v1/settings` + signup, rollback `GOTRUE_MAILER_AUTOCONFIRM=true` + reload |
+| 8 | D-03 / D-05 / D-13: Runbook §4.1 relay shape, smoke, one-command rollback | ✓ VERIFIED | `GOTRUE_SMTP_*`, `SMTP_*`, smoke via `/auth/v1/settings` + signup, rollback `GOTRUE_MAILER_AUTOCONFIRM=true` + reload (still present after Phase 21 runbook extensions) |
 | 9 | D-06: Criterion-4 live proof explicitly recorded as Phase 21 precondition | ✓ VERIFIED | §4.1.3 plain-language gap; ROADMAP Phase 21 Depends on matches |
 | 10 | D-01 / D-04: Path (A) remains target; no separate relay ADR from this phase | ✓ VERIFIED | Debug Resolution + runbook state (A) target; Phase 20 did not add a relay ADR (later `0005-haskimail-*` is Phase 21 transport — out of phase-20 ship) |
 
@@ -97,7 +97,7 @@ Phase ships path **(B)** (honest autoconfirm copy) per CONTEXT/D-02. ROADMAP cri
 | `web/src/main.jsx` | harness export | ✓ VERIFIED | `__DIGEST_AUTH_HARNESS__.armSignUpWithoutSession` |
 | `tests/auth.spec.js` | D-09/D-10 coverage | ✓ VERIFIED | New test + happy-path preserved |
 | `.planning/debug/g-01-3b-signup-mailer.md` | Closed diagnosis | ✓ VERIFIED | Resolved + Resolution; not deleted |
-| `docs/agents/local-platform-runbook.md` | §4.1 relay / smoke / rollback / gap | ✓ VERIFIED | §4.1.1–4.1.3 present |
+| `docs/agents/local-platform-runbook.md` | §4.1 relay / smoke / rollback / gap | ✓ VERIFIED | §4.1.1–4.1.3 present (Phase 21 digest SMTP notes additive) |
 
 ### Key Link Verification
 
@@ -122,7 +122,7 @@ Phase ships path **(B)** (honest autoconfirm copy) per CONTEXT/D-02. ROADMAP cri
 
 | Behavior | Command | Result | Status |
 | -------- | ------- | ------ | ------ |
-| Honest copy + letter-claim forbid | `npx playwright test tests/auth.spec.js --project=web -g "post-register copy never claims a confirmation letter"` | 1 passed (6.4s) | ✓ PASS |
+| Honest copy + letter-claim forbid | `npx playwright test tests/auth.spec.js --project=web -g "post-register copy never claims a confirmation letter"` | 1 passed (4.8s) | ✓ PASS |
 | Domain tripwire PRESERVE | `uv run pytest tests/unit/test_auth_email_domain.py -x` | 5 passed | ✓ PASS |
 
 ### Probe Execution
@@ -166,9 +166,9 @@ N/A — prior `20-UAT.md` is `status: complete` with 7/7 pass (judgment-tier pro
 
 ### Gaps Summary
 
-No blocking gaps for the in-session path-(B) goal. ROADMAP SC4 live relay proof remains **deferred** to Phase 21 with explicit documentation. Stale `covered_digest` refreshed (`23a84796…` → `b31f8f4b…`). CR-01 / WR-01 remain advisory only.
+No blocking gaps for the in-session path-(B) goal. ROADMAP SC4 live relay proof remains **deferred** to Phase 21 with explicit documentation. Stale `covered_digest` refreshed (`b31f8f4b…` → `ef890926…`) after covered sources drifted (runbook extended by later phases). CR-01 / WR-01 remain advisory only.
 
 ---
 
-_Verified: 2026-10-17T08:44:19Z_
+_Verified: 2026-10-17T20:30:00Z_
 _Verifier: Claude (gsd-verifier)_
