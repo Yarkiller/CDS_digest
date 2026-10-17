@@ -1,10 +1,11 @@
 ---
 phase: "23"
 slug: "admin-managed-ingest-sources"
-status: draft
+status: approved
 shadcn_initialized: false
 preset: none
 created: "2026-10-17"
+reviewed_at: "2026-10-17T18:55:00+03:00"
 ---
 
 # Phase 23 — UI Design Contract
@@ -247,8 +248,9 @@ All copy is **Russian**, calm editorial/ops tone. Carry forward Phase 16 / 19 / 
 ## UI Considerations
 
 > Shape-rooted state coverage for Phase 23 sources surfaces. Empty/error **copy** lives in `## Copywriting Contract`; rows reference those rows.
+> Resolved 2026-10-17 via ui-consideration-probe (kinds confirmed; resolutions accepted from locked D-01…D-24 + Copywriting Contract).
 
-Applicable: **28** · resolved explicit: **14** · resolved backstop: **5** · dismissed: **9** · unresolved: **0** · unclassified: **0**.
+Applicable: **22** · resolved explicit: **13** · resolved backstop: **3** · dismissed: **6** · unresolved: **0** · unclassified: **0**.
 
 Surfaces:
 - **E1** Source list `list-collection` + `interactive-control`
@@ -260,8 +262,8 @@ Surfaces:
 | Category | Element(s) | Status | Resolution / Reason |
 |----------|------------|--------|---------------------|
 | empty | E1 list | ✅ covered | Zero rows → Copywriting empty **«Пока нет источников»**; add form remains; no zero-enabled hint |
-| loading | E1 list | ✅ covered | Section shows «Загрузка…» / `aria-busy` until first GET settles; add form may stay visible but submit disabled until list ready |
-| error | E1 list | ✅ covered | Load failure → «Не удалось загрузить источники» + «Повторить загрузку» |
+| loading | E1 list | ✅ covered | Section shows «Загрузка…» / `aria-busy` until first GET settles; add form may stay visible but submit disabled until list ready; per-row controls disabled while that row's PATCH/DELETE is in flight (D-05) |
+| error | E1 list | ✅ covered | Load failure → «Не удалось загрузить источники» + «Повторить загрузку»; row action failure keeps last server state + inline «Не удалось обновить источник…» |
 | populated | E1 list | ✅ covered | Single-digit rows: each shows mono id, kind, status, toggle, delete, YouTube link |
 | partial | E1 list | ✅ covered | Row may show label or omit it (null); missing label is not an error state |
 | overflow | E1 list | 🧪 backstop | { statement: "A longer-than-typical source list scrolls with the page; the YAML editor below remains reachable at 1280px and narrow widths", verification: backstop } |
@@ -271,26 +273,18 @@ Surfaces:
 | loading | E2 add form | ✅ covered | In-flight Add disables the CTA and kind/id/label inputs; no optimistic row |
 | error | E2 add form | ✅ covered | 400 → «Проверьте данные источника» + path/message rows; network → add failure copy; typed values retained |
 | partial | E2 add form | ✅ covered | Kind selected with empty id/label is valid resting UI; only trimmed id/label create dirty |
-| overflow | E2 add form | 🧪 backstop | { statement: "Kind + id + label + Add stay on usable rows at narrow widths without horizontal overflow", verification: backstop } |
 | long-text | E2 label field | ✅ covered | Label max 120; over-long rejected by server with path label; input may use maxLength=120 |
-| empty | E3 disclosure | ✗ dismissed | Collapsed disclosure with fixed summary is the default; not a data-empty state |
 | loading | E3 disclosure | ✗ dismissed | Static teaching copy; no fetch |
 | error | E3 disclosure | ✗ dismissed | No failure mode |
 | overflow | E3 disclosure | 🧪 backstop | { statement: "Expanded recipes wrap within the section width without horizontal overflow", verification: backstop } |
 | long-text | E3 disclosure | ✗ dismissed | Fixed RU recipe strings |
-| empty | E4 zero-enabled | ✅ covered | Hint absent when all-enabled or when zero rows; present only for D-12b |
-| loading | E4 zero-enabled | ✗ dismissed | Derived from loaded list; no independent load |
-| error | E4 zero-enabled | ✗ dismissed | Not an error surface |
-| overflow | E4 zero-enabled | ✗ dismissed | Fixed single-line/short paragraph copy |
+| overflow | E4 zero-enabled | ✗ dismissed | Fixed single-line/short paragraph copy (D-11) |
 | long-text | E4 zero-enabled | ✗ dismissed | Fixed D-11 string |
-| empty | E5 dialog | ✗ dismissed | Dialog only when dirty; not a collection empty |
 | loading | E5 dialog | ✅ covered | Phase 19 sync modal; Esc = stay |
 | error | E5 dialog | ✅ covered | Stay aborts; leave proceeds; no error chrome in the dialog |
 | long-text | E5 dialog | ✗ dismissed | Fixed Phase 19 RU strings |
-| loading | E1 row actions | ✅ covered | Per-row controls disabled while that row's PATCH/DELETE is in flight (D-05) |
-| error | E1 row actions | ✅ covered | Failure keeps last server state + inline «Не удалось обновить источник…» |
 
-> **Planner note:** the 5 `backstop` rows lift into `must_haves.truths` as `{ statement, verification: backstop }` — verify needs explicit visual/held-out evidence or `insufficient_spec → human_needed`.
+> **Planner note:** the 3 `backstop` rows lift into `must_haves.truths` as `{ statement, verification: backstop }` — verify needs explicit visual/held-out evidence or `insufficient_spec → human_needed`.
 
 **Domain probes (prose, not closed taxonomy):** optimistic-UI **forbidden** (D-05). Accessibility: labelled inputs; errors `role="alert"`; 44px targets; `:focus-visible` rings; external links announce new-tab via visible text **«Открыть на YouTube»** + `rel="noopener noreferrer"`. i18n: RU-only. Reduced-motion: no new motion. Phone admin non-target (Phase 22) — form must still reflow without horizontal overflow (backstops above).
 
@@ -308,12 +302,12 @@ No shadcn initialization and no third-party registries declared. Vetting gate no
 
 ## Checker Sign-Off
 
-- [ ] Dimension 1 Copywriting: PASS
-- [ ] Dimension 2 Visuals: PASS
-- [ ] Dimension 3 Color: PASS
-- [ ] Dimension 4 Typography: PASS
-- [ ] Dimension 5 Spacing: PASS
-- [ ] Dimension 6 Registry Safety: PASS
-- [ ] Dimension 7 Inventory Provenance: PASS — N/A (`Tool: none`; Component Inventory omitted by template)
+- [x] Dimension 1 Copywriting: PASS
+- [x] Dimension 2 Visuals: PASS
+- [x] Dimension 3 Color: PASS
+- [x] Dimension 4 Typography: PASS
+- [x] Dimension 5 Spacing: PASS
+- [x] Dimension 6 Registry Safety: PASS
+- [x] Dimension 7 Inventory Provenance: PASS — N/A (`Tool: none`; Component Inventory omitted by template)
 
-**Approval:** pending
+**Approval:** approved by gsd-ui-checker on 2026-10-17
