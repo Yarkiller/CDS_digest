@@ -1,10 +1,10 @@
 ---
 schema_version: 1
-open_count: 0
-waived_count: 8
+open_count: 1
+waived_count: 9
 fixed_count: 12
-total_count: 20
-last_updated: 2026-10-16T15:25:19.633Z
+total_count: 22
+last_updated: 2026-10-17T17:48:04.253Z
 ---
 
 # Broken Windows Ledger
@@ -35,6 +35,8 @@ last_updated: 2026-10-16T15:25:19.633Z
 | 18 | 15 | deviation | ingestion-service/src/ingestion_service/adapters/stderr_diagnostics.py |  | Deviation: sink emits via injected emitter (cli.py typer.echo err=True) not direct typer import, to satisfy test_ingestion_service_has_no_typer_import | waived | Intentional shipped design: sink emits via injected emitter to keep ingestion-service typer free | 2026-10-04T08:12:39.822Z | 2026-10-13T18:06:47.759Z |
 | 19 | 16 | stub | backend/src/backend/interface/http/routes/admin.py | 552 | 16-01 tracer: PUT /admin/pipeline/config has no PipelineConfigValidationError reject branch yet; structured 400 {errors:[...]} lands in 16-02 behind the same validator port | fixed |  | 2026-10-04T10:43:11.118Z | 2026-10-13T18:06:30.673Z |
 | 20 | 21 | unrun-verify |  |  | Playwright tests/admin.spec.js stub-banner assertions amended but not executed | fixed |  | 2026-10-16T15:01:10.477Z | 2026-10-16T15:25:19.633Z |
+| 21 | 23 | deviation | web/src/services/ingestSourcesApi.js |  | Delete/toggle network errors unified to UI-SPEC row-action copy | waived | Intentional UI-SPEC copy alignment shipped in 23-04 feat commit | 2026-10-17T17:47:36.858Z | 2026-10-17T17:47:58.178Z |
+| 22 | 23 | unmet-truth | .planning/phases/23-admin-managed-ingest-sources/23-UI-SPEC.md |  | UI-SPEC wrap backstops (120-char label, expanded id-help) held for verify-work visual check | open |  | 2026-10-17T17:48:04.253Z |  |
 
 ````json
 [
@@ -281,6 +283,32 @@ last_updated: 2026-10-16T15:25:19.633Z
     "reason": "",
     "recorded_at": "2026-10-16T15:01:10.477Z",
     "resolved_at": "2026-10-16T15:25:19.633Z",
+    "milestone": "v1.3"
+  },
+  {
+    "id": 21,
+    "kind": "deviation",
+    "phase": "23",
+    "file": "web/src/services/ingestSourcesApi.js",
+    "line": null,
+    "description": "Delete/toggle network errors unified to UI-SPEC row-action copy",
+    "status": "waived",
+    "reason": "Intentional UI-SPEC copy alignment shipped in 23-04 feat commit",
+    "recorded_at": "2026-10-17T17:47:36.858Z",
+    "resolved_at": "2026-10-17T17:47:58.178Z",
+    "milestone": "v1.3"
+  },
+  {
+    "id": 22,
+    "kind": "unmet-truth",
+    "phase": "23",
+    "file": ".planning/phases/23-admin-managed-ingest-sources/23-UI-SPEC.md",
+    "line": null,
+    "description": "UI-SPEC wrap backstops (120-char label, expanded id-help) held for verify-work visual check",
+    "status": "open",
+    "reason": "",
+    "recorded_at": "2026-10-17T17:48:04.253Z",
+    "resolved_at": null,
     "milestone": "v1.3"
   }
 ]
