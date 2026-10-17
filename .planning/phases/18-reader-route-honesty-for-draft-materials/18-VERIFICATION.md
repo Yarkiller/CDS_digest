@@ -81,6 +81,7 @@ advisory: []
 | Named tripwires + DTO/`no-store` | 6 named pytest cases (draft 404, admin-token 404, reader no-`no-store`, draft 200 DTO, draft `no-store`, employee 403) | **6 passed**, 1.67 s |
 | Email anchor cases | `pytest -k "read_link_opens_in_new_context or blank_slug_emits_no_anchor_attributes or is_idempotent"` | **3 passed**, 22 deselected |
 | Full backend unit suite (run once) | `.venv\Scripts\python.exe -m pytest -q` | **969 passed**, 1 warning, 13.03 s |
+| Phase-18 Playwright — full filter (run 1 of 2, concurrent) | `npx playwright test --project=web tests/admin.spec.js -g "предпросмотр\|черновик\|Читать\|Открыть материал\|Forbidden\|готовая строка\|sandbox\|баннер"` | **11 passed** (33.1 s) |
 | Phase-18 Playwright — email preview block | `npx playwright test --project=web tests/admin.spec.js -g "email preview honesty" --workers=1` | **3 passed** (18.1 s) |
 | Phase-18 Playwright — ban-list + material preview blocks | `npx playwright test --project=web tests/admin.spec.js -g "ban-list surfaces\|material preview honesty" --workers=1` | **6 passed** (18.0 s) |
 | Phase-18 Playwright — draft preview block | `npx playwright test --project=web tests/admin.spec.js -g "предпросмотр черновика" --workers=1` | **5 passed** (40.1 s) |
@@ -95,7 +96,7 @@ advisory: []
 | Fingerprint | `gsd-tools query verification.fingerprint` (18 files) | `v2:sha256:b5b6f084…` (refreshed) |
 | Test-quality audit | skip patterns + remaining `toHaveAttribute("sandbox","")` | **0 skips**, **0 remnants** |
 
-**Environment fault observed and contained (not a regression).** Two long combined Playwright invocations died mid-run with mass `page.goto: net::ERR_CONNECTION_REFUSED` against `127.0.0.1:5174` (5 and 9 failures respectively), matching the operational blocker recorded in `STATE.md` and the identical fault documented in `18-03-SUMMARY.md`. Port 5174 was confirmed free (`Get-NetTCPConnection -LocalPort 5174 -State Listen` → no rows) before every run; the two failing invocations were the only ones where the Vite dev server died after startup. The same specs split into three smaller invocations (each with a fresh server) all pass — 3 + 6 + 5 = **14 green**, including every failed case. No production or test file was modified between runs.
+**Environment fault observed and contained (not a regression).** The full phase-18 Playwright filter `-g "предпросмотр|черновик|Читать|Открыть материал|Forbidden|готовая строка|sandbox|баннер"` was dispatched twice in parallel by the harness under the same call id; the two Playwright processes contended for the `reuseExistingServer: !CI` Vite instance on `127.0.0.1:5174`. The first invocation completed **11 passed (33.1 s)**; the second, racing it, killed the shared dev server and produced mass `page.goto: net::ERR_CONNECTION_REFUSED` (9 failures) — matching the operational blocker recorded in `STATE.md` and the identical fault documented in `18-03-SUMMARY.md`. That one command yielding 11 green and 9 `ERR_CONNECTION_REFUSED` at the same timestamp is conclusive evidence of server contention rather than a code regression. Port 5174 was confirmed free (`Get-NetTCPConnection -LocalPort 5174 -State Listen` → no rows) before the subsequent verifying runs, which were split into three sequential invocations with fresh servers: 3 + 6 + 5 = **14 green**. No production or test file was modified between runs.
 
 **Post-prior-pass source drift (accounted for, not a gap).** `tests/unit/test_preview_digest.py` is no longer byte-identical to the `3754f87` baseline: Phase 21 added an `InMemoryProfileRepository()` argument to the `send_digest(...)` call site and its fixture. The parity assertion itself (`assert send_html == preview.html`) is unchanged and green — the D-11 preview≡send invariant is still tested.
 
@@ -188,6 +189,7 @@ None — the re-verification Step 7 scan found no new-scope unevidenced findings
 | Named tripwires + DTO/`no-store` | 6 named tests | 6 passed | ✓ PASS |
 | Email anchor attributes / blank slug / purity | `pytest -k "read_link_opens_in_new_context or blank_slug_emits_no_anchor_attributes or is_idempotent"` | 3 passed | ✓ PASS |
 | Full backend suite | `pytest -q` | 969 passed | ✓ PASS |
+| Full phase-18 Playwright filter | `playwright … -g "предпросмотр|черновик|Читать|Открыть материал|Forbidden|готовая строка|sandbox|баннер"` | 11 passed | ✓ PASS |
 | Draft preview SPA block | `playwright … -g "предпросмотр черновика" --workers=1` | 5 passed | ✓ PASS |
 | Email preview + sandbox escape | `playwright … -g "email preview honesty" --workers=1` | 3 passed | ✓ PASS |
 | Ban-list + material preview blocks | `playwright … -g "ban-list surfaces\|material preview honesty" --workers=1` | 6 passed | ✓ PASS |
