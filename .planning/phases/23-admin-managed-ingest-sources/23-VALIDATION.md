@@ -40,11 +40,14 @@ created: "2026-10-17"
 
 | Task ID | Plan | Wave | Requirement | Threat Ref | Secure Behavior | Test Type | Automated Command | File Exists | Status |
 |---------|------|------|-------------|------------|-----------------|-----------|-------------------|-------------|--------|
-| 23-W0 | 01 | 0 | SRC-01…03, ADUX-10 | — | Wave 0 stubs / harness | unit + e2e | see Wave 0 Requirements | ❌ W0 | ⬜ pending |
-| TBD | TBD | TBD | SRC-01 | T-23-* | CRUD + persist via DB | unit HTTP + Playwright | `uv run pytest tests/unit/test_http_ingest_sources.py -x` | ❌ W0 | ⬜ pending |
-| TBD | TBD | TBD | SRC-02 | T-23-* | Invalid id → 400 `{errors:[…]}`, zero writes | unit HTTP + Playwright | pytest reject cases | ❌ W0 | ⬜ pending |
-| TBD | TBD | TBD | SRC-03 | T-23-* | Port wired; SPA via service only | unit composition | amend `test_live_container_wiring` | ❌ W0 | ⬜ pending |
-| TBD | TBD | TBD | ADUX-10 | T-23-* | Dirty OR covers source editor | Playwright | extend admin dirty describes | ❌ W0 | ⬜ pending |
+| 23-01-T1 | 01 | 1 | SRC-01, SRC-03, ADUX-10 | T-23-01…05 | Tracer list/add + port + dirty OR | unit HTTP | `uv run pytest tests/unit/test_http_ingest_sources.py tests/unit/test_composition_container.py -x` | ❌ W0 | ⬜ pending |
+| 23-01-T2 | 01 | 1 | SRC-01 | T-23-01 | Playwright add journey; D-22 PRESERVE | e2e | `npm run test:web -- tests/admin.spec.js -g "ingest source\|Источники ингеста\|pipeline config no execution controls"` | ❌ W0 | ⬜ pending |
+| 23-02-T2 | 02 | 2 | SRC-01, SRC-02 | T-23-06…09 | 400 `{errors:[…]}` zero writes; PATCH/DELETE | unit HTTP | `uv run pytest tests/unit/test_http_ingest_sources.py -x` | ❌ W0 | ⬜ pending |
+| 23-02-T3 | 02 | 2 | SRC-01 | T-23-09 | CORS DELETE advertised | unit | `uv run pytest tests/unit/test_cors.py -q` | ✅ | ⬜ pending |
+| 23-03-T2 | 03 | 3 | SRC-01, SRC-03 | T-23-11…15 | Migration 012 + adapter + live wire | unit | `uv run pytest tests/unit/test_phase23_migration_012.py tests/unit/test_supabase_ingest_source_repository_contract.py tests/unit/test_live_container_wiring.py -q` | ❌ W0 | ⬜ pending |
+| 23-03-T3 | 03 | 3 | SRC-01 | T-23-14 | [BLOCKING] apply 012 on shared VM | human + unit | `uv run pytest tests/unit/test_phase23_migration_012.py -q` + Studio verify | ❌ W0 | ⬜ pending |
+| 23-04-T1 | 04 | 3 | SRC-01, SRC-02 | T-23-16…20 | Full UI section + row lifecycle | e2e | `npm run test:web -- tests/admin.spec.js -g "ingest source\|Источники ингеста\|Где взять id\|zero-enabled\|pipeline config no execution controls"` | ❌ W0 | ⬜ pending |
+| 23-04-T2 | 04 | 3 | ADUX-10 | T-23-17 | Source-form dirty arms Phase 19 guard | e2e | `npm run test:web -- tests/admin.spec.js -g "dirty editor blocks\|ingest source\|unsaved\|Дайджест"` | ❌ W0 | ⬜ pending |
 
 *Status: ⬜ pending · ✅ green · ❌ red · ⚠️ flaky*  
 *Task IDs filled by planner when PLAN.md waves are authored.*
