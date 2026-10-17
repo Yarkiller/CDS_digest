@@ -5,17 +5,17 @@ milestone_name: Live mail, scheduled ingestion & backlog debt
 current_phase: 22
 current_phase_name: Admin nav grouping
 current_plan: 2
-status: executing
-stopped_at: Completed 22-01-PLAN.md
-last_updated: "2026-10-17T10:31:46.312Z"
+status: ready_for_verification
+stopped_at: Completed 22-02-PLAN.md
+last_updated: "2026-10-17T10:47:02.634Z"
 last_activity: 2026-10-17
-last_activity_desc: Phase 22 plan 22-01 complete
-state_head: d51cf996e49d4fd0c2c905b01209c03199550919
+last_activity_desc: Phase 22 plan 22-02 complete
+state_head: 202b72cb251caa601d4f40490cdd5d3235965dfe
 progress:
   total_phases: 8
   completed_phases: 4
   total_plans: 15
-  completed_plans: 14
+  completed_plans: 15
   percent: 50
 ---
 
@@ -30,11 +30,11 @@ See: .planning/PROJECT.md (updated 2026-10-16 — after Phase 20)
 
 ## Current Position
 
-Phase: 22 (Admin nav grouping) — EXECUTING
+Phase: 22 (Admin nav grouping) — READY FOR VERIFICATION
 Current Plan: 2
 Total Plans in Phase: 2
-Status: Executing — 22-01 complete, 22-02 pending
-Last activity: 2026-10-17 — 22-01 complete (single «Админ» + AdminLayout section switch)
+Status: Ready for verification — 22-01 + 22-02 complete
+Last activity: 2026-10-17 — 22-02 complete (dirty→tab guard pin + 16-UI-SPEC A-2 supersession)
 
 Progress: [█████░░░░░] 50%
 
@@ -54,7 +54,7 @@ Progress: [█████░░░░░] 50%
 | 19. Unsaved-changes guard | 0/? | not started | - |
 | 20. Signup mail (MAIL-02) | 0/? | context gathered | - |
 | 21. Live SMTP digest (MAIL-01) | 0/? | not started | - |
-| 22. Admin nav grouping | 1/2 | In progress | - |
+| 22. Admin nav grouping | 2/2 | Ready for verification | - |
 | 23. Ingest sources | 0/? | not started | - |
 | 24. Scheduled ingestion | 0/? | not started | - |
 | 17 | 3 | - | - |
@@ -79,6 +79,7 @@ Progress: [█████░░░░░] 50%
 | Phase 21 P02 | 12 | 2 tasks | 11 files |
 | Phase 21 P03 | 9min | 3 tasks | 10 files |
 | Phase 22 P01 | 22min | 2 tasks | 6 files |
+| Phase 22 P02 | 10min | 2 tasks | 2 files |
 
 ## Accumulated Context
 
@@ -146,6 +147,8 @@ v1.3 roadmap locks:
 - [Phase 22]: 22-01: shell «Админ» active state comes from the useLocation pathname prefix — NavLink prefix matching on /admin/digest never lights /admin/pipeline or the materials preview (D-09)
 - [Phase 22]: 22-01: the section switch is nav + NavLink (underline, no pill fill, no ARIA tab roles); the narrow select uses a hard-coded two-path whitelist and navigate() so the Phase 19 guard still fires (T-22-02, D-12, D-19)
 - [Phase 22]: 22-01: both child pages drop the page H1 and duplicate eyebrow on every branch; the active tab carries the text-3xl font-semibold hierarchy (D-06, D-08)
+- [Phase 22]: 22-02: the dirty->tab and dirty->select journeys passed immediately on the post-22-01 tree, so the plan is a characterization pin (D-13/D-14/D-15/D-19 already hold) with zero production edits; no guard carve-out exists
+- [Phase 22]: 22-02: 16-UI-SPEC A-2 is marked SUPERSEDED (top banner, A-2 row, Route/nav heading) with a 22-UI-SPEC pointer; route retained, single shell Админ, in-page underline tabs, and 'no second navigation bar' kept true via D-05
 
 ### Pending Todos
 
@@ -176,8 +179,8 @@ Carried product deferrals beyond v1.3: leaderboard, quiz, Whisper/Foundry ASR, i
 
 ## Session Continuity
 
-Last session: 2026-10-17T10:31:46.209Z
-Stopped at: Completed 22-01-PLAN.md
+Last session: 2026-10-17T10:47:02.461Z
+Stopped at: Completed 22-02-PLAN.md
 Resume file: None
 Next: `/gsd-plan-phase 19`
 
