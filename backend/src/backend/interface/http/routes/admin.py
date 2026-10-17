@@ -16,7 +16,9 @@ from backend.application.use_cases.mark_material_ready import (
 )
 from backend.application.use_cases.ingest_sources import (
     add_ingest_source,
+    delete_ingest_source,
     list_ingest_sources,
+    set_ingest_source_enabled,
 )
 from backend.application.use_cases.pipeline_config import (
     get_pipeline_config,
@@ -34,6 +36,7 @@ from backend.domain.errors import (
     AlreadySentError,
     DraftInSendPoolError,
     EmptySendPoolError,
+    IngestSourceNotFoundError,
     IngestSourceValidationError,
     InvalidPreviewCompositionError,
     InvalidSendOrderError,
@@ -204,6 +207,14 @@ class IngestSourceCreateRequest(BaseModel):
     kind: str
     source_id: str
     label: str | None = None
+
+
+class IngestSourcePatchRequest(BaseModel):
+    """PATCH /admin/ingest-sources/{id} body — enable/disable only (D-18)."""
+
+    model_config = ConfigDict(extra="forbid")
+
+    is_enabled: bool
 
 
 class IngestSourceResponse(BaseModel):
@@ -776,3 +787,65 @@ def post_ingest_source(
             detail="ingest_sources_unavailable",
         ) from exc
     return _ingest_source_to_response(row)
+
+
+@router.patch(
+    "/ingest-sources/{source_id}",
+    response_model=IngestSourceResponse,
+    summary="Enable or disable an ingest source",
+    description=(
+        "Immediate persist of is_enabled (SRC-01, D-01/D-18). Requires admin. "
+        "Missing id → 404 ingest_source_not_found. Unknown JSON fields → 422."
+    ),
+)
+def patch_ingest_source(
+    body: IngestSourcePatchRequest,
+    request: Request,
+    source_id: int = Path(..., ge=1),
+    _admin: CurrentUser = Depends(require_admin),
+) -> IngestSourceResponse:
+    repo = _require_ingest_sources(request)
+    try:
+        row = set_ingest_source_enabled(repo, source_id, is_enabled=body.is_enabled)
+    except IngestSourceNotFoundError as exc:
+        raise HTTPException(
+            status_code=status.HTTP_404_NOT_FOUND,
+            detail="ingest_source_not_found",
+        ) from exc
+    except PersistenceError as exc:
+        raise HTTPException(
+            status_code=status.HTTP_503_SERVICE_UNAVAILABLE,
+            detail="ingest_sources_unavailable",
+        ) from exc
+    return _ingest_source_to_response(row)
+
+
+@router.delete(
+    "/ingest-sources/{source_id}",
+    status_code=status.HTTP_204_NO_CONTENT,
+    summary="Hard-delete an ingest source",
+    description=(
+        "Removes the row permanently (SRC-01, D-10/D-18). Requires admin. "
+        "Missing id → 404 ingest_source_not_found. No response body."
+    ),
+    response_class=Response,
+)
+def delete_ingest_source_route(
+    request: Request,
+    source_id: int = Path(..., ge=1),
+    _admin: CurrentUser = Depends(require_admin),
+) -> Response:
+    repo = _require_ingest_sources(request)
+    try:
+        delete_ingest_source(repo, source_id)
+    except IngestSourceNotFoundError as exc:
+        raise HTTPException(
+            status_code=status.HTTP_404_NOT_FOUND,
+            detail="ingest_source_not_found",
+        ) from exc
+    except PersistenceError as exc:
+        raise HTTPException(
+            status_code=status.HTTP_503_SERVICE_UNAVAILABLE,
+            detail="ingest_sources_unavailable",
+        ) from exc
+    return Response(status_code=status.HTTP_204_NO_CONTENT)

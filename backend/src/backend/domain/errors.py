@@ -200,6 +200,14 @@ class PipelineConfigValidationError(DomainError):
         self.errors = errors
 
 
+class IngestSourceNotFoundError(DomainError):
+    """Raised when PATCH/DELETE targets a missing ingest-source row (SRC-01, D-18)."""
+
+    def __init__(self, source_id_pk: int) -> None:
+        super().__init__(f"ingest source {source_id_pk} not found")
+        self.source_id_pk = source_id_pk
+
+
 class IngestSourceValidationError(DomainError):
     """Raised when an ingest-source write fails server-side validation (SRC-02, D-14/D-19).
 

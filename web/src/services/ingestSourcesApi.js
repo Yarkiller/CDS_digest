@@ -277,3 +277,160 @@ export async function addIngestSource(payload, accessToken) {
 
   return response.json()
 }
+
+/**
+ * Enable or disable an ingest source (immediate persist, D-01/D-18).
+ * @param {number} id
+ * @param {boolean} isEnabled
+ * @param {string} [accessToken]
+ * @returns {Promise<IngestSourceDto>}
+ */
+export async function setIngestSourceEnabled(id, isEnabled, accessToken) {
+  const sourceId = Number(id)
+  const enabled = Boolean(isEnabled)
+
+  if (mocksEnabled()) {
+    await delay(80)
+    const arm = readArm()
+    if (arm.failSetEnabled) {
+      const next = { ...arm }
+      delete next.failSetEnabled
+      writeArm(next)
+      throw new IngestSourcesError('Не удалось обновить источник', {
+        code: 'NETWORK',
+        retryable: true,
+      })
+    }
+    const existing = readMockSources()
+    const index = existing.findIndex((row) => Number(row.id) === sourceId)
+    if (index < 0) {
+      throw new IngestSourcesError('Источник не найден', {
+        code: 'NOT_FOUND',
+        retryable: false,
+      })
+    }
+    const updated = {
+      ...existing[index],
+      is_enabled: enabled,
+      updated_at: new Date().toISOString(),
+    }
+    const next = [...existing]
+    next[index] = updated
+    writeMockSources(next)
+    return updated
+  }
+
+  const token = accessToken ?? (await getAccessToken())
+  if (!token) {
+    throw new IngestSourcesError('Требуется вход.', {
+      code: 'UNAUTHORIZED',
+      retryable: false,
+    })
+  }
+
+  let response
+  try {
+    response = await fetch(`${apiBase()}/admin/ingest-sources/${sourceId}`, {
+      method: 'PATCH',
+      headers: {
+        Authorization: `Bearer ${token}`,
+        'Content-Type': 'application/json',
+      },
+      body: JSON.stringify({ is_enabled: enabled }),
+    })
+  } catch {
+    throw new IngestSourcesError('Не удалось обновить источник', {
+      code: 'NETWORK',
+      retryable: true,
+    })
+  }
+
+  if (!response.ok) {
+    let body = null
+    try {
+      body = await response.json()
+    } catch {
+      body = null
+    }
+    if (response.status === 404) {
+      throw new IngestSourcesError('Источник не найден', {
+        code: 'NOT_FOUND',
+        retryable: false,
+      })
+    }
+    throw mapHttpError(response, 'Не удалось обновить источник', body)
+  }
+
+  return response.json()
+}
+
+/**
+ * Hard-delete an ingest source (D-10). Returns void on success.
+ * @param {number} id
+ * @param {string} [accessToken]
+ * @returns {Promise<void>}
+ */
+export async function deleteIngestSource(id, accessToken) {
+  const sourceId = Number(id)
+
+  if (mocksEnabled()) {
+    await delay(80)
+    const arm = readArm()
+    if (arm.failDelete) {
+      const next = { ...arm }
+      delete next.failDelete
+      writeArm(next)
+      throw new IngestSourcesError('Не удалось удалить источник', {
+        code: 'NETWORK',
+        retryable: true,
+      })
+    }
+    const existing = readMockSources()
+    const next = existing.filter((row) => Number(row.id) !== sourceId)
+    if (next.length === existing.length) {
+      throw new IngestSourcesError('Источник не найден', {
+        code: 'NOT_FOUND',
+        retryable: false,
+      })
+    }
+    writeMockSources(next)
+    return
+  }
+
+  const token = accessToken ?? (await getAccessToken())
+  if (!token) {
+    throw new IngestSourcesError('Требуется вход.', {
+      code: 'UNAUTHORIZED',
+      retryable: false,
+    })
+  }
+
+  let response
+  try {
+    response = await fetch(`${apiBase()}/admin/ingest-sources/${sourceId}`, {
+      method: 'DELETE',
+      headers: { Authorization: `Bearer ${token}` },
+    })
+  } catch {
+    throw new IngestSourcesError('Не удалось удалить источник', {
+      code: 'NETWORK',
+      retryable: true,
+    })
+  }
+
+  if (!response.ok) {
+    if (response.status === 404) {
+      throw new IngestSourcesError('Источник не найден', {
+        code: 'NOT_FOUND',
+        retryable: false,
+      })
+    }
+    let body = null
+    try {
+      body = await response.json()
+    } catch {
+      body = null
+    }
+    throw mapHttpError(response, 'Не удалось удалить источник', body)
+  }
+}

@@ -1,7 +1,6 @@
 """Ingest-source use cases — validate-then-persist (SRC-01/SRC-02, D-14/D-15).
 
-Tracer (23-01): list + add with D-14 channel/playlist regex + kind match and
-label max 120. Full reject matrix and PATCH/DELETE owned by 23-02.
+List/add/set_enabled/delete. Rejects never write (D-20); DELETE is hard (D-10).
 """
 
 from __future__ import annotations
@@ -9,7 +8,7 @@ from __future__ import annotations
 import re
 
 from backend.application.ports.ingest_sources import IngestSourceRepository
-from backend.domain.errors import IngestSourceValidationError
+from backend.domain.errors import IngestSourceNotFoundError, IngestSourceValidationError
 from backend.domain.ingest_source import IngestSource
 from backend.domain.pipeline_config import PipelineConfigError
 
@@ -45,6 +44,27 @@ def add_ingest_source(
         label=normalized_label,
         is_enabled=True,
     )
+
+
+def set_ingest_source_enabled(
+    repo: IngestSourceRepository,
+    source_id_pk: int,
+    *,
+    is_enabled: bool,
+) -> IngestSource:
+    """Toggle is_enabled for an existing row (D-01/D-18). Missing → NotFound."""
+    try:
+        return repo.set_enabled(source_id_pk, is_enabled=is_enabled)
+    except KeyError as exc:
+        raise IngestSourceNotFoundError(source_id_pk) from exc
+
+
+def delete_ingest_source(repo: IngestSourceRepository, source_id_pk: int) -> None:
+    """Hard-delete the row (D-10). Missing → NotFound."""
+    try:
+        repo.delete(source_id_pk)
+    except KeyError as exc:
+        raise IngestSourceNotFoundError(source_id_pk) from exc
 
 
 def _normalize_label(label: str | None) -> str | None:
