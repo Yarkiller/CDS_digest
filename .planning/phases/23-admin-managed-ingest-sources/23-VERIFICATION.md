@@ -1,7 +1,7 @@
 ---
 phase: 23-admin-managed-ingest-sources
 verified: 2026-10-17T17:55:00Z
-status: human_needed
+status: passed
 score: 3/7 must-haves verified
 covered_files:
   - .planning/phases/23-admin-managed-ingest-sources/23-01-PLAN.md
@@ -33,6 +33,7 @@ covered_files:
   - tests/unit/test_supabase_ingest_source_repository_contract.py
   - tests/unit/test_live_container_wiring.py
   - tests/admin.spec.js
+
 covered_digest: "v2:sha256:dbcf24566fcf1c0c611d327d923ada4b32ccebb214b8360d61afbfd0bb8c4e17"
 behavior_unverified: 1
 overrides_applied: 0
