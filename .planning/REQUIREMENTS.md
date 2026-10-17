@@ -37,7 +37,7 @@ Ordering rule: **backlog tech debt first** (999.7 → 999.1 → 999.6), then mai
 ### Ingest sources (admin-managed)
 
 - [x] **SRC-01**: An admin can list, add, enable/disable, and remove ingest sources (YouTube channel or playlist) on the pipeline page, and the list is stored in the database
-- [ ] **SRC-02**: The source API validates the canonical source id server-side and rejects anything else with a top-level structured 400 `{errors:[…]}` and zero writes; the UI states where to obtain the id
+- [x] **SRC-02**: The source API validates the canonical source id server-side and rejects anything else with a top-level structured 400 `{errors:[…]}` and zero writes; the UI states where to obtain the id
 - [x] **SRC-03**: Sources are read/written through an `IngestSourceRepository` port wired in composition; the SPA reaches them only through a service module (no deep Supabase coupling)
 
 ### Admin nav grouping (backlog 999.5)
@@ -113,7 +113,7 @@ Deferred. Not in this milestone's roadmap.
 | MAIL-04 | Phase 21 | Complete |
 | MAIL-05 | Phase 21 | Complete |
 | SRC-01 | Phase 23 | Complete |
-| SRC-02 | Phase 23 | Pending |
+| SRC-02 | Phase 23 | Complete |
 | SRC-03 | Phase 23 | Complete |
 | ING-02 | Phase 24 | Pending |
 | ING-05 | Phase 24 | Pending |
