@@ -98,6 +98,13 @@ def test_build_live_container_wires_supabase_adapters(monkeypatch: pytest.Monkey
     assert not isinstance(container.pipeline_config, InMemoryPipelineConfigRepository)
     assert isinstance(container.pipeline_config_validator, YamlPipelineConfigValidator)
 
+    from backend.tests_support.in_memory import InMemoryIngestSourceRepository
+    from supabase_integration import SupabaseIngestSourceRepository
+
+    # D-24: live wires SupabaseIngestSourceRepository (not in-memory)
+    assert isinstance(container.ingest_sources, SupabaseIngestSourceRepository)
+    assert not isinstance(container.ingest_sources, InMemoryIngestSourceRepository)
+
     create_service.assert_called_once_with(
         "https://example.test",
         "secret-key",
@@ -106,6 +113,26 @@ def test_build_live_container_wires_supabase_adapters(monkeypatch: pytest.Monkey
         "https://example.test",
         "publishable-key",
     )
+
+
+def test_build_live_container_wires_ingest_sources(monkeypatch: pytest.MonkeyPatch) -> None:
+    """D-21 / D-24 / SRC-03: live composition wires SupabaseIngestSourceRepository."""
+    from backend.tests_support.in_memory import InMemoryIngestSourceRepository
+    from supabase_integration import SupabaseIngestSourceRepository
+
+    monkeypatch.setattr(
+        "backend.composition.live.create_service_role_client",
+        MagicMock(return_value=object()),
+    )
+    settings = Settings(
+        supabase_url="https://example.test",
+        supabase_secret_key="secret-key",
+    )
+
+    container = build_live_container(settings)
+
+    assert isinstance(container.ingest_sources, SupabaseIngestSourceRepository)
+    assert not isinstance(container.ingest_sources, InMemoryIngestSourceRepository)
 
 
 def test_build_live_container_wires_pipeline_config(monkeypatch: pytest.MonkeyPatch) -> None:
