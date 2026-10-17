@@ -130,7 +130,7 @@ Each task was committed atomically:
 1. **Task 1: Complete IngestSourcesSection per UI-SPEC** — RED `42067b9` (test) → GREEN `83c8265` (feat)
 2. **Task 2: Playwright ADUX-10 sourceFormDirty** — `6869845` (test; host dirty OR already correct from 23-01)
 
-**Plan metadata:** _(docs commit follows)_
+**Plan metadata:** `fa7e711` (docs: complete plan)
 
 ## Files Created/Modified
 
