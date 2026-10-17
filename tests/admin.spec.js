@@ -114,6 +114,28 @@ test.describe("Admin nav grouping — in-page section switch (ADUX-12, D-01…D-
     return shellNav(page).getByRole("link", { name: /^Админ$/ });
   }
 
+  /**
+   * Layout probe for the geometry backstops: page-level and content-column widths plus the
+   * `main` box. `main` owns the section switch and excludes the wrapping shell header, so
+   * its scrollWidth is the tighter overflow signal; documentElement covers the page scroll.
+   */
+  async function layoutMetrics(page) {
+    return page.evaluate(() => {
+      const root = document.documentElement;
+      const main = document.querySelector("main");
+      const box = main.getBoundingClientRect();
+      return {
+        viewportWidth: window.innerWidth,
+        documentScrollWidth: root.scrollWidth,
+        documentClientWidth: root.clientWidth,
+        mainScrollWidth: main.scrollWidth,
+        mainClientWidth: main.clientWidth,
+        mainLeft: box.left,
+        mainRight: box.right,
+      };
+    });
+  }
+
   test("admin-section nav lists Дайджест then Пайплайн and marks digest active", async ({
     page,
   }) => {
@@ -289,6 +311,93 @@ test.describe("Admin nav grouping — in-page section switch (ADUX-12, D-01…D-
       await expect(adminLink).toHaveAttribute("aria-current", "true");
       await expect(adminLink).toHaveClass(/bg-accent/);
     }
+  });
+
+  test("section tabs share one row with no overflow at 1280 and the 640px sm edge (GAP-BACKSTOP-1)", async ({
+    page,
+  }) => {
+    for (const width of [1280, 640]) {
+      for (const target of ["/admin/digest", "/admin/pipeline"]) {
+        await page.setViewportSize({ width, height: 900 });
+        await gotoAsRole(page, "admin", target);
+        await page.evaluate(() => document.fonts.ready);
+
+        const digestBox = await page.getByTestId("admin-tab-digest").boundingBox();
+        const pipelineBox = await page.getByTestId("admin-tab-pipeline").boundingBox();
+        expect(digestBox).not.toBeNull();
+        expect(pipelineBox).not.toBeNull();
+        // One row, no wrap: equal viewport-relative tops, digest ends before pipeline starts.
+        expect(Math.abs(digestBox.y - pipelineBox.y)).toBeLessThanOrEqual(1);
+        expect(digestBox.x + digestBox.width).toBeLessThanOrEqual(pipelineBox.x);
+
+        // Both widths are asserted on purpose: documentElement = page scroll,
+        // main = the content column that actually owns the switch.
+        const metrics = await layoutMetrics(page);
+        expect(metrics.documentScrollWidth).toBeLessThanOrEqual(metrics.documentClientWidth);
+        expect(metrics.mainScrollWidth).toBeLessThanOrEqual(metrics.mainClientWidth);
+      }
+    }
+
+    // Negative control: below `sm` the very same probe returns a hidden nav, so the
+    // geometry assertions above are breakpoint-sensitive rather than vacuous.
+    await page.setViewportSize({ width: 639, height: 900 });
+    await gotoAsRole(page, "admin", "/admin/digest");
+    await expect(page.getByTestId("admin-section-nav")).toBeHidden();
+    await expect(page.getByTestId("admin-section-select")).toBeVisible();
+  });
+
+  test("narrow section select stays inside the content column without overflow (GAP-BACKSTOP-2)", async ({
+    page,
+  }) => {
+    for (const width of [480, 400]) {
+      await page.setViewportSize({ width, height: 900 });
+      await gotoAsRole(page, "admin", "/admin/digest");
+      await page.evaluate(() => document.fonts.ready);
+
+      const select = page.getByTestId("admin-section-select");
+      await expect(select).toBeVisible();
+      const box = await select.boundingBox();
+      expect(box).not.toBeNull();
+      const metrics = await layoutMetrics(page);
+
+      expect(box.x).toBeGreaterThanOrEqual(0);
+      expect(box.x + box.width).toBeLessThanOrEqual(metrics.viewportWidth);
+      // Content column = `main` minus its px-4 (16px) padding on each side, ±1px tolerance.
+      expect(box.x).toBeGreaterThanOrEqual(metrics.mainLeft + 16 - 1);
+      expect(box.x + box.width).toBeLessThanOrEqual(metrics.mainRight - 16 + 1);
+      expect(box.width).toBeLessThanOrEqual(metrics.mainClientWidth - 32 + 1);
+      expect(metrics.documentScrollWidth).toBeLessThanOrEqual(metrics.documentClientWidth);
+      // The option→URL switch is already pinned at 480px by the select-backstop case.
+    }
+  });
+
+  test("single shell Админ pill stays visible when the shell nav wraps (GAP-BACKSTOP-3)", async ({
+    page,
+  }) => {
+    await page.setViewportSize({ width: 480, height: 900 });
+    await gotoAsRole(page, "admin", "/admin/digest");
+    await page.evaluate(() => document.fonts.ready);
+
+    const nav = shellNav(page);
+    const navBox = await nav.boundingBox();
+    // Measure the wrap instead of assuming it: the nav box beats one pill row.
+    const firstPillBox = await nav
+      .getByRole("link", { name: /^Выпуск$/ })
+      .boundingBox();
+    expect(navBox).not.toBeNull();
+    expect(firstPillBox).not.toBeNull();
+    expect(navBox.height).toBeGreaterThan(firstPillBox.height);
+
+    const adminLink = shellAdminLink(page);
+    await expect(adminLink).toBeVisible();
+    const adminBox = await adminLink.boundingBox();
+    expect(adminBox).not.toBeNull();
+    expect(adminBox.x).toBeGreaterThanOrEqual(0);
+    expect(adminBox.x + adminBox.width).toBeLessThanOrEqual(480);
+
+    // The section switch never becomes a second row of pills.
+    await expect(page.getByTestId("admin-section-nav")).toBeHidden();
+    await expect(page.getByTestId("admin-section-select")).toBeVisible();
   });
 });
 
@@ -1657,12 +1766,39 @@ test.describe("Admin pipeline config — empty/dirty/reset/nav/no-execution (PIP
     await expect(pipelineTab).toHaveAttribute("href", "/admin/pipeline");
   });
 
-  test("pipeline config nav item hidden for employee", async ({ page }) => {
-    await gotoAsRole(page, "employee", "/");
+  test("employee deep-link renders Forbidden and no admin data at /admin/digest (IN-03)", async ({
+    page,
+  }) => {
+    // IN-03: the retired case asserted on "/", where AdminLayout never renders — it could
+    // not fail. Deep-link instead, where the layout really does mount for an employee.
+    await gotoAsRole(page, "employee", "/admin/digest");
+
     const shell = page.getByRole("navigation", { name: /основная навигация/i });
-    await expect(shell.getByRole("link", { name: "Пайплайн", exact: true })).toHaveCount(0);
+    await expect(shell).toBeVisible();
     await expect(shell.getByRole("link", { name: /^Админ$/ })).toHaveCount(0);
-    await expect(page.getByTestId("admin-section-nav")).toHaveCount(0);
+
+    // Layout chrome renders by design (T-22-01)…
+    await expect(page.getByTestId("admin-section-nav")).toBeVisible();
+    await expect(page.getByTestId("forbidden-page")).toBeVisible();
+    await expect(
+      page.getByRole("heading", { name: "Недостаточно прав", exact: true }),
+    ).toBeVisible();
+
+    // …but no admin data surface may.
+    await expect(page.getByTestId("admin-digest-page")).toHaveCount(0);
+    await expect(page.getByTestId("admin-shortlist")).toHaveCount(0);
+    await expect(page.getByTestId("admin-shortlist-row")).toHaveCount(0);
+
+    // Two level-1 headings is the intended structure on this branch: the layout's sr-only
+    // section name plus ForbiddenPage's visible state name — pinned so the outline stays
+    // unambiguous by design rather than by accident.
+    await expect(page.getByRole("heading", { level: 1 })).toHaveCount(2);
+    await expect(
+      page.getByRole("heading", { level: 1, name: "Дайджест", exact: true }),
+    ).toHaveCount(1);
+    await expect(
+      page.getByRole("heading", { level: 1, name: "Недостаточно прав", exact: true }),
+    ).toHaveCount(1);
   });
 
   test("pipeline config no execution controls render", async ({ page }) => {
