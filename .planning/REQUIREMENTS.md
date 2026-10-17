@@ -19,7 +19,7 @@ Ordering rule: **backlog tech debt first** (999.7 → 999.1 → 999.6), then mai
 ### Unsaved-changes guard for the pipeline editor (backlog 999.6)
 
 - [x] **ADUX-09**: The admin pipeline editor warns before losing unsaved changes on in-app SPA navigation **and** on reload/close, using the existing Russian copy; no warning when clean; the dirty flag clears after a successful save and stays armed after a server reject
-- [ ] **ADUX-10**: The guard covers every editable surface on `/admin/pipeline`, including the ingest-sources editor shipped in the sources phase
+- [x] **ADUX-10**: The guard covers every editable surface on `/admin/pipeline`, including the ingest-sources editor shipped in the sources phase
 
 ### Pipeline config validator (backlog 999.7)
 
@@ -36,9 +36,9 @@ Ordering rule: **backlog tech debt first** (999.7 → 999.1 → 999.6), then mai
 
 ### Ingest sources (admin-managed)
 
-- [ ] **SRC-01**: An admin can list, add, enable/disable, and remove ingest sources (YouTube channel or playlist) on the pipeline page, and the list is stored in the database
+- [x] **SRC-01**: An admin can list, add, enable/disable, and remove ingest sources (YouTube channel or playlist) on the pipeline page, and the list is stored in the database
 - [ ] **SRC-02**: The source API validates the canonical source id server-side and rejects anything else with a top-level structured 400 `{errors:[…]}` and zero writes; the UI states where to obtain the id
-- [ ] **SRC-03**: Sources are read/written through an `IngestSourceRepository` port wired in composition; the SPA reaches them only through a service module (no deep Supabase coupling)
+- [x] **SRC-03**: Sources are read/written through an `IngestSourceRepository` port wired in composition; the SPA reaches them only through a service module (no deep Supabase coupling)
 
 ### Admin nav grouping (backlog 999.5)
 
@@ -105,16 +105,16 @@ Deferred. Not in this milestone's roadmap.
 | ADUX-07 | Phase 18 | Complete |
 | ADUX-08 | Phase 18 | Complete |
 | ADUX-09 | Phase 19 | Complete |
-| ADUX-10 | Phase 23 | Pending |
+| ADUX-10 | Phase 23 | Complete |
 | ADUX-12 | Phase 22 | Complete |
 | MAIL-02 | Phase 20 | Complete |
 | MAIL-01 | Phase 21 | Complete |
 | MAIL-03 | Phase 21 | Complete |
 | MAIL-04 | Phase 21 | Complete |
 | MAIL-05 | Phase 21 | Complete |
-| SRC-01 | Phase 23 | Pending |
+| SRC-01 | Phase 23 | Complete |
 | SRC-02 | Phase 23 | Pending |
-| SRC-03 | Phase 23 | Pending |
+| SRC-03 | Phase 23 | Complete |
 | ING-02 | Phase 24 | Pending |
 | ING-05 | Phase 24 | Pending |
 | ING-06 | Phase 24 | Pending |
