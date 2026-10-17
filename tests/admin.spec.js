@@ -193,6 +193,77 @@ test.describe("Admin nav grouping — in-page section switch (ADUX-12, D-01…D-
     await expect(page.getByTestId("admin-section-select")).toHaveValue("/admin/pipeline");
     await expect(shellAdminLink(page)).toHaveClass(/bg-accent/);
   });
+
+  test("dirty editor ignores a click on the already-active section tab (WR-01, D-13)", async ({
+    page,
+  }) => {
+    // WR-01: NavLink navigates even to the current location, so useBlocker sees a
+    // leave that is not a leave. Clicking the tab you are already on must be inert.
+    await gotoAsRole(page, "admin", "/admin/pipeline");
+    const editor = page.getByTestId("pipeline-config-editor");
+    await editor.fill("template: lecture\n");
+
+    const pipelineTab = page.getByTestId("admin-tab-pipeline");
+    await expect(pipelineTab).toHaveAttribute("aria-current", "page");
+    await pipelineTab.click();
+
+    // URL and draft are auto-waiting assertions, so the dialog count is read after the
+    // (blocked) navigation settles instead of racing it.
+    await expect(page).toHaveURL(/\/admin\/pipeline$/);
+    await expect(editor).toHaveValue("template: lecture\n");
+    await expect(page.getByRole("dialog")).toHaveCount(0);
+
+    // D-13 no-carve-out guard: a genuine tab leave in the same state still prompts.
+    await page.getByTestId("admin-tab-digest").click();
+    await expect(page.getByRole("dialog")).toBeVisible();
+    await expect(page.getByTestId("unsaved-changes-message")).toHaveText(
+      "Есть несохранённые изменения. Уйти без сохранения?",
+    );
+    await expect(page).toHaveURL(/\/admin\/pipeline$/);
+    await page.getByTestId("unsaved-changes-stay").click();
+    await expect(page.getByRole("dialog")).toHaveCount(0);
+    await expect(page).toHaveURL(/\/admin\/pipeline$/);
+    await expect(editor).toHaveValue("template: lecture\n");
+    await expect(pipelineTab).toHaveAttribute("aria-current", "page");
+  });
+
+  test("admin surfaces expose exactly one visually hidden h1 (IN-01, D-06)", async ({
+    page,
+  }) => {
+    // IN-01: the outline must not start at h2, but D-06 forbids restoring a visible title.
+    await gotoAsRole(page, "admin", "/admin/digest");
+    const digestHeading = page.getByRole("heading", {
+      level: 1,
+      name: "Дайджест",
+      exact: true,
+    });
+    await expect(digestHeading).toHaveCount(1);
+    // Playwright treats a 1x1 box as visible, so the class AND the geometry are what make
+    // this case fail if `sr-only` is dropped and the title becomes sighted again.
+    await expect(digestHeading).toHaveClass(/sr-only/);
+    const digestBox = await digestHeading.boundingBox();
+    expect(digestBox).not.toBeNull();
+    expect(digestBox.width).toBeLessThanOrEqual(1);
+    expect(digestBox.height).toBeLessThanOrEqual(1);
+
+    await gotoAsRole(page, "admin", "/admin/pipeline");
+    const pipelineHeading = page.getByRole("heading", {
+      level: 1,
+      name: "Пайплайн",
+      exact: true,
+    });
+    await expect(pipelineHeading).toHaveCount(1);
+    await expect(pipelineHeading).toHaveClass(/sr-only/);
+    const pipelineBox = await pipelineHeading.boundingBox();
+    expect(pipelineBox).not.toBeNull();
+    expect(pipelineBox.width).toBeLessThanOrEqual(1);
+    expect(pipelineBox.height).toBeLessThanOrEqual(1);
+
+    // The removed page titles stay removed — this case only adds the section name.
+    await expect(
+      page.getByRole("heading", { name: "Конфиг пайплайна", exact: true }),
+    ).toHaveCount(0);
+  });
 });
 
 test.describe("Admin Digest — shortlist triage (ADMIN-01…03, ADMIN-05, D-79, D-80)", () => {
