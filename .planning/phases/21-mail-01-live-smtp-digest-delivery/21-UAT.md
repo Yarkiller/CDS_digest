@@ -1,15 +1,14 @@
 ---
-status: partial
+status: complete
 phase: 21-mail-01-live-smtp-digest-delivery
 source: [21-VERIFICATION.md]
 started: 2026-10-16T15:30:02Z
-updated: 2026-10-16T19:18:51Z
+updated: 2026-10-18T10:24:00+03:00
 ---
 
 ## Current Test
-<!-- OVERWRITE each test - shows where we are -->
 
-[testing paused — 1 items outstanding]
+[testing complete]
 
 ## Tests
 
@@ -34,19 +33,26 @@ expected: Разделы §4.1.3 и §4e runbook указывают, что жи
 result: pass
 
 ### 6. Живой smoke доставки дайджеста через Haskimail HTTP API (ADR-0005)
-expected: При `MAILER=haskimail` с валидным `HASKIMAIL_API_KEY` и верифицированным `HASKIMAIL_FROM` один реальный недельный дайджест уходит через `https://api.haskimail.ru/email`; API принимает каждое письмо (`MessageID`), `recipient_count=M` и `delivered_count=N` совпадают с фактически отправленным набором, а при отказе API статус честно становится `partial`/`failed`.
-result: pending
-note: "SMTP-релей в целевом окружении недоступен (previous blocked_by: third-party) — транспорт переключён на HTTP API Haskimail по ADR-0005. Живой прогон 2026-10-17: токен валиден (авторизация пройдена), но API вернул 422/ErrorCode 400 — в тестовом периоде обратный адрес должен быть подтверждён либо на верифицированном домене. Адаптер корректно отдал delivery_status=failed без 5xx (MAIL-04/D-07 подтверждены вживую). Осталось: верифицировать HASKIMAIL_FROM и повторить."
+expected: При MAILER=haskimail с валидным HASKIMAIL_API_KEY и верифицированным HASKIMAIL_FROM один реальный недельный дайджест уходит через https://api.haskimail.ru/email; API принимает каждое письмо (MessageID), recipient_count=M и delivered_count=N совпадают с фактически отправленным набором; при отказе API статус честно partial/failed.
+result: skipped
+reason: "Deferred follow-up: Рассылка не работает. MAILER ещё не проверил учётную запись. Отложить этот тест до завтра (19.10.2026). Если не блокер продолжить, сделать пометку."
 
 ## Summary
 
 total: 6
 passed: 5
 issues: 0
-pending: 1
-skipped: 0
+pending: 0
+skipped: 1
 blocked: 0
 
 ## Gaps
 
 [none yet]
+
+## Deferred Follow-Ups
+
+- test: 6
+  idea: "Живой smoke Haskimail (ADR-0005): верифицировать учётную запись MAILER / HASKIMAIL_FROM и повторить реальную отправку дайджеста. Отложено до 2026-10-19. Предыдущий прогон 2026-10-17: auth OK, 422 до верификации FROM; адаптер корректно вернул failed без 5xx."
+  deferred_at: 2026-10-18
+  resume_after: 2026-10-19
