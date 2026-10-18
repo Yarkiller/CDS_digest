@@ -20,6 +20,10 @@ from backend.application.use_cases.ingest_sources import (
     list_ingest_sources,
     set_ingest_source_enabled,
 )
+from backend.application.use_cases.ingestion_schedule import (
+    get_ingestion_schedule,
+    update_ingestion_schedule,
+)
 from backend.application.use_cases.pipeline_config import (
     get_pipeline_config,
     save_pipeline_config,
@@ -38,6 +42,7 @@ from backend.domain.errors import (
     EmptySendPoolError,
     IngestSourceNotFoundError,
     IngestSourceValidationError,
+    IngestionScheduleValidationError,
     InvalidPreviewCompositionError,
     InvalidSendOrderError,
     InvalidShortlistDecisionError,
@@ -47,6 +52,7 @@ from backend.domain.errors import (
     ShortlistNotFoundError,
 )
 from backend.domain.ingest_source import IngestSource
+from backend.domain.ingestion_schedule import IngestionSchedule, format_time_of_day
 from backend.domain.material import Material
 from backend.domain.shortlist import AdminShortlist
 from backend.interface.http.deps import require_admin
@@ -239,6 +245,28 @@ class IngestSourcesListResponse(BaseModel):
     sources: list[IngestSourceResponse]
 
 
+class IngestionScheduleResponse(BaseModel):
+    """GET/PATCH /admin/ingestion-schedule DTO (ING-06, D-14/D-16)."""
+
+    model_config = ConfigDict(extra="forbid")
+
+    enabled: bool
+    time_of_day: str
+    days_of_week: list[int]
+    last_run_at: datetime | None = None
+    updated_at: datetime | None = None
+
+
+class IngestionSchedulePatchRequest(BaseModel):
+    """PATCH /admin/ingestion-schedule body — only provided fields change (D-16)."""
+
+    model_config = ConfigDict(extra="forbid")
+
+    enabled: bool | None = None
+    time_of_day: str | None = None
+    days_of_week: list[int] | None = None
+
+
 def _ingest_source_to_response(row: IngestSource) -> IngestSourceResponse:
     return IngestSourceResponse(
         id=row.id,
@@ -279,6 +307,26 @@ def _require_ingest_sources(request: Request):
             detail="ingest_sources_not_configured",
         )
     return container.ingest_sources
+
+
+def _require_ingestion_schedule(request: Request):
+    container = request.app.state.container
+    if container is None or getattr(container, "ingestion_schedule", None) is None:
+        raise HTTPException(
+            status_code=status.HTTP_503_SERVICE_UNAVAILABLE,
+            detail="ingestion_schedule_not_configured",
+        )
+    return container.ingestion_schedule
+
+
+def _ingestion_schedule_to_response(row: IngestionSchedule) -> IngestionScheduleResponse:
+    return IngestionScheduleResponse(
+        enabled=row.enabled,
+        time_of_day=format_time_of_day(row.time_of_day),
+        days_of_week=list(row.days_of_week),
+        last_run_at=row.last_run_at,
+        updated_at=row.updated_at,
+    )
 
 
 def _require_container(request: Request):
@@ -849,3 +897,64 @@ def delete_ingest_source_route(
             detail="ingest_sources_unavailable",
         ) from exc
     return Response(status_code=status.HTTP_204_NO_CONTENT)
+
+
+@router.get(
+    "/ingestion-schedule",
+    response_model=IngestionScheduleResponse,
+    summary="Get the automatic ingestion schedule",
+    description=(
+        "Returns the singleton auto-collect schedule (ING-06, D-14/D-16). "
+        "Missing row → domain defaults. Requires admin. "
+        "Missing repo → 503."
+    ),
+)
+def get_ingestion_schedule_route(
+    request: Request,
+    _admin: CurrentUser = Depends(require_admin),
+) -> IngestionScheduleResponse:
+    repo = _require_ingestion_schedule(request)
+    try:
+        row = get_ingestion_schedule(repo)
+    except PersistenceError as exc:
+        raise HTTPException(
+            status_code=status.HTTP_503_SERVICE_UNAVAILABLE,
+            detail="ingestion_schedule_unavailable",
+        ) from exc
+    return _ingestion_schedule_to_response(row)
+
+
+@router.patch(
+    "/ingestion-schedule",
+    response_model=IngestionScheduleResponse,
+    summary="Update the automatic ingestion schedule",
+    description=(
+        "Merges provided fields onto the singleton schedule and returns the full row "
+        "(ING-06, D-16). Requires admin. Validation rejects → top-level {errors:[…]} 400. "
+        "Unknown JSON fields → 422. Missing repo → 503."
+    ),
+)
+def patch_ingestion_schedule_route(
+    body: IngestionSchedulePatchRequest,
+    request: Request,
+    _admin: CurrentUser = Depends(require_admin),
+) -> IngestionScheduleResponse | JSONResponse:
+    repo = _require_ingestion_schedule(request)
+    try:
+        row = update_ingestion_schedule(
+            repo,
+            enabled=body.enabled,
+            time_of_day=body.time_of_day,
+            days_of_week=body.days_of_week,
+        )
+    except IngestionScheduleValidationError as exc:
+        return JSONResponse(
+            status_code=status.HTTP_400_BAD_REQUEST,
+            content={"errors": [error.to_dict() for error in exc.errors]},
+        )
+    except PersistenceError as exc:
+        raise HTTPException(
+            status_code=status.HTTP_503_SERVICE_UNAVAILABLE,
+            detail="ingestion_schedule_unavailable",
+        ) from exc
+    return _ingestion_schedule_to_response(row)
