@@ -135,6 +135,13 @@ async def run_collect_batch(
                 f"{type(err).__name__}: {err}"
             )
             continue
+        except Exception as err:  # noqa: BLE001 — adapter bug must not kill the batch
+            sources_unreadable += 1
+            deps.emit_diagnostic(
+                f"source unreadable (unexpected): {source.source_id}: "
+                f"{type(err).__name__}: {err}"
+            )
+            continue
 
         sources_read += 1
 
@@ -179,19 +186,27 @@ async def run_collect_batch(
                 )
                 continue
 
+            next_cursor = advance_cursor(
+                current, (video.published, video.video_id)
+            )
+            try:
+                deps.sources.advance_cursor(
+                    source.id,
+                    published=next_cursor[0],
+                    video_id=next_cursor[1],
+                )
+            except Exception as err:  # noqa: BLE001 — cursor write is best-effort
+                videos_failed += 1
+                deps.emit_diagnostic(
+                    f"cursor advance failed: {video.video_id}: "
+                    f"{type(err).__name__}: {err}"
+                )
+                continue
+
             if result.already_saved:
                 videos_already += 1
             else:
                 videos_ingested += 1
-
-            next_cursor = advance_cursor(
-                current, (video.published, video.video_id)
-            )
-            deps.sources.advance_cursor(
-                source.id,
-                published=next_cursor[0],
-                video_id=next_cursor[1],
-            )
             current = next_cursor
 
     counters = CollectCounters(
