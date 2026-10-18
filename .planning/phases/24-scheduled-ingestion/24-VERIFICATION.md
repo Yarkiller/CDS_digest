@@ -86,9 +86,9 @@ human_verification:
   - test: "flock: во время активного прогона запустить второй `systemctl start digest-ingest.service`"
     expected: "Второй запуск завершается кодом 75, `systemctl status` не failed, `digest-ingest-alert.service` не поднимается"
     why_human: "Конкурентное поведение flock/SuccessExitStatus проверяется только на живой системе"
-  - test: "TimeoutStartSec: имитировать зависший прогон дольше 1800 с (или временно уменьшить лимит)"
-    expected: "Прогон убит; `last_run_at` не обновлён; следующий тик снова `due` и продолжает с того же курсора"
-    why_human: "Инвариант «убитый прогон не штампует last_run_at» требует реального SIGTERM от systemd"
+  - test: "TimeoutStartSec: имитировать зависший прогон дольше 1800 с (или временно уменьшить лимит — но только до значения, которое гарантированно убивает **до** `stamp_last_run`; живой прогон показал, что 2 с попадают в shutdown tail и `last_run_at` успевает обновиться, 500 мс — нет)"
+    expected: "Прогон убит; `last_run_at` не обновлён, если kill пришёл до `stamp_last_run`; следующий тик снова `due` и продолжает с того же курсора"
+    why_human: "Инвариант «убитый прогон не штампует last_run_at» требует реального SIGTERM от systemd и держится только когда kill опережает stamp"
   - test: "OnFailure alert: форсировать exit 1 и отдельно exit 2"
     expected: "journald alert различает «partial failure … (exit 1)» и «no source could be read … (exit 2)»; alert-юнит отрабатывает от `digestcds`, а не root"
     why_human: "`MONITOR_EXIT_STATUS`, OnFailure-цепочка и фактический `User=` не исполняются unit-тестами"
@@ -265,7 +265,7 @@ Debt-маркеров (`TBD`/`FIXME`/`XXX`/`TODO`/`HACK`/`PLACEHOLDER`) в из�
 ### 3. TimeoutStartSec и last_run_at
 
 **Test:** Дождаться/сымитировать прогон дольше 1800 с.
-**Expected:** Прогон убит, `last_run_at` не обновлён, следующий тик снова due и продолжает с того же курсора.
+**Expected:** Прогон убит, `last_run_at` не обновлён — **если kill пришёл до `stamp_last_run`** — следующий тик снова due и продолжает с того же курсора. Уменьшать лимит для проверки можно только до значения, которое гарантированно убивает раньше stamp: живой прогон на WSL2 показал, что 2 с попадают в shutdown tail (`Result=timeout` **с** обновлённым `last_run_at`), а 500 мс убивают за 530 мс до stamp.
 **Why human:** Требует реального SIGTERM от systemd и проверки БД.
 
 ### 4. OnFailure alert (exit 1 vs exit 2)

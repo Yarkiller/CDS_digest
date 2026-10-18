@@ -214,9 +214,21 @@ def test_runbook_and_records_name_the_oneshot_start_limit() -> None:
     # cannot demonstrate what it claims to demonstrate, and would read as a regression.
     assert "TimeoutStartSec=2" not in section_5e, "§5e must not prescribe a 2s limit: 2s stamps"
     assert "TimeoutStartSec=500ms" in section_5e, "§5e must prescribe the proven 500ms limit"
+    # The run-limit recipe applies a `--runtime` drop-in, so it must be self-contained: show the
+    # path it removes. The alert recipe (item 8) carries the same line; before WR-05 item 5
+    # pointed at a whole-unit revert instead, which is why this is pinned positively as well as
+    # by the negative token ban below.
+    assert (
+        "rm -f /run/systemd/system/digest-ingest.service.d/override.conf" in section_5e
+    ), "§5e must show how to remove the runtime drop-in"
+    # The unconditional "not stamped" claim is FALSE for a kill that lands inside the shutdown
+    # tail, so the qualifier is part of the contract rather than prose.
+    assert (
+        "when the kill lands before `stamp_last_run`" in section_5e
+    ), "§5e must qualify the no-stamp claim"
     # `systemctl revert` deletes EVERY drop-in for the unit, persistent ones included -- so it
     # is not a safe cleanup for a recipe that only ever created a `--runtime` drop-in. The
-    # recipe removes the runtime drop-in path instead.
+    # hazard is written up in §4k (outside this slice); §5e is prescriptive only.
     assert "systemctl revert" not in section_5e, "§5e must not prescribe systemctl revert"
 
     phase = _REPO / ".planning" / "phases" / "24-scheduled-ingestion"
