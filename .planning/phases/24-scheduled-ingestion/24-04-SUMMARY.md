@@ -135,7 +135,7 @@ Each task was committed atomically:
 3. **Task 2 RED: ING-07 guard stub scanner** - `f4da914` (test)
 4. **Task 2 GREEN: AST import-graph scanner** - `d7c613c` (feat)
 
-**Plan metadata:** `36e64ea` (docs: complete plan); `6f0cbb6` (docs: SUMMARY ledger — tip)
+**Plan metadata:** `36e64ea` (docs: complete plan); ledger follow-ups through `a51f778`
 
 ## Files Created/Modified
 
