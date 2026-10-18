@@ -271,7 +271,13 @@ Plans:
   4. An import/reference guard test proves the scheduled path cannot reach publish/send, and the existing `ingest <url>` CLI stdout contract stays byte-identical.
   5. Zero new runtime Python packages are introduced (Atom feed + stdlib only).
 
-**Plans**: TBD
+**Plans**: 6 plans
+- [ ] 24-01-PLAN.md — Tracer: включённый источник → Atom-фид → драфт (порт/адаптер листинга, курсор, батч, `ingest-collect`, env-ключи)
+- [ ] 24-02-PLAN.md — Окно oldest→newest с лимитом, монотонный курсор, zero-LLM rescan, изоляция отказов, exit codes 0/1/2
+- [ ] 24-03-PLAN.md — Due-гейт в `Europe/Moscow`, `last_run_at`, миграция 013 и `[BLOCKING]` apply на общей VM
+- [ ] 24-04-PLAN.md — `deploy/systemd/*` (timer 15 мин, oneshot под flock, journald-алерт), сторож ING-07, runbook §4k/§5e
+- [ ] 24-05-PLAN.md — Backend `GET`/`PATCH /admin/ingestion-schedule`: домен, порт, use-case, Supabase-адаптер, wiring
+- [ ] 24-06-PLAN.md — SPA-блок «Автоматический сбор» на `/admin/pipeline` с немедленным PATCH и Playwright-тестами
 **Notes**: YouTube Data API v3 / `google-api-python-client` / `yt-dlp` are rejected; the Atom-feed choice **removes the ADR-0002 gate** (do not plan a Data API spike). `@handle` resolution is out of scope.
 **Tripwires**: `test_cli_ingest_contract.py` `EXPECTED_SUCCESS_LINES` → **PRESERVE** (byte-identical stdout contract).
 
