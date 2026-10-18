@@ -139,3 +139,213 @@ def test_adapter_does_not_read_environ() -> None:
     body = path.read_text(encoding="utf-8")
     assert "os.environ" not in body
     assert "os.getenv" not in body
+
+
+def test_list_recent_500_raises_feed_status() -> None:
+    from data_collection.adapters.youtube_feed import YouTubeFeedAdapter
+    from data_collection.errors.feed import FeedError
+
+    def handler(request: httpx.Request) -> httpx.Response:
+        return httpx.Response(500, content=b"error")
+
+    async def _run() -> None:
+        transport = httpx.MockTransport(handler)
+        async with httpx.AsyncClient(transport=transport) as client:
+            adapter = YouTubeFeedAdapter(client)
+            with pytest.raises(FeedError) as exc_info:
+                await adapter.list_recent(kind="channel", source_id=CHANNEL_ID)
+        assert exc_info.value.reason == "feed_status"
+        assert exc_info.value.status_code == 500
+
+    asyncio.run(_run())
+
+
+def test_list_recent_connect_error_raises_feed_network() -> None:
+    from data_collection.adapters.youtube_feed import YouTubeFeedAdapter
+    from data_collection.errors.feed import FeedError
+
+    def handler(request: httpx.Request) -> httpx.Response:
+        raise httpx.ConnectError("boom", request=request)
+
+    async def _run() -> None:
+        transport = httpx.MockTransport(handler)
+        async with httpx.AsyncClient(transport=transport) as client:
+            adapter = YouTubeFeedAdapter(client)
+            with pytest.raises(FeedError) as exc_info:
+                await adapter.list_recent(kind="channel", source_id=CHANNEL_ID)
+        assert exc_info.value.reason == "feed_network"
+        assert exc_info.value.exception_class == "ConnectError"
+
+    asyncio.run(_run())
+
+
+def test_parse_feed_rejects_doctype() -> None:
+    from data_collection.adapters.youtube_feed import parse_feed
+    from data_collection.errors.feed import FeedError
+
+    raw = b'<!DOCTYPE feed [<!ENTITY xxe "x">]><feed><entry/></feed>'
+    with pytest.raises(FeedError) as exc_info:
+        parse_feed(raw, source_id=CHANNEL_ID)
+    assert exc_info.value.reason == "feed_doctype"
+
+
+def test_parse_feed_rejects_entity_marker() -> None:
+    from data_collection.adapters.youtube_feed import parse_feed
+    from data_collection.errors.feed import FeedError
+
+    raw = b'<?xml version="1.0"?><!ENTITY boom "x"><feed><entry/></feed>'
+    with pytest.raises(FeedError) as exc_info:
+        parse_feed(raw, source_id=CHANNEL_ID)
+    assert exc_info.value.reason == "feed_doctype"
+
+
+def test_list_recent_content_length_oversize_before_body() -> None:
+    from data_collection.adapters.youtube_feed import YouTubeFeedAdapter
+    from data_collection.errors.feed import FeedError
+
+    oversized = 1024 * 1024 + 1
+
+    def handler(request: httpx.Request) -> httpx.Response:
+        # Valid XML body that would parse if read — size gate must fire first.
+        return httpx.Response(
+            200,
+            content=_ATOM_FEED,
+            headers={"content-length": str(oversized)},
+        )
+
+    async def _run() -> None:
+        transport = httpx.MockTransport(handler)
+        async with httpx.AsyncClient(transport=transport) as client:
+            adapter = YouTubeFeedAdapter(client)
+            with pytest.raises(FeedError) as exc_info:
+                await adapter.list_recent(kind="channel", source_id=CHANNEL_ID)
+        assert exc_info.value.reason == "feed_too_large"
+
+    asyncio.run(_run())
+
+
+def test_list_recent_stream_oversize_without_content_length() -> None:
+    from data_collection.adapters.youtube_feed import YouTubeFeedAdapter
+    from data_collection.errors.feed import FeedError
+
+    chunk = b"x" * (64 * 1024)
+    # Enough chunks to exceed 1 MiB without declaring content-length.
+    body = chunk * 17  # 1088 KiB
+
+    def handler(request: httpx.Request) -> httpx.Response:
+        return httpx.Response(200, content=body)
+
+    async def _run() -> None:
+        transport = httpx.MockTransport(handler)
+        async with httpx.AsyncClient(transport=transport) as client:
+            adapter = YouTubeFeedAdapter(client)
+            with pytest.raises(FeedError) as exc_info:
+                await adapter.list_recent(kind="channel", source_id=CHANNEL_ID)
+        assert exc_info.value.reason == "feed_too_large"
+
+    asyncio.run(_run())
+
+
+def test_parse_feed_html_is_invalid_xml() -> None:
+    from data_collection.adapters.youtube_feed import parse_feed
+    from data_collection.errors.feed import FeedError
+
+    # Malformed markup (typical HTML scrape) must not reach entry parsing.
+    raw = b"<html><body>not a feed</body>"
+    with pytest.raises(FeedError) as exc_info:
+        parse_feed(raw, source_id=CHANNEL_ID)
+    assert exc_info.value.reason == "feed_invalid_xml"
+
+
+def test_parse_feed_without_namespace_still_parses() -> None:
+    from data_collection.adapters.youtube_feed import parse_feed
+    from data_collection.dto.video_ref import VideoRef
+
+    raw = b"""\
+<?xml version="1.0"?>
+<feed>
+  <entry>
+    <videoId>dQw4w9WgXcQ</videoId>
+    <published>2026-10-17T09:00:00+00:00</published>
+  </entry>
+</feed>
+"""
+    listing = parse_feed(raw, source_id=CHANNEL_ID)
+    assert listing.videos == (VideoRef(VIDEO_ID, PUBLISHED),)
+    assert listing.skipped == ()
+
+
+def test_parse_feed_skips_missing_video_id_and_keeps_others() -> None:
+    from data_collection.adapters.youtube_feed import parse_feed
+    from data_collection.dto.video_ref import FeedSkip, VideoRef
+
+    raw = b"""\
+<?xml version="1.0"?>
+<feed xmlns:yt="http://www.youtube.com/xml/schemas/2015">
+  <entry>
+    <title>broken</title>
+    <published>2026-10-17T09:00:00+00:00</published>
+  </entry>
+  <entry>
+    <yt:videoId>dQw4w9WgXcQ</yt:videoId>
+    <published>2026-10-17T09:00:00+00:00</published>
+  </entry>
+</feed>
+"""
+    listing = parse_feed(raw, source_id=CHANNEL_ID)
+    assert listing.videos == (VideoRef(VIDEO_ID, PUBLISHED),)
+    assert listing.skipped == (FeedSkip(None, "missing_video_id"),)
+
+
+def test_parse_feed_skips_naive_and_unparseable_published() -> None:
+    from data_collection.adapters.youtube_feed import parse_feed
+    from data_collection.dto.video_ref import FeedSkip, VideoRef
+
+    raw = b"""\
+<?xml version="1.0"?>
+<feed xmlns:yt="http://www.youtube.com/xml/schemas/2015">
+  <entry>
+    <yt:videoId>aaaaaaaaaaa</yt:videoId>
+    <published>2026-10-17T09:00:00</published>
+  </entry>
+  <entry>
+    <yt:videoId>bbbbbbbbbbb</yt:videoId>
+    <published>not-a-date</published>
+  </entry>
+  <entry>
+    <yt:videoId>dQw4w9WgXcQ</yt:videoId>
+    <published>2026-10-17T09:00:00+00:00</published>
+  </entry>
+</feed>
+"""
+    listing = parse_feed(raw, source_id=CHANNEL_ID)
+    assert listing.videos == (VideoRef(VIDEO_ID, PUBLISHED),)
+    assert listing.skipped == (
+        FeedSkip("aaaaaaaaaaa", "invalid_published"),
+        FeedSkip("bbbbbbbbbbb", "invalid_published"),
+    )
+
+
+def test_parse_feed_media_group_does_not_override_direct_children() -> None:
+    from data_collection.adapters.youtube_feed import parse_feed
+    from data_collection.dto.video_ref import VideoRef
+
+    # Nested media:group published/videoId must be ignored; only direct children count.
+    raw = b"""\
+<?xml version="1.0"?>
+<feed xmlns:yt="http://www.youtube.com/xml/schemas/2015"
+      xmlns:media="http://search.yahoo.com/mrss/">
+  <entry>
+    <yt:videoId>dQw4w9WgXcQ</yt:videoId>
+    <published>2026-10-17T09:00:00+00:00</published>
+    <media:group>
+      <yt:videoId>xxxxxxxxxxx</yt:videoId>
+      <published>2020-01-01T00:00:00+00:00</published>
+    </media:group>
+  </entry>
+</feed>
+"""
+    listing = parse_feed(raw, source_id=CHANNEL_ID)
+    assert listing.videos == (VideoRef(VIDEO_ID, PUBLISHED),)
+    assert listing.skipped == ()
+
