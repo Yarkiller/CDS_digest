@@ -267,7 +267,7 @@ Plans:
 **Success Criteria** (what must be TRUE):
   1. A scheduled run enumerates new videos for each **enabled** source via the key-free public YouTube Atom feed (`feeds/videos.xml`, canonical `UC…`/`PL…` ids only) and ingests them through the existing pipeline, writing drafts + pending shortlist rows only.
   2. A per-source high-water mark prevents re-processing already-ingested videos, so a re-run is safe and does not re-pay caption/LLM cost.
-  3. The systemd `Type=oneshot` service + timer runs unattended with `EnvironmentFile=` (0600), a pinned timezone, `flock`, `OnFailure=`, `RuntimeMaxSec=`, and journald logging; each run's outcome is visible and one bad video does not abort the batch.
+  3. The systemd `Type=oneshot` service + timer runs unattended with `EnvironmentFile=` (0600), a pinned timezone, `flock`, `OnFailure=`, a bounded start phase (`TimeoutStartSec=` — `RuntimeMaxSec=` is inert on a oneshot), and journald logging; each run's outcome is visible and one bad video does not abort the batch.
   4. An import/reference guard test proves the scheduled path cannot reach publish/send, and the existing `ingest <url>` CLI stdout contract stays byte-identical.
   5. Zero new runtime Python packages are introduced (Atom feed + stdlib only).
 
