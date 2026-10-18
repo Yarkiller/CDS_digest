@@ -5,7 +5,7 @@ titles: json
 findings:
   - id: CR-01
     severity: critical
-    disposition: deferred
+    disposition: fixed
     title: "Падение advance_cursor роняет весь batch без graded exit"
   - id: WR-01
     severity: warning
@@ -13,7 +13,7 @@ findings:
     title: "Курсор уходит вперёд мимо failed-видео — повторный ingest невозможен"
   - id: WR-02
     severity: warning
-    disposition: deferred
+    disposition: fixed
     title: "Неожиданные ошибки feed не изолированы на уровне источника"
   - id: WR-03
     severity: warning
@@ -21,15 +21,15 @@ findings:
     title: "Stamp при нуле enabled-источников блокирует same-day сбор"
   - id: WR-04
     severity: warning
-    disposition: deferred
+    disposition: fixed
     title: "Alert-unit выполняется от root"
   - id: WR-05
     severity: warning
-    disposition: deferred
+    disposition: fixed
     title: "Очистка поля времени + blur оставляет пустой draft"
   - id: WR-06
     severity: warning
-    disposition: deferred
+    disposition: fixed
     title: "Fallback ответа PATCH обнуляет last_run_at в DTO"
   - id: IN-01
     severity: info
@@ -43,7 +43,7 @@ findings:
     severity: info
     disposition: deferred
     title: "ING-07 AST не ловит динамические импорты"
-open: 10
+open: 5
 total: 10
 recorded: 2026-10-18T13:30:00.000Z
 ---
@@ -52,13 +52,13 @@ recorded: 2026-10-18T13:30:00.000Z
 
 | Finding | Severity | Disposition | Source |
 |---------|----------|-------------|--------|
-| CR-01 | critical | deferred | Deferred to human decision at phase gate: fix requires a failing-test-first follow-up (`run_collect_batch` cursor write outside `try`). Verifier scored it ⚠️ Warning, does not falsify a must-have. |
+| CR-01 | critical | fixed | Fixed in `cfe45b7` (tests `364a8e6`): cursor write wrapped in try/except; `videos_failed += 1`, `cursor advance failed` diagnostic, batch continues, exit 1. |
 | WR-01 | warning | deferred | Same follow-up as CR-01 (cursor gap semantics, D-09 contract change). |
-| WR-02 | warning | deferred | Same follow-up: broaden source-level isolation to `Exception`. |
+| WR-02 | warning | fixed | Fixed in `cfe45b7` (tests `364a8e6`): unexpected `list_recent` exceptions degrade to `sources_unreadable` + diagnostic; known FeedError/CollectSourceError messages kept distinct. |
 | WR-03 | warning | deferred | Same follow-up: skip `stamp_last_run` when zero enabled sources (touches ING-06 D-23 contract). |
-| WR-04 | warning | deferred | systemd hardening, apply together with WR-01..03 follow-up. |
-| WR-05 | warning | deferred | UI polish, batch with follow-up. |
-| WR-06 | warning | deferred | Adapter fallback, batch with follow-up. |
+| WR-04 | warning | fixed | Fixed in `3240732` (tests `bf8b2fe`): alert unit runs as `digestcds` with `NoNewPrivileges`/`PrivateTmp`. |
+| WR-05 | warning | fixed | Fixed in `0ebb64b` (tests `ac9892f`): empty time blur restores `schedule.time_of_day`, no PATCH. |
+| WR-06 | warning | fixed | Fixed in `744e17b` (tests `86a44af`): empty upsert representation triggers follow-up read; missing row raises `PersistenceError`. |
 | IN-01 | info | deferred | Diagnostics polish. |
 | IN-02 | info | deferred | Minor duplication in CLI composition. |
 | IN-03 | info | deferred | Documented limitation of the AST guard. |
