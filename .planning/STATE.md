@@ -5,17 +5,17 @@ milestone_name: Live mail, scheduled ingestion & backlog debt
 current_phase: 24
 current_phase_name: Scheduled ingestion
 current_plan: 6
-status: executing
-stopped_at: Completed 24-05-PLAN.md
-last_updated: "2026-10-18T12:35:50.288Z"
+status: verifying
+stopped_at: Completed 24-06-PLAN.md
+last_updated: "2026-10-18T12:48:54.620Z"
 last_activity: 2026-10-18
 last_activity_desc: Phase 24 execution started
-state_head: 112df0c0a69f0ff9031b92e81457136c990876b6
+state_head: c3b92bd40cdc689adb7a0b43b21c2d0077da05ca
 progress:
   total_phases: 8
   completed_phases: 7
   total_plans: 26
-  completed_plans: 25
+  completed_plans: 26
   percent: 88
 ---
 
@@ -33,7 +33,7 @@ See: .planning/PROJECT.md (updated 2026-10-18 — after Phase 22)
 Phase: 24 (Scheduled ingestion) — EXECUTING
 Current Plan: 6
 Total Plans in Phase: 6
-Status: Ready to execute
+Status: Phase complete — ready for verification
 Last activity: 2026-10-18 — Phase 24 execution started
 
 Progress: [█████████░] 88%
@@ -92,6 +92,7 @@ Progress: [█████████░] 88%
 | Phase 24 P03 | 40min | 3 tasks | 14 files |
 | Phase 24 P04 | 25min | 2 tasks | 7 files |
 | Phase 24 P05 | 25min | 3 tasks | 13 files |
+| Phase 24 P06 | 11min | 2 tasks | 5 files |
 
 ## Accumulated Context
 
@@ -179,6 +180,9 @@ v1.3 roadmap locks:
 - [Phase 24]: Unit secret/publish scans require non-empty deploy/systemd (anti-vacuum)
 - [Phase 24]: Port method is update(...); PLAN wins over PATTERNS save(schedule) sketch
 - [Phase 24]: ingestion_schedule_not_configured detail string appears once in _require_* (OpenAPI text omits code)
+- [Phase 24]: dirty stays yamlDirty || sourceFormDirty — schedule never arms leave dialog (D-16)
+- [Phase 24]: Empty-week validation message is shown alone in status (not prefixed with Включён/Выключен)
+- [Phase 24]: Harness exposes readIngestionScheduleMock for patchCount assertions (Task 2 blur contract)
 
 ### Pending Todos
 
@@ -209,8 +213,8 @@ Carried product deferrals beyond v1.3: leaderboard, quiz, Whisper/Foundry ASR, i
 
 ## Session Continuity
 
-Last session: 2026-10-18T12:35:50.156Z
-Stopped at: Completed 24-05-PLAN.md
+Last session: 2026-10-18T12:48:54.486Z
+Stopped at: Completed 24-06-PLAN.md
 Resume file: None
 Next: `/gsd-verify-work 21`
 

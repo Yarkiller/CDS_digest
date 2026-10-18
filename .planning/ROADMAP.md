@@ -271,7 +271,7 @@ Plans:
   4. An import/reference guard test proves the scheduled path cannot reach publish/send, and the existing `ingest <url>` CLI stdout contract stays byte-identical.
   5. Zero new runtime Python packages are introduced (Atom feed + stdlib only).
 
-**Plans**: 5/6 plans executed
+**Plans**: 6/6 plans executed
 **Wave 1**
 - [x] 24-01-PLAN.md — Tracer: включённый источник → Atom-фид → драфт (порт/адаптер листинга, курсор, батч, `ingest-collect`, env-ключи)
 
@@ -288,7 +288,7 @@ Plans:
 - [x] 24-05-PLAN.md — Backend `GET`/`PATCH /admin/ingestion-schedule`: домен, порт, use-case, Supabase-адаптер, wiring
 
 **Wave 6** *(blocked on Wave 5 completion)*
-- [ ] 24-06-PLAN.md — SPA-блок «Автоматический сбор» на `/admin/pipeline` с немедленным PATCH и Playwright-тестами
+- [x] 24-06-PLAN.md — SPA-блок «Автоматический сбор» на `/admin/pipeline` с немедленным PATCH и Playwright-тестами
 
 **Notes**: YouTube Data API v3 / `google-api-python-client` / `yt-dlp` are rejected; the Atom-feed choice **removes the ADR-0002 gate** (do not plan a Data API spike). `@handle` resolution is out of scope.
 **Tripwires**: `test_cli_ingest_contract.py` `EXPECTED_SUCCESS_LINES` → **PRESERVE** (byte-identical stdout contract).
@@ -307,7 +307,7 @@ Phases execute in numeric order: 17 → 18 → 19 → 20 → 21 → 22 → 23 �
 | 21. MAIL-01 live SMTP digest | 3/3 | Complete    | 2026-10-18 |
 | 22. Admin nav grouping | 3/3 | Complete    | 2026-10-17 |
 | 23. Admin-managed ingest sources | 4/4 | Complete    | 2026-10-17 |
-| 24. Scheduled ingestion | 5/6 | In Progress|  |
+| 24. Scheduled ingestion | 6/6 | In Progress|  |
 
 ## Backlog
 
