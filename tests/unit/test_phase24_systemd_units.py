@@ -111,18 +111,33 @@ def test_timer_tokens() -> None:
 
 
 def test_alert_unit() -> None:
-    """Check 5: oneshot alert distinguishes exit 1 vs 2 via MONITOR_EXIT_CODE.
+    """Check 5: oneshot alert distinguishes exit 1 vs 2 via the numeric MONITOR_EXIT_STATUS.
 
     Also pinned as check 10 (WR-04): the alert must not run as root.
     """
     body = _read("digest-ingest-alert.service")
     assert "Type=oneshot" in body
     assert "journalctl -u digest-ingest.service" in body
-    assert "${MONITOR_EXIT_CODE:-${EXIT_CODE:-unknown}}" in body
+    assert "${MONITOR_EXIT_STATUS:-${EXIT_STATUS:-unknown}}" in body
     assert "1)" in body
     assert "2)" in body
     assert "partial failure" in body
     assert "no source could be read" in body
+
+
+def test_alert_unit_does_not_read_exit_qualifier() -> None:
+    """Check 5b (G-24-4): the alert reads the number, never the exited/killed qualifier.
+
+    MONITOR_EXIT_CODE is the qualifier on systemd 255 and EXIT_CODE is unset, so
+    reading either one forces every case arm into ``*)``. The positive assertion
+    pins the *full nested* expression: a bare ``EXIT_STATUS:-`` substring would
+    also match inside ``MONITOR_EXIT_STATUS:-``, so it cannot prove the fallback.
+    """
+    body = _read("digest-ingest-alert.service")
+    assert "${MONITOR_EXIT_STATUS:-${EXIT_STATUS:-unknown}}" in body
+    assert "MONITOR_EXIT_CODE" not in body
+    assert "EXIT_CODE:-" not in body
+    assert "journalctl -u digest-ingest.service" in body
 
 
 def test_alert_unit_runs_unprivileged() -> None:
