@@ -12,7 +12,9 @@ Authorized СВА staff can read a trustworthy weekly issue of prepared articles
 
 v1.3 Live mail, scheduled ingestion & backlog debt started 2026-10-14 (Phases 17+). Scope: backlog tech debt first — 999.1 reader-route honesty, 999.6 unsaved-changes guard, 999.7 YAML merge-key — then MAIL-02 investigation + signup mail, MAIL-01 live SMTP digest delivered to `profiles`, and a cron/systemd scheduled ingestion over the existing `ingest` CLI (YouTube channel/playlist source; drafts only, never auto-send).
 
-v1.3 progress: Phases 17–20 complete and verified. Phase 18 shipped admin-gated draft preview + CR-01 fix. Phase 19 shipped the pipeline-editor unsaved-changes guard. Phase 20 (MAIL-02) shipped path (B): honest autoconfirm post-register copy (no letter claim), GoTrue owns confirmation (no signup→`Mailer.send_digest`), runbook documents the criterion-4 relay gap deferred to Phase 21.
+v1.3 progress: **all 8 phases complete (Phases 17–24, 28 plans), milestone ready to close 2026-10-18.** Phase 18 shipped admin-gated draft preview + CR-01 fix. Phase 19 shipped the pipeline-editor unsaved-changes guard. Phase 20 (MAIL-02) shipped path (B): honest autoconfirm post-register copy (no letter claim), GoTrue owns confirmation. Phase 21 shipped live SMTP digest delivery with the `profiles` audience and honest counts. Phase 22 shipped the single «Админ» entry with in-page tabs. Phase 23 shipped DB-stored admin-managed ingest sources. Phase 24 shipped scheduled ingestion: a systemd timer drives `ingest-collect` against enabled sources, writing drafts + shortlist rows only.
+
+Phase 24 closed with two UAT-found blockers fixed by gap-closure plans (`24-07`, `24-08`): the run bound moved from the inert `RuntimeMaxSec=1800` to `TimeoutStartSec=1800` on the `Type=oneshot` unit, and the `OnFailure=` alert now reads the numeric `MONITOR_EXIT_STATUS` instead of the `exited`/`killed` qualifier — both proven on a live systemd 255 host. One live-run checkpoint (a real enabled YouTube source) is deferred: `pipeline_ingest_sources` has no rows.
 
 v1.2 Admin UX + diagnostics + PIPE-01 MVP shipped 2026-10-05 (Phases 12–16, 26 plans). Admin preview/email honesty, draft→ready promote without SQL, CLI `--debug` secret-safe diagnostics, and PIPE-01 MVP (YAML config view/edit/validate/persist behind a `PipelineConfigRepository` port; no execution). Phase 16 verified 49/49 after a stale re-verification (covered-digest restamp + code-review advisory only).
 
@@ -125,13 +127,14 @@ v1 is done only when **all** of the following hold:
 - ✓ Backlog 999.7 — strict pipeline-config validator accepts YAML merge keys (`<<`) while still rejecting duplicate keys — Phase 17
 - ✓ Backlog 999.6 — unsaved pipeline-config edits guarded on in-app SPA navigation and reload/close (ADUX-09) — Phase 19
 - ✓ Backlog 999.5 / ADUX-12 — one «Админ» shell entry → `/admin/digest` plus in-page «Дайджест | Пайплайн»; `/admin/pipeline` unchanged, no new route — Phase 22
+- ✓ SRC-01 — an admin manages the DB-stored YouTube channel/playlist source list on `/admin/pipeline`, with server-side canonical-id validation and structured 400s (`pipeline_ingest_sources`, migration 012, RLS on with zero policies) — Phase 23
+- ✓ MAIL-01 — weekly digest delivered by a real SMTP mailer to the `profiles` audience with an honest `recipient_count`/`delivered_count` and contained failures — Phase 21
+- ✓ ING-05/06/07 — scheduled ingestion: a systemd timer drives `ingest-collect` against enabled sources with a due gate in `Europe/Moscow`, a monotonic cursor, `flock` single-flight, a bounded run (`TimeoutStartSec=1800`), a numeric-code `OnFailure=` alert, and drafts + shortlist rows only (migration 013) — Phase 24
 
 ### Active
 
-v1.3 scope (REQ-IDs are defined in `.planning/REQUIREMENTS.md`):
-
-- [ ] MAIL-01 — weekly digest delivered by a real mailer to the `profiles` audience with an honest `recipient_count`
-- [ ] Scheduled ingestion — unattended collection against a YouTube channel/playlist writes drafts + shortlist rows only
+v1.3 scope is fully shipped; no Active requirements remain. The next milestone's
+requirements are defined in `.planning/REQUIREMENTS.md` at `/gsd-new-milestone` time.
 
 ### Out of Scope
 
@@ -254,4 +257,4 @@ After each phase transition: move validated/invalidated requirements; log decisi
 After milestone: full review of Core Value, Out of Scope, and Context against shipped reality.
 
 ---
-*Last updated: 2026-10-18 after Phase 22 (stale verification refresh)*
+*Last updated: 2026-10-18 after Phase 24 (v1.3 milestone complete)*

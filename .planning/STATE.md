@@ -3,45 +3,44 @@ gsd_state_version: "1.0"
 milestone: v1.3
 milestone_name: Live mail, scheduled ingestion & backlog debt
 current_phase: 24
-current_phase_name: Scheduled ingestion
-current_plan: 6
-status: verifying
-stopped_at: Completed 24-06-PLAN.md
-last_updated: "2026-10-18T12:48:54.620Z"
+current_plan: Not started
+status: completed
+stopped_at: Phase 24 complete — all phases complete
+last_updated: "2026-10-18T18:04:18.124Z"
 last_activity: 2026-10-18
-last_activity_desc: Phase 24 execution started
-state_head: c3b92bd40cdc689adb7a0b43b21c2d0077da05ca
+last_activity_desc: Phase 24 complete
+state_head: 4a4f8b12979b99ff122c9fc8ca94b1f6e21bd232
 progress:
   total_phases: 8
-  completed_phases: 7
-  total_plans: 26
-  completed_plans: 26
-  percent: 88
+  completed_phases: 8
+  total_plans: 28
+  completed_plans: 28
+  percent: 100
 ---
 
 # Project State
 
 ## Project Reference
 
-See: .planning/PROJECT.md (updated 2026-10-18 — after Phase 22)
+See: .planning/PROJECT.md (updated 2026-10-18 — v1.3 milestone complete)
 
 **Core value:** Trusted weekly prepared-article issue + one honest vote toward the next разбор
-**Current focus:** Phase 24 — Scheduled ingestion
+**Current focus:** v1.3 complete — milestone ready to close
 
 ## Current Position
 
-Phase: 24 (Scheduled ingestion) — EXECUTING
-Current Plan: 6
-Total Plans in Phase: 6
-Status: Phase complete — ready for verification
-Last activity: 2026-10-18 — Phase 24 execution started
+Phase: 24
+Current Plan: Not started
+Total Plans in Phase: 8
+Status: All phases complete
+Last activity: 2026-10-18 — Phase 24 complete
 
-Progress: [█████████░] 88%
+Progress: [██████████] 100%
 
 ## Performance Metrics
 
 **Velocity:**
-- Total plans completed: 20 (40 v1 + 23 v1.1 + 26 v1.2)
+- Total plans completed: 28 (40 v1 + 23 v1.1 + 26 v1.2)
 - Prior milestones shipped: v1 (5 phases), v1.1 (6 phases), v1.2 (5 phases)
 - v1.3 plans completed: 3
 
@@ -51,12 +50,12 @@ Progress: [█████████░] 88%
 |-------|-------|-------|----------|
 | 17. YAML merge-key | 3/3 | Complete (verified 27/27) | - |
 | 18. Reader-route honesty | 3/3 | Complete (verified 20/20, UAT 3/3, threats_open 0) | - |
-| 19. Unsaved-changes guard | 0/? | not started | - |
-| 20. Signup mail (MAIL-02) | 0/? | context gathered | - |
-| 21. Live SMTP digest (MAIL-01) | 0/? | not started | - |
-| 22. Admin nav grouping | 2/2 | Ready for verification | - |
-| 23. Ingest sources | 0/? | not started | - |
-| 24. Scheduled ingestion | 0/? | not started | - |
+| 19. Unsaved-changes guard | 2/2 | Complete | - |
+| 20. Signup mail (MAIL-02) | 2/2 | Complete | - |
+| 21. Live SMTP digest (MAIL-01) | 3/3 | Complete | - |
+| 22. Admin nav grouping | 2/2 | Complete | - |
+| 23. Ingest sources | 4/4 | Complete | - |
+| 24. Scheduled ingestion | 8/8 | Complete (UAT 7 pass + 1 deferred, threats_open 0) | - |
 | 17 | 3 | - | - |
 | 18 | 3 | - | - |
 | 19 | 2 | - | - |
@@ -64,6 +63,7 @@ Progress: [█████████░] 88%
 | 23 | 4 | - | - |
 | 22 | 3 | - | - |
 | 21 | 3 | - | - |
+| 24 | 8 | - | - |
 **Per-Plan Metrics:**
 
 | Plan | Duration | Tasks | Files |
@@ -93,6 +93,8 @@ Progress: [█████████░] 88%
 | Phase 24 P04 | 25min | 2 tasks | 7 files |
 | Phase 24 P05 | 25min | 3 tasks | 13 files |
 | Phase 24 P06 | 11min | 2 tasks | 5 files |
+| Phase 24 P07 | 35min | 3 tasks | 10 files |
+| Phase 24 P08 | 20min | 3 tasks | 6 files |
 
 ## Accumulated Context
 
@@ -183,6 +185,12 @@ v1.3 roadmap locks:
 - [Phase 24]: dirty stays yamlDirty || sourceFormDirty — schedule never arms leave dialog (D-16)
 - [Phase 24]: Empty-week validation message is shown alone in status (not prefixed with Включён/Выключен)
 - [Phase 24]: Harness exposes readIngestionScheduleMock for patchCount assertions (Task 2 blur contract)
+- [Phase 24-07]: the oneshot's only bound is its start phase — `TimeoutStartSec=1800` replaces the inert `RuntimeMaxSec=1800`, because systemd 255 logs «has no effect … Ignoring.» and never applies the runtime knob to a `Type=oneshot`
+- [Phase 24-07]: the binding property is the **stamp**, not the unit's `Result` — a kill landing in the shutdown tail can still write `last_run_at`, so the live probe asserts on `last_run_at` and uses 500 ms (2 s stamped; 500 ms did not)
+- [Phase 24-08]: the `OnFailure=` monitor passes `MONITOR_EXIT_CODE` as a qualifier (`exited`/`killed`) and the number in `MONITOR_EXIT_STATUS`; the legacy `EXIT_CODE`/`EXIT_STATUS` are unset on systemd 255
+- [Phase 24-08]: text contracts invert rather than extend — the positive assertion pins the whole nested substitution and a negative gate forbids the old token, because a bare `EXIT_STATUS:-` is a substring of `MONITOR_EXIT_STATUS:-` and would pass vacuously
+- [Phase 24-08]: no `killed)` arm is added (D-12 scope) — a SIGTERM from the run limit correctly falls to `*)` with the numeric code, e.g. `unexpected failure (exit 15)`
+- [Phase 24 verification]: record-drift gates run inside pytest, never as a shell `!` negation, because the execution host is PowerShell where a leading `!` is a parse error
 
 ### Pending Todos
 
@@ -190,11 +198,12 @@ None.
 
 ### Blockers/Concerns
 
-- **Vite dev-server flakiness in this workspace (operational, recurring).** Across Phases 18-02, 18-03 and the Phase 18 gates, the Playwright `web` project produced mass `ERR_CONNECTION_REFUSED` failures on `127.0.0.1:5174` — a reuse fight between a stale long-lived Vite server and a new run, or the server dying mid-run. The signature is indistinguishable from a real regression unless the error text is read. Always check for a listener on 5174 (`Get-NetTCPConnection -LocalPort 5174 -State Listen`) and kill stale servers before a full-suite run; a clean re-run has produced 110 passed every time.
+- **Vite dev-server flakiness in this workspace (operational, recurring).** Across Phases 18-02, 18-03, the Phase 18 gates and the Phase 24 UAT/validation runs, the Playwright `web` project produced mass failures on `127.0.0.1:5174` — a reuse fight between a stale long-lived Vite server and a new run, or the server dying mid-run. **Phase 24 closing added a second signature:** a stale server left running with `VITE_USE_MOCKS=false` from `web/.env.local` makes every admin spec land on the login screen (17 failures, all on `getByTestId("admin-pipeline-page")`). Always check for a listener on 5174 (`Get-NetTCPConnection -LocalPort 5174 -State Listen`) and kill stale servers before a full-suite run; a clean re-run has produced green every time (17/17 for the Phase 24 slice).
 
-- **SMTP relay (Phase 20/21)** — the corporate relay **choice and configuration shape** are now recorded (Phase 20 CONTEXT: `GOTRUE_SMTP_*` for the GoTrue lane, `SMTP_*` for MAIL-01; one-command rollback = `GOTRUE_MAILER_AUTOCONFIRM=true` + container config reload). Relay **values** are still operator-supplied, so criterion 4's smoke-test *proof* is an acknowledged gap: Phase 20 ships honest autoconfirm (path B) and hands "relay chosen and proven" forward as Phase 21's precondition.
-- Signup confirmation mail (`g-01-3b-signup-mailer`) — **root cause is now diagnosed** (GoTrue fails while sending the confirmation email; `{code:500, error_code:"unexpected_failure"}`), and autoconfirm is on since 2026-09-20. Phase 20 now delivers the honest-copy fix (B) and closes the debug session; the SPA error-mapping honesty in `authApi.js` stays deferred.
-- Nyquist VALIDATION.md drafts for phases 6–8 remain historical audit debt (not a product requirement).
+- **Scheduled ingestion has no live-run proof yet (deferred UAT checkpoint).** `pipeline_ingest_sources` is empty, so `24-UAT.md` test 6 — a real YouTube Atom feed producing `materials.status='draft'` + `pending` shortlist rows, with the cursor not advancing on a re-run — is recorded as a deferred follow-up rather than a pass. Everything else in Phase 24 (timer ticks, flock exit 75, bounded run, numeric alert codes, `0600` env file, migration 013, admin UI block) is proven on the live WSL2/systemd 255 host. Add one enabled source and re-run the tick to close it.
+- **SMTP relay (Phase 20/21)** — the corporate relay **choice and configuration shape** are recorded (Phase 20 CONTEXT: `GOTRUE_SMTP_*` for the GoTrue lane, `SMTP_*` for MAIL-01; one-command rollback = `GOTRUE_MAILER_AUTOCONFIRM=true` + container config reload). Relay **values** are still operator-supplied, so criterion 4's smoke-test *proof* remains an acknowledged ops gap.
+- Signup confirmation mail (`g-01-3b-signup-mailer`) — **root cause diagnosed** (GoTrue fails while sending the confirmation email; `{code:500, error_code:"unexpected_failure"}`), autoconfirm on since 2026-09-20, delivery path (B) shipped in Phase 20; the SPA error-mapping honesty in `authApi.js` stays deferred.
+- Nyquist VALIDATION.md drafts for phases 6–8 remain historical audit debt (not a product requirement). Phase 24's `24-VALIDATION.md` is now `status: validated`, `nyquist_compliant: true` (0 gaps; 227 unit + 17 Playwright green).
 
 ## Deferred Items
 
@@ -203,6 +212,7 @@ Items acknowledged and deferred at milestone close, most recent first:
 | Category | Item | Status | Deferred At | Milestone |
 |----------|------|--------|-------------|-----------|
 | backlog | 999.4 unify Approve + Mark ready (ADUX-11) | parked (product preference) | 2026-10-13 | v1.3 |
+| deferred_items | 24-UAT.md test 6: live collection against a real enabled source (YouTube Atom → drafts + pending shortlist, cursor not advancing on re-run) | deferred — `pipeline_ingest_sources` empty | 2026-10-18 | v1.3 |
 | backlog | 999.1 / 999.5 / 999.6 / 999.7 | moved into v1.3 (Phases 18 / 22 / 19 / 17) | 2026-10-14 | v1.3 |
 | deferred_items | 13/deferred-items.md: admin.spec.js `/me network failure shows ServiceUnavailable not Forbidden` flake (pre-existing) | acknowledged | 2026-10-05 | v1.2 |
 | deferred_items | 10/deferred-items.md: pre-existing test_admin_shortlist_empty_batch failure → FIX-01 / Phase 12 | resolved | 2026-10-02 | v1.1→v1.2 |
@@ -213,15 +223,15 @@ Carried product deferrals beyond v1.3: leaderboard, quiz, Whisper/Foundry ASR, i
 
 ## Session Continuity
 
-Last session: 2026-10-18T12:48:54.486Z
-Stopped at: Completed 24-06-PLAN.md
+Last session: 2026-10-18T21:05:00.000Z
+Stopped at: Phase 24 complete — v1.3 milestone 100% (8/8 phases, 28/28 plans)
 Resume file: None
-Next: `/gsd-verify-work 21`
+Next: `/gsd-complete-milestone v1.3`
 
 ## Operator Next Steps
 
-- Plan the discussed phase: `/gsd-plan-phase 20` (MAIL-02, CONTEXT.md exists)
-- Phase 19 (Unsaved-changes guard, 999.6) is not yet discussed — `/gsd-discuss-phase 19`
-- Phase 17 and 18 are complete; stale `17-VALIDATION.md` is a record-accuracy task: `/gsd-validate-phase 17`
+- **v1.3 is complete — close the milestone:** `/gsd-complete-milestone v1.3` (archives the phase set, rolls up requirements, prepares the next milestone)
+- Deferred UAT checkpoint: add one enabled `pipeline_ingest_sources` row and let a 15-minute tick run to close `24-UAT.md` test 6 (live collection proof)
+- Optional: `/gsd-ui-review 24` — Phase 24 touched `/admin/pipeline` (the «Автоматический сбор» block)
 - Phase 18 deferred code-review info findings IN-01…IN-05 (see `18-REVIEW-DISPOSITION.md`) — none blocking
-- Optional: `/gsd-ui-review 18` — Phase 18 modified frontend files
+- Phase 17 stale `17-VALIDATION.md` is a record-accuracy task: `/gsd-validate-phase 17`

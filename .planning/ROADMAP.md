@@ -62,7 +62,7 @@ Backlog tech debt comes first (lowest blast radius first), then mail, then inges
 - [x] **Phase 21: MAIL-01 live SMTP digest delivery** - The weekly digest is delivered by a real SMTP mailer to the `profiles` audience, with honest counts and contained failures (completed 2026-10-18)
 - [x] **Phase 22: Admin nav grouping** - The pipeline config is reached from a single «Админ» entry with an in-page tab-bar, not a second top-level nav item (completed 2026-10-17)
 - [x] **Phase 23: Admin-managed ingest sources** - An admin manages the DB-stored YouTube channel/playlist source list on the pipeline page, validated server-side (completed 2026-10-17)
-- [ ] **Phase 24: Scheduled ingestion** - A systemd timer drives the existing `ingest` CLI against enabled sources, writing drafts + shortlist rows only
+- [x] **Phase 24: Scheduled ingestion** - A systemd timer drives the existing `ingest` CLI against enabled sources, writing drafts + shortlist rows only (completed 2026-10-18)
 
 ## Phase Details
 
@@ -271,7 +271,7 @@ Plans:
   4. An import/reference guard test proves the scheduled path cannot reach publish/send, and the existing `ingest <url>` CLI stdout contract stays byte-identical.
   5. Zero new runtime Python packages are introduced (Atom feed + stdlib only).
 
-**Plans**: 6/8 plans executed
+**Plans**: 8/8 plans complete
 **Wave 1**
 - [x] 24-01-PLAN.md — Tracer: включённый источник → Atom-фид → драфт (порт/адаптер листинга, курсор, батч, `ingest-collect`, env-ключи)
 
@@ -291,10 +291,10 @@ Plans:
 - [x] 24-06-PLAN.md — SPA-блок «Автоматический сбор» на `/admin/pipeline` с немедленным PATCH и Playwright-тестами
 
 **Wave 7** *(gap closure — G-24-3)*
-- [ ] 24-07-PLAN.md — Gap closure G-24-3: `TimeoutStartSec=1800` for the oneshot start phase, inverted text contract, corrected runbook/security/verification, live systemd kill proof
+- [x] 24-07-PLAN.md — Gap closure G-24-3: `TimeoutStartSec=1800` for the oneshot start phase, inverted text contract, corrected runbook/security/verification, live systemd kill proof
 
 **Wave 8** *(gap closure — G-24-4; depends on Wave 7 completion)*
-- [ ] 24-08-PLAN.md — Gap closure G-24-4: alert reads `MONITOR_EXIT_STATUS`, inverted text contract, corrected runbook/security/verification, live exit-1/exit-2 proof
+- [x] 24-08-PLAN.md — Gap closure G-24-4: alert reads `MONITOR_EXIT_STATUS`, inverted text contract, corrected runbook/security/verification, live exit-1/exit-2 proof
 
 **Notes**: YouTube Data API v3 / `google-api-python-client` / `yt-dlp` are rejected; the Atom-feed choice **removes the ADR-0002 gate** (do not plan a Data API spike). `@handle` resolution is out of scope.
 **Tripwires**: `test_cli_ingest_contract.py` `EXPECTED_SUCCESS_LINES` → **PRESERVE** (byte-identical stdout contract).
@@ -313,7 +313,7 @@ Phases execute in numeric order: 17 → 18 → 19 → 20 → 21 → 22 → 23 �
 | 21. MAIL-01 live SMTP digest | 3/3 | Complete    | 2026-10-18 |
 | 22. Admin nav grouping | 3/3 | Complete    | 2026-10-17 |
 | 23. Admin-managed ingest sources | 4/4 | Complete    | 2026-10-17 |
-| 24. Scheduled ingestion | 6/6 | In Progress|  |
+| 24. Scheduled ingestion | 8/8 | Complete    | 2026-10-18 |
 
 ## Backlog
 
