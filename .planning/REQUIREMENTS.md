@@ -49,7 +49,7 @@ Ordering rule: **backlog tech debt first** (999.7 → 999.1 → 999.6), then mai
 - [x] **ING-02**: A scheduled run enumerates new videos for each **enabled** source and ingests them through the existing pipeline, writing **drafts + pending shortlist rows only** — never publishing or sending
 - [x] **ING-05**: A per-source high-water mark prevents re-processing already-ingested videos, so a re-run is safe and does not re-pay caption/LLM cost
 - [x] **ING-06**: The schedule runs unattended from a systemd timer with the environment it needs; each run's outcome is visible, and one bad video does not abort the batch
-- [ ] **ING-07**: The scheduled path is provably unable to reach publish/send, and the existing `ingest <url>` CLI stdout contract stays byte-identical
+- [x] **ING-07**: The scheduled path is provably unable to reach publish/send, and the existing `ingest <url>` CLI stdout contract stays byte-identical
 
 ## v2+ Requirements
 
@@ -118,7 +118,7 @@ Deferred. Not in this milestone's roadmap.
 | ING-02 | Phase 24 | Complete |
 | ING-05 | Phase 24 | Complete |
 | ING-06 | Phase 24 | Complete |
-| ING-07 | Phase 24 | Pending |
+| ING-07 | Phase 24 | Complete |
 
 **Coverage:**
 - v1.3 requirements: 19 total
