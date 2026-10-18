@@ -225,12 +225,16 @@ async def run_collect_batch(
         videos_failed=videos_failed,
     )
 
-    try:
-        deps.sources.stamp_last_run(deps.clock.now())
-    except Exception as err:
-        deps.emit_diagnostic(
-            f"error: stamp last_run failed: {type(err).__name__}"
-        )
-        return CollectOutcome(counters=counters, exit_code=1)
+    # WR-03 / D-27: a due run with zero enabled sources must not stamp, or
+    # enabling a source later the same Moscow day stays blocked until tomorrow.
+    # Any run that read >=1 source still stamps (including zero-new-videos runs).
+    if enabled:
+        try:
+            deps.sources.stamp_last_run(deps.clock.now())
+        except Exception as err:
+            deps.emit_diagnostic(
+                f"error: stamp last_run failed: {type(err).__name__}"
+            )
+            return CollectOutcome(counters=counters, exit_code=1)
 
     return CollectOutcome(counters=counters, exit_code=exit_code)
