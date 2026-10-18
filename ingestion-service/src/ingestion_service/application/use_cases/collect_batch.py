@@ -1,9 +1,10 @@
-"""run_collect_batch — enabled sources → feed → ingest pipeline (ING-02/05/06)."""
+"""run_collect_batch — due-gate → enabled sources → feed → ingest (ING-02/05/06)."""
 
 from __future__ import annotations
 
 from collections.abc import Callable
 from dataclasses import dataclass
+from datetime import tzinfo
 
 from data_collection.dto.template_kind import TemplateKind
 from data_collection.errors.feed import FeedError
@@ -15,9 +16,10 @@ from ingestion_service.application.ports.collect_sources import (
     CollectSourceError,
     CollectSourceReader,
 )
+from ingestion_service.application.ports.diagnostics import Clock
 from ingestion_service.application.ports.persist import PersistPort
 from ingestion_service.application.use_cases.ingest_pipeline import run_ingest_pipeline
-from ingestion_service.domain.schedule import advance_cursor, select_window
+from ingestion_service.domain.schedule import advance_cursor, due_decision, select_window
 
 
 @dataclass(frozen=True)
@@ -29,6 +31,8 @@ class CollectDeps:
     article: ArticleGenerator
     persist: PersistPort
     emit_diagnostic: Callable[[str], None]
+    clock: Clock
+    tz: tzinfo
 
 
 @dataclass(frozen=True)
@@ -46,6 +50,19 @@ class CollectCounters:
 class CollectOutcome:
     counters: CollectCounters
     exit_code: int
+    not_due_reason: str | None = None
+
+
+def _zero_counters() -> CollectCounters:
+    return CollectCounters(
+        sources_read=0,
+        sources_unreadable=0,
+        videos_new=0,
+        videos_ingested=0,
+        videos_already=0,
+        videos_failed=0,
+        videos_skipped_limit=0,
+    )
 
 
 def _exit_code(
@@ -71,6 +88,24 @@ async def run_collect_batch(
     template: TemplateKind,
     limit: int,
 ) -> CollectOutcome:
+    try:
+        schedule = deps.sources.get_schedule()
+    except Exception as err:
+        deps.emit_diagnostic(
+            f"error: schedule read failed: {type(err).__name__}"
+        )
+        return CollectOutcome(counters=_zero_counters(), exit_code=2)
+
+    decision = due_decision(
+        schedule, now_utc=deps.clock.now(), tz=deps.tz
+    )
+    if not decision.due:
+        return CollectOutcome(
+            counters=_zero_counters(),
+            exit_code=0,
+            not_due_reason=decision.reason,
+        )
+
     sources_read = 0
     sources_unreadable = 0
     videos_new = 0
@@ -85,15 +120,7 @@ async def run_collect_batch(
         deps.emit_diagnostic(
             f"error: source list failed: {type(err).__name__}: {err}"
         )
-        counters = CollectCounters(
-            sources_read=0,
-            sources_unreadable=0,
-            videos_new=0,
-            videos_ingested=0,
-            videos_already=0,
-            videos_failed=0,
-            videos_skipped_limit=0,
-        )
+        counters = _zero_counters()
         return CollectOutcome(counters=counters, exit_code=2)
 
     for source in enabled:
@@ -176,12 +203,19 @@ async def run_collect_batch(
         videos_failed=videos_failed,
         videos_skipped_limit=videos_skipped_limit,
     )
-    return CollectOutcome(
-        counters=counters,
-        exit_code=_exit_code(
-            list_failed=False,
-            sources_total=len(enabled),
-            sources_unreadable=sources_unreadable,
-            videos_failed=videos_failed,
-        ),
+    exit_code = _exit_code(
+        list_failed=False,
+        sources_total=len(enabled),
+        sources_unreadable=sources_unreadable,
+        videos_failed=videos_failed,
     )
+
+    try:
+        deps.sources.stamp_last_run(deps.clock.now())
+    except Exception as err:
+        deps.emit_diagnostic(
+            f"error: stamp last_run failed: {type(err).__name__}"
+        )
+        return CollectOutcome(counters=counters, exit_code=1)
+
+    return CollectOutcome(counters=counters, exit_code=exit_code)

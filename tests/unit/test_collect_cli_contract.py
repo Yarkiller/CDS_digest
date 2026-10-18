@@ -2,7 +2,7 @@
 
 from __future__ import annotations
 
-from datetime import datetime, timezone
+from datetime import datetime, timedelta, timezone
 from pathlib import Path
 
 from data_collection.dto.article_draft import ArticleDraft
@@ -47,7 +47,7 @@ def _build_deps(*, with_skip: bool = False):
     from data_collection.dto.video_ref import FeedListing, FeedSkip, VideoRef
     from ingestion_service.application.ports.collect_sources import EnabledSource
     from ingestion_service.application.use_cases.collect_batch import CollectDeps
-    from ingestion_service.tests_support.fakes import FakeCollectSourceReader, FakeFeed
+    from ingestion_service.tests_support.fakes import FakeClock, FakeCollectSourceReader, FakeFeed
 
     skipped = (FeedSkip(None, "missing_video_id"),) if with_skip else ()
     feed = FakeFeed(
@@ -74,6 +74,8 @@ def _build_deps(*, with_skip: bool = False):
             PersistResult(material_id=1, slug="t-dQw4w9WgXcQ", batch_id=1, rank=1)
         ),
         emit_diagnostic=lambda _line: None,
+        clock=FakeClock([0.0], datetime(2026, 10, 19, 10, 0, tzinfo=timezone.utc)),
+        tz=timezone(timedelta(hours=3)),
     )
 
 
@@ -97,6 +99,7 @@ def test_collect_cli_feed_skip_goes_to_stderr(monkeypatch) -> None:
 
     from ingestion_service import collect_cli as cli_mod
     from ingestion_service.application.use_cases.collect_batch import CollectDeps
+    from ingestion_service.tests_support.fakes import FakeClock
 
     base = _build_deps(with_skip=True)
     deps = CollectDeps(
@@ -107,6 +110,8 @@ def test_collect_cli_feed_skip_goes_to_stderr(monkeypatch) -> None:
         article=base.article,
         persist=base.persist,
         emit_diagnostic=cli_mod.emit_diagnostic,
+        clock=FakeClock([0.0], datetime(2026, 10, 19, 10, 0, tzinfo=timezone.utc)),
+        tz=timezone(timedelta(hours=3)),
     )
     monkeypatch.setattr(cli_mod, "build_collect_deps", lambda: deps)
 
@@ -156,7 +161,7 @@ def test_collect_cli_video_failure_exit_1_and_stderr_diagnostic(monkeypatch) -> 
     from data_collection.errors.captions import CaptionsUnavailable
     from ingestion_service.application.ports.collect_sources import EnabledSource
     from ingestion_service.application.use_cases.collect_batch import CollectDeps
-    from ingestion_service.tests_support.fakes import FakeCollectSourceReader, FakeFeed
+    from ingestion_service.tests_support.fakes import FakeClock, FakeCollectSourceReader, FakeFeed
     from typer.testing import CliRunner
 
     from ingestion_service import collect_cli as cli_mod
@@ -207,6 +212,8 @@ def test_collect_cli_video_failure_exit_1_and_stderr_diagnostic(monkeypatch) -> 
             PersistResult(material_id=1, slug="t", batch_id=1, rank=1)
         ),
         emit_diagnostic=cli_mod.emit_diagnostic,
+        clock=FakeClock([0.0], datetime(2026, 10, 19, 10, 0, tzinfo=timezone.utc)),
+        tz=timezone(timedelta(hours=3)),
     )
     monkeypatch.setattr(cli_mod, "build_collect_deps", lambda: deps)
 
@@ -227,7 +234,7 @@ def test_collect_cli_video_failure_exit_1_and_stderr_diagnostic(monkeypatch) -> 
 def test_collect_cli_source_list_failure_exit_2(monkeypatch) -> None:
     from ingestion_service.application.ports.collect_sources import CollectSourceError
     from ingestion_service.application.use_cases.collect_batch import CollectDeps
-    from ingestion_service.tests_support.fakes import FakeCollectSourceReader, FakeFeed
+    from ingestion_service.tests_support.fakes import FakeClock, FakeCollectSourceReader, FakeFeed
     from data_collection.dto.video_ref import FeedListing
     from typer.testing import CliRunner
 
@@ -246,6 +253,8 @@ def test_collect_cli_source_list_failure_exit_2(monkeypatch) -> None:
             PersistResult(material_id=1, slug="t", batch_id=1, rank=1)
         ),
         emit_diagnostic=cli_mod.emit_diagnostic,
+        clock=FakeClock([0.0], datetime(2026, 10, 19, 10, 0, tzinfo=timezone.utc)),
+        tz=timezone(timedelta(hours=3)),
     )
     monkeypatch.setattr(cli_mod, "build_collect_deps", lambda: deps)
 
@@ -349,7 +358,7 @@ def test_collect_cli_not_due_one_line_exit_0_no_feed(monkeypatch) -> None:
 
     from data_collection.dto.video_ref import FeedListing
     from ingestion_service.domain.schedule import IngestionSchedule
-    from ingestion_service.tests_support.fakes import FakeCollectSourceReader, FakeFeed
+    from ingestion_service.tests_support.fakes import FakeClock, FakeCollectSourceReader, FakeFeed
     from typer.testing import CliRunner
 
     from ingestion_service import collect_cli as cli_mod
@@ -399,7 +408,7 @@ def test_collect_cli_not_due_one_line_exit_0_no_feed(monkeypatch) -> None:
 
 def test_collect_cli_due_zero_videos_stamps_last_run(monkeypatch) -> None:
     from data_collection.dto.video_ref import FeedListing
-    from ingestion_service.tests_support.fakes import FakeCollectSourceReader, FakeFeed
+    from ingestion_service.tests_support.fakes import FakeClock, FakeCollectSourceReader, FakeFeed
     from typer.testing import CliRunner
 
     from ingestion_service import collect_cli as cli_mod
@@ -433,7 +442,7 @@ def test_collect_cli_due_zero_videos_stamps_last_run(monkeypatch) -> None:
 def test_collect_cli_schedule_read_failed_exit_2(monkeypatch) -> None:
     from data_collection.dto.video_ref import FeedListing
     from ingestion_service.application.ports.collect_sources import CollectSourceError
-    from ingestion_service.tests_support.fakes import FakeCollectSourceReader, FakeFeed
+    from ingestion_service.tests_support.fakes import FakeClock, FakeCollectSourceReader, FakeFeed
     from typer.testing import CliRunner
 
     from ingestion_service import collect_cli as cli_mod

@@ -547,6 +547,58 @@ Record apply method below when confirmed.
 
 ---
 
+## 4j. Phase 24 scheduled ingestion (ING-05/ING-06, D-06/D-14)
+
+Checked-in idempotent SQL: `supabase-integration/migrations/013_phase24_scheduled_ingestion.sql`.
+
+**Why:** ING-05 needs a durable high-water mark per enabled source; ING-06 needs a singleton
+schedule (`enabled` / `time_of_day` / `days_of_week` / `last_run_at`) so `ingest-collect` can
+decide «пора / не пора» in `Europe/Moscow` without Persistent=true on the systemd timer (D-21).
+Cursor columns live on `public.pipeline_ingest_sources` so deleting a source removes its cursor
+(D-06). Application code supplies schedule defaults when no row exists — the migration must
+**not** seed `id = 1` (D-14).
+
+**What it does (safe on shared VM):**
+
+- `alter table public.pipeline_ingest_sources add column if not exists last_seen_published_at timestamptz`
+- `alter table public.pipeline_ingest_sources add column if not exists last_seen_video_id text`
+- `create table if not exists public.ingestion_schedule` — singleton `id integer primary key default 1 check (id = 1)`, `enabled boolean not null default true`, `time_of_day time not null default '06:00'`, `days_of_week smallint[]` with ISO-week CHECK, `last_run_at timestamptz`, `updated_at timestamptz not null default now()`
+- `alter table public.ingestion_schedule enable row level security;` — deny-by-default with **no** permissive policy (only the service_role composition adapter reaches it; admin gating is backend `require_admin` in Phase 24-05) (T-24-10)
+- Idempotent: re-running adds nothing new and mutates no rows; no `INSERT`, no `CREATE POLICY`, no destructive statements; does **not** touch `public.ingestion_sources`
+
+There is **no `supabase/config.toml`** in this repo, so Studio SQL / `psql` is the established
+path (same as §4h/§4i).
+
+**Apply once on the shared VM** (`knowledge-db.ru`):
+
+1. Open Supabase Studio → **SQL Editor** → **New query**
+   URL (self-hosted): `https://knowledge-db.ru/project/default/sql/new`
+2. Paste the **entire** file [`013_phase24_scheduled_ingestion.sql`](../../supabase-integration/migrations/013_phase24_scheduled_ingestion.sql) and **Run** once. Expect success / no rows returned.
+3. Optional: when `POSTGRES_URL` is configured for Supabase MCP, `raw_sql` may run the same DDL — **never** `db reset`.
+
+**Do not** `TRUNCATE` / wipe `pipeline_ingest_sources` / `ingestion_schedule` / alter `ingestion_sources` / `db reset` on the shared VM. Never expose `SUPABASE_SECRET_KEY` via `VITE_`. Never insert a seed row into `ingestion_schedule` — defaults come from code until the first stamp/save.
+
+**Verify after apply** (Studio SQL):
+
+```sql
+select column_name, data_type from information_schema.columns
+  where table_schema = 'public' and table_name = 'pipeline_ingest_sources'
+    and column_name in ('last_seen_published_at', 'last_seen_video_id');
+  -- expect 2 rows: timestamptz / text (timestamp with time zone / text)
+select enabled, time_of_day, days_of_week from public.ingestion_schedule;  -- expect 0 rows
+select relrowsecurity from pg_class where relname = 'ingestion_schedule';  -- expect t
+select count(*) from pg_policies where tablename = 'ingestion_schedule';   -- expect 0
+-- Confirm ingestion_sources was not altered:
+select count(*) from information_schema.columns
+  where table_schema = 'public' and table_name = 'ingestion_sources';           -- expect > 0
+```
+
+Record apply method below when confirmed.
+
+**Applied (дата):** _(pending operator apply on shared knowledge-db VM — BLOCKING gate 24-03)_
+
+---
+
 ## 5. Live FE↔BE proof checklist (D-10)
 
 With API on `:8000`, Vite on `:5173`, `APP_CONTAINER=live`, and `VITE_USE_MOCKS=false`:

@@ -93,7 +93,7 @@ def test_run_collect_batch_ingests_one_new_video_and_advances_cursor() -> None:
         CollectOutcome,
         run_collect_batch,
     )
-    from ingestion_service.tests_support.fakes import FakeCollectSourceReader, FakeFeed
+    from ingestion_service.tests_support.fakes import FakeClock, FakeCollectSourceReader, FakeFeed
 
     feed = FakeFeed(
         FeedListing(
@@ -123,6 +123,8 @@ def test_run_collect_batch_ingests_one_new_video_and_advances_cursor() -> None:
         article=FakeArticleGenerator(result=_article()),
         persist=persist,
         emit_diagnostic=diagnostics.append,
+        clock=FakeClock([0.0], datetime(2026, 10, 19, 10, 0, tzinfo=timezone.utc)),
+        tz=timezone(timedelta(hours=3)),
     )
 
     outcome = asyncio.run(
@@ -155,7 +157,7 @@ def test_run_collect_batch_filters_older_than_cursor_before_pipeline() -> None:
         CollectDeps,
         run_collect_batch,
     )
-    from ingestion_service.tests_support.fakes import FakeCollectSourceReader, FakeFeed
+    from ingestion_service.tests_support.fakes import FakeClock, FakeCollectSourceReader, FakeFeed
 
     older_id = "aaaaaaaaaaa"
     article = FakeArticleGenerator(result=_article())
@@ -185,6 +187,8 @@ def test_run_collect_batch_filters_older_than_cursor_before_pipeline() -> None:
         article=article,
         persist=_persist(),
         emit_diagnostic=lambda _line: None,
+        clock=FakeClock([0.0], datetime(2026, 10, 19, 10, 0, tzinfo=timezone.utc)),
+        tz=timezone(timedelta(hours=3)),
     )
 
     outcome = asyncio.run(
@@ -205,7 +209,7 @@ def test_run_collect_batch_emits_one_diagnostic_per_feed_skip() -> None:
         CollectDeps,
         run_collect_batch,
     )
-    from ingestion_service.tests_support.fakes import FakeCollectSourceReader, FakeFeed
+    from ingestion_service.tests_support.fakes import FakeClock, FakeCollectSourceReader, FakeFeed
 
     feed = FakeFeed(
         FeedListing(
@@ -238,6 +242,8 @@ def test_run_collect_batch_emits_one_diagnostic_per_feed_skip() -> None:
         article=FakeArticleGenerator(result=_article()),
         persist=persist,
         emit_diagnostic=diagnostics.append,
+        clock=FakeClock([0.0], datetime(2026, 10, 19, 10, 0, tzinfo=timezone.utc)),
+        tz=timezone(timedelta(hours=3)),
     )
 
     outcome = asyncio.run(
@@ -273,7 +279,7 @@ def test_run_collect_batch_first_run_processes_oldest_five_in_asc_order() -> Non
         CollectDeps,
         run_collect_batch,
     )
-    from ingestion_service.tests_support.fakes import FakeCollectSourceReader, FakeFeed
+    from ingestion_service.tests_support.fakes import FakeClock, FakeCollectSourceReader, FakeFeed
 
     captions = _EchoCaptions()
     article = FakeArticleGenerator(result=_article())
@@ -286,6 +292,8 @@ def test_run_collect_batch_first_run_processes_oldest_five_in_asc_order() -> Non
         article=article,
         persist=_persist(),
         emit_diagnostic=lambda _line: None,
+        clock=FakeClock([0.0], datetime(2026, 10, 19, 10, 0, tzinfo=timezone.utc)),
+        tz=timezone(timedelta(hours=3)),
     )
 
     outcome = asyncio.run(
@@ -314,7 +322,7 @@ def test_run_collect_batch_cursor_on_tenth_takes_eleven_through_fifteen() -> Non
         CollectDeps,
         run_collect_batch,
     )
-    from ingestion_service.tests_support.fakes import FakeCollectSourceReader, FakeFeed
+    from ingestion_service.tests_support.fakes import FakeClock, FakeCollectSourceReader, FakeFeed
 
     captions = _EchoCaptions()
     sources = FakeCollectSourceReader(
@@ -328,6 +336,8 @@ def test_run_collect_batch_cursor_on_tenth_takes_eleven_through_fifteen() -> Non
         article=FakeArticleGenerator(result=_article()),
         persist=_persist(),
         emit_diagnostic=lambda _line: None,
+        clock=FakeClock([0.0], datetime(2026, 10, 19, 10, 0, tzinfo=timezone.utc)),
+        tz=timezone(timedelta(hours=3)),
     )
 
     outcome = asyncio.run(
@@ -345,7 +355,7 @@ def test_run_collect_batch_cursor_on_twelfth_limit_two_skips_one() -> None:
         CollectDeps,
         run_collect_batch,
     )
-    from ingestion_service.tests_support.fakes import FakeCollectSourceReader, FakeFeed
+    from ingestion_service.tests_support.fakes import FakeClock, FakeCollectSourceReader, FakeFeed
 
     captions = _EchoCaptions()
     sources = FakeCollectSourceReader(
@@ -359,6 +369,8 @@ def test_run_collect_batch_cursor_on_twelfth_limit_two_skips_one() -> None:
         article=FakeArticleGenerator(result=_article()),
         persist=_persist(),
         emit_diagnostic=lambda _line: None,
+        clock=FakeClock([0.0], datetime(2026, 10, 19, 10, 0, tzinfo=timezone.utc)),
+        tz=timezone(timedelta(hours=3)),
     )
 
     outcome = asyncio.run(
@@ -376,7 +388,7 @@ def test_rescan_at_feed_head_makes_zero_llm_calls() -> None:
         CollectDeps,
         run_collect_batch,
     )
-    from ingestion_service.tests_support.fakes import FakeCollectSourceReader, FakeFeed
+    from ingestion_service.tests_support.fakes import FakeClock, FakeCollectSourceReader, FakeFeed
 
     captions = _EchoCaptions()
     article = FakeArticleGenerator(result=_article())
@@ -391,6 +403,8 @@ def test_rescan_at_feed_head_makes_zero_llm_calls() -> None:
         article=article,
         persist=persist,
         emit_diagnostic=lambda _line: None,
+        clock=FakeClock([0.0], datetime(2026, 10, 19, 10, 0, tzinfo=timezone.utc)),
+        tz=timezone(timedelta(hours=3)),
     )
 
     first = asyncio.run(
@@ -415,6 +429,8 @@ def test_rescan_at_feed_head_makes_zero_llm_calls() -> None:
         article=article2,
         persist=persist2,
         emit_diagnostic=lambda _line: None,
+        clock=FakeClock([0.0], datetime(2026, 10, 19, 10, 0, tzinfo=timezone.utc)),
+        tz=timezone(timedelta(hours=3)),
     )
     second = asyncio.run(
         run_collect_batch(deps2, template=TemplateKind.LECTURE, limit=5)
@@ -434,7 +450,7 @@ def test_run_collect_batch_passes_bare_video_id_to_pipeline() -> None:
         CollectDeps,
         run_collect_batch,
     )
-    from ingestion_service.tests_support.fakes import FakeCollectSourceReader, FakeFeed
+    from ingestion_service.tests_support.fakes import FakeClock, FakeCollectSourceReader, FakeFeed
 
     captions = _EchoCaptions()
     deps = CollectDeps(
@@ -447,6 +463,8 @@ def test_run_collect_batch_passes_bare_video_id_to_pipeline() -> None:
         article=FakeArticleGenerator(result=_article()),
         persist=_persist(),
         emit_diagnostic=lambda _line: None,
+        clock=FakeClock([0.0], datetime(2026, 10, 19, 10, 0, tzinfo=timezone.utc)),
+        tz=timezone(timedelta(hours=3)),
     )
 
     asyncio.run(run_collect_batch(deps, template=TemplateKind.LECTURE, limit=5))
@@ -461,7 +479,7 @@ def test_run_collect_batch_failed_video_does_not_advance_cursor() -> None:
         CollectDeps,
         run_collect_batch,
     )
-    from ingestion_service.tests_support.fakes import FakeCollectSourceReader, FakeFeed
+    from ingestion_service.tests_support.fakes import FakeClock, FakeCollectSourceReader, FakeFeed
 
     v1, v2, v3 = _vid(1), _vid(2), _vid(3)
     t1 = BASE + timedelta(hours=1)
@@ -487,6 +505,8 @@ def test_run_collect_batch_failed_video_does_not_advance_cursor() -> None:
         article=FakeArticleGenerator(result=_article()),
         persist=_persist(),
         emit_diagnostic=diagnostics.append,
+        clock=FakeClock([0.0], datetime(2026, 10, 19, 10, 0, tzinfo=timezone.utc)),
+        tz=timezone(timedelta(hours=3)),
     )
 
     outcome = asyncio.run(
@@ -514,7 +534,7 @@ def test_unreadable_source_continues_to_next_source() -> None:
         CollectDeps,
         run_collect_batch,
     )
-    from ingestion_service.tests_support.fakes import FakeCollectSourceReader, FakeFeed
+    from ingestion_service.tests_support.fakes import FakeClock, FakeCollectSourceReader, FakeFeed
 
     src_a = "UCaaaaaaaaaaaaaaaaaaaa"
     src_b = "UCbbbbbbbbbbbbbbbbbbbb"
@@ -549,6 +569,8 @@ def test_unreadable_source_continues_to_next_source() -> None:
         article=FakeArticleGenerator(result=_article()),
         persist=_persist(),
         emit_diagnostic=diagnostics.append,
+        clock=FakeClock([0.0], datetime(2026, 10, 19, 10, 0, tzinfo=timezone.utc)),
+        tz=timezone(timedelta(hours=3)),
     )
 
     outcome = asyncio.run(
@@ -570,7 +592,7 @@ def test_all_sources_unreadable_exit_code_2() -> None:
         CollectDeps,
         run_collect_batch,
     )
-    from ingestion_service.tests_support.fakes import FakeCollectSourceReader, FakeFeed
+    from ingestion_service.tests_support.fakes import FakeClock, FakeCollectSourceReader, FakeFeed
 
     src_a = "UCaaaaaaaaaaaaaaaaaaaa"
     src_b = "UCbbbbbbbbbbbbbbbbbbbb"
@@ -606,6 +628,8 @@ def test_all_sources_unreadable_exit_code_2() -> None:
         article=FakeArticleGenerator(result=_article()),
         persist=_persist(),
         emit_diagnostic=lambda _line: None,
+        clock=FakeClock([0.0], datetime(2026, 10, 19, 10, 0, tzinfo=timezone.utc)),
+        tz=timezone(timedelta(hours=3)),
     )
 
     outcome = asyncio.run(
@@ -623,7 +647,7 @@ def test_list_enabled_sources_failure_exit_2_no_feed_calls() -> None:
         CollectDeps,
         run_collect_batch,
     )
-    from ingestion_service.tests_support.fakes import FakeCollectSourceReader, FakeFeed
+    from ingestion_service.tests_support.fakes import FakeClock, FakeCollectSourceReader, FakeFeed
 
     feed = FakeFeed(FeedListing(videos=(), skipped=()))
     diagnostics: list[str] = []
@@ -637,6 +661,8 @@ def test_list_enabled_sources_failure_exit_2_no_feed_calls() -> None:
         article=FakeArticleGenerator(result=_article()),
         persist=_persist(),
         emit_diagnostic=diagnostics.append,
+        clock=FakeClock([0.0], datetime(2026, 10, 19, 10, 0, tzinfo=timezone.utc)),
+        tz=timezone(timedelta(hours=3)),
     )
 
     outcome = asyncio.run(
@@ -656,7 +682,7 @@ def test_empty_feed_zero_videos_exit_0() -> None:
         CollectDeps,
         run_collect_batch,
     )
-    from ingestion_service.tests_support.fakes import FakeCollectSourceReader, FakeFeed
+    from ingestion_service.tests_support.fakes import FakeClock, FakeCollectSourceReader, FakeFeed
 
     deps = CollectDeps(
         feed=FakeFeed(FeedListing(videos=(), skipped=())),
@@ -666,6 +692,8 @@ def test_empty_feed_zero_videos_exit_0() -> None:
         article=FakeArticleGenerator(result=_article()),
         persist=_persist(),
         emit_diagnostic=lambda _line: None,
+        clock=FakeClock([0.0], datetime(2026, 10, 19, 10, 0, tzinfo=timezone.utc)),
+        tz=timezone(timedelta(hours=3)),
     )
 
     outcome = asyncio.run(
@@ -681,7 +709,7 @@ def test_already_saved_counts_as_already_and_advances_cursor() -> None:
         CollectDeps,
         run_collect_batch,
     )
-    from ingestion_service.tests_support.fakes import FakeCollectSourceReader, FakeFeed
+    from ingestion_service.tests_support.fakes import FakeClock, FakeCollectSourceReader, FakeFeed
 
     persist = _persist()
     persist.stored[VIDEO_ID] = PersistResult(
@@ -698,6 +726,8 @@ def test_already_saved_counts_as_already_and_advances_cursor() -> None:
         article=FakeArticleGenerator(result=_article()),
         persist=persist,
         emit_diagnostic=lambda _line: None,
+        clock=FakeClock([0.0], datetime(2026, 10, 19, 10, 0, tzinfo=timezone.utc)),
+        tz=timezone(timedelta(hours=3)),
     )
 
     outcome = asyncio.run(
@@ -774,7 +804,7 @@ def _deps_with_schedule(
 
 def test_not_due_skips_feed_and_returns_reason() -> None:
     from ingestion_service.application.use_cases.collect_batch import run_collect_batch
-    from ingestion_service.tests_support.fakes import FakeCollectSourceReader, FakeFeed
+    from ingestion_service.tests_support.fakes import FakeClock, FakeCollectSourceReader, FakeFeed
 
     feed = FakeFeed(
         FeedListing(videos=(VideoRef(VIDEO_ID, PUBLISHED),), skipped=())
@@ -797,7 +827,7 @@ def test_not_due_skips_feed_and_returns_reason() -> None:
 
 def test_due_empty_run_stamps_last_run_at() -> None:
     from ingestion_service.application.use_cases.collect_batch import run_collect_batch
-    from ingestion_service.tests_support.fakes import FakeCollectSourceReader, FakeFeed
+    from ingestion_service.tests_support.fakes import FakeClock, FakeCollectSourceReader, FakeFeed
 
     feed = FakeFeed(FeedListing(videos=(), skipped=()))
     sources = FakeCollectSourceReader(
@@ -821,7 +851,7 @@ def test_due_zero_enabled_sources_stamps_and_zeros() -> None:
         CollectCounters,
         run_collect_batch,
     )
-    from ingestion_service.tests_support.fakes import FakeCollectSourceReader, FakeFeed
+    from ingestion_service.tests_support.fakes import FakeClock, FakeCollectSourceReader, FakeFeed
 
     feed = FakeFeed(FeedListing(videos=(), skipped=()))
     sources = FakeCollectSourceReader([], schedule=_always_due_schedule())
@@ -849,7 +879,7 @@ def test_due_zero_enabled_sources_stamps_and_zeros() -> None:
 def test_get_schedule_failure_exit_2_no_feed_no_stamp() -> None:
     from ingestion_service.application.ports.collect_sources import CollectSourceError
     from ingestion_service.application.use_cases.collect_batch import run_collect_batch
-    from ingestion_service.tests_support.fakes import FakeCollectSourceReader, FakeFeed
+    from ingestion_service.tests_support.fakes import FakeClock, FakeCollectSourceReader, FakeFeed
 
     feed = FakeFeed(FeedListing(videos=(), skipped=()))
     diagnostics: list[str] = []
@@ -875,7 +905,7 @@ def test_get_schedule_failure_exit_2_no_feed_no_stamp() -> None:
 def test_stamp_last_run_failure_keeps_counters_exit_1() -> None:
     from ingestion_service.application.ports.collect_sources import CollectSourceError
     from ingestion_service.application.use_cases.collect_batch import run_collect_batch
-    from ingestion_service.tests_support.fakes import FakeCollectSourceReader, FakeFeed
+    from ingestion_service.tests_support.fakes import FakeClock, FakeCollectSourceReader, FakeFeed
 
     feed = FakeFeed(
         FeedListing(videos=(VideoRef(VIDEO_ID, PUBLISHED),), skipped=())

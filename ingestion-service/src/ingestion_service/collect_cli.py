@@ -3,10 +3,12 @@
 from __future__ import annotations
 
 import asyncio
+from zoneinfo import ZoneInfo, ZoneInfoNotFoundError
 
 import typer
 from data_collection.templates import TemplateLoadError
 
+from ingestion_service.adapters.utc_clock import UtcClock
 from ingestion_service.application.use_cases.collect_batch import (
     CollectDeps,
     run_collect_batch,
@@ -33,6 +35,12 @@ def emit_diagnostic(line: str) -> None:
 def build_collect_deps() -> CollectDeps:
     """Composition seam for live adapters; CliRunner monkeypatches this with fakes."""
     settings = Settings.from_env()
+    try:
+        tz = ZoneInfo("Europe/Moscow")
+    except ZoneInfoNotFoundError as err:
+        raise ConfigurationError(
+            "Europe/Moscow tzdata is not available; install system tzdata"
+        ) from err
     return CollectDeps(
         feed=build_youtube_feed(settings),
         sources=build_collect_source_reader(settings),
@@ -41,6 +49,8 @@ def build_collect_deps() -> CollectDeps:
         article=build_deepseek_article_generator(settings),
         persist=build_supabase_draft_persister(settings),
         emit_diagnostic=emit_diagnostic,
+        clock=UtcClock(),
+        tz=tz,
     )
 
 
@@ -60,6 +70,10 @@ def main() -> None:
     except (ConfigurationError, TemplateLoadError) as err:
         typer.echo(str(err), err=True)
         raise typer.Exit(code=1) from err
+
+    if outcome.not_due_reason is not None:
+        typer.echo(f"not due: {outcome.not_due_reason}")
+        raise typer.Exit(code=0)
 
     counters = outcome.counters
     typer.echo(
