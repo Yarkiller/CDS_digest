@@ -1,5 +1,5 @@
 ---
-status: partial
+status: diagnosed
 phase: 24-scheduled-ingestion
 source: [24-VERIFICATION.md]
 started: 2026-10-18T13:30:00.000Z
@@ -99,13 +99,37 @@ blocked: 1
   reason: "Наблюдение в WSL2/systemd 255: `RuntimeMaxSec=` игнорируется для `Type=oneshot`, юнит не убивается. D-23 и T-24-32 не реализованы."
   severity: blocker
   test: 3
-  artifacts: []
-  missing: []
+  root_cause: "`RuntimeMaxSec=` применим только к юнитам, которые переходят в состояние running; `Type=oneshot` всё время в activating, поэтому systemd пишет «RuntimeMaxSec= has no effect in combination with Type=oneshot. Ignoring.» и не применяет лимит. Для oneshot нужен `TimeoutStartSec=`."
+  artifacts:
+    - path: "deploy/systemd/digest-ingest.service"
+      issue: "RuntimeMaxSec=1800 на Type=oneshot — systemd игнорирует; зависший прогон держит flock вечно, последующие тики выходят 75 и считаются успехом"
+    - path: "tests/unit/test_phase24_systemd_units.py"
+      issue: "text-контракт пинит токен RuntimeMaxSec=1800, то есть защищает сломанную конфигурацию"
+    - path: "docs/agents/local-platform-runbook.md"
+      issue: "§4k/§5e описывают RuntimeMaxSec как рабочий лимит"
+    - path: ".planning/phases/24-scheduled-ingestion/24-SECURITY.md"
+      issue: "T-24-32 митигация ссылается на неработающий RuntimeMaxSec"
+  missing:
+    - "Заменить RuntimeMaxSec=1800 на TimeoutStartSec=1800 в oneshot-юните"
+    - "Первый RED-тест: text-контракт требует TimeoutStartSec=1800 и отсутствие RuntimeMaxSec"
+    - "Обновить §4k/§5e и T-24-32 под фактический механизм"
+  debug_session: .planning/debug/phase24-runtimemax-oneshot.md
 - gap_id: G-24-4
   truth: "Alert различает exit 1 («partial failure») и exit 2 («no source could be read»)"
   status: failed
   reason: "Наблюдение: оба кода дают «unexpected failure (exit exited)»; alert читает `MONITOR_EXIT_CODE=exited`, а числовой код лежит в `MONITOR_EXIT_STATUS`. T-24-34 не реализован."
   severity: major
   test: 4
-  artifacts: []
-  missing: []
+  root_cause: "В systemd 255 `MONITOR_EXIT_CODE` — квалификатор (`exited`/`killed`), а число лежит в `MONITOR_EXIT_STATUS`; `EXIT_CODE`/`EXIT_STATUS` не выставляются. Юнит читает `${MONITOR_EXIT_CODE:-...}`, поэтому `case` всегда уходит в ветку `*)`."
+  artifacts:
+    - path: "deploy/systemd/digest-ingest-alert.service"
+      issue: "читает MONITOR_EXIT_CODE вместо MONITOR_EXIT_STATUS"
+    - path: "tests/unit/test_phase24_systemd_units.py"
+      issue: "text-контракт пинит именно `${MONITOR_EXIT_CODE:-${EXIT_CODE:-unknown}}`, закрепляя дефект"
+    - path: ".planning/phases/24-scheduled-ingestion/24-SECURITY.md"
+      issue: "T-24-34 заявлен как закрытый"
+  missing:
+    - "Читать числовой код из MONITOR_EXIT_STATUS (фолбэк EXIT_STATUS)"
+    - "Первый RED-тест: контракт требует MONITOR_EXIT_STATUS и запрещает старую подстановку"
+    - "Проверка на живом systemd: exit 1 и exit 2 дают разные строки"
+  debug_session: .planning/debug/phase24-alert-exit-code.md
