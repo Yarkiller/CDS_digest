@@ -1,8 +1,8 @@
-"""RED→GREEN: cursor is_newer / advance_cursor / select_window (ING-05, D-07, D-05)."""
+"""RED→GREEN: cursor + due_decision (ING-05/06, D-07, D-05, D-21, D-22)."""
 
 from __future__ import annotations
 
-from datetime import datetime, timedelta, timezone
+from datetime import datetime, time, timedelta, timezone
 
 from data_collection.dto.video_ref import VideoRef
 
@@ -10,6 +10,33 @@ PUBLISHED = datetime(2026, 10, 17, 9, 0, tzinfo=timezone.utc)
 EARLIER = datetime(2026, 10, 17, 8, 0, tzinfo=timezone.utc)
 LATER = datetime(2026, 10, 17, 10, 0, tzinfo=timezone.utc)
 BASE = datetime(2026, 10, 1, 0, 0, tzinfo=timezone.utc)
+
+# Fixed UTC+3 stands in for Europe/Moscow (no DST) in pure unit tests.
+MSK = timezone(timedelta(hours=3))
+ALL_DAYS = (1, 2, 3, 4, 5, 6, 7)
+
+
+def _schedule(
+    *,
+    enabled: bool = True,
+    tod: time = time(6, 0),
+    days: tuple[int, ...] = ALL_DAYS,
+    last_run_at: datetime | None = None,
+):
+    from ingestion_service.domain.schedule import IngestionSchedule
+
+    return IngestionSchedule(
+        enabled=enabled,
+        time_of_day=tod,
+        days_of_week=days,
+        last_run_at=last_run_at,
+    )
+
+
+def _msk_as_utc(year: int, month: int, day: int, hour: int, minute: int = 0) -> datetime:
+    """Build an aware UTC instant that is the given wall clock in MSK."""
+    local = datetime(year, month, day, hour, minute, tzinfo=MSK)
+    return local.astimezone(timezone.utc)
 
 
 def _vid(n: int) -> str:
@@ -160,3 +187,127 @@ def test_select_window_non_positive_limit_returns_empty() -> None:
     )
     assert chosen == ()
     assert skipped == 0
+
+
+# --- due_decision (ING-06, D-21/D-22) ---
+
+
+def test_due_decision_before_time_of_day() -> None:
+    from ingestion_service.domain.schedule import due_decision
+
+    # 2026-10-19 is Monday (ISO 1). 05:59 MSK → before_time.
+    decision = due_decision(
+        _schedule(),
+        now_utc=_msk_as_utc(2026, 10, 19, 5, 59),
+        tz=MSK,
+    )
+    assert decision.due is False
+    assert decision.reason == "before_time"
+
+
+def test_due_decision_exactly_at_time_of_day() -> None:
+    from ingestion_service.domain.schedule import due_decision
+
+    decision = due_decision(
+        _schedule(),
+        now_utc=_msk_as_utc(2026, 10, 19, 6, 0),
+        tz=MSK,
+    )
+    assert decision.due is True
+    assert decision.reason == "ok"
+
+
+def test_due_decision_disallowed_day() -> None:
+    from ingestion_service.domain.schedule import due_decision
+
+    # Monday only allowed; use a Tuesday.
+    decision = due_decision(
+        _schedule(days=(1,)),
+        now_utc=_msk_as_utc(2026, 10, 20, 7, 0),  # Tuesday
+        tz=MSK,
+    )
+    assert decision.due is False
+    assert decision.reason == "day"
+
+
+def test_due_decision_disabled() -> None:
+    from ingestion_service.domain.schedule import due_decision
+
+    decision = due_decision(
+        _schedule(enabled=False),
+        now_utc=_msk_as_utc(2026, 10, 19, 7, 0),
+        tz=MSK,
+    )
+    assert decision.due is False
+    assert decision.reason == "disabled"
+
+
+def test_due_decision_already_ran_today() -> None:
+    from ingestion_service.domain.schedule import due_decision
+
+    target_local = datetime(2026, 10, 19, 6, 0, tzinfo=MSK)
+    last = target_local + timedelta(minutes=15)
+    decision = due_decision(
+        _schedule(last_run_at=last.astimezone(timezone.utc)),
+        now_utc=_msk_as_utc(2026, 10, 19, 8, 0),
+        tz=MSK,
+    )
+    assert decision.due is False
+    assert decision.reason == "already_ran"
+
+
+def test_due_decision_catch_up_after_missed_days() -> None:
+    """VM down two days: first allowed day after return → due once; after stamp → not."""
+    from ingestion_service.domain.schedule import due_decision
+
+    # last_run_at from Friday 2026-10-16 06:05 MSK; now Monday 2026-10-19 07:00.
+    last = datetime(2026, 10, 16, 6, 5, tzinfo=MSK).astimezone(timezone.utc)
+    now = _msk_as_utc(2026, 10, 19, 7, 0)
+    first = due_decision(_schedule(last_run_at=last), now_utc=now, tz=MSK)
+    assert first.due is True
+    assert first.reason == "ok"
+
+    stamped = due_decision(
+        _schedule(last_run_at=now),
+        now_utc=now,
+        tz=MSK,
+    )
+    assert stamped.due is False
+    assert stamped.reason == "already_ran"
+
+
+def test_due_decision_idempotent_same_now() -> None:
+    from ingestion_service.domain.schedule import due_decision
+
+    schedule = _schedule()
+    now = _msk_as_utc(2026, 10, 19, 7, 0)
+    a = due_decision(schedule, now_utc=now, tz=MSK)
+    b = due_decision(schedule, now_utc=now, tz=MSK)
+    assert a == b
+
+
+def test_due_decision_rejects_naive_now_utc() -> None:
+    from ingestion_service.domain.schedule import due_decision
+
+    try:
+        due_decision(
+            _schedule(),
+            now_utc=datetime(2026, 10, 19, 7, 0),
+            tz=MSK,
+        )
+    except ValueError as err:
+        assert "timezone-aware" in str(err)
+    else:
+        raise AssertionError("expected ValueError for naive now_utc")
+
+
+def test_schedule_module_has_no_zoneinfo_or_datetime_now() -> None:
+    from pathlib import Path
+
+    body = (
+        Path("ingestion-service/src/ingestion_service/domain/schedule.py")
+        .read_text(encoding="utf-8")
+        .lower()
+    )
+    assert "zoneinfo" not in body
+    assert "datetime.now" not in body

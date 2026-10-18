@@ -275,3 +275,219 @@ def test_collect_cli_configuration_error_exit_1_empty_stdout(monkeypatch) -> Non
     assert result.stdout == ""
     assert "missing SUPABASE_URL" in result.stderr
     assert "✓" not in result.stderr
+
+
+def _msk():
+    from datetime import timedelta
+
+    return timezone(timedelta(hours=3))
+
+
+def _always_due():
+    from datetime import time
+
+    from ingestion_service.domain.schedule import IngestionSchedule
+
+    return IngestionSchedule(
+        enabled=True,
+        time_of_day=time(0, 0),
+        days_of_week=(1, 2, 3, 4, 5, 6, 7),
+        last_run_at=None,
+    )
+
+
+def _build_deps_scheduled(
+    *,
+    schedule=None,
+    sources=None,
+    feed=None,
+    now: datetime | None = None,
+    emit=None,
+):
+    from data_collection.dto.video_ref import FeedListing, VideoRef
+    from ingestion_service.application.ports.collect_sources import EnabledSource
+    from ingestion_service.application.use_cases.collect_batch import CollectDeps
+    from ingestion_service.tests_support.fakes import (
+        FakeClock,
+        FakeCollectSourceReader,
+        FakeFeed,
+    )
+
+    clock_now = now or datetime(2026, 10, 19, 10, 0, tzinfo=timezone.utc)
+    srcs = sources or FakeCollectSourceReader(
+        [
+            EnabledSource(
+                id=1,
+                kind="channel",
+                source_id=CHANNEL_ID,
+                last_seen_published_at=None,
+                last_seen_video_id=None,
+            )
+        ],
+        schedule=schedule if schedule is not None else _always_due(),
+    )
+    return CollectDeps(
+        feed=feed
+        or FakeFeed(
+            FeedListing(videos=(VideoRef(VIDEO_ID, PUBLISHED),), skipped=())
+        ),
+        sources=srcs,
+        captions=FakeTranscriptProvider(result=_transcript()),
+        metadata_provider=FakeVideoMetadataProvider(result=_metadata()),
+        article=FakeArticleGenerator(result=_article()),
+        persist=FakeDraftPersister(
+            PersistResult(material_id=1, slug="t-dQw4w9WgXcQ", batch_id=1, rank=1)
+        ),
+        emit_diagnostic=emit or (lambda _line: None),
+        clock=FakeClock([0.0], clock_now),
+        tz=_msk(),
+    )
+
+
+def test_collect_cli_not_due_one_line_exit_0_no_feed(monkeypatch) -> None:
+    from datetime import time
+
+    from data_collection.dto.video_ref import FeedListing
+    from ingestion_service.domain.schedule import IngestionSchedule
+    from ingestion_service.tests_support.fakes import FakeCollectSourceReader, FakeFeed
+    from typer.testing import CliRunner
+
+    from ingestion_service import collect_cli as cli_mod
+
+    feed = FakeFeed(FeedListing(videos=(), skipped=()))
+    article = FakeArticleGenerator(result=_article())
+    sources = FakeCollectSourceReader(
+        [],
+        schedule=IngestionSchedule(
+            enabled=False,
+            time_of_day=time(6, 0),
+            days_of_week=(1, 2, 3, 4, 5, 6, 7),
+            last_run_at=None,
+        ),
+    )
+    deps = _build_deps_scheduled(
+        sources=sources, feed=feed, emit=cli_mod.emit_diagnostic
+    )
+    # Rebuild with article spy on deps — CollectDeps is frozen; use helper fields.
+    from ingestion_service.application.use_cases.collect_batch import CollectDeps
+    from ingestion_service.tests_support.fakes import FakeClock
+
+    deps = CollectDeps(
+        feed=feed,
+        sources=sources,
+        captions=FakeTranscriptProvider(result=_transcript()),
+        metadata_provider=FakeVideoMetadataProvider(result=_metadata()),
+        article=article,
+        persist=FakeDraftPersister(
+            PersistResult(material_id=1, slug="t", batch_id=1, rank=1)
+        ),
+        emit_diagnostic=cli_mod.emit_diagnostic,
+        clock=FakeClock(
+            [0.0], datetime(2026, 10, 19, 10, 0, tzinfo=timezone.utc)
+        ),
+        tz=_msk(),
+    )
+    monkeypatch.setattr(cli_mod, "build_collect_deps", lambda: deps)
+
+    result = CliRunner().invoke(cli_mod.app, [])
+    assert result.exit_code == 0
+    assert result.stdout.splitlines() == ["not due: disabled"]
+    assert feed.calls == []
+    assert article.calls == []
+    assert sources.stamped == []
+
+
+def test_collect_cli_due_zero_videos_stamps_last_run(monkeypatch) -> None:
+    from data_collection.dto.video_ref import FeedListing
+    from ingestion_service.tests_support.fakes import FakeCollectSourceReader, FakeFeed
+    from typer.testing import CliRunner
+
+    from ingestion_service import collect_cli as cli_mod
+
+    feed = FakeFeed(FeedListing(videos=(), skipped=()))
+    sources = FakeCollectSourceReader(
+        [
+            __import__(
+                "ingestion_service.application.ports.collect_sources",
+                fromlist=["EnabledSource"],
+            ).EnabledSource(
+                id=1,
+                kind="channel",
+                source_id=CHANNEL_ID,
+                last_seen_published_at=None,
+                last_seen_video_id=None,
+            )
+        ],
+        schedule=_always_due(),
+    )
+    now = datetime(2026, 10, 19, 10, 0, tzinfo=timezone.utc)
+    deps = _build_deps_scheduled(sources=sources, feed=feed, now=now)
+    monkeypatch.setattr(cli_mod, "build_collect_deps", lambda: deps)
+
+    result = CliRunner().invoke(cli_mod.app, [])
+    assert result.exit_code == 0
+    assert "new=0" in result.stdout
+    assert sources.stamped == [now]
+
+
+def test_collect_cli_schedule_read_failed_exit_2(monkeypatch) -> None:
+    from data_collection.dto.video_ref import FeedListing
+    from ingestion_service.application.ports.collect_sources import CollectSourceError
+    from ingestion_service.tests_support.fakes import FakeCollectSourceReader, FakeFeed
+    from typer.testing import CliRunner
+
+    from ingestion_service import collect_cli as cli_mod
+
+    feed = FakeFeed(FeedListing(videos=(), skipped=()))
+    sources = FakeCollectSourceReader(
+        [], schedule_error=CollectSourceError("down")
+    )
+    deps = _build_deps_scheduled(
+        sources=sources, feed=feed, emit=cli_mod.emit_diagnostic
+    )
+    monkeypatch.setattr(cli_mod, "build_collect_deps", lambda: deps)
+
+    result = CliRunner().invoke(cli_mod.app, [])
+    assert result.exit_code == 2
+    assert feed.calls == []
+    assert sources.stamped == []
+    assert "read=0" in result.stdout
+    stderr_lines = [line for line in result.stderr.splitlines() if line.strip()]
+    assert len(stderr_lines) == 1
+    assert "schedule read failed" in stderr_lines[0]
+
+
+def test_collect_cli_stamp_failed_exit_1_keeps_summary(monkeypatch) -> None:
+    from ingestion_service.application.ports.collect_sources import (
+        CollectSourceError,
+        EnabledSource,
+    )
+    from ingestion_service.tests_support.fakes import FakeCollectSourceReader
+    from typer.testing import CliRunner
+
+    from ingestion_service import collect_cli as cli_mod
+
+    sources = FakeCollectSourceReader(
+        [
+            EnabledSource(
+                id=1,
+                kind="channel",
+                source_id=CHANNEL_ID,
+                last_seen_published_at=None,
+                last_seen_video_id=None,
+            )
+        ],
+        schedule=_always_due(),
+        stamp_error=CollectSourceError("stamp down"),
+    )
+    deps = _build_deps_scheduled(
+        sources=sources, emit=cli_mod.emit_diagnostic
+    )
+    monkeypatch.setattr(cli_mod, "build_collect_deps", lambda: deps)
+
+    result = CliRunner().invoke(cli_mod.app, [])
+    assert result.exit_code == 1
+    assert "ingested=1" in result.stdout
+    stderr_lines = [line for line in result.stderr.splitlines() if line.strip()]
+    assert len(stderr_lines) == 1
+    assert "stamp last_run failed" in stderr_lines[0]

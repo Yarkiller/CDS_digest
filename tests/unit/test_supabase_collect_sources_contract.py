@@ -42,6 +42,13 @@ class _FakeQuery:
         self._order.append((column, desc))
         return self
 
+    def upsert(self, payload: dict[str, Any], *, on_conflict: str | None = None) -> "_FakeQuery":
+        self._op = "upsert"
+        self._payload = dict(payload)
+        self._table.last_upsert = dict(payload)
+        self._table.last_upsert_on_conflict = on_conflict
+        return self
+
     def execute(self) -> _FakeExecuteResult:
         if self._table.raise_error is not None:
             error = self._table.raise_error
@@ -61,6 +68,14 @@ class _FakeQuery:
                     matched.append(dict(updated))
             return _FakeExecuteResult(matched)
 
+        if self._op == "upsert":
+            assert isinstance(self._payload, dict)
+            self._table.rows = [
+                r for r in self._table.rows if r.get("id") != self._payload.get("id")
+            ]
+            self._table.rows.append(dict(self._payload))
+            return _FakeExecuteResult([dict(self._payload)])
+
         rows = list(self._table.rows)
         for column, value in self._filters:
             rows = [r for r in rows if r.get(column) == value]
@@ -76,6 +91,8 @@ class _FakeTable:
         self.fail_next = False
         self.raise_error: BaseException | None = None
         self.last_update: dict[str, Any] | None = None
+        self.last_upsert: dict[str, Any] | None = None
+        self.last_upsert_on_conflict: str | None = None
         self.last_filters: list[tuple[str, Any]] = []
         self.selected: str | None = None
 
@@ -87,6 +104,7 @@ class FakeSupabaseClient:
     def __init__(self) -> None:
         self.tables: dict[str, _FakeTable] = {
             "pipeline_ingest_sources": _FakeTable("pipeline_ingest_sources"),
+            "ingestion_schedule": _FakeTable("ingestion_schedule"),
         }
 
     def table(self, name: str) -> _FakeQuery:
@@ -179,3 +197,77 @@ def test_sdk_exception_maps_to_collect_source_error() -> None:
     reader = SupabaseCollectSourceReader(client)
     with pytest.raises(CollectSourceError):
         reader.list_enabled_sources()
+
+
+def test_get_schedule_empty_returns_domain_defaults() -> None:
+    from datetime import time
+
+    from ingestion_service.adapters.supabase_collect_sources import (
+        SupabaseCollectSourceReader,
+    )
+
+    client = FakeSupabaseClient()
+    reader = SupabaseCollectSourceReader(client)
+    schedule = reader.get_schedule()
+    assert schedule.enabled is True
+    assert schedule.time_of_day == time(6, 0)
+    assert schedule.days_of_week == (1, 2, 3, 4, 5, 6, 7)
+    assert schedule.last_run_at is None
+    table = client.tables["ingestion_schedule"]
+    assert table.selected == "enabled,time_of_day,days_of_week,last_run_at"
+    assert ("id", 1) in table.last_filters
+
+
+def test_get_schedule_parses_row() -> None:
+    from datetime import time
+
+    from ingestion_service.adapters.supabase_collect_sources import (
+        SupabaseCollectSourceReader,
+    )
+
+    client = FakeSupabaseClient()
+    client.tables["ingestion_schedule"].rows = [
+        {
+            "id": 1,
+            "enabled": False,
+            "time_of_day": "07:30:00",
+            "days_of_week": [1, 3, 5],
+            "last_run_at": "2026-10-19T03:00:00Z",
+        }
+    ]
+    reader = SupabaseCollectSourceReader(client)
+    schedule = reader.get_schedule()
+    assert schedule.enabled is False
+    assert schedule.time_of_day == time(7, 30)
+    assert schedule.days_of_week == (1, 3, 5)
+    assert schedule.last_run_at == datetime(2026, 10, 19, 3, 0, tzinfo=timezone.utc)
+
+
+def test_stamp_last_run_upserts_id_1_with_both_timestamps() -> None:
+    from ingestion_service.adapters.supabase_collect_sources import (
+        SupabaseCollectSourceReader,
+    )
+
+    client = FakeSupabaseClient()
+    reader = SupabaseCollectSourceReader(client)
+    at = datetime(2026, 10, 19, 10, 0, tzinfo=timezone.utc)
+    reader.stamp_last_run(at)
+    table = client.tables["ingestion_schedule"]
+    assert table.last_upsert is not None
+    assert table.last_upsert["id"] == 1
+    assert "last_run_at" in table.last_upsert
+    assert "updated_at" in table.last_upsert
+    assert table.last_upsert_on_conflict == "id"
+
+
+def test_get_schedule_sdk_error_maps_to_collect_source_error() -> None:
+    from ingestion_service.adapters.supabase_collect_sources import (
+        SupabaseCollectSourceReader,
+    )
+    from ingestion_service.application.ports.collect_sources import CollectSourceError
+
+    client = FakeSupabaseClient()
+    client.tables["ingestion_schedule"].fail_next = True
+    reader = SupabaseCollectSourceReader(client)
+    with pytest.raises(CollectSourceError):
+        reader.get_schedule()

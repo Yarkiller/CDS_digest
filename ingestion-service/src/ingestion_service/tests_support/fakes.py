@@ -4,7 +4,8 @@ from __future__ import annotations
 
 from collections.abc import Mapping, Sequence
 from dataclasses import dataclass, field
-from datetime import datetime
+from datetime import datetime, time
+from typing import TYPE_CHECKING
 
 from data_collection.dto.material_draft import MaterialDraft
 from data_collection.dto.video_ref import FeedListing
@@ -15,6 +16,9 @@ from ingestion_service.application.ports.collect_sources import (
 )
 from ingestion_service.application.ports.diagnostics import DebugValue
 from ingestion_service.application.ports.persist import PersistResult
+
+if TYPE_CHECKING:
+    from ingestion_service.domain.schedule import IngestionSchedule
 
 
 class FakeFeed:
@@ -38,6 +42,17 @@ class FakeFeed:
         return self._listing
 
 
+def _default_always_due_schedule() -> IngestionSchedule:
+    from ingestion_service.domain.schedule import IngestionSchedule
+
+    return IngestionSchedule(
+        enabled=True,
+        time_of_day=time(0, 0),
+        days_of_week=(1, 2, 3, 4, 5, 6, 7),
+        last_run_at=None,
+    )
+
+
 class FakeCollectSourceReader:
     """CollectSourceReader double with call spy and scripted failures."""
 
@@ -46,15 +61,34 @@ class FakeCollectSourceReader:
         sources: list[EnabledSource] | None = None,
         *,
         list_error: CollectSourceError | None = None,
+        schedule: IngestionSchedule | None = None,
+        schedule_error: CollectSourceError | None = None,
+        stamp_error: CollectSourceError | None = None,
     ) -> None:
         self._sources = list(sources or [])
         self._list_error = list_error
+        self._schedule = schedule
+        self._schedule_error = schedule_error
+        self._stamp_error = stamp_error
         self.advance_calls: list[dict[str, object]] = []
+        self.stamped: list[datetime] = []
 
     def list_enabled_sources(self) -> list[EnabledSource]:
         if self._list_error is not None:
             raise self._list_error
         return list(self._sources)
+
+    def get_schedule(self) -> IngestionSchedule:
+        if self._schedule_error is not None:
+            raise self._schedule_error
+        if self._schedule is not None:
+            return self._schedule
+        return _default_always_due_schedule()
+
+    def stamp_last_run(self, at: datetime) -> None:
+        if self._stamp_error is not None:
+            raise self._stamp_error
+        self.stamped.append(at)
 
     def advance_cursor(
         self, source_pk: int, *, published: datetime, video_id: str

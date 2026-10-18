@@ -709,3 +709,197 @@ def test_already_saved_counts_as_already_and_advances_cursor() -> None:
     assert outcome.exit_code == 0
     assert len(sources.advance_calls) == 1
     assert sources.advance_calls[0]["video_id"] == VIDEO_ID
+
+
+# --- due gate + last_run_at (ING-06, D-21/D-23) ---
+
+_MSK = timezone(timedelta(hours=3))
+
+
+def _always_due_schedule():
+    from datetime import time
+
+    from ingestion_service.domain.schedule import IngestionSchedule
+
+    return IngestionSchedule(
+        enabled=True,
+        time_of_day=time(0, 0),
+        days_of_week=(1, 2, 3, 4, 5, 6, 7),
+        last_run_at=None,
+    )
+
+
+def _not_due_schedule(*, reason: str = "disabled"):
+    from datetime import time
+
+    from ingestion_service.domain.schedule import IngestionSchedule
+
+    if reason == "disabled":
+        return IngestionSchedule(
+            enabled=False,
+            time_of_day=time(0, 0),
+            days_of_week=(1, 2, 3, 4, 5, 6, 7),
+            last_run_at=None,
+        )
+    raise AssertionError(f"unsupported reason fixture: {reason}")
+
+
+def _deps_with_schedule(
+    *,
+    sources,
+    feed=None,
+    schedule=None,
+    now: datetime | None = None,
+    diagnostics=None,
+    captions=None,
+    article=None,
+    persist=None,
+):
+    from ingestion_service.application.use_cases.collect_batch import CollectDeps
+    from ingestion_service.tests_support.fakes import FakeClock, FakeFeed
+
+    clock_now = now or datetime(2026, 10, 19, 10, 0, tzinfo=timezone.utc)
+    return CollectDeps(
+        feed=feed or FakeFeed(FeedListing(videos=(), skipped=())),
+        sources=sources,
+        captions=captions or _EchoCaptions(),
+        metadata_provider=_EchoMetadata(),
+        article=article or FakeArticleGenerator(result=_article()),
+        persist=persist or _persist(),
+        emit_diagnostic=diagnostics if diagnostics is not None else (lambda _l: None),
+        clock=FakeClock([0.0], clock_now),
+        tz=_MSK,
+    )
+
+
+def test_not_due_skips_feed_and_returns_reason() -> None:
+    from ingestion_service.application.use_cases.collect_batch import run_collect_batch
+    from ingestion_service.tests_support.fakes import FakeCollectSourceReader, FakeFeed
+
+    feed = FakeFeed(
+        FeedListing(videos=(VideoRef(VIDEO_ID, PUBLISHED),), skipped=())
+    )
+    sources = FakeCollectSourceReader(
+        [_enabled()], schedule=_not_due_schedule(reason="disabled")
+    )
+    deps = _deps_with_schedule(sources=sources, feed=feed)
+
+    outcome = asyncio.run(
+        run_collect_batch(deps, template=TemplateKind.LECTURE, limit=5)
+    )
+
+    assert outcome.exit_code == 0
+    assert outcome.not_due_reason == "disabled"
+    assert outcome.counters.sources_read == 0
+    assert feed.calls == []
+    assert sources.stamped == []
+
+
+def test_due_empty_run_stamps_last_run_at() -> None:
+    from ingestion_service.application.use_cases.collect_batch import run_collect_batch
+    from ingestion_service.tests_support.fakes import FakeCollectSourceReader, FakeFeed
+
+    feed = FakeFeed(FeedListing(videos=(), skipped=()))
+    sources = FakeCollectSourceReader(
+        [_enabled()], schedule=_always_due_schedule()
+    )
+    now = datetime(2026, 10, 19, 10, 0, tzinfo=timezone.utc)
+    deps = _deps_with_schedule(sources=sources, feed=feed, now=now)
+
+    outcome = asyncio.run(
+        run_collect_batch(deps, template=TemplateKind.LECTURE, limit=5)
+    )
+
+    assert outcome.exit_code == 0
+    assert outcome.not_due_reason is None
+    assert outcome.counters.videos_new == 0
+    assert sources.stamped == [now]
+
+
+def test_due_zero_enabled_sources_stamps_and_zeros() -> None:
+    from ingestion_service.application.use_cases.collect_batch import (
+        CollectCounters,
+        run_collect_batch,
+    )
+    from ingestion_service.tests_support.fakes import FakeCollectSourceReader, FakeFeed
+
+    feed = FakeFeed(FeedListing(videos=(), skipped=()))
+    sources = FakeCollectSourceReader([], schedule=_always_due_schedule())
+    now = datetime(2026, 10, 19, 10, 0, tzinfo=timezone.utc)
+    deps = _deps_with_schedule(sources=sources, feed=feed, now=now)
+
+    outcome = asyncio.run(
+        run_collect_batch(deps, template=TemplateKind.LECTURE, limit=5)
+    )
+
+    assert outcome.exit_code == 0
+    assert outcome.counters == CollectCounters(
+        sources_read=0,
+        sources_unreadable=0,
+        videos_new=0,
+        videos_ingested=0,
+        videos_already=0,
+        videos_failed=0,
+        videos_skipped_limit=0,
+    )
+    assert sources.stamped == [now]
+    assert feed.calls == []
+
+
+def test_get_schedule_failure_exit_2_no_feed_no_stamp() -> None:
+    from ingestion_service.application.ports.collect_sources import CollectSourceError
+    from ingestion_service.application.use_cases.collect_batch import run_collect_batch
+    from ingestion_service.tests_support.fakes import FakeCollectSourceReader, FakeFeed
+
+    feed = FakeFeed(FeedListing(videos=(), skipped=()))
+    diagnostics: list[str] = []
+    sources = FakeCollectSourceReader(
+        [_enabled()],
+        schedule_error=CollectSourceError("schedule down"),
+    )
+    deps = _deps_with_schedule(
+        sources=sources, feed=feed, diagnostics=diagnostics.append
+    )
+
+    outcome = asyncio.run(
+        run_collect_batch(deps, template=TemplateKind.LECTURE, limit=5)
+    )
+
+    assert outcome.exit_code == 2
+    assert feed.calls == []
+    assert sources.stamped == []
+    assert len(diagnostics) == 1
+    assert diagnostics[0].startswith("error: schedule read failed:")
+
+
+def test_stamp_last_run_failure_keeps_counters_exit_1() -> None:
+    from ingestion_service.application.ports.collect_sources import CollectSourceError
+    from ingestion_service.application.use_cases.collect_batch import run_collect_batch
+    from ingestion_service.tests_support.fakes import FakeCollectSourceReader, FakeFeed
+
+    feed = FakeFeed(
+        FeedListing(videos=(VideoRef(VIDEO_ID, PUBLISHED),), skipped=())
+    )
+    diagnostics: list[str] = []
+    sources = FakeCollectSourceReader(
+        [_enabled()],
+        schedule=_always_due_schedule(),
+        stamp_error=CollectSourceError("stamp down"),
+    )
+    deps = _deps_with_schedule(
+        sources=sources,
+        feed=feed,
+        diagnostics=diagnostics.append,
+        captions=FakeTranscriptProvider(result=_transcript()),
+        article=FakeArticleGenerator(result=_article()),
+        persist=_persist(),
+    )
+
+    outcome = asyncio.run(
+        run_collect_batch(deps, template=TemplateKind.LECTURE, limit=5)
+    )
+
+    assert outcome.counters.videos_ingested == 1
+    assert outcome.exit_code == 1
+    assert len(diagnostics) == 1
+    assert diagnostics[0].startswith("error: stamp last_run failed:")
