@@ -2215,4 +2215,130 @@ test.describe("Admin pipeline — automatic collection (ING-06, D-15/D-16/D-17)"
     await expect(status).toContainText("Включён");
     await expect(status).toContainText("Сохранено");
   });
+
+  test("ingestion schedule time saves on blur, not on each keystroke", async ({ page }) => {
+    await gotoAsRole(page, "admin", "/admin/pipeline");
+    await resetIngestionScheduleMock(page);
+
+    const before = await page.evaluate(() =>
+      window.__DIGEST_INGESTION_SCHEDULE_HARNESS__.readIngestionScheduleMock().patchCount,
+    );
+
+    const time = page.getByTestId("ingestion-schedule-time");
+    await time.fill("07:30");
+
+    const mid = await page.evaluate(() =>
+      window.__DIGEST_INGESTION_SCHEDULE_HARNESS__.readIngestionScheduleMock().patchCount,
+    );
+    expect(mid).toBe(before);
+
+    await time.blur();
+    await expect(page.getByTestId("ingestion-schedule-status")).toContainText("Сохранено");
+    await expect(time).toHaveValue("07:30");
+
+    const after = await page.evaluate(() =>
+      window.__DIGEST_INGESTION_SCHEDULE_HARNESS__.readIngestionScheduleMock(),
+    );
+    expect(after.patchCount).toBe(before + 1);
+    expect(after.schedule.time_of_day).toBe("07:30");
+  });
+
+  test("ingestion schedule days normalize and refuse an empty week", async ({ page }) => {
+    await gotoAsRole(page, "admin", "/admin/pipeline");
+    await resetIngestionScheduleMock(page);
+
+    for (const day of [2, 3, 4, 5, 6, 7]) {
+      await page.getByTestId(`ingestion-schedule-day-${day}`).click();
+      await expect(page.getByTestId(`ingestion-schedule-day-${day}`)).toHaveAttribute(
+        "aria-pressed",
+        "false",
+      );
+    }
+    await expect(page.getByTestId("ingestion-schedule-day-1")).toHaveAttribute(
+      "aria-pressed",
+      "true",
+    );
+
+    const beforeRefuse = await page.evaluate(() =>
+      window.__DIGEST_INGESTION_SCHEDULE_HARNESS__.readIngestionScheduleMock().patchCount,
+    );
+    await page.getByTestId("ingestion-schedule-day-1").click();
+    await expect(page.getByTestId("ingestion-schedule-status")).toHaveText(
+      "Выберите хотя бы один день недели.",
+    );
+    await expect(page.getByTestId("ingestion-schedule-day-1")).toHaveAttribute(
+      "aria-pressed",
+      "true",
+    );
+    const afterRefuse = await page.evaluate(() =>
+      window.__DIGEST_INGESTION_SCHEDULE_HARNESS__.readIngestionScheduleMock().patchCount,
+    );
+    expect(afterRefuse).toBe(beforeRefuse);
+
+    await page.getByTestId("ingestion-schedule-day-6").click();
+    await expect(page.getByTestId("ingestion-schedule-status")).toContainText("Сохранено");
+    const store = await page.evaluate(() =>
+      window.__DIGEST_INGESTION_SCHEDULE_HARNESS__.readIngestionScheduleMock(),
+    );
+    expect(store.schedule.days_of_week).toEqual([1, 6]);
+  });
+
+  test("ingestion schedule save failure keeps the value and shows the message", async ({
+    page,
+  }) => {
+    await gotoAsRole(page, "admin", "/admin/pipeline");
+    await resetIngestionScheduleMock(page);
+
+    await expect(page.getByTestId("ingestion-schedule-status")).toContainText("Включён");
+    await page.evaluate(() => {
+      window.__DIGEST_INGESTION_SCHEDULE_HARNESS__.armFailNextSave();
+    });
+    await page.getByTestId("ingestion-schedule-enabled").click();
+
+    await expect(page.getByTestId("ingestion-schedule-status")).toContainText("Включён");
+    await expect(page.getByTestId("ingestion-schedule-status")).toContainText(
+      "Не удалось сохранить настройки сбора",
+    );
+    await expect(page.getByTestId("ingestion-schedule-section")).toBeVisible();
+    await expect(page.getByTestId("ingestion-schedule-enabled")).toHaveAttribute(
+      "aria-pressed",
+      "true",
+    );
+  });
+
+  test("ingestion schedule load failure shows an error state without a fake success", async ({
+    page,
+  }) => {
+    await gotoAsRole(page, "admin", "/admin/pipeline");
+    await page.waitForFunction(() => Boolean(window.__DIGEST_INGESTION_SCHEDULE_HARNESS__));
+    await page.evaluate(() => {
+      window.__DIGEST_INGESTION_SCHEDULE_HARNESS__.resetIngestionScheduleMockStore();
+      window.__DIGEST_INGESTION_SCHEDULE_HARNESS__.resetIngestionScheduleHarness();
+      window.__DIGEST_INGESTION_SCHEDULE_HARNESS__.armFailNextLoad();
+    });
+    await page.reload();
+
+    const section = page.getByTestId("ingestion-schedule-section");
+    await expect(section).toBeVisible();
+    await expect(page.getByTestId("ingestion-schedule-retry")).toBeVisible();
+    await expect(page.getByTestId("ingestion-schedule-enabled")).toHaveCount(0);
+    await expect(section).toContainText("Не удалось загрузить настройки сбора");
+
+    await page.getByTestId("ingestion-schedule-retry").click();
+    await expect(page.getByTestId("ingestion-schedule-enabled")).toBeVisible();
+    await expect(page.getByTestId("ingestion-schedule-status")).toContainText("Включён");
+  });
+
+  test("ingestion schedule changes do not mark the page dirty", async ({ page }) => {
+    await gotoAsRole(page, "admin", "/admin/pipeline");
+    await resetIngestionScheduleMock(page);
+
+    await page.getByTestId("ingestion-schedule-enabled").click();
+    await expect(page.getByTestId("ingestion-schedule-status")).toContainText("Выключен");
+
+    const digestTab = page.getByTestId("admin-section-nav").getByTestId("admin-tab-digest");
+    await digestTab.click();
+    await expect(page.getByRole("dialog")).toHaveCount(0);
+    await expect(page).toHaveURL(/\/admin\/digest$/);
+  });
 });
