@@ -14,8 +14,8 @@ Environment=TZ=UTC
 RuntimeDirectory=digest-ingest
 RuntimeDirectoryMode=0750
 ExecStart=/usr/bin/flock -n -E 75 /run/digest-ingest/lock /opt/digest-cds/.venv/bin/ingest-collect
-# D-23: a stuck run dies here; last_run_at is NOT stamped, so the next tick is due again.
-RuntimeMaxSec=1800
+# D-23: the oneshot start phase is bounded at 1800s; last_run_at is NOT stamped, so the next tick is due again.
+TimeoutStartSec=1800
 SuccessExitStatus=0 75
 NoNewPrivileges=true
 PrivateTmp=true
