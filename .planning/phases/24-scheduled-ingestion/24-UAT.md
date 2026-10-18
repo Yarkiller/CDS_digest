@@ -62,6 +62,7 @@ extra: D-27 — due-тик при нуле включённых источник
 result: blocked
 blocked_by: third-party
 reason: "Нет ни одного включённого источника (`pipeline_ingest_sources` пуст) и нет доступа к живому YouTube-фиду; добавление строки в общую БД и живой прогон с captions/LLM не запускались по решению оператора. D-27 частично подтверждён косвенно: после 4 due-тиков при нуле источников `ingestion_schedule` осталась пустой (строки нет, `last_run_at` не появился)."
+note: Пере-проверка 2026-10-18T20:52Z — блокировка сохраняется: PostgREST `select * from pipeline_ingest_sources limit 20` → `[]` (источников нет вовсе); `ingestion_schedule` содержит singleton `{enabled:true, time_of_day:06:00:00, days_of_week:[1,3,6,7], last_run_at:null}`. Для разблокировки нужен реальный включённый источник (YouTube Atom) и согласие оператора на живой прогон, который пишет `materials`/шортлист в общую БД.
 
 ### 7. Проверка миграции 013 на общей VM
 
