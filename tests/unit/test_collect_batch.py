@@ -1,4 +1,4 @@
-"""RED→GREEN: run_collect_batch window, cursor, FeedSkip (ING-02, ING-05, D-03–D-09)."""
+"""RED→GREEN: run_collect_batch window, isolation, exit codes (ING-02/05/06)."""
 
 from __future__ import annotations
 
@@ -90,6 +90,7 @@ def test_run_collect_batch_ingests_one_new_video_and_advances_cursor() -> None:
     from ingestion_service.application.use_cases.collect_batch import (
         CollectCounters,
         CollectDeps,
+        CollectOutcome,
         run_collect_batch,
     )
     from ingestion_service.tests_support.fakes import FakeCollectSourceReader, FakeFeed
@@ -124,11 +125,13 @@ def test_run_collect_batch_ingests_one_new_video_and_advances_cursor() -> None:
         emit_diagnostic=diagnostics.append,
     )
 
-    counters = asyncio.run(
+    outcome = asyncio.run(
         run_collect_batch(deps, template=TemplateKind.LECTURE, limit=5)
     )
 
-    assert counters == CollectCounters(
+    assert isinstance(outcome, CollectOutcome)
+    assert outcome.exit_code == 0
+    assert outcome.counters == CollectCounters(
         sources_read=1,
         sources_unreadable=0,
         videos_new=1,
@@ -184,11 +187,12 @@ def test_run_collect_batch_filters_older_than_cursor_before_pipeline() -> None:
         emit_diagnostic=lambda _line: None,
     )
 
-    counters = asyncio.run(
+    outcome = asyncio.run(
         run_collect_batch(deps, template=TemplateKind.LECTURE, limit=5)
     )
 
-    assert counters.videos_new == 0
+    assert outcome.counters.videos_new == 0
+    assert outcome.exit_code == 0
     assert captions.calls == []
     assert article.calls == []
     assert sources.advance_calls == []
@@ -236,13 +240,14 @@ def test_run_collect_batch_emits_one_diagnostic_per_feed_skip() -> None:
         emit_diagnostic=diagnostics.append,
     )
 
-    counters = asyncio.run(
+    outcome = asyncio.run(
         run_collect_batch(deps, template=TemplateKind.LECTURE, limit=5)
     )
 
-    assert counters.videos_failed == 0
-    assert counters.videos_new == 1
-    assert counters.videos_ingested == 1
+    assert outcome.counters.videos_failed == 0
+    assert outcome.counters.videos_new == 1
+    assert outcome.counters.videos_ingested == 1
+    assert outcome.exit_code == 0
     assert VIDEO_ID in persist.stored
     assert diagnostics == [
         "video skipped: <unknown>: missing_video_id",
@@ -283,11 +288,12 @@ def test_run_collect_batch_first_run_processes_oldest_five_in_asc_order() -> Non
         emit_diagnostic=lambda _line: None,
     )
 
-    counters = asyncio.run(
+    outcome = asyncio.run(
         run_collect_batch(deps, template=TemplateKind.LECTURE, limit=5)
     )
 
-    assert counters == CollectCounters(
+    assert outcome.exit_code == 0
+    assert outcome.counters == CollectCounters(
         sources_read=1,
         sources_unreadable=0,
         videos_new=5,
@@ -324,13 +330,14 @@ def test_run_collect_batch_cursor_on_tenth_takes_eleven_through_fifteen() -> Non
         emit_diagnostic=lambda _line: None,
     )
 
-    counters = asyncio.run(
+    outcome = asyncio.run(
         run_collect_batch(deps, template=TemplateKind.LECTURE, limit=5)
     )
 
     assert captions.calls == [_vid(i) for i in range(11, 16)]
-    assert counters.videos_skipped_limit == 0
-    assert counters.videos_new == 5
+    assert outcome.counters.videos_skipped_limit == 0
+    assert outcome.counters.videos_new == 5
+    assert outcome.exit_code == 0
 
 
 def test_run_collect_batch_cursor_on_twelfth_limit_two_skips_one() -> None:
@@ -354,13 +361,14 @@ def test_run_collect_batch_cursor_on_twelfth_limit_two_skips_one() -> None:
         emit_diagnostic=lambda _line: None,
     )
 
-    counters = asyncio.run(
+    outcome = asyncio.run(
         run_collect_batch(deps, template=TemplateKind.LECTURE, limit=2)
     )
 
     assert captions.calls == [_vid(13), _vid(14)]
-    assert counters.videos_skipped_limit == 1
-    assert counters.videos_new == 2
+    assert outcome.counters.videos_skipped_limit == 1
+    assert outcome.counters.videos_new == 2
+    assert outcome.exit_code == 0
 
 
 def test_rescan_at_feed_head_makes_zero_llm_calls() -> None:
@@ -388,7 +396,8 @@ def test_rescan_at_feed_head_makes_zero_llm_calls() -> None:
     first = asyncio.run(
         run_collect_batch(deps, template=TemplateKind.LECTURE, limit=5)
     )
-    assert first.videos_ingested == 5
+    assert first.counters.videos_ingested == 5
+    assert first.exit_code == 0
     assert sources.advance_calls[-1]["video_id"] == _vid(5)
     head_pub = BASE + timedelta(hours=5)
     head_id = _vid(5)
@@ -411,8 +420,9 @@ def test_rescan_at_feed_head_makes_zero_llm_calls() -> None:
         run_collect_batch(deps2, template=TemplateKind.LECTURE, limit=5)
     )
 
-    assert second.videos_new == 0
-    assert second.videos_ingested == 0
+    assert second.counters.videos_new == 0
+    assert second.counters.videos_ingested == 0
+    assert second.exit_code == 0
     assert article2.calls == []
     assert persist2.calls == []
     assert sources2.advance_calls == []
@@ -479,12 +489,13 @@ def test_run_collect_batch_failed_video_does_not_advance_cursor() -> None:
         emit_diagnostic=diagnostics.append,
     )
 
-    counters = asyncio.run(
+    outcome = asyncio.run(
         run_collect_batch(deps, template=TemplateKind.LECTURE, limit=5)
     )
 
-    assert counters.videos_failed == 1
-    assert counters.videos_ingested == 2
+    assert outcome.counters.videos_failed == 1
+    assert outcome.counters.videos_ingested == 2
+    assert outcome.exit_code == 1
     assert captions.calls == [v1, v2, v3]
     # Cursor ends on v3 (newest success); never stuck on failed v2.
     assert sources.advance_calls[-1]["video_id"] == v3
@@ -494,3 +505,207 @@ def test_run_collect_batch_failed_video_does_not_advance_cursor() -> None:
     advanced_ids = [c["video_id"] for c in sources.advance_calls]
     assert v2 not in advanced_ids
     assert any(v2 in line for line in diagnostics)
+
+
+def test_unreadable_source_continues_to_next_source() -> None:
+    from data_collection.errors.feed import FeedError
+    from ingestion_service.application.ports.collect_sources import EnabledSource
+    from ingestion_service.application.use_cases.collect_batch import (
+        CollectDeps,
+        run_collect_batch,
+    )
+    from ingestion_service.tests_support.fakes import FakeCollectSourceReader, FakeFeed
+
+    src_a = "UCaaaaaaaaaaaaaaaaaaaa"
+    src_b = "UCbbbbbbbbbbbbbbbbbbbb"
+    captions = _EchoCaptions()
+    diagnostics: list[str] = []
+    sources = FakeCollectSourceReader(
+        [
+            EnabledSource(
+                id=1,
+                kind="channel",
+                source_id=src_a,
+                last_seen_published_at=None,
+                last_seen_video_id=None,
+            ),
+            EnabledSource(
+                id=2,
+                kind="channel",
+                source_id=src_b,
+                last_seen_published_at=None,
+                last_seen_video_id=None,
+            ),
+        ]
+    )
+    deps = CollectDeps(
+        feed=FakeFeed(
+            FeedListing(videos=(VideoRef(VIDEO_ID, PUBLISHED),), skipped=()),
+            failures={src_a: FeedError(src_a, reason="feed_status")},
+        ),
+        sources=sources,
+        captions=captions,
+        metadata_provider=_EchoMetadata(),
+        article=FakeArticleGenerator(result=_article()),
+        persist=_persist(),
+        emit_diagnostic=diagnostics.append,
+    )
+
+    outcome = asyncio.run(
+        run_collect_batch(deps, template=TemplateKind.LECTURE, limit=5)
+    )
+
+    assert outcome.counters.sources_unreadable == 1
+    assert outcome.counters.sources_read == 1
+    assert outcome.counters.videos_ingested == 1
+    assert outcome.exit_code == 0
+    assert captions.calls == [VIDEO_ID]
+    assert any(src_a in line for line in diagnostics)
+
+
+def test_all_sources_unreadable_exit_code_2() -> None:
+    from data_collection.errors.feed import FeedError
+    from ingestion_service.application.ports.collect_sources import EnabledSource
+    from ingestion_service.application.use_cases.collect_batch import (
+        CollectDeps,
+        run_collect_batch,
+    )
+    from ingestion_service.tests_support.fakes import FakeCollectSourceReader, FakeFeed
+
+    src_a = "UCaaaaaaaaaaaaaaaaaaaa"
+    src_b = "UCbbbbbbbbbbbbbbbbbbbb"
+    sources = FakeCollectSourceReader(
+        [
+            EnabledSource(
+                id=1,
+                kind="channel",
+                source_id=src_a,
+                last_seen_published_at=None,
+                last_seen_video_id=None,
+            ),
+            EnabledSource(
+                id=2,
+                kind="channel",
+                source_id=src_b,
+                last_seen_published_at=None,
+                last_seen_video_id=None,
+            ),
+        ]
+    )
+    deps = CollectDeps(
+        feed=FakeFeed(
+            FeedListing(videos=(), skipped=()),
+            failures={
+                src_a: FeedError(src_a, reason="feed_status"),
+                src_b: FeedError(src_b, reason="network"),
+            },
+        ),
+        sources=sources,
+        captions=_EchoCaptions(),
+        metadata_provider=_EchoMetadata(),
+        article=FakeArticleGenerator(result=_article()),
+        persist=_persist(),
+        emit_diagnostic=lambda _line: None,
+    )
+
+    outcome = asyncio.run(
+        run_collect_batch(deps, template=TemplateKind.LECTURE, limit=5)
+    )
+
+    assert outcome.counters.sources_read == 0
+    assert outcome.counters.sources_unreadable == 2
+    assert outcome.exit_code == 2
+
+
+def test_list_enabled_sources_failure_exit_2_no_feed_calls() -> None:
+    from ingestion_service.application.ports.collect_sources import CollectSourceError
+    from ingestion_service.application.use_cases.collect_batch import (
+        CollectDeps,
+        run_collect_batch,
+    )
+    from ingestion_service.tests_support.fakes import FakeCollectSourceReader, FakeFeed
+
+    feed = FakeFeed(FeedListing(videos=(), skipped=()))
+    diagnostics: list[str] = []
+    deps = CollectDeps(
+        feed=feed,
+        sources=FakeCollectSourceReader(
+            list_error=CollectSourceError("база недоступна")
+        ),
+        captions=_EchoCaptions(),
+        metadata_provider=_EchoMetadata(),
+        article=FakeArticleGenerator(result=_article()),
+        persist=_persist(),
+        emit_diagnostic=diagnostics.append,
+    )
+
+    outcome = asyncio.run(
+        run_collect_batch(deps, template=TemplateKind.LECTURE, limit=5)
+    )
+
+    assert outcome.counters.sources_read == 0
+    assert outcome.counters.sources_unreadable == 0
+    assert outcome.exit_code == 2
+    assert feed.calls == []
+    assert len(diagnostics) == 1
+    assert "source list failed" in diagnostics[0]
+
+
+def test_empty_feed_zero_videos_exit_0() -> None:
+    from ingestion_service.application.use_cases.collect_batch import (
+        CollectDeps,
+        run_collect_batch,
+    )
+    from ingestion_service.tests_support.fakes import FakeCollectSourceReader, FakeFeed
+
+    deps = CollectDeps(
+        feed=FakeFeed(FeedListing(videos=(), skipped=())),
+        sources=FakeCollectSourceReader([_enabled()]),
+        captions=_EchoCaptions(),
+        metadata_provider=_EchoMetadata(),
+        article=FakeArticleGenerator(result=_article()),
+        persist=_persist(),
+        emit_diagnostic=lambda _line: None,
+    )
+
+    outcome = asyncio.run(
+        run_collect_batch(deps, template=TemplateKind.LECTURE, limit=5)
+    )
+
+    assert outcome.counters.videos_new == 0
+    assert outcome.exit_code == 0
+
+
+def test_already_saved_counts_as_already_and_advances_cursor() -> None:
+    from ingestion_service.application.use_cases.collect_batch import (
+        CollectDeps,
+        run_collect_batch,
+    )
+    from ingestion_service.tests_support.fakes import FakeCollectSourceReader, FakeFeed
+
+    persist = _persist()
+    persist.stored[VIDEO_ID] = PersistResult(
+        material_id=1, slug="t-dQw4w9WgXcQ", batch_id=1, rank=1, already_saved=True
+    )
+    sources = FakeCollectSourceReader([_enabled()])
+    deps = CollectDeps(
+        feed=FakeFeed(
+            FeedListing(videos=(VideoRef(VIDEO_ID, PUBLISHED),), skipped=())
+        ),
+        sources=sources,
+        captions=FakeTranscriptProvider(result=_transcript()),
+        metadata_provider=FakeVideoMetadataProvider(result=_metadata()),
+        article=FakeArticleGenerator(result=_article()),
+        persist=persist,
+        emit_diagnostic=lambda _line: None,
+    )
+
+    outcome = asyncio.run(
+        run_collect_batch(deps, template=TemplateKind.LECTURE, limit=5)
+    )
+
+    assert outcome.counters.videos_already == 1
+    assert outcome.counters.videos_ingested == 0
+    assert outcome.exit_code == 0
+    assert len(sources.advance_calls) == 1
+    assert sources.advance_calls[0]["video_id"] == VIDEO_ID
