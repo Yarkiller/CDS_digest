@@ -1,0 +1,7 @@
+{
+  "expected_result": "1 failed / 12 passed; test_runbook_and_records_name_the_oneshot_start_limit fails on its first assertion AssertionError: §4k must name TimeoutStartSec=1800 (assert \"TimeoutStartSec=1800\" in _section(runbook, \"4k\")); the §5e and whole-file record negatives are never reached",
+  "actual_result": "1 failed, 12 passed in 0.17s. AssertionError: §4k must name TimeoutStartSec=1800 at tests/unit/test_phase24_systemd_units.py:190; the §4k slice still reads '## 4k. Phase 24 ingest timer (ING-06, D-19/D-20/D-21) … Installed (дата):'. The shared _section() helper and the test_runbook_4k_env_keys_exist_in_env_example refactor are green (12 passed before the new test was added). No import or connection error.",
+  "failing_test": "tests/unit/test_phase24_systemd_units.py::test_runbook_and_records_name_the_oneshot_start_limit",
+  "exit_code": 1,
+  "command": "uv run pytest tests/unit/test_phase24_systemd_units.py -q"
+}

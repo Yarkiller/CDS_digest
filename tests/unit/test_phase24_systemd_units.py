@@ -43,6 +43,14 @@ def _iter_unit_bodies() -> list[tuple[Path, str]]:
     return [(p, p.read_text(encoding="utf-8")) for p in paths]
 
 
+def _section(runbook: str, heading: str) -> str:
+    """Return the slice from ``## <heading>.`` up to the next ``## `` heading."""
+    pattern = rf"^## {re.escape(heading)}\..*?(?=^## |\Z)"
+    match = re.search(pattern, runbook, flags=re.M | re.S)
+    assert match is not None, f"runbook §{heading} missing"
+    return match.group(0)
+
+
 def test_three_unit_files_exist() -> None:
     """Check 1: three files exist with exact names."""
     for name in _UNIT_NAMES:
@@ -160,13 +168,32 @@ def test_runbook_4k_env_keys_exist_in_env_example() -> None:
     runbook = (_REPO / "docs" / "agents" / "local-platform-runbook.md").read_text(
         encoding="utf-8"
     )
-    assert "## 4k." in runbook, "runbook §4k missing"
-    # Slice from ## 4k. until the next ## heading.
-    match = re.search(r"^## 4k\..*?(?=^## |\Z)", runbook, flags=re.M | re.S)
-    assert match is not None, "could not isolate §4k"
-    section = match.group(0)
+    section = _section(runbook, "4k")
     keys = sorted(set(re.findall(r"\b([A-Z][A-Z0-9_]+)=", section)))
     assert keys, "§4k must name at least one UPPER_SNAKE= key"
     example = (_REPO / "ingestion-service" / ".env.example").read_text(encoding="utf-8")
     for key in keys:
         assert f"{key}=" in example, f"{key}= missing from .env.example"
+
+
+def test_runbook_and_records_name_the_oneshot_start_limit() -> None:
+    """Check 11: the runbook and the phase records name the working run limit.
+
+    The record scan is deliberately a whole-file read, not a §-slice: frontmatter
+    and the checklist block count too. It lives inside pytest because the
+    execution host is PowerShell, where a leading `!` is a parse error.
+    """
+    runbook = (_REPO / "docs" / "agents" / "local-platform-runbook.md").read_text(
+        encoding="utf-8"
+    )
+    section_4k = _section(runbook, "4k")
+    assert "TimeoutStartSec=1800" in section_4k, "§4k must name TimeoutStartSec=1800"
+
+    section_5e = _section(runbook, "5e")
+    assert "TimeoutStartSec" in section_5e, "§5e must name TimeoutStartSec"
+    assert "RuntimeMaxSec" not in section_5e, "§5e must not name the inert runtime knob"
+
+    phase = _REPO / ".planning" / "phases" / "24-scheduled-ingestion"
+    for name in ("24-VERIFICATION.md", "24-PATTERNS.md", "24-VALIDATION.md"):
+        body = (phase / name).read_text(encoding="utf-8")
+        assert "RuntimeMaxSec" not in body, f"{name} still asserts the inert runtime knob"
