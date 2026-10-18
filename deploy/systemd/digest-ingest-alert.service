@@ -3,4 +3,8 @@ Description=Digest CDS scheduled-ingestion failure alert (journald only)
 
 [Service]
 Type=oneshot
+User=digestcds
+Group=digestcds
+NoNewPrivileges=true
+PrivateTmp=true
 ExecStart=/bin/sh -c 'code="${MONITOR_EXIT_CODE:-${EXIT_CODE:-unknown}}"; case "$code" in 1) msg="partial failure: a video failed or the run state could not be recorded (exit 1)";; 2) msg="no source could be read or the schedule was unreadable (exit 2)";; *) msg="unexpected failure (exit $code)";; esac; echo "digest-ingest.service failed: $msg; journalctl -u digest-ingest.service" >&2'
