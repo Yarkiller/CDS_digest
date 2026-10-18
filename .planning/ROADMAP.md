@@ -59,7 +59,7 @@ Backlog tech debt comes first (lowest blast radius first), then mail, then inges
 - [x] **Phase 18: Reader-route honesty for draft materials** - An admin reads any draft at an admin-gated preview surface while the public reader route stays ready-only and draft ≡ missing (opaque 404) (completed 2026-10-15)
 - [x] **Phase 19: Unsaved-changes guard for the pipeline editor** - The admin pipeline editor warns before losing unsaved changes on in-app SPA navigation and on reload/close (completed 2026-10-16)
 - [x] **Phase 20: MAIL-02 signup confirmation mail** - The root cause is diagnosed and the delivered end state is honest (working relay mail, or explicitly autoconfirmed copy) (completed 2026-10-16)
-- [ ] **Phase 21: MAIL-01 live SMTP digest delivery** - The weekly digest is delivered by a real SMTP mailer to the `profiles` audience, with honest counts and contained failures
+- [x] **Phase 21: MAIL-01 live SMTP digest delivery** - The weekly digest is delivered by a real SMTP mailer to the `profiles` audience, with honest counts and contained failures (completed 2026-10-18)
 - [x] **Phase 22: Admin nav grouping** - The pipeline config is reached from a single «Админ» entry with an in-page tab-bar, not a second top-level nav item (completed 2026-10-17)
 - [x] **Phase 23: Admin-managed ingest sources** - An admin manages the DB-stored YouTube channel/playlist source list on the pipeline page, validated server-side (completed 2026-10-17)
 - [ ] **Phase 24: Scheduled ingestion** - A systemd timer drives the existing `ingest` CLI against enabled sources, writing drafts + shortlist rows only
@@ -188,7 +188,7 @@ Backlog tech debt comes first (lowest blast radius first), then mail, then inges
   4. `delivery_status`/`recipient_count` are written from the mailer's post-send result (idempotently), so a live send can no longer report `stubbed`/`0`.
   5. `SMTP_*` configuration is read only from the VM environment through `settings`/composition; no `os.environ` in adapters and no secret in app code.
 
-**Plans:** 3/3 plans executed
+**Plans:** 3/3 plans complete
 
 Plans:
 **Wave 1**
@@ -286,7 +286,7 @@ Phases execute in numeric order: 17 → 18 → 19 → 20 → 21 → 22 → 23 �
 | 18. Reader-route honesty | 3/3 | Complete    | 2026-10-15 |
 | 19. Unsaved-changes guard | 2/2 | Complete    | 2026-10-16 |
 | 20. MAIL-02 signup mail | 2/2 | Complete    | 2026-10-16 |
-| 21. MAIL-01 live SMTP digest | 3/3 | In Progress|  |
+| 21. MAIL-01 live SMTP digest | 3/3 | Complete    | 2026-10-18 |
 | 22. Admin nav grouping | 3/3 | Complete    | 2026-10-17 |
 | 23. Admin-managed ingest sources | 4/4 | Complete    | 2026-10-17 |
 | 24. Scheduled ingestion | 0/TBD | Not started | - |
