@@ -272,12 +272,24 @@ Plans:
   5. Zero new runtime Python packages are introduced (Atom feed + stdlib only).
 
 **Plans**: 6 plans
+**Wave 1**
 - [ ] 24-01-PLAN.md — Tracer: включённый источник → Atom-фид → драфт (порт/адаптер листинга, курсор, батч, `ingest-collect`, env-ключи)
+
+**Wave 2** *(blocked on Wave 1 completion)*
 - [ ] 24-02-PLAN.md — Окно oldest→newest с лимитом, монотонный курсор, zero-LLM rescan, изоляция отказов, exit codes 0/1/2
+
+**Wave 3** *(blocked on Wave 2 completion)*
 - [ ] 24-03-PLAN.md — Due-гейт в `Europe/Moscow`, `last_run_at`, миграция 013 и `[BLOCKING]` apply на общей VM
+
+**Wave 4** *(blocked on Wave 3 completion)*
 - [ ] 24-04-PLAN.md — `deploy/systemd/*` (timer 15 мин, oneshot под flock, journald-алерт), сторож ING-07, runbook §4k/§5e
+
+**Wave 5** *(blocked on Wave 4 completion)*
 - [ ] 24-05-PLAN.md — Backend `GET`/`PATCH /admin/ingestion-schedule`: домен, порт, use-case, Supabase-адаптер, wiring
+
+**Wave 6** *(blocked on Wave 5 completion)*
 - [ ] 24-06-PLAN.md — SPA-блок «Автоматический сбор» на `/admin/pipeline` с немедленным PATCH и Playwright-тестами
+
 **Notes**: YouTube Data API v3 / `google-api-python-client` / `yt-dlp` are rejected; the Atom-feed choice **removes the ADR-0002 gate** (do not plan a Data API spike). `@handle` resolution is out of scope.
 **Tripwires**: `test_cli_ingest_contract.py` `EXPECTED_SUCCESS_LINES` → **PRESERVE** (byte-identical stdout contract).
 
