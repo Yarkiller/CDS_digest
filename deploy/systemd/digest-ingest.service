@@ -1,0 +1,21 @@
+[Unit]
+Description=Digest CDS scheduled ingestion (drafts + pending shortlist rows only)
+Wants=network-online.target
+After=network-online.target
+OnFailure=digest-ingest-alert.service
+
+[Service]
+Type=oneshot
+User=digestcds
+Group=digestcds
+WorkingDirectory=/opt/digest-cds
+EnvironmentFile=/etc/digest-cds/ingest.env
+Environment=TZ=UTC
+RuntimeDirectory=digest-ingest
+RuntimeDirectoryMode=0750
+ExecStart=/usr/bin/flock -n -E 75 /run/digest-ingest/lock /opt/digest-cds/.venv/bin/ingest-collect
+# D-23: a stuck run dies here; last_run_at is NOT stamped, so the next tick is due again.
+RuntimeMaxSec=1800
+SuccessExitStatus=0 75
+NoNewPrivileges=true
+PrivateTmp=true

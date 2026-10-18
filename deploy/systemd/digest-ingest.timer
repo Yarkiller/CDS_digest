@@ -1,0 +1,11 @@
+[Unit]
+Description=Poll whether scheduled ingestion is due (every 15 minutes)
+
+[Timer]
+# D-21: schedule lives in the DB; catch-up is due_decision's job; systemd must not persist missed runs.
+OnCalendar=*:0/15
+Persistent=false
+Unit=digest-ingest.service
+
+[Install]
+WantedBy=timers.target

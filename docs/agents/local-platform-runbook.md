@@ -599,6 +599,52 @@ Record apply method below when confirmed.
 
 ---
 
+## 4k. Phase 24 ingest timer (ING-06, D-19/D-20/D-21)
+
+Checked-in units: `deploy/systemd/digest-ingest.service`, `deploy/systemd/digest-ingest.timer`, `deploy/systemd/digest-ingest-alert.service`.
+
+**Why the timer polls every 15 minutes:** the schedule lives in `public.ingestion_schedule` (`enabled` / `time_of_day` / `days_of_week` / `last_run_at`). systemd cannot read the DB for OnCalendar, so the timer only wakes `ingest-collect`; `due_decision` decides «пора / не пора». Persistent is false — catch-up after downtime is the due-check against `last_run_at`, not systemd (D-21).
+
+**Prerequisites** (clean VM):
+
+1. System account: `getent passwd digestcds || sudo useradd --system --home-dir /opt/digest-cds --shell /usr/sbin/nologin digestcds` — without it the unit User (digestcds) fails with «Failed to determine user credentials».
+2. Install tree: `sudo install -d -o digestcds -g digestcds /opt/digest-cds`, then check out this repo into `/opt/digest-cds` (WorkingDirectory `/opt/digest-cds`).
+3. Venv as the service user: `sudo -u digestcds bash -lc 'cd /opt/digest-cds && uv sync'` — `/opt/digest-cds/.venv/bin/ingest-collect` appears only after the entry point is installed and must be executable for `digestcds`.
+4. Env file: `sudo mkdir -p /etc/digest-cds`, then `sudo install -m 600 -o root -g root ingestion-service/.env.example /etc/digest-cds/ingest.env`. systemd reads EnvironmentFile as root before dropping privileges, so mode 0600 owner root is fine for the service User digestcds. Fill **exactly the keys `Settings.from_env` reads** (mirror `ingestion-service/.env.example`):
+   - required non-empty: `SUPABASE_URL=`, `SUPABASE_SECRET_KEY=`, `DEEPSEEK_API_KEY=`
+   - defaults OK when blank: `DEEPSEEK_BASE_URL=`, `DEEPSEEK_MODEL=`, `SHORTLIST_BATCH_SIZE=`, `MAX_TRANSCRIPT_CHARS=`
+   - optional: `YOUTUBE_PROXY_URL=`
+   - Phase 24: `INGEST_TEMPLATE=lecture`, `INGEST_MAX_VIDEOS_PER_SOURCE=5`
+   - Do **not** add keys from other modules (e.g. Foundry) — this service does not read them.
+
+**Install:**
+
+```bash
+sudo install -m 644 deploy/systemd/digest-ingest.service \
+  deploy/systemd/digest-ingest.timer \
+  deploy/systemd/digest-ingest-alert.service \
+  /etc/systemd/system/
+sudo systemctl daemon-reload
+sudo systemctl start digest-ingest.service   # smoke once
+sudo systemctl enable --now digest-ingest.timer
+```
+
+**Verify:**
+
+```bash
+systemctl list-timers digest-ingest.timer
+journalctl -u digest-ingest.service -n 30 --no-pager
+systemctl status digest-ingest-alert.service
+```
+
+**Do not:** run the unit as root; put secrets into the unit files; enable Persistent for missed runs; create `/run/digest-ingest` by hand, change its owner, or add tmpfiles.d rules — RuntimeDirectory recreates the directory (owner = service User digestcds) on every start, including the first after reboot.
+
+**Permissions note:** mode 0600 on `/etc/digest-cds/ingest.env` is **not** covered by the text-contract test — verify with `ls -l /etc/digest-cds/ingest.env` on the VM.
+
+Installed (дата):
+
+---
+
 ## 5. Live FE↔BE proof checklist (D-10)
 
 With API on `:8000`, Vite on `:5173`, `APP_CONTAINER=live`, and `VITE_USE_MOCKS=false`:
@@ -656,3 +702,21 @@ uv run --env-file ingestion-service/.env ingest <url> --template lecture|podcast
 ```
 
 Pick four captioned URLs at UAT time (lecture+ru, lecture+en, podcast+ru, podcast+en). Record `material_id` / `slug` / `already_saved` in `10-UAT.md`. Confirm each draft in `/admin/digest` (unsent shortlist, `status=draft`, Russian body, EN provenance suffix when applicable). Do not paste service_role or DeepSeek keys into UAT notes (T-10-11). No Playwright for this UAT; no backend/SPA edits required for drafts to appear.
+
+---
+
+## 5e. Phase 24 scheduled-ingestion UAT (ING-06, D-13/D-21/D-23)
+
+Operator checklist after §4k install + §4j migration. Secrets stay in `/etc/digest-cds/ingest.env` (`ls -l` must show `0600` — text tests do not cover FS mode).
+
+1. **Smoke:** `sudo systemctl start digest-ingest.service` then `journalctl -u digest-ingest.service -n 50 --no-pager` shows the two-line collect summary (or `not due: …`).
+2. **Already ran:** within 15 minutes, `sudo systemctl start digest-ingest.service` again prints `not due: already_ran` and exits 0 (no YouTube/LLM).
+3. **Forced due:** `sudo systemctl stop digest-ingest.timer`, shift `last_run_at` into the past with the SQL from §4j verify notes / Studio, then `sudo systemctl start digest-ingest.service` — a due run collects again.
+4. **Manual retry (D-13):** retry a skipped video with the existing CLI — no new flag:
+   `uv run --env-file ingestion-service/.env ingest <video_id> --template lecture`
+5. **RuntimeMaxSec (D-23):** a stuck long run is killed at 1800s; `last_run_at` is **not** stamped; the next tick is due again from the same cursor.
+6. **flock busy (D-20):** while a run holds `/run/digest-ingest/lock`, a second start exits **75**; `systemctl status digest-ingest.service` does **not** go failed; `digest-ingest-alert.service` does **not** start (`SuccessExitStatus=0 75`).
+7. **Live feed:** with outbound access to `youtube.com`, one enabled source, and an empty cursor, a due run yields at least one `VideoRef` with a non-empty `video_id` (proves `parse_feed` beyond the synthetic fixture).
+8. **Alert codes:** forced exit 1 → journald line with «partial failure»; exit 2 → «no source could be read». Confirm via `journalctl -u digest-ingest-alert.service` after `OnFailure=`.
+
+Record pass/fail in the verify-work session notes. This path is **not** required for CI green.
