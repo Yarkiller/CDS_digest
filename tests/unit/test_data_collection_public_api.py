@@ -16,6 +16,9 @@ PUBLIC_NAMES = frozenset(
         "TranscriptProvider",
         "ArticleGenerator",
         "VideoMetadataProvider",
+        "VideoRef",
+        "FeedListing",
+        "VideoListProvider",
     }
 )
 
@@ -30,6 +33,8 @@ NEGATIVE_ROOT_NAMES = (
     "MetadataError",
     "YouTubeTranscriptAdapter",
     "YouTubeOEmbedAdapter",
+    "YouTubeFeedAdapter",
+    "FeedError",
     "DeepSeekArticleGenerator",
     "ArticleError",
     "TemplateLoadError",
@@ -44,13 +49,13 @@ NEGATIVE_ROOT_NAMES = (
 )
 
 
-def test_public_all_is_exactly_seven_ingestion_names() -> None:
-    """D-01, D-04, D-21: package root exports only the seven public contracts."""
+def test_public_all_is_exactly_ten_ingestion_names() -> None:
+    """D-01, D-04, D-21: package root exports only the ten public contracts."""
     import data_collection
 
     importlib.reload(data_collection)
     assert set(data_collection.__all__) == PUBLIC_NAMES
-    assert len(data_collection.__all__) == 7
+    assert len(data_collection.__all__) == 10
     for name in sorted(PUBLIC_NAMES):
         assert hasattr(data_collection, name), f"missing public export: {name}"
 
@@ -72,6 +77,7 @@ def test_ports_package_exports_both_provider_protocols() -> None:
     assert "TranscriptProvider" in ports.__all__
     assert "ArticleGenerator" in ports.__all__
     assert "VideoMetadataProvider" in ports.__all__
+    assert "VideoListProvider" in ports.__all__
     assert ports.TranscriptProvider is TranscriptProvider
     assert ports.ArticleGenerator is ArticleGenerator
     assert ports.VideoMetadataProvider is VideoMetadataProvider
@@ -121,7 +127,7 @@ def test_ingestion_service_has_no_typer_import() -> None:
     repo_root = Path(__file__).resolve().parents[2]
     src_root = repo_root / "ingestion-service" / "src" / "ingestion_service"
     for path in src_root.rglob("*.py"):
-        if path.name == "cli.py":
+        if path.name.endswith("cli.py"):
             continue
         body = path.read_text(encoding="utf-8")
         assert "import typer" not in body, path.name

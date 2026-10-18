@@ -109,6 +109,7 @@ def test_adapters_do_not_read_environ() -> None:
 
 
 def test_settings_from_env_defaults() -> None:
+    from data_collection.dto.template_kind import TemplateKind
     from ingestion_service.composition.settings import Settings
 
     settings = Settings.from_env({})
@@ -116,6 +117,40 @@ def test_settings_from_env_defaults() -> None:
     assert settings.deepseek_api_key is None
     assert settings.deepseek_base_url == "https://api.deepseek.com"
     assert settings.deepseek_model == "deepseek-flash"
+    assert settings.ingest_template is TemplateKind.LECTURE
+    assert settings.ingest_max_videos_per_source == 5
+
+
+def test_settings_from_env_reads_ingest_template_podcast() -> None:
+    from data_collection.dto.template_kind import TemplateKind
+    from ingestion_service.composition.settings import Settings
+
+    settings = Settings.from_env({"INGEST_TEMPLATE": "podcast"})
+    assert settings.ingest_template is TemplateKind.PODCAST
+
+
+@pytest.mark.parametrize("raw", ["webinar", "LECTURE", ""])
+def test_invalid_ingest_template_raises_configuration_error(raw: str) -> None:
+    from ingestion_service.composition.config_error import ConfigurationError
+    from ingestion_service.composition.settings import Settings
+    from ingestion_service.domain.errors import IngestError
+
+    with pytest.raises(ConfigurationError) as exc_info:
+        Settings.from_env({"INGEST_TEMPLATE": raw})
+    assert not isinstance(exc_info.value, IngestError)
+
+
+@pytest.mark.parametrize("raw", ["0", "-1", "abc", "5.5"])
+def test_invalid_ingest_max_videos_per_source_raises_configuration_error(
+    raw: str,
+) -> None:
+    from ingestion_service.composition.config_error import ConfigurationError
+    from ingestion_service.composition.settings import Settings
+    from ingestion_service.domain.errors import IngestError
+
+    with pytest.raises(ConfigurationError) as exc_info:
+        Settings.from_env({"INGEST_MAX_VIDEOS_PER_SOURCE": raw})
+    assert not isinstance(exc_info.value, IngestError)
 
 
 def test_settings_from_env_blank_max_transcript_chars_defaults() -> None:
