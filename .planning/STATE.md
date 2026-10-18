@@ -4,19 +4,19 @@ milestone: v1.3
 milestone_name: Live mail, scheduled ingestion & backlog debt
 current_phase: 24
 current_phase_name: Scheduled ingestion
-current_plan: Not started
+current_plan: 2
 status: executing
-stopped_at: Phase 24 context gathered
-last_updated: "2026-10-18T11:14:50.158Z"
+stopped_at: Completed 24-01-PLAN.md
+last_updated: "2026-10-18T11:31:02.360Z"
 last_activity: 2026-10-18
-last_activity_desc: Phase 21 complete, transitioned to Phase 24
-state_head: 250c623f25c1b2ba1f2c4eed9db9229b888a4982
+last_activity_desc: Phase 24 execution started
+state_head: af1939102df447836452366d1456f3a3acd57b01
 progress:
   total_phases: 8
   completed_phases: 7
   total_plans: 26
-  completed_plans: 20
-  percent: 77
+  completed_plans: 21
+  percent: 81
 ---
 
 # Project State
@@ -26,17 +26,17 @@ progress:
 See: .planning/PROJECT.md (updated 2026-10-18 — after Phase 22)
 
 **Core value:** Trusted weekly prepared-article issue + one honest vote toward the next разбор
-**Current focus:** Phase 21 — MAIL-01 live SMTP digest delivery
+**Current focus:** Phase 24 — Scheduled ingestion
 
 ## Current Position
 
-Phase: 24 (Scheduled ingestion) — READY TO EXECUTE
-Current Plan: Not started
+Phase: 24 (Scheduled ingestion) — EXECUTING
+Current Plan: 2
 Total Plans in Phase: 6
 Status: Ready to execute
-Last activity: 2026-10-18 — Phase 21 complete, transitioned to Phase 24
+Last activity: 2026-10-18 — Phase 24 execution started
 
-Progress: [████████░░] 77%
+Progress: [████████░░] 81%
 
 ## Performance Metrics
 
@@ -87,6 +87,7 @@ Progress: [████████░░] 77%
 | Phase 23 P02 | 18min | 3 tasks | 7 files |
 | Phase 23 P03 | 22min | 3 tasks | 8 files |
 | Phase 23 P04 | 12min | 2 tasks | 4 files |
+| Phase 24 P01 | 10 min | 2 tasks | 24 files |
 
 ## Accumulated Context
 
@@ -164,6 +165,8 @@ v1.3 roadmap locks:
 - [Phase 23]: Operator applied migration 012 on shared VM (2026-10-17); count(*)=0; §4i Applied stamped; RLS/policy checklist accepted via resume-signal
 - [Phase 23]: ADUX-10 closed by Playwright only — dirty OR from 23-01 already matched D-04
 - [Phase 23]: Toggle/delete errors share UI-SPEC copy «Не удалось обновить источник. Повторите действие.»
+- [Phase 24]: Threat mitigations T-24-01/T-24-02 landed in tracer GREEN; Task 2 test-only pin
+- [Phase 24]: Blank INGEST_TEMPLATE defaults to lecture; invalid non-blank raises ConfigurationError
 
 ### Pending Todos
 
@@ -194,9 +197,9 @@ Carried product deferrals beyond v1.3: leaderboard, quiz, Whisper/Foundry ASR, i
 
 ## Session Continuity
 
-Last session: 2026-10-18T10:04:21.179Z
-Stopped at: Phase 24 context gathered
-Resume file: .planning/phases/24-scheduled-ingestion/24-CONTEXT.md
+Last session: 2026-10-18T11:31:02.218Z
+Stopped at: Completed 24-01-PLAN.md
+Resume file: None
 Next: `/gsd-verify-work 21`
 
 ## Operator Next Steps
