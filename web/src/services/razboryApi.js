@@ -327,7 +327,7 @@ export async function downloadRazborNotebook(id, accessToken = null) {
 
   const blob = await response.blob()
   const disposition = response.headers.get('content-disposition') ?? ''
-  const match = /filename\*?=(?:UTF-8''|")?([^\";]+)/i.exec(disposition)
+  const match = /filename\*?=(?:UTF-8''|")?([^";]+)/i.exec(disposition)
   const filename = match
     ? decodeURIComponent(match[1].replaceAll('"', '').trim())
     : `razbor-${id}.ipynb`

@@ -51,6 +51,7 @@ if (wantsProject("web")) {
     env: {
       ...process.env,
       VITE_USE_MOCKS: "true",
+      VITE_ENABLE_YANDEX_OAUTH: "true",
     },
   });
 }
@@ -68,7 +69,7 @@ module.exports = defineConfig({
     },
     {
       name: "web",
-      testMatch: /(web-app|auth|knowledge|razbory|admin)\.spec\.js/,
+      testMatch: /(web-app|auth|knowledge|razbory|admin|gamification)\.spec\.js/,
       use: { baseURL: "http://127.0.0.1:5174" },
     },
   ],

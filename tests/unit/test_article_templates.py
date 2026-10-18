@@ -82,8 +82,6 @@ def test_template_load_error_is_not_article_error_or_ingest_error() -> None:
 def test_build_deepseek_article_generator_with_missing_template_does_not_construct_async_openai(
     tmp_path: Path,
 ) -> None:
-    import importlib.resources
-
     from openai import AsyncOpenAI
 
     import ingestion_service.composition.clients as clients_module

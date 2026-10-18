@@ -162,6 +162,44 @@ test.describe("SPA auth contracts", () => {
     await expect(page.getByLabel(/^логин$/i)).toHaveCount(0);
   });
 
+  test("OAuth2: shows Yandex ID button when enabled", async ({ page }) => {
+    await page.goto("/login");
+    await expect(page.getByTestId("yandex-oauth")).toBeVisible();
+    await expect(page.getByTestId("yandex-oauth")).toHaveText(/яндекс id/i);
+  });
+
+  test("OAuth2: Yandex ID with non-corporate email is rejected and session dropped", async ({
+    page,
+  }) => {
+    await page.goto("/login");
+    await page.waitForFunction(() => Boolean(window.__DIGEST_AUTH_HARNESS__));
+    await page.evaluate(() =>
+      window.__DIGEST_AUTH_HARNESS__.armOAuthEmail("someone@yandex.ru"),
+    );
+
+    await page.getByTestId("yandex-oauth").click();
+
+    await expect(
+      page.getByText(/вход только с корпоративного домена сва/i),
+    ).toBeVisible();
+    await expect(page).toHaveURL(/\/login/);
+  });
+
+  test("OAuth2: Yandex ID with corporate email signs in", async ({ page }) => {
+    await page.goto("/login");
+    await page.waitForFunction(() => Boolean(window.__DIGEST_AUTH_HARNESS__));
+    await page.evaluate(() =>
+      window.__DIGEST_AUTH_HARNESS__.armOAuthEmail("analyst@sberbank.ru"),
+    );
+
+    await page.getByTestId("yandex-oauth").click();
+
+    await expect(page).toHaveURL(/\/$/);
+    await expect(
+      page.getByRole("heading", { name: /новости ds для сва/i }),
+    ).toBeVisible();
+  });
+
   test("shows Логин as shell identity after register", async ({ page }) => {
     await page.setViewportSize({ width: 1280, height: 800 });
     await page.goto("/login");

@@ -2,19 +2,16 @@
 
 from __future__ import annotations
 
-import pytest
-
 from data_collection.errors.article import (
     ArticleAuthError,
     ArticleContextLengthError,
-    ArticleError,
     ArticleInvalidDraft,
     ArticleInvalidJson,
     ArticleNetworkError,
     ArticleProviderError,
     ArticleUnknownError,
 )
-from ingestion_service.domain.errors import IngestError, Stage
+from ingestion_service.domain.errors import Stage
 from ingestion_service.mapping.article import LLM_REASONS, map_article_error
 
 

@@ -291,7 +291,9 @@ class YamlPipelineConfigValidator:
             )
 
         try:
-            data = yaml.load(yaml_text, Loader=_StrictSafeLoader)
+            # Loader is a yaml.SafeLoader subclass that only adds duplicate-key
+            # rejection; no arbitrary object construction is possible.
+            data = yaml.load(yaml_text, Loader=_StrictSafeLoader)  # nosec B506
         except yaml.MarkedYAMLError as exc:
             mark = exc.problem_mark
             raise PipelineConfigValidationError(

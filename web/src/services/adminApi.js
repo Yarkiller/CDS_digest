@@ -54,7 +54,7 @@ let failNextSend = false
 let alreadySentOnSend = false
 let mockMarkReadyBatchCalls = 0
 
-function useMocks() {
+function mocksEnabled() {
   return isMocksEnabled()
 }
 
@@ -235,7 +235,7 @@ function mapHttpError(response, fallbackMessage) {
  * @returns {Promise<AdminShortlistDto>}
  */
 export async function fetchShortlist(accessToken) {
-  if (useMocks()) {
+  if (mocksEnabled()) {
     await delay(80)
     if (shouldFailFetch()) {
       throw new AdminApiError('Не удалось загрузить shortlist. Проверьте сеть.', {
@@ -382,7 +382,7 @@ export async function fetchMaterialPreview(slug, accessToken) {
  * @returns {Promise<AdminShortlistDto>}
  */
 export async function setDecision(materialId, decision, accessToken) {
-  if (useMocks()) {
+  if (mocksEnabled()) {
     await delay(60)
     if (failNextDecision) {
       failNextDecision = false
@@ -432,7 +432,7 @@ export async function setDecision(materialId, decision, accessToken) {
  * @returns {Promise<MarkReadyResult>} Authoritative promote result { material_id, status }.
  */
 export async function markReady(materialId, accessToken) {
-  if (useMocks()) {
+  if (mocksEnabled()) {
     await delay(60)
     const exists = mockBatch.items.some((row) => row.material_id === materialId)
     if (!exists) {
@@ -479,7 +479,7 @@ export async function markReady(materialId, accessToken) {
  * @returns {Promise<{ results: Array<{ material_id: number, ok: boolean, status: string|null, error: string|null }> }>}
  */
 export async function markReadyBatch(materialIds, accessToken) {
-  if (useMocks()) {
+  if (mocksEnabled()) {
     mockMarkReadyBatchCalls += 1
     await delay(60)
     return applyMockMarkReadyBatch(mockBatch.items, materialIds ?? [])
@@ -587,7 +587,7 @@ export async function previewEmail(accessToken, composition = {}) {
   const intro = typeof composition?.intro === 'string' ? composition.intro : ''
   const requestedBlocks = Array.isArray(composition?.blocks) ? composition.blocks : null
 
-  if (useMocks()) {
+  if (mocksEnabled()) {
     await delay(80)
     if (failNextPreview || stickyFlag('__DIGEST_ADMIN_FAIL_PREVIEW__')) {
       failNextPreview = false
@@ -672,7 +672,7 @@ export async function sendDigest(accessToken, options = {}) {
   const intro = typeof options?.intro === 'string' ? options.intro : ''
   const blocks = Array.isArray(options?.blocks) ? options.blocks : null
 
-  if (useMocks()) {
+  if (mocksEnabled()) {
     await delay(100)
     if (failNextSend) {
       failNextSend = false

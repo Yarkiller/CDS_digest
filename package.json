@@ -9,6 +9,7 @@
     "playwright:install": "node scripts/ensure-playwright-browsers.cjs",
     "postinstall": "node scripts/ensure-playwright-browsers.cjs",
     "test": "playwright test",
+    "test:js": "node --test \"tests/unit/**/*.js\" \"web/src/**/*.test.js\"",
     "test:web": "playwright test --project=web",
     "test:design": "playwright test --project=design-frontend",
     "test:unit": "uv run pytest",

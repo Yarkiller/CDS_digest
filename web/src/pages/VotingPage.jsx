@@ -13,6 +13,7 @@ import {
   submitVote,
 } from '../services/votingApi.js'
 import { leaderStripText, voteButtonLabel, voteStatusText } from '../utils/voting.js'
+import { ANALYTICS_GOALS, trackGoal } from '../services/analyticsRuntime.js'
 
 const FALLBACK_CYCLE = {
   label: 'Цикл голосования',
@@ -63,7 +64,7 @@ function EmptyVotingCta() {
     <p className="mt-6">
       <Link
         to="/"
-        className="inline-flex min-h-11 items-center font-medium text-accent no-underline hover:underline"
+        className="inline-flex min-h-11 items-center font-medium text-primary no-underline hover:underline"
       >
         К выпуску →
       </Link>
@@ -226,6 +227,7 @@ export default function VotingPage() {
       const snapshot = await submitVote(selectedId, expectedUpdatedAt)
       applySnapshot(snapshot, snapshotSetters)
       setButtonState('idle')
+      trackGoal(ANALYTICS_GOALS.vote, { topic_id: selectedId })
       setToast(hadConfirmed ? 'Голос изменён' : 'Голос сохранён')
       setAttemptCount(0)
     } catch (err) {
@@ -308,7 +310,7 @@ export default function VotingPage() {
         />
       ) : null}
       {loadState === 'loading' ? (
-        <p className="text-sm text-ink-2" role="status" aria-live="polite">
+        <p className="text-sm text-text-secondary" role="status" aria-live="polite">
           Загрузка…
         </p>
       ) : null}
@@ -330,14 +332,14 @@ function VotingEmptyNotices({ noCycle, noTopics }) {
     <>
       {noCycle ? (
         <div data-testid="voting-no-cycle">
-          <p className="max-w-prose text-ink-2">Сейчас нет активного голосования</p>
+          <p className="max-w-prose text-text-secondary">Сейчас нет активного голосования</p>
           <EmptyVotingCta />
         </div>
       ) : null}
       {noTopics ? (
         <div data-testid="voting-no-topics">
           <h2 className="font-display text-2xl font-semibold">Темы ещё не объявлены</h2>
-          <p className="mt-3 max-w-prose text-ink-2">Когда редакция откроет темы, они появятся здесь.</p>
+          <p className="mt-3 max-w-prose text-text-secondary">Когда редакция откроет темы, они появятся здесь.</p>
           <EmptyVotingCta />
         </div>
       ) : null}
@@ -371,7 +373,7 @@ function VotingBallotPanel({
       {cycleClosed ? (
         <div
           data-testid="voting-closed-banner"
-          className="mb-6 rounded-2xl border border-rule bg-paper-2 p-5 text-sm text-ink-2"
+          className="mb-6 rounded-2xl border border-border bg-bg-surface p-5 text-sm text-text-secondary"
         >
           Цикл голосования закрыт
         </div>
@@ -379,7 +381,7 @@ function VotingBallotPanel({
       {conflictBanner ? (
         <div
           data-testid="vote-conflict-banner"
-          className="mb-6 rounded-2xl border border-rule bg-paper-2 p-5 text-sm text-ink-2"
+          className="mb-6 rounded-2xl border border-border bg-bg-surface p-5 text-sm text-text-secondary"
           role="alert"
         >
           {conflictBanner}
@@ -396,7 +398,7 @@ function VotingBallotPanel({
           {leaderCopy ? (
             <div
               data-testid="leader-strip"
-              className="mb-6 rounded-2xl border border-rule bg-paper-2 p-5 text-sm text-ink-2"
+              className="mb-6 rounded-2xl border border-border bg-bg-surface p-5 text-sm text-text-secondary"
             >
               {leaderCopy}
             </div>
@@ -436,30 +438,30 @@ function ballotStatusCopy(loadState, status) {
 function VotingCycleCard({ cycleMeta, loadState, status, armedFailOnce, cycleClosed }) {
   return (
     <>
-      <div className="mb-8 rounded-2xl border border-rule bg-[oklch(98.5%_0.009_95)] p-5">
+      <div className="mb-8 rounded-2xl border border-border bg-bg-surface p-5">
         <div className="mb-3 flex items-baseline justify-between gap-3">
-          <span className="text-xs uppercase tracking-wide text-muted">{cycleMeta.label}</span>
-          <span className="text-xs text-ink-2">{cycleMeta.period}</span>
+          <span className="text-xs uppercase tracking-wide text-text-disabled">{cycleMeta.label}</span>
+          <span className="text-xs text-text-secondary">{cycleMeta.period}</span>
         </div>
-        <div className="h-1 overflow-hidden rounded bg-[oklch(93%_0.035_78)]">
+        <div className="h-1 overflow-hidden rounded bg-bg-elevated">
           <div
             className="h-full bg-voting"
             style={{ width: `${Math.round(cycleMeta.progressRatio * 100)}%` }}
           />
         </div>
-        <p className="mt-3 text-sm text-ink-2" role="status" aria-live="polite">
+        <p className="mt-3 text-sm text-text-secondary" role="status" aria-live="polite">
           {ballotStatusCopy(loadState, status)}
         </p>
         {armedFailOnce && !cycleClosed ? (
-          <p className="mt-2 text-xs text-muted">
+          <p className="mt-2 text-xs text-text-disabled">
             Демо режима сбоя: первая отправка будет отклонена сервером (повторите).
           </p>
         ) : null}
       </div>
       {cycleClosed ? (
-        <p className="mb-8 text-sm text-ink-2">Результаты цикла (только чтение).</p>
+        <p className="mb-8 text-sm text-text-secondary">Результаты цикла (только чтение).</p>
       ) : (
-        <p className="mb-8 text-sm text-ink-2">
+        <p className="mb-8 text-sm text-text-secondary">
           Один голос за цикл. Вы можете изменить выбор до {cycleMeta.closesOn}.
         </p>
       )}
@@ -489,9 +491,9 @@ function VotingConfirmBar({
 }) {
   const needsTopic = loadState === 'ready' && !selectedId
   return (
-    <div className="sticky bottom-0 mt-8 flex flex-wrap items-center justify-end gap-3 border-t border-rule bg-paper/95 py-3 backdrop-blur">
+    <div className="sticky bottom-0 mt-8 flex flex-wrap items-center justify-end gap-3 border-t border-border bg-bg-app/95 py-3 backdrop-blur">
       {validationMessage || needsTopic ? (
-        <p className="text-sm text-[oklch(45%_0.14_25)]" role="alert">
+        <p className="text-sm text-danger" role="alert">
           {validationMessage || 'Выберите тему'}
         </p>
       ) : null}
@@ -506,7 +508,7 @@ function VotingConfirmBar({
       {toast ? (
         <p
           data-testid="vote-toast"
-          className="text-sm text-[oklch(45%_0.13_155)]"
+          className="text-sm text-success"
           aria-live="polite"
         >
           {toast}

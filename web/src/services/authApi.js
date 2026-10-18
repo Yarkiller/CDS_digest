@@ -1,4 +1,5 @@
 import { supabase } from './supabaseClient.js'
+import { oauthEnabled, yandexProviderId } from './oauthSession.js'
 
 export class AuthApiError extends Error {
   constructor(message, { code = 'AUTH_FAILED', retryable = false } = {}) {
@@ -16,6 +17,7 @@ let signUpInvocations = 0
 let failNextSignIn = false
 let failNextSignUp = false
 let signUpWithoutSession = false
+let mockOAuthEmail = null
 
 export function armFailNextSignIn() {
   failNextSignIn = true
@@ -29,6 +31,11 @@ export function armSignUpWithoutSession() {
   signUpWithoutSession = true
 }
 
+/** Test harness: set the email returned by the mocked Yandex ID OAuth flow. */
+export function armOAuthEmail(email) {
+  mockOAuthEmail = email
+}
+
 export function resetAuthHarness() {
   mockSession = null
   signInInvocations = 0
@@ -36,6 +43,7 @@ export function resetAuthHarness() {
   failNextSignIn = false
   failNextSignUp = false
   signUpWithoutSession = false
+  mockOAuthEmail = null
 }
 
 export function getSignInInvocationCount() {
@@ -46,7 +54,7 @@ export function getSignUpInvocationCount() {
   return signUpInvocations
 }
 
-function useLiveAuth() {
+function liveAuthEnabled() {
   return import.meta.env.VITE_USE_MOCKS === 'false'
 }
 
@@ -64,7 +72,7 @@ export async function signIn({ email, password }) {
     })
   }
 
-  if (!useLiveAuth()) {
+  if (!liveAuthEnabled()) {
     mockSession = {
       access_token: 'mock-access-token',
       user: { email },
@@ -90,13 +98,48 @@ export async function signIn({ email, password }) {
 
 export async function signOut() {
   mockSession = null
-  if (useLiveAuth()) {
+  if (liveAuthEnabled()) {
     await supabase.auth.signOut()
   }
 }
 
+/**
+ * Start Yandex ID OAuth via Supabase.
+ * Live mode: initiates the redirect and resolves with null (the SPA is navigating away).
+ * Mock mode: resolves with a mock session carrying the harness-provided email.
+ * @returns {Promise<{ access_token: string, user: { email: string } } | null>}
+ */
+export async function signInWithYandex() {
+  if (!oauthEnabled(import.meta.env)) {
+    throw new AuthApiError('Вход через Яндекс ID отключён.', { code: 'OAUTH_DISABLED' })
+  }
+
+  if (!liveAuthEnabled()) {
+    const email = mockOAuthEmail ?? 'oauth.user@yandex.ru'
+    mockOAuthEmail = null
+    mockSession = {
+      access_token: 'mock-oauth-token',
+      user: { email, app_metadata: { provider: 'yandex' } },
+    }
+    return mockSession
+  }
+
+  const redirectTo = `${window.location.origin}/login?oauth=yandex`
+  const { error } = await supabase.auth.signInWithOAuth({
+    provider: yandexProviderId(import.meta.env),
+    options: { redirectTo },
+  })
+  if (error) {
+    throw new AuthApiError('Не удалось начать вход через Яндекс ID. Повторите попытку.', {
+      code: 'OAUTH',
+      retryable: true,
+    })
+  }
+  return null
+}
+
 export async function getSession() {
-  if (!useLiveAuth()) {
+  if (!liveAuthEnabled()) {
     return mockSession
   }
   const { data, error } = await supabase.auth.getSession()
@@ -133,7 +176,7 @@ export async function signUp({ email, password, displayName }) {
 
   const trimmedName = (displayName ?? '').trim()
 
-  if (!useLiveAuth()) {
+  if (!liveAuthEnabled()) {
     mockSession = {
       access_token: 'mock-access-token',
       user: { email, user_metadata: { full_name: trimmedName, display_name: trimmedName } },
@@ -175,7 +218,7 @@ export async function updateAuthDisplayName(displayName) {
   if (!trimmed) {
     return
   }
-  if (!useLiveAuth()) {
+  if (!liveAuthEnabled()) {
     return
   }
   const { error } = await supabase.auth.updateUser({

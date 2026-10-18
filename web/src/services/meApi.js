@@ -51,7 +51,7 @@ function resolveMockRole() {
 /** @type {string | null} */
 let mockDisplayName = null
 
-function useMocks() {
+function mocksEnabled() {
   return isMocksEnabled()
 }
 
@@ -74,7 +74,7 @@ export async function fetchMe(accessToken) {
     })
   }
 
-  if (useMocks()) {
+  if (mocksEnabled()) {
     const session = await getSession()
     return {
       id: 'mock-user-id',
@@ -128,7 +128,7 @@ export async function updateDisplayName(displayName, accessToken) {
     throw new MeApiError('Укажите имя.', { code: 'VALIDATION', retryable: false })
   }
 
-  if (useMocks()) {
+  if (mocksEnabled()) {
     mockDisplayName = trimmed
     const session = await getSession()
     return {
@@ -189,7 +189,7 @@ export async function postPing(accessToken) {
     })
   }
 
-  if (useMocks()) {
+  if (mocksEnabled()) {
     return { ok: true, id: 'mock-ping-id' }
   }
 

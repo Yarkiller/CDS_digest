@@ -203,7 +203,7 @@ export default function AdminPipelineConfigPage() {
   if (roleState === 'loading') {
     return (
       <section aria-busy="true" data-testid="admin-role-loading">
-        <p className="text-sm text-muted">Загрузка…</p>
+        <p className="text-sm text-text-disabled">Загрузка…</p>
       </section>
     )
   }
@@ -215,6 +215,8 @@ export default function AdminPipelineConfigPage() {
   if (roleState === 'error') {
     return (
       <section data-testid="admin-pipeline-page">
+        <p className="text-xs font-semibold uppercase tracking-wide text-text-disabled">Админ</p>
+        <h1 className="mt-2 font-sans text-3xl font-semibold text-text-primary">Конфиг пайплайна</h1>
         <ServiceUnavailable onRetry={reloadRole} />
       </section>
     )
@@ -223,8 +225,10 @@ export default function AdminPipelineConfigPage() {
   if (loadState === 'loading') {
     return (
       <section aria-busy="true" data-testid="admin-pipeline-page">
-        <p className="mt-2 text-sm text-muted">Просмотр и правка без запуска пайплайна</p>
-        <p data-testid="pipeline-config-loading" className="mt-4 text-sm text-muted">
+        <p className="text-xs font-semibold uppercase tracking-wide text-text-disabled">Админ</p>
+        <h1 className="mt-2 font-sans text-3xl font-semibold text-text-primary">Конфиг пайплайна</h1>
+        <p className="mt-2 text-sm text-text-disabled">Просмотр и правка без запуска пайплайна</p>
+        <p data-testid="pipeline-config-loading" className="mt-4 text-sm text-text-disabled">
           Загрузка…
         </p>
       </section>
@@ -234,12 +238,14 @@ export default function AdminPipelineConfigPage() {
   if (loadState === 'error') {
     return (
       <section data-testid="admin-pipeline-page">
-        <p className="mt-2 text-sm text-muted">Просмотр и правка без запуска пайплайна</p>
-        <p className="mt-4 text-sm text-ink-2">{loadError || 'Не удалось загрузить конфиг'}</p>
+        <p className="text-xs font-semibold uppercase tracking-wide text-text-disabled">Админ</p>
+        <h1 className="mt-2 font-sans text-3xl font-semibold text-text-primary">Конфиг пайплайна</h1>
+        <p className="mt-2 text-sm text-text-disabled">Просмотр и правка без запуска пайплайна</p>
+        <p className="mt-4 text-sm text-text-secondary">{loadError || 'Не удалось загрузить конфиг'}</p>
         <button
           type="button"
           data-testid="pipeline-config-retry"
-          className="mt-4 inline-flex min-h-11 items-center font-medium text-accent hover:underline"
+          className="mt-4 inline-flex min-h-11 items-center font-medium text-primary hover:underline"
           onClick={reloadConfig}
         >
           Повторить загрузку
@@ -261,7 +267,9 @@ export default function AdminPipelineConfigPage() {
 
   return (
     <section data-testid="admin-pipeline-page" className="pb-16">
-      <p className="mt-2 text-sm text-muted">Просмотр и правка без запуска пайплайна</p>
+      <p className="text-xs font-semibold uppercase tracking-wide text-text-disabled">Админ</p>
+      <h1 className="mt-2 font-sans text-3xl font-semibold text-text-primary">Конфиг пайплайна</h1>
+      <p className="mt-2 text-sm text-text-disabled">Просмотр и правка без запуска пайплайна</p>
 
       <IngestSourcesSection
         sourceId={sourceId}
@@ -289,10 +297,10 @@ export default function AdminPipelineConfigPage() {
       {!savedYaml ? (
         <div
           data-testid="pipeline-config-empty"
-          className="mt-6 rounded-2xl border border-rule bg-paper-2/40 p-6"
+          className="mt-6 rounded-2xl border border-border bg-bg-surface/40 p-6"
         >
-          <h2 className="font-sans text-2xl font-semibold text-ink">Конфиг ещё не задан</h2>
-          <p className="mt-2 text-sm text-muted">
+          <h2 className="font-sans text-2xl font-semibold text-text-primary">Конфиг ещё не задан</h2>
+          <p className="mt-2 text-sm text-text-disabled">
             Введите YAML и сохраните — конфиг будет доступен при следующих заходах.
           </p>
         </div>
@@ -302,8 +310,13 @@ export default function AdminPipelineConfigPage() {
         <button
           type="button"
           data-testid="pipeline-config-save"
+<<<<<<< HEAD
           className="inline-flex min-h-11 items-center justify-center rounded-full bg-accent px-5 text-sm font-medium text-accent-ink disabled:cursor-not-allowed disabled:opacity-45"
           disabled={!yamlDirty || saving}
+=======
+          className="inline-flex min-h-11 items-center justify-center rounded-full bg-primary px-5 text-sm font-medium text-text-primary disabled:cursor-not-allowed disabled:opacity-45"
+          disabled={!dirty || saving}
+>>>>>>> github/main
           onClick={onSave}
         >
           Сохранить конфиг
@@ -320,7 +333,7 @@ export default function AdminPipelineConfigPage() {
         <p
           data-testid="pipeline-config-status"
           role="status"
-          className="text-sm text-muted"
+          className="text-sm text-text-disabled"
         >
           {statusText}
         </p>
@@ -330,9 +343,9 @@ export default function AdminPipelineConfigPage() {
         <div
           data-testid="pipeline-config-errors"
           role="alert"
-          className="mt-4 rounded-2xl border border-[oklch(70%_0.12_25)] bg-[oklch(96%_0.03_25)] p-4"
+          className="mt-4 rounded-2xl border border-danger bg-danger/10 p-4"
         >
-          <h2 className="font-sans text-2xl font-semibold text-[oklch(45%_0.14_25)]">
+          <h2 className="font-sans text-2xl font-semibold text-danger">
             Проверьте конфиг перед сохранением
           </h2>
           {validationErrors.length > 0 ? (
@@ -341,7 +354,7 @@ export default function AdminPipelineConfigPage() {
                 <li
                   key={`${error?.path ?? 'error'}-${index}`}
                   data-testid="pipeline-config-error"
-                  className="break-words text-sm text-[oklch(45%_0.14_25)]"
+                  className="break-words text-sm text-danger"
                 >
                   {errorPrefix(error) ? (
                     <span className="font-mono">{errorPrefix(error)}</span>
@@ -351,7 +364,7 @@ export default function AdminPipelineConfigPage() {
               ))}
             </ol>
           ) : (
-            <p className="mt-2 text-sm text-[oklch(45%_0.14_25)]">Конфиг не прошёл проверку</p>
+            <p className="mt-2 text-sm text-danger">Конфиг не прошёл проверку</p>
           )}
         </div>
       ) : null}
@@ -359,15 +372,15 @@ export default function AdminPipelineConfigPage() {
       {saveError ? (
         <div
           role="alert"
-          className="mt-4 rounded-2xl border border-[oklch(70%_0.12_25)] bg-[oklch(96%_0.03_25)] p-4"
+          className="mt-4 rounded-2xl border border-danger bg-danger/10 p-4"
         >
-          <h2 className="font-sans text-base font-semibold text-[oklch(35%_0.12_25)]">
+          <h2 className="font-sans text-base font-semibold text-danger">
             Конфиг не сохранён
           </h2>
           <button
             type="button"
             data-testid="pipeline-config-save-retry"
-            className="mt-2 inline-flex min-h-11 items-center font-medium text-accent hover:underline"
+            className="mt-2 inline-flex min-h-11 items-center font-medium text-primary hover:underline"
             onClick={onSave}
           >
             Повторить сохранение
@@ -384,7 +397,7 @@ export default function AdminPipelineConfigPage() {
         autoCorrect="off"
         autoCapitalize="off"
         wrap="off"
-        className="mt-4 min-h-[20rem] max-h-[60vh] w-full overflow-auto rounded-xl border border-rule bg-paper p-3 font-mono text-base leading-relaxed text-ink-2 focus-visible:outline-accent"
+        className="mt-4 min-h-[20rem] max-h-[60vh] w-full overflow-auto rounded-xl border border-border bg-bg-app p-3 font-mono text-base leading-relaxed text-text-secondary focus-visible:outline-primary"
         value={yaml}
         placeholder="# YAML конфига пайплайна"
         onChange={(e) => onEdit(e.target.value)}

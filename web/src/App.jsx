@@ -1,10 +1,12 @@
 import { createBrowserRouter, Navigate, RouterProvider } from 'react-router-dom'
+import AnalyticsPageViews from './components/AnalyticsPageViews.jsx'
 import AppShell from './components/AppShell.jsx'
 import AdminLayout from './components/AdminLayout.jsx'
 import RequireAuth from './components/RequireAuth.jsx'
 import ArchivePage from './pages/ArchivePage.jsx'
 import IssuePage from './pages/IssuePage.jsx'
 import KnowledgePage from './pages/KnowledgePage.jsx'
+import LeaderboardPage from './pages/LeaderboardPage.jsx'
 import LoginPage from './pages/LoginPage.jsx'
 import MaterialPage from './pages/MaterialPage.jsx'
 import AdminDigestPage from './pages/AdminDigestPage.jsx'
@@ -34,6 +36,7 @@ const router = createBrowserRouter([
       { path: 'razbory', element: <RazboryListPage /> },
       { path: 'razbory/:id', element: <RazborPage /> },
       { path: 'profile', element: <ProfilePage /> },
+      { path: 'leaderboard', element: <LeaderboardPage /> },
       {
         // Pathless layout (D-01…D-04): shared admin chrome for digest + pipeline only.
         // No `/admin` index and no redirect — the shell «Админ» entry owns the URL.
@@ -51,5 +54,11 @@ const router = createBrowserRouter([
 ])
 
 export default function App() {
-  return <RouterProvider router={router} />
+  return (
+    <>
+      <AnalyticsPageViews />
+      <RouterProvider router={router} />
+    </>
+  )
 }
+

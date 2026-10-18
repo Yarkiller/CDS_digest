@@ -1,0 +1,30 @@
+# Render Blueprint — alternative backend host to Railway (same Dockerfile/health check).
+# Docs: https://render.com/docs/blueprint-spec
+services:
+  - type: web
+    name: digest-cds-api
+    runtime: docker
+    dockerfilePath: ./Dockerfile
+    healthCheckPath: /health
+    plan: free
+    autoDeploy: true
+    envVars:
+      - key: APP_CONTAINER
+        value: live
+      - key: LOG_LEVEL
+        value: info
+      - key: ALLOWED_EMAIL_DOMAINS
+        value: "@sberbank.ru,@omega.sbrf.ru"
+      # Secrets: set in the Render dashboard (sync: false keeps them out of the repo).
+      - key: SUPABASE_URL
+        sync: false
+      - key: SUPABASE_SECRET_KEY
+        sync: false
+      - key: SUPABASE_JWKS_URL
+        sync: false
+      - key: SUPABASE_JWT_ISSUER
+        sync: false
+      - key: API_CORS_ORIGINS
+        sync: false
+      - key: SITE_URL
+        sync: false

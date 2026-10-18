@@ -20,6 +20,7 @@ import {
   setDecision,
 } from '../services/adminApi.js'
 import { compositionFingerprint } from '../services/adminPreviewComposition.js'
+import { ANALYTICS_GOALS, trackGoal } from '../services/analyticsRuntime.js'
 import { preservePromotedReady } from '../services/adminReadyReconcile.js'
 
 const TOAST_DISMISS_MS = 4000
@@ -441,6 +442,7 @@ export default function AdminDigestPage() {
       })
       setBanner(result.message || 'Выпуск опубликован')
       setIssueUrl(typeof result.issue_url === 'string' ? result.issue_url : '')
+      trackGoal(ANALYTICS_GOALS.digest_send)
       setBatchSent(true)
       setDigestRest(true)
       setDaysUntilNextBatch(DIGEST_WEEKLY_CADENCE_DAYS)
@@ -470,7 +472,7 @@ export default function AdminDigestPage() {
   if (roleState === 'loading') {
     return (
       <section aria-busy="true" data-testid="admin-role-loading">
-        <p className="text-sm text-muted">Загрузка…</p>
+        <p className="text-sm text-text-disabled">Загрузка…</p>
       </section>
     )
   }
@@ -482,6 +484,8 @@ export default function AdminDigestPage() {
   if (roleState === 'error') {
     return (
       <section data-testid="admin-digest-page">
+        <p className="text-xs font-semibold uppercase tracking-wide text-text-disabled">Админ</p>
+        <h1 className="mt-2 font-sans text-3xl font-semibold text-text-primary">Shortlist дайджеста</h1>
         <ServiceUnavailable onRetry={reloadRole} />
       </section>
     )
@@ -490,6 +494,8 @@ export default function AdminDigestPage() {
   if (loadState === 'error') {
     return (
       <section data-testid="admin-digest-page">
+        <p className="text-xs font-semibold uppercase tracking-wide text-text-disabled">Админ</p>
+        <h1 className="mt-2 font-sans text-3xl font-semibold text-text-primary">Shortlist дайджеста</h1>
         <ServiceUnavailable onRetry={reloadShortlist} />
       </section>
     )
@@ -498,7 +504,9 @@ export default function AdminDigestPage() {
   if (loadState === 'loading') {
     return (
       <section aria-busy="true" data-testid="admin-digest-page">
-        <p className="mt-4 text-sm text-muted">Загрузка…</p>
+        <p className="text-xs font-semibold uppercase tracking-wide text-text-disabled">Админ</p>
+        <h1 className="mt-2 font-sans text-3xl font-semibold text-text-primary">Shortlist дайджеста</h1>
+        <p className="mt-4 text-sm text-text-disabled">Загрузка…</p>
       </section>
     )
   }
@@ -511,17 +519,19 @@ export default function AdminDigestPage() {
 
   return (
     <section data-testid="admin-digest-page" className="pb-32">
+      <p className="text-xs font-semibold uppercase tracking-wide text-text-disabled">Админ</p>
+      <h1 className="mt-2 font-sans text-3xl font-semibold text-text-primary">Shortlist дайджеста</h1>
       {showTriage && weekDek ? (
-        <p className="mt-2 text-xs text-muted">{weekDek}</p>
+        <p className="mt-2 text-xs text-text-disabled">{weekDek}</p>
       ) : null}
 
       {restMode ? (
         <div
           data-testid="admin-digest-rest"
-          className="mt-8 rounded-2xl border border-rule bg-paper px-6 py-10"
+          className="mt-8 rounded-2xl border border-border bg-bg-app px-6 py-10"
         >
-          <h2 className="font-sans text-3xl font-semibold text-ink">дайджест успешно выпущен</h2>
-          <p className="mt-3 text-sm text-ink-2">
+          <h2 className="font-sans text-3xl font-semibold text-text-primary">дайджест успешно выпущен</h2>
+          <p className="mt-3 text-sm text-text-secondary">
             Следующие материалы будут подготовлены через {restDays} дней
           </p>
         </div>
@@ -530,13 +540,13 @@ export default function AdminDigestPage() {
       {isEmpty ? (
         <div
           data-testid="admin-shortlist-empty"
-          className="mt-8 rounded-2xl border border-rule bg-paper px-6 py-10"
+          className="mt-8 rounded-2xl border border-border bg-bg-app px-6 py-10"
         >
-          <h2 className="font-sans text-3xl font-semibold text-ink">Кандидатов пока нет</h2>
-          <p className="mt-3 text-sm text-ink-2">Обновите список позже.</p>
+          <h2 className="font-sans text-3xl font-semibold text-text-primary">Кандидатов пока нет</h2>
+          <p className="mt-3 text-sm text-text-secondary">Обновите список позже.</p>
           <button
             type="button"
-            className="mt-6 inline-flex min-h-11 items-center font-medium text-accent hover:underline"
+            className="mt-6 inline-flex min-h-11 items-center font-medium text-primary hover:underline"
             onClick={reloadShortlist}
           >
             Обновить список
@@ -549,14 +559,14 @@ export default function AdminDigestPage() {
           <div className="mt-6 flex flex-wrap gap-2">
             <button
               type="button"
-              className="inline-flex min-h-11 items-center rounded-full border border-rule px-4 text-sm font-medium text-ink hover:bg-paper-2"
+              className="inline-flex min-h-11 items-center rounded-full border border-border px-4 text-sm font-medium text-text-primary hover:bg-bg-surface"
               onClick={selectAll}
             >
               Выбрать все
             </button>
             <button
               type="button"
-              className="inline-flex min-h-11 items-center rounded-full border border-rule px-4 text-sm font-medium text-ink hover:bg-paper-2"
+              className="inline-flex min-h-11 items-center rounded-full border border-border px-4 text-sm font-medium text-text-primary hover:bg-bg-surface"
               onClick={selectTopN}
             >
               Оставить топ-3
@@ -564,7 +574,7 @@ export default function AdminDigestPage() {
             <button
               type="button"
               disabled={approveDisabled}
-              className="inline-flex min-h-11 items-center rounded-full border border-rule px-4 text-sm font-medium text-ink disabled:cursor-not-allowed disabled:opacity-45"
+              className="inline-flex min-h-11 items-center rounded-full border border-border px-4 text-sm font-medium text-text-primary disabled:cursor-not-allowed disabled:opacity-45"
               onClick={() => applyDecision('approved')}
             >
               Одобрить выбранные
@@ -572,7 +582,7 @@ export default function AdminDigestPage() {
             <button
               type="button"
               disabled={approveDisabled}
-              className="inline-flex min-h-11 items-center rounded-full border border-rule px-4 text-sm font-medium text-ink disabled:cursor-not-allowed disabled:opacity-45"
+              className="inline-flex min-h-11 items-center rounded-full border border-border px-4 text-sm font-medium text-text-primary disabled:cursor-not-allowed disabled:opacity-45"
               onClick={() => applyDecision('rejected')}
             >
               Отклонить выбранные
@@ -580,30 +590,30 @@ export default function AdminDigestPage() {
           </div>
 
           <div className="mt-8 grid gap-6 lg:grid-cols-2">
-            <section className="rounded-2xl border border-rule bg-paper-2/40 p-5">
-              <h2 className="text-2xl font-semibold text-ink">Контекст дайджеста</h2>
+            <section className="rounded-2xl border border-border bg-bg-surface/40 p-5">
+              <h2 className="text-2xl font-semibold text-text-primary">Контекст дайджеста</h2>
               <label className="mt-4 block text-sm">
-                <span className="font-medium text-ink-2">Вводный текст</span>
+                <span className="font-medium text-text-secondary">Вводный текст</span>
                 <textarea
-                  className="mt-2 min-h-28 w-full rounded-xl border border-rule bg-paper p-3 text-sm"
+                  className="mt-2 min-h-28 w-full rounded-xl border border-border bg-bg-app p-3 text-sm"
                   value={contextText}
                   onChange={(e) => setContextText(e.target.value)}
                   rows={5}
                 />
-                <span className="mt-1 block text-xs text-muted">Пустая строка = новый абзац</span>
+                <span className="mt-1 block text-xs text-text-disabled">Пустая строка = новый абзац</span>
               </label>
             </section>
-            <section className="rounded-2xl border border-rule bg-paper-2/40 p-5">
-              <h2 className="text-2xl font-semibold text-ink">Схема дайджеста</h2>
+            <section className="rounded-2xl border border-border bg-bg-surface/40 p-5">
+              <h2 className="text-2xl font-semibold text-text-primary">Схема дайджеста</h2>
               <div className="mt-4">
-                <span className="block text-sm font-medium text-ink-2">Блоки выпуска</span>
+                <span className="block text-sm font-medium text-text-secondary">Блоки выпуска</span>
                 <ul
                   data-testid="admin-issue-blocks"
                   className="mt-2 space-y-2"
                   aria-label="Блоки выпуска"
                 >
                   {issueBlocks.length === 0 ? (
-                    <li className="rounded-xl border border-dashed border-rule bg-paper p-3 text-sm text-muted">
+                    <li className="rounded-xl border border-dashed border-border bg-bg-app p-3 text-sm text-text-disabled">
                       Одобрите ready-материалы — они появятся здесь как блоки выпуска.
                     </li>
                   ) : null}
@@ -615,11 +625,11 @@ export default function AdminDigestPage() {
                         data-testid={
                           isMaterial ? 'admin-issue-block-material' : 'admin-issue-block-text'
                         }
-                        className="flex flex-col gap-2 rounded-xl border border-rule bg-paper p-3 sm:flex-row sm:items-start"
+                        className="flex flex-col gap-2 rounded-xl border border-border bg-bg-app p-3 sm:flex-row sm:items-start"
                       >
                         <div className="min-w-0 flex-1">
                           {isMaterial ? (
-                            <p className="break-words text-sm font-medium text-ink">
+                            <p className="break-words text-sm font-medium text-text-primary">
                               {titleByMaterialId.get(block.material_id) ??
                                 `Материал ${block.material_id}`}
                             </p>
@@ -627,13 +637,13 @@ export default function AdminDigestPage() {
                             <label className="block text-sm">
                               <span className="sr-only">Связующий текст</span>
                               <textarea
-                                className="min-h-20 w-full rounded-lg border border-rule bg-paper p-2 text-sm"
+                                className="min-h-20 w-full rounded-lg border border-border bg-bg-app p-2 text-sm"
                                 value={block.text}
                                 onChange={(e) => updateTextBlock(block.id, e.target.value)}
                                 rows={3}
                                 placeholder="Необязательный связующий текст"
                               />
-                              <span className="mt-1 block text-xs text-muted">
+                              <span className="mt-1 block text-xs text-text-disabled">
                                 Пустая строка = новый абзац
                               </span>
                             </label>
@@ -642,7 +652,7 @@ export default function AdminDigestPage() {
                         <div className="flex shrink-0 flex-wrap gap-1">
                           <button
                             type="button"
-                            className="inline-flex min-h-11 min-w-11 items-center justify-center rounded-full border border-rule text-sm disabled:cursor-not-allowed disabled:opacity-45"
+                            className="inline-flex min-h-11 min-w-11 items-center justify-center rounded-full border border-border text-sm disabled:cursor-not-allowed disabled:opacity-45"
                             aria-label="Переместить вверх"
                             disabled={index === 0}
                             onClick={() => moveIssueBlock(index, -1)}
@@ -651,7 +661,7 @@ export default function AdminDigestPage() {
                           </button>
                           <button
                             type="button"
-                            className="inline-flex min-h-11 min-w-11 items-center justify-center rounded-full border border-rule text-sm disabled:cursor-not-allowed disabled:opacity-45"
+                            className="inline-flex min-h-11 min-w-11 items-center justify-center rounded-full border border-border text-sm disabled:cursor-not-allowed disabled:opacity-45"
                             aria-label="Переместить вниз"
                             disabled={index === issueBlocks.length - 1}
                             onClick={() => moveIssueBlock(index, 1)}
@@ -661,7 +671,7 @@ export default function AdminDigestPage() {
                           {!isMaterial ? (
                             <button
                               type="button"
-                              className="inline-flex min-h-11 items-center rounded-full border border-rule px-3 text-sm"
+                              className="inline-flex min-h-11 items-center rounded-full border border-border px-3 text-sm"
                               onClick={() => removeTextBlock(block.id)}
                             >
                               Удалить
@@ -674,7 +684,7 @@ export default function AdminDigestPage() {
                 </ul>
                 <button
                   type="button"
-                  className="mt-3 inline-flex min-h-11 items-center rounded-full border border-rule px-4 text-sm font-medium text-ink"
+                  className="mt-3 inline-flex min-h-11 items-center rounded-full border border-border px-4 text-sm font-medium text-text-primary"
                   onClick={addTextBlock}
                 >
                   Добавить текст
@@ -692,7 +702,7 @@ export default function AdminDigestPage() {
                   key={item.material_id}
                   data-testid="admin-shortlist-row"
                   className={[
-                    'grid grid-cols-[auto_auto_1fr_auto] items-start gap-3 rounded-2xl border border-rule bg-paper p-4 sm:grid-cols-[auto_auto_1fr_auto_auto]',
+                    'grid grid-cols-[auto_auto_1fr_auto] items-start gap-3 rounded-2xl border border-border bg-bg-app p-4 sm:grid-cols-[auto_auto_1fr_auto_auto]',
                     excluded ? 'opacity-70' : '',
                   ].join(' ')}
                 >
@@ -704,16 +714,16 @@ export default function AdminDigestPage() {
                       aria-label={`Выбрать материал ${item.rank}`}
                     />
                   </label>
-                  <span className="font-mono text-sm text-muted">{item.rank}</span>
+                  <span className="font-mono text-sm text-text-disabled">{item.rank}</span>
                   <div className="min-w-0">
-                    <p className="break-words font-medium text-ink">{item.title}</p>
+                    <p className="break-words font-medium text-text-primary">{item.title}</p>
                     <div className="mt-2 flex flex-wrap items-center gap-2">
                       <span
                         className={[
                           'rounded-md px-2 py-0.5 text-xs font-medium',
                           item.material_status === 'ready'
-                            ? 'bg-[oklch(92%_0.04_155)] text-[oklch(35%_0.1_155)]'
-                            : 'bg-[oklch(93%_0.05_50)] text-[oklch(45%_0.12_38)]',
+                            ? 'bg-success/15 text-success'
+                            : 'bg-voting/20 text-voting',
                         ].join(' ')}
                       >
                         {materialStatusLabel(item.material_status)}
@@ -722,27 +732,27 @@ export default function AdminDigestPage() {
                         <button
                           type="button"
                           data-testid="admin-mark-ready"
-                          className="inline-flex min-h-11 items-center text-sm text-accent hover:underline disabled:opacity-50"
+                          className="inline-flex min-h-11 items-center text-sm text-primary hover:underline disabled:opacity-50"
                           disabled={mutating}
                           onClick={() => promoteReady(item)}
                         >
                           Сделать ready
                         </button>
                       ) : null}
-                      {caption ? <span className="text-xs text-muted">{caption}</span> : null}
+                      {caption ? <span className="text-xs text-text-disabled">{caption}</span> : null}
                     </div>
                   </div>
                   <div className="text-right">
                     {item.score != null ? (
-                      <p className="font-mono text-sm text-ink">{item.score}</p>
+                      <p className="font-mono text-sm text-text-primary">{item.score}</p>
                     ) : null}
-                    <p className="mt-1 max-w-[12rem] break-words text-xs text-muted">
+                    <p className="mt-1 max-w-[12rem] break-words text-xs text-text-disabled">
                       {factorText(item)}
                     </p>
                   </div>
                   <button
                     type="button"
-                    className="col-span-full inline-flex min-h-11 items-center justify-self-start rounded-full px-3 text-sm text-accent hover:underline sm:col-span-1 sm:justify-self-end"
+                    className="col-span-full inline-flex min-h-11 items-center justify-self-start rounded-full px-3 text-sm text-primary hover:underline sm:col-span-1 sm:justify-self-end"
                     onClick={() => setPreviewItem(item)}
                   >
                     Превью материала
@@ -757,20 +767,20 @@ export default function AdminDigestPage() {
       {showTriage || restMode ? (
         <div
           data-testid="admin-send-footer"
-          className="fixed inset-x-0 bottom-0 z-40 border-t border-rule bg-paper/95 backdrop-blur"
+          className="fixed inset-x-0 bottom-0 z-40 border-t border-border bg-bg-app/95 backdrop-blur"
         >
           <div className="mx-auto flex max-w-6xl flex-col gap-3 px-4 py-3 sm:flex-row sm:items-center sm:justify-between">
             <div className="min-w-0">
-              <p className="text-sm text-ink-2 break-words" data-testid="admin-send-hint">
+              <p className="text-sm text-text-secondary break-words" data-testid="admin-send-hint">
                 {sendHint}
               </p>
               {banner ? (
-                <p className="mt-1 text-sm font-medium text-[oklch(45%_0.13_155)]" role="status">
+                <p className="mt-1 text-sm font-medium text-success" role="status">
                   <span>{banner}</span>
                   {issueUrl ? (
                     <>
                       {' · '}
-                      <Link to={issueUrl} className="text-accent underline-offset-2 hover:underline">
+                      <Link to={issueUrl} className="text-primary underline-offset-2 hover:underline">
                         К выпуску →
                       </Link>
                     </>
@@ -781,7 +791,7 @@ export default function AdminDigestPage() {
             <div className="flex w-full flex-col gap-2 sm:w-auto sm:flex-row">
               <button
                 type="button"
-                className="inline-flex min-h-11 w-full items-center justify-center rounded-full border border-rule px-4 text-sm font-medium sm:w-auto"
+                className="inline-flex min-h-11 w-full items-center justify-center rounded-full border border-border px-4 text-sm font-medium sm:w-auto"
                 disabled={restMode || previewing || approvedReady.length === 0}
                 onClick={openEmailPreview}
               >
@@ -789,7 +799,7 @@ export default function AdminDigestPage() {
               </button>
               <button
                 type="button"
-                className="inline-flex min-h-11 w-full items-center justify-center rounded-full bg-[oklch(45%_0.13_155)] px-4 text-sm font-medium text-paper disabled:cursor-not-allowed disabled:opacity-45 sm:w-auto"
+                className="inline-flex min-h-11 w-full items-center justify-center rounded-full bg-success px-4 text-sm font-medium text-text-primary disabled:cursor-not-allowed disabled:opacity-45 sm:w-auto"
                 disabled={restMode || !sendUnlocked || sending}
                 onClick={() => setConfirmOpen(true)}
               >
@@ -803,7 +813,7 @@ export default function AdminDigestPage() {
       {toast ? (
         <p
           data-testid="admin-toast"
-          className="fixed bottom-24 left-1/2 z-50 -translate-x-1/2 rounded-full bg-ink px-4 py-2 text-sm text-paper"
+          className="fixed bottom-24 left-1/2 z-50 -translate-x-1/2 rounded-full bg-text-primary px-4 py-2 text-sm text-text-primary"
           role="status"
         >
           {toast}
@@ -816,12 +826,12 @@ export default function AdminDigestPage() {
 
       {emailModal ? (
         <div
-          className="fixed inset-0 z-[400] flex items-center justify-center bg-ink/40 p-4"
+          className="fixed inset-0 z-[400] flex items-center justify-center bg-text-primary/40 p-4"
           role="dialog"
           aria-modal="true"
           aria-labelledby="email-preview-title"
         >
-          <div className="flex max-h-[90vh] w-full max-w-lg flex-col overflow-hidden rounded-2xl bg-paper">
+          <div className="flex max-h-[90vh] w-full max-w-lg flex-col overflow-hidden rounded-2xl bg-bg-app">
             <div className="flex shrink-0 items-start justify-between gap-3 px-6 pt-6">
               <h2 id="email-preview-title" className="text-2xl font-semibold">
                 Превью письма
@@ -837,13 +847,13 @@ export default function AdminDigestPage() {
             </div>
             <div className="min-h-0 flex-1 overflow-y-auto px-6 pb-6">
               {emailModal === 'loading' ? (
-                <p className="mt-4 text-sm text-muted">Загрузка…</p>
+                <p className="mt-4 text-sm text-text-disabled">Загрузка…</p>
               ) : emailModal === 'error' ? (
                 <div className="mt-4">
-                  <p className="text-sm text-ink-2">Превью недоступно</p>
+                  <p className="text-sm text-text-secondary">Превью недоступно</p>
                   <button
                     type="button"
-                    className="mt-4 inline-flex min-h-11 items-center font-medium text-accent hover:underline"
+                    className="mt-4 inline-flex min-h-11 items-center font-medium text-primary hover:underline"
                     onClick={() => {
                       clearFailNextPreview()
                       openEmailPreview()
@@ -854,7 +864,7 @@ export default function AdminDigestPage() {
                 </div>
               ) : (
                 <>
-                  <p className="mt-2 text-xs text-muted">только одобренные ready</p>
+                  <p className="mt-2 text-xs text-text-disabled">только одобренные ready</p>
                   <p className="mt-3 font-display text-xl font-semibold break-words">
                     {emailModal.preview.subject}
                   </p>
@@ -866,10 +876,10 @@ export default function AdminDigestPage() {
                       title="Превью письма HTML"
                       sandbox="allow-popups allow-popups-to-escape-sandbox"
                       srcDoc={emailModal.preview.html}
-                      className="mt-3 min-h-64 w-full rounded-xl border border-rule bg-white"
+                      className="mt-3 min-h-64 w-full rounded-xl border border-border bg-white"
                     />
                   ) : (
-                    <p className="mt-3 text-sm text-ink-2">Превью недоступно</p>
+                    <p className="mt-3 text-sm text-text-secondary">Превью недоступно</p>
                   )}
                 </>
               )}
@@ -880,12 +890,12 @@ export default function AdminDigestPage() {
 
       {confirmOpen ? (
         <div
-          className="fixed inset-0 z-[400] flex items-center justify-center bg-ink/40 p-4"
+          className="fixed inset-0 z-[400] flex items-center justify-center bg-text-primary/40 p-4"
           role="dialog"
           aria-modal="true"
           aria-labelledby="confirm-send-title"
         >
-          <div className="w-full max-w-md rounded-2xl bg-paper p-6">
+          <div className="w-full max-w-md rounded-2xl bg-bg-app p-6">
             <div className="flex items-start justify-between gap-3">
               <h2 id="confirm-send-title" className="text-2xl font-semibold">
                 Подтвердите отправку
@@ -899,14 +909,14 @@ export default function AdminDigestPage() {
                 ✕
               </button>
             </div>
-            <p className="mt-4 text-sm leading-relaxed text-ink-2">
+            <p className="mt-4 text-sm leading-relaxed text-text-secondary">
               Будет создан новый выпуск и записана stub-отправка. Живая почта не используется. Материалов:{' '}
               {approvedReady.length}.
             </p>
             <div className="mt-6 flex flex-col gap-2 sm:flex-row sm:justify-end">
               <button
                 type="button"
-                className="inline-flex min-h-11 items-center justify-center rounded-full border border-rule px-4 text-sm"
+                className="inline-flex min-h-11 items-center justify-center rounded-full border border-border px-4 text-sm"
                 disabled={sending}
                 onClick={() => setConfirmOpen(false)}
               >
@@ -914,7 +924,7 @@ export default function AdminDigestPage() {
               </button>
               <button
                 type="button"
-                className="inline-flex min-h-11 items-center justify-center rounded-full bg-[oklch(45%_0.13_155)] px-4 text-sm font-medium text-paper disabled:opacity-55"
+                className="inline-flex min-h-11 items-center justify-center rounded-full bg-success px-4 text-sm font-medium text-text-primary disabled:opacity-55"
                 disabled={sending}
                 onClick={confirmSend}
               >
@@ -943,12 +953,12 @@ function AdminItemPreview({ item, onClose }) {
 
   return (
     <div
-      className="fixed inset-0 z-[400] flex items-center justify-center bg-ink/40 p-4"
+      className="fixed inset-0 z-[400] flex items-center justify-center bg-text-primary/40 p-4"
       role="dialog"
       aria-modal="true"
       aria-labelledby="item-preview-title"
     >
-      <div className="flex max-h-[90vh] w-full max-w-lg flex-col overflow-hidden rounded-2xl bg-paper">
+      <div className="flex max-h-[90vh] w-full max-w-lg flex-col overflow-hidden rounded-2xl bg-bg-app">
         <div className="flex shrink-0 items-start justify-between gap-3 px-6 pt-6">
           <h2 id="item-preview-title" className="text-2xl font-semibold">
             Превью материала
@@ -963,17 +973,17 @@ function AdminItemPreview({ item, onClose }) {
           </button>
         </div>
         <div className="min-h-0 flex-1 overflow-y-auto px-6 pb-6">
-          <p className="mt-4 break-words text-base font-semibold text-ink">{item.title}</p>
+          <p className="mt-4 break-words text-base font-semibold text-text-primary">{item.title}</p>
           {provenance ? (
-            <p className="mt-2 break-words text-xs font-semibold text-muted">{provenance}</p>
+            <p className="mt-2 break-words text-xs font-semibold text-text-disabled">{provenance}</p>
           ) : null}
-          <p className="mt-2 text-xs font-normal text-muted">
+          <p className="mt-2 text-xs font-normal text-text-disabled">
             ~{charCount} символов · {wordCount} слов · ~{readingMinutes} мин
           </p>
           {body ? (
             <div
               data-testid="admin-material-preview-body"
-              className="prose-column mt-4 max-w-none break-words text-base leading-relaxed text-ink-2 [&_h2]:mt-4 [&_h2]:font-display [&_h2]:text-2xl [&_h2]:font-semibold [&_h2]:text-ink [&_p]:mt-3"
+              className="prose-column mt-4 max-w-none break-words text-base leading-relaxed text-text-secondary [&_h2]:mt-4 [&_h2]:font-display [&_h2]:text-2xl [&_h2]:font-semibold [&_h2]:text-text-primary [&_p]:mt-3"
             >
               <Markdown
                 remarkPlugins={[remarkGfm]}
@@ -983,7 +993,7 @@ function AdminItemPreview({ item, onClose }) {
               </Markdown>
             </div>
           ) : (
-            <p className="mt-4 text-base text-muted">Текст материала недоступен</p>
+            <p className="mt-4 text-base text-text-disabled">Текст материала недоступен</p>
           )}
           {slug ? (
             <Link

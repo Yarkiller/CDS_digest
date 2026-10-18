@@ -10,7 +10,6 @@ from backend.composition.container import AppContainer, build_in_memory_containe
 from backend.composition.live import build_live_container
 from backend.composition.settings import Settings
 from backend.interface.http.app import create_app, resolve_container
-from backend.tests_support.in_memory import InMemoryPingRecorder, InMemoryProfileRepository
 from backend.tests_support.in_memory import (
     InMemoryIssueRepository,
     InMemoryMaterialRepository,

@@ -1,0 +1,102 @@
+<!DOCTYPE html>
+<html lang="ru">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>Профиль — Digest CDS</title>
+  <link rel="preconnect" href="https://fonts.googleapis.com">
+  <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+  <link href="https://fonts.googleapis.com/css2?family=JetBrains+Mono&family=Manrope:wght@400;500;600;700&display=swap" rel="stylesheet">
+  <link rel="stylesheet" href="../styles/tokens.css">
+  <link rel="stylesheet" href="../styles/typography.css">
+  <link rel="stylesheet" href="../styles/layout.css">
+  <link rel="stylesheet" href="../styles/components.css">
+</head>
+<body>
+  <div class="concept-nav"><a href="../index.html">← Concept 2</a> <strong>Профиль</strong></div>
+  <div class="app-shell">
+    <header class="header">
+      <div class="header__inner">
+        <a class="logo" href="home.html"><span class="logo__title">Digest CDS</span></a>
+        <nav class="nav">
+          <a class="nav__link" href="home.html">Главная</a>
+          <a class="nav__link" href="leaderboard.html">Лидерборд</a>
+          <a class="nav__link nav__link--active" href="profile.html">Профиль</a>
+        </nav>
+        <div class="header__search"><div class="search-bar"><span class="search-bar__icon">⌕</span><input class="search-bar__input" type="search" placeholder="Поиск…"></div></div>
+        <div class="header__gamification">
+          <span class="streak-pill"><span class="streak-pill__icon"><svg width="14" height="14" viewBox="0 0 24 24" fill="currentColor"><path d="M12 2C12 2 7 10 7 14a5 5 0 0 0 10 0c0-4-5-12-5-12z"/></svg></span>12</span>
+          <div class="xp-widget"><span class="xp-widget__level">Ур. 7</span><div class="xp-widget__track"><div class="xp-widget__fill"></div></div></div>
+          <a class="rank-chip" href="leaderboard.html">#8</a>
+        </div>
+        <div class="header__user"><button class="theme-toggle" type="button" data-theme-toggle>☀</button><span class="avatar">ИП</span></div>
+      </div>
+    </header>
+
+    <main class="main">
+      <div style="display:grid;gap:var(--space-6);max-width:900px;">
+        <section class="sidebar-panel" style="display:flex;gap:var(--space-6);flex-wrap:wrap;align-items:flex-start;">
+          <div class="avatar avatar--lg">ИП</div>
+          <div style="flex:1;min-width:200px;">
+            <h1 class="text-h1">Иван Петров</h1>
+            <span class="role-badge role-badge--ds">DS-эксперт</span>
+            <div class="profile-stats__xp" style="max-width:360px;">
+              <div style="display:flex;justify-content:space-between;margin:var(--space-4) 0 var(--space-2);">
+                <span class="text-body-sm">Уровень 7</span>
+                <span class="text-mono text-xp">340 / 500 XP</span>
+              </div>
+              <div class="xp-widget__track" style="width:100%;height:8px;"><div class="xp-widget__fill"></div></div>
+              <p class="text-caption" style="margin-top:var(--space-2);">160 XP до уровня 8</p>
+            </div>
+            <div class="profile-stats__meta">
+              <span>Серия <strong class="text-xp">12</strong> дн.</span>
+              <span>Ранг в <a href="leaderboard.html">лидерборде</a>: <strong>#8</strong></span>
+            </div>
+          </div>
+        </section>
+
+        <section class="sidebar-panel">
+          <h2 class="text-h2" style="margin-bottom:var(--space-5);">Достижения</h2>
+          <div class="badges-grid">
+            <div class="hex-badge__wrap">
+              <div class="hex-badge"><svg viewBox="0 0 40 44" width="48" height="52"><polygon points="20,2 38,12 38,32 20,42 2,32 2,12" fill="rgba(139,92,246,0.2)" stroke="#8B5CF6" stroke-width="1.5"/><text x="20" y="26" text-anchor="middle" fill="#A3E635" font-size="16">✓</text></svg></div>
+              <div class="hex-badge__label">Первый голос</div>
+            </div>
+            <div class="hex-badge__wrap">
+              <div class="hex-badge"><svg viewBox="0 0 40 44" width="48" height="52"><polygon points="20,2 38,12 38,32 20,42 2,32 2,12" fill="rgba(6,182,212,0.15)" stroke="#06B6D4" stroke-width="1.5"/><text x="20" y="26" text-anchor="middle" fill="#06B6D4" font-size="14">4</text></svg></div>
+              <div class="hex-badge__label">Читатель дайджеста</div>
+            </div>
+            <div class="hex-badge__wrap hex-badge--locked">
+              <div class="hex-badge"><svg viewBox="0 0 40 44" width="48" height="52"><polygon points="20,2 38,12 38,32 20,42 2,32 2,12" fill="none" stroke="#64748B" stroke-width="1.5"/><text x="20" y="28" text-anchor="middle" fill="#64748B" font-size="10">?</text></svg></div>
+              <div class="hex-badge__label">Тест сдан</div>
+            </div>
+            <div class="hex-badge__wrap hex-badge--locked">
+              <div class="hex-badge"><svg viewBox="0 0 40 44" width="48" height="52"><polygon points="20,2 38,12 38,32 20,42 2,32 2,12" fill="none" stroke="#64748B" stroke-width="1.5"/></svg></div>
+              <div class="hex-badge__label">Автор разбора</div>
+            </div>
+          </div>
+        </section>
+
+        <section class="sidebar-panel">
+          <h2 class="text-h2" style="margin-bottom:var(--space-4);">Настройки</h2>
+          <div class="toggle-row">
+            <div>
+              <p class="text-body-sm" style="margin:0;">Скрыть меня из лидерборда</p>
+              <p class="text-caption">Другие увидят «Участник скрыт»</p>
+            </div>
+            <div class="toggle" role="switch" aria-checked="false" tabindex="0"><span class="toggle__knob"></span></div>
+          </div>
+          <div class="toggle-row">
+            <div>
+              <p class="text-body-sm" style="margin:0;">Светлая тема</p>
+              <p class="text-caption">Переключить оформление</p>
+            </div>
+            <button class="theme-toggle" type="button" data-theme-toggle>☀</button>
+          </div>
+        </section>
+      </div>
+    </main>
+  </div>
+  <script src="../scripts/app.js"></script>
+</body>
+</html>
