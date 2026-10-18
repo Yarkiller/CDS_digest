@@ -4,19 +4,19 @@ milestone: v1.3
 milestone_name: Live mail, scheduled ingestion & backlog debt
 current_phase: 24
 current_phase_name: Scheduled ingestion
-current_plan: 2
+current_plan: 3
 status: executing
-stopped_at: Completed 24-01-PLAN.md
-last_updated: "2026-10-18T11:31:02.360Z"
+stopped_at: Completed 24-02-PLAN.md
+last_updated: "2026-10-18T11:41:55.907Z"
 last_activity: 2026-10-18
 last_activity_desc: Phase 24 execution started
-state_head: af1939102df447836452366d1456f3a3acd57b01
+state_head: eb9f4d131130d0fb0c62923c218052a0c1b65ce7
 progress:
   total_phases: 8
   completed_phases: 7
   total_plans: 26
-  completed_plans: 21
-  percent: 81
+  completed_plans: 22
+  percent: 85
 ---
 
 # Project State
@@ -31,12 +31,12 @@ See: .planning/PROJECT.md (updated 2026-10-18 — after Phase 22)
 ## Current Position
 
 Phase: 24 (Scheduled ingestion) — EXECUTING
-Current Plan: 2
+Current Plan: 3
 Total Plans in Phase: 6
 Status: Ready to execute
 Last activity: 2026-10-18 — Phase 24 execution started
 
-Progress: [████████░░] 81%
+Progress: [█████████░] 85%
 
 ## Performance Metrics
 
@@ -88,6 +88,7 @@ Progress: [████████░░] 81%
 | Phase 23 P03 | 22min | 3 tasks | 8 files |
 | Phase 23 P04 | 12min | 2 tasks | 4 files |
 | Phase 24 P01 | 10 min | 2 tasks | 24 files |
+| Phase 24 P02 | 7min | 2 tasks | 6 files |
 
 ## Accumulated Context
 
@@ -167,6 +168,8 @@ v1.3 roadmap locks:
 - [Phase 23]: Toggle/delete errors share UI-SPEC copy «Не удалось обновить источник. Повторите действие.»
 - [Phase 24]: Threat mitigations T-24-01/T-24-02 landed in tracer GREEN; Task 2 test-only pin
 - [Phase 24]: Blank INGEST_TEMPLATE defaults to lecture; invalid non-blank raises ConfigurationError
+- [Phase 24]: Older-than-cursor filtered by select_window; video try/except in Task 1 for D-09
+- [Phase 24]: CollectOutcome.exit_code is single source for typer.Exit in collect_cli
 
 ### Pending Todos
 
@@ -197,8 +200,8 @@ Carried product deferrals beyond v1.3: leaderboard, quiz, Whisper/Foundry ASR, i
 
 ## Session Continuity
 
-Last session: 2026-10-18T11:31:02.218Z
-Stopped at: Completed 24-01-PLAN.md
+Last session: 2026-10-18T11:41:55.768Z
+Stopped at: Completed 24-02-PLAN.md
 Resume file: None
 Next: `/gsd-verify-work 21`
 
