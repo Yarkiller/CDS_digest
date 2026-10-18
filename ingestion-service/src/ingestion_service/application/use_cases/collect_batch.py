@@ -1,4 +1,4 @@
-"""run_collect_batch — enabled sources → feed → ingest pipeline (ING-02, D-03)."""
+"""run_collect_batch — enabled sources → feed → ingest pipeline (ING-02, ING-05)."""
 
 from __future__ import annotations
 
@@ -13,7 +13,7 @@ from data_collection.ports.video_metadata_provider import VideoMetadataProvider
 from ingestion_service.application.ports.collect_sources import CollectSourceReader
 from ingestion_service.application.ports.persist import PersistPort
 from ingestion_service.application.use_cases.ingest_pipeline import run_ingest_pipeline
-from ingestion_service.domain.schedule import advance_cursor
+from ingestion_service.domain.schedule import advance_cursor, select_window
 
 
 @dataclass(frozen=True)
@@ -44,7 +44,6 @@ async def run_collect_batch(
     template: TemplateKind,
     limit: int,
 ) -> CollectCounters:
-    del limit  # window/limit selection lands in 24-02
     sources_read = 0
     sources_unreadable = 0
     videos_new = 0
@@ -70,19 +69,37 @@ async def run_collect_batch(
             if source.last_seen_published_at is not None
             else None
         )
+        last_published = current[0] if current is not None else None
+        last_video_id = current[1] if current is not None else None
 
-        for video in listing.videos:
+        window, skipped_limit = select_window(
+            listing.videos,
+            last_published=last_published,
+            last_video_id=last_video_id,
+            limit=limit,
+        )
+        videos_skipped_limit += skipped_limit
+
+        for video in window:
             videos_new += 1
-            result = await run_ingest_pipeline(
-                video.video_id,
-                template,
-                captions=deps.captions,
-                metadata_provider=deps.metadata_provider,
-                article=deps.article,
-                persist=deps.persist,
-                on_stage=None,
-                diagnostics=None,
-            )
+            try:
+                result = await run_ingest_pipeline(
+                    video.video_id,
+                    template,
+                    captions=deps.captions,
+                    metadata_provider=deps.metadata_provider,
+                    article=deps.article,
+                    persist=deps.persist,
+                    on_stage=None,
+                    diagnostics=None,
+                )
+            except Exception as err:
+                videos_failed += 1
+                deps.emit_diagnostic(
+                    f"video failed: {video.video_id}: {type(err).__name__}: {err}"
+                )
+                continue
+
             if result.already_saved:
                 videos_already += 1
             else:
