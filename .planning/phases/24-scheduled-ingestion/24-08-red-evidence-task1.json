@@ -1,7 +1,0 @@
-{
-  "expected_result": "2 failed / 12 passed; test_alert_unit fails on the positive-token assertion assert \"${MONITOR_EXIT_STATUS:-${EXIT_STATUS:-unknown}}\" in body, and test_alert_unit_does_not_read_exit_qualifier fails on the same positive assertion first (its MONITOR_EXIT_CODE absence check is never reached while the numeric substitution is missing)",
-  "actual_result": "2 failed, 12 passed in 0.17s. Both failures are AssertionError on the missing positive substitution '${MONITOR_EXIT_STATUS:-${EXIT_STATUS:-unknown}}' — test_phase24_systemd_units.py:121 (test_alert_unit) and test_phase24_systemd_units.py:137 (test_alert_unit_does_not_read_exit_qualifier). The alert body still reads 'code=\"${MONITOR_EXIT_CODE:-${EXIT_CODE:-unknown}}\"'. No import, connection or 'unit missing' error.",
-  "failing_test": "tests/unit/test_phase24_systemd_units.py::test_alert_unit and tests/unit/test_phase24_systemd_units.py::test_alert_unit_does_not_read_exit_qualifier",
-  "exit_code": 1,
-  "command": "uv run pytest tests/unit/test_phase24_systemd_units.py -q"
-}

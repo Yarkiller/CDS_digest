@@ -1,7 +1,0 @@
-{
-  "expected_result": "get() on empty table returns domain defaults without insert/upsert",
-  "actual_result": "ModuleNotFoundError / pytest.fail — SupabaseIngestionScheduleRepository absent",
-  "failing_test": "tests/unit/test_supabase_ingestion_schedule_repository_contract.py::test_get_empty_returns_defaults_without_write",
-  "exit_code": 1,
-  "command": "uv run pytest tests/unit/test_supabase_ingestion_schedule_repository_contract.py::test_get_empty_returns_defaults_without_write -q --tb=line"
-}
