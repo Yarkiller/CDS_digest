@@ -9,10 +9,14 @@ from youtube_transcript_api import YouTubeTranscriptApi
 from youtube_transcript_api.proxies import GenericProxyConfig
 
 from data_collection.adapters.deepseek_article import DeepSeekArticleGenerator
+from data_collection.adapters.youtube_feed import YouTubeFeedAdapter
 from data_collection.adapters.youtube_oembed import YouTubeOEmbedAdapter
 from data_collection.adapters.youtube_transcript import YouTubeTranscriptAdapter
 from data_collection.templates import load_article_templates
 
+from ingestion_service.adapters.supabase_collect_sources import (
+    SupabaseCollectSourceReader,
+)
 from ingestion_service.adapters.supabase_persist import SupabaseDraftPersister
 from ingestion_service.composition.config_error import ConfigurationError
 from ingestion_service.composition.settings import Settings
@@ -45,6 +49,16 @@ def build_youtube_captions(settings: Settings) -> YouTubeTranscriptAdapter:
 def build_youtube_metadata_provider(settings: Settings) -> YouTubeOEmbedAdapter:
     """Wire YouTube oEmbed metadata adapter from Settings (D-02)."""
     return YouTubeOEmbedAdapter(build_httpx_client(settings))
+
+
+def build_youtube_feed(settings: Settings) -> YouTubeFeedAdapter:
+    """Wire YouTube Atom feed adapter from Settings (ING-02)."""
+    return YouTubeFeedAdapter(build_httpx_client(settings))
+
+
+def build_collect_source_reader(settings: Settings) -> SupabaseCollectSourceReader:
+    """Wire CollectSourceReader against pipeline_ingest_sources (ING-02)."""
+    return SupabaseCollectSourceReader(build_supabase_service_client(settings))
 
 
 def build_async_deepseek_client(

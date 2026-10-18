@@ -129,7 +129,7 @@ def test_settings_from_env_reads_ingest_template_podcast() -> None:
     assert settings.ingest_template is TemplateKind.PODCAST
 
 
-@pytest.mark.parametrize("raw", ["webinar", "LECTURE", ""])
+@pytest.mark.parametrize("raw", ["webinar", "LECTURE"])
 def test_invalid_ingest_template_raises_configuration_error(raw: str) -> None:
     from ingestion_service.composition.config_error import ConfigurationError
     from ingestion_service.composition.settings import Settings

@@ -24,3 +24,4 @@ data-collection = { workspace = true }
 
 [project.scripts]
 ingest = "ingestion_service.cli:app"
+ingest-collect = "ingestion_service.collect_cli:app"

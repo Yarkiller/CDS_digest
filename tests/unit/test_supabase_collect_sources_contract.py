@@ -135,7 +135,9 @@ def test_list_enabled_sources_filters_is_enabled_and_parses_cursor() -> None:
     )
     assert src.last_seen_video_id == "dQw4w9WgXcQ"
     table = client.tables["pipeline_ingest_sources"]
-    assert "is_enabled" in (table.selected or "")
+    assert table.selected == (
+        "id,kind,source_id,last_seen_published_at,last_seen_video_id"
+    )
     assert ("is_enabled", True) in table.last_filters
 
 

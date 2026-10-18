@@ -5,11 +5,43 @@ from __future__ import annotations
 import os
 from dataclasses import dataclass, field
 
+from data_collection.dto.template_kind import TemplateKind
+
 from ingestion_service.composition.config_error import ConfigurationError
 
 
 _DEFAULT_MAX_TRANSCRIPT_CHARS = 80000
 _DEFAULT_SHORTLIST_BATCH_SIZE = 5
+_DEFAULT_INGEST_MAX_VIDEOS_PER_SOURCE = 5
+
+
+def _ingest_template(env: dict[str, str]) -> TemplateKind:
+    raw = env.get("INGEST_TEMPLATE")
+    if raw is None or raw.strip() == "":
+        return TemplateKind.LECTURE
+    try:
+        return TemplateKind(raw.strip())
+    except ValueError as exc:
+        raise ConfigurationError(
+            "INGEST_TEMPLATE must be one of: lecture, podcast"
+        ) from exc
+
+
+def _ingest_max_videos_per_source(env: dict[str, str]) -> int:
+    raw = env.get("INGEST_MAX_VIDEOS_PER_SOURCE")
+    if raw is None or raw.strip() == "":
+        return _DEFAULT_INGEST_MAX_VIDEOS_PER_SOURCE
+    try:
+        value = int(raw.strip())
+    except ValueError as exc:
+        raise ConfigurationError(
+            "INGEST_MAX_VIDEOS_PER_SOURCE must be a positive integer"
+        ) from exc
+    if value <= 0:
+        raise ConfigurationError(
+            "INGEST_MAX_VIDEOS_PER_SOURCE must be a positive integer"
+        )
+    return value
 
 
 def _max_transcript_chars(env: dict[str, str]) -> int:
@@ -58,6 +90,8 @@ class Settings:
     supabase_url: str | None = None
     supabase_secret_key: str | None = field(default=None, repr=False)
     shortlist_batch_size: int = _DEFAULT_SHORTLIST_BATCH_SIZE
+    ingest_template: TemplateKind = TemplateKind.LECTURE
+    ingest_max_videos_per_source: int = _DEFAULT_INGEST_MAX_VIDEOS_PER_SOURCE
 
     @classmethod
     def from_env(cls, environ: dict[str, str] | None = None) -> Settings:
@@ -85,4 +119,6 @@ class Settings:
             supabase_url=_optional_stripped(env, "SUPABASE_URL"),
             supabase_secret_key=_optional_stripped(env, "SUPABASE_SECRET_KEY"),
             shortlist_batch_size=_shortlist_batch_size(env),
+            ingest_template=_ingest_template(env),
+            ingest_max_videos_per_source=_ingest_max_videos_per_source(env),
         )

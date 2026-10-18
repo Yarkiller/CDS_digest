@@ -7,9 +7,65 @@ from dataclasses import dataclass, field
 from datetime import datetime
 
 from data_collection.dto.material_draft import MaterialDraft
+from data_collection.dto.video_ref import FeedListing
 from ingestion_service.adapters.persist_errors import DraftPersistError
+from ingestion_service.application.ports.collect_sources import (
+    CollectSourceError,
+    EnabledSource,
+)
 from ingestion_service.application.ports.diagnostics import DebugValue
 from ingestion_service.application.ports.persist import PersistResult
+
+
+class FakeFeed:
+    """VideoListProvider double returning a scripted FeedListing."""
+
+    def __init__(
+        self,
+        listing: FeedListing,
+        *,
+        failures: dict[str, BaseException] | None = None,
+    ) -> None:
+        self._listing = listing
+        self._failures = failures or {}
+        self.calls: list[dict[str, str]] = []
+
+    async def list_recent(self, *, kind: str, source_id: str) -> FeedListing:
+        self.calls.append({"kind": kind, "source_id": source_id})
+        failure = self._failures.get(source_id)
+        if failure is not None:
+            raise failure
+        return self._listing
+
+
+class FakeCollectSourceReader:
+    """CollectSourceReader double with call spy and scripted failures."""
+
+    def __init__(
+        self,
+        sources: list[EnabledSource] | None = None,
+        *,
+        list_error: CollectSourceError | None = None,
+    ) -> None:
+        self._sources = list(sources or [])
+        self._list_error = list_error
+        self.advance_calls: list[dict[str, object]] = []
+
+    def list_enabled_sources(self) -> list[EnabledSource]:
+        if self._list_error is not None:
+            raise self._list_error
+        return list(self._sources)
+
+    def advance_cursor(
+        self, source_pk: int, *, published: datetime, video_id: str
+    ) -> None:
+        self.advance_calls.append(
+            {
+                "source_pk": source_pk,
+                "published": published,
+                "video_id": video_id,
+            }
+        )
 
 
 class FakeDraftPersister:
