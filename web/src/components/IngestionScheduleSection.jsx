@@ -75,7 +75,12 @@ export default function IngestionScheduleSection({
   async function onTimeBlur() {
     if (!schedule || busy) return
     const next = String(timeDraft ?? '').trim()
-    if (!next || next === schedule.time_of_day) return
+    if (!next) {
+      // WR-05: empty blur restores the persisted value instead of a blank draft.
+      setTimeDraft(schedule.time_of_day)
+      return
+    }
+    if (next === schedule.time_of_day) return
     setBusy(true)
     setStatusMsg('')
     try {
