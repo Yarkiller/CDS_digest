@@ -22,10 +22,10 @@ affects:
 actuals:
   tokens: 14405
   tasks: 3
-  commits: 4
+  commits: 3
 
 plan_head_before: c1197e0b7f4d784b9ca286ed55f9a8f971c36564
-plan_head_after: 8e690d5fd440edc798f87f66ee79de505fa9ea6d
+plan_head_after: d164b9b8273ccd73e031dffd23f436c2321ec0e4
 
 tech-stack:
   added: []
@@ -141,7 +141,7 @@ status: complete
 2. **Task 2: Due-гейт + last_run_at + миграция 013** — `d81a35a` (test RED), `1a24a42` (feat GREEN)
 3. **Task 3: [BLOCKING] Apply 013 on shared VM** — operator `applied`; `d164b9b` (docs Applied stamp)
 
-**Plan metadata:** `8e690d5` (docs: complete plan)
+**Plan metadata:** `8e690d5` (docs: complete plan); `a60aad7`+ (docs: SUMMARY ledger sync)
 
 ## Files Created/Modified
 
