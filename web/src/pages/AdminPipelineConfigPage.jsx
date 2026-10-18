@@ -1,10 +1,15 @@
-import { useEffect, useState } from 'react'
+import { useCallback, useEffect, useState } from 'react'
 import IngestSourcesSection from '../components/IngestSourcesSection.jsx'
+import IngestionScheduleSection from '../components/IngestionScheduleSection.jsx'
 import ServiceUnavailable from '../components/ServiceUnavailable.jsx'
 import UnsavedChangesDialog from '../components/UnsavedChangesDialog.jsx'
 import { useUnsavedChangesGuard } from '../hooks/useUnsavedChangesGuard.js'
 import ForbiddenPage from './ForbiddenPage.jsx'
 import { getAccessToken } from '../services/authApi.js'
+import {
+  IngestScheduleError,
+  fetchIngestionSchedule,
+} from '../services/ingestScheduleApi.js'
 import { MeApiError, fetchMe } from '../services/meApi.js'
 import {
   PipelineConfigError,
@@ -48,6 +53,28 @@ export default function AdminPipelineConfigPage() {
   const [sourceId, setSourceId] = useState('')
   const [sourceLabel, setSourceLabel] = useState('')
   const [sourceKind, setSourceKind] = useState('channel')
+  // ING-06 / D-16: schedule saves immediately — never part of dirty.
+  const [schedule, setSchedule] = useState(null)
+  const [scheduleError, setScheduleError] = useState('')
+  const [scheduleLoading, setScheduleLoading] = useState(false)
+
+  const loadSchedule = useCallback(async () => {
+    setScheduleLoading(true)
+    setScheduleError('')
+    try {
+      const dto = await fetchIngestionSchedule()
+      setSchedule(dto)
+    } catch (err) {
+      setSchedule(null)
+      setScheduleError(
+        err instanceof IngestScheduleError
+          ? err.message
+          : 'Не удалось загрузить настройки сбора',
+      )
+    } finally {
+      setScheduleLoading(false)
+    }
+  }, [])
 
   useEffect(() => {
     let cancelled = false
@@ -107,6 +134,11 @@ export default function AdminPipelineConfigPage() {
       cancelled = true
     }
   }, [roleState, loadKey])
+
+  useEffect(() => {
+    if (roleState !== 'admin') return
+    loadSchedule()
+  }, [roleState, loadSchedule])
 
   const yamlDirty = yaml !== savedYaml
   const sourceFormDirty = sourceId.trim() !== '' || sourceLabel.trim() !== ''
@@ -243,6 +275,15 @@ export default function AdminPipelineConfigPage() {
           setSourceLabel('')
           setSourceKind('channel')
         }}
+      />
+
+      <IngestionScheduleSection
+        schedule={schedule}
+        loadError={scheduleError}
+        loading={scheduleLoading}
+        onScheduleChange={setSchedule}
+        onLoadError={setScheduleError}
+        onRetry={loadSchedule}
       />
 
       {!savedYaml ? (

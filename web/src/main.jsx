@@ -45,6 +45,13 @@ import {
   resetIngestSourcesHarness,
   resetIngestSourcesMockStore,
 } from './services/ingestSourcesApi.js'
+import {
+  armFailNextScheduleLoad,
+  armFailNextScheduleSave,
+  readIngestionScheduleMock,
+  resetIngestionScheduleHarness,
+  resetIngestionScheduleMockStore,
+} from './services/ingestScheduleApi.js'
 
 // Playwright harness (mirrors votingApi arm-fail pattern).
 window.__DIGEST_AUTH_HARNESS__ = {
@@ -85,6 +92,13 @@ window.__DIGEST_INGEST_SOURCES_HARNESS__ = {
   armRejectNextAdd,
   resetIngestSourcesHarness,
   resetIngestSourcesMockStore,
+}
+window.__DIGEST_INGESTION_SCHEDULE_HARNESS__ = {
+  armFailNextLoad: armFailNextScheduleLoad,
+  armFailNextSave: armFailNextScheduleSave,
+  resetIngestionScheduleHarness,
+  resetIngestionScheduleMockStore,
+  readIngestionScheduleMock,
 }
 
 createRoot(document.getElementById('root')).render(
