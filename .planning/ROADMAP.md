@@ -271,7 +271,7 @@ Plans:
   4. An import/reference guard test proves the scheduled path cannot reach publish/send, and the existing `ingest <url>` CLI stdout contract stays byte-identical.
   5. Zero new runtime Python packages are introduced (Atom feed + stdlib only).
 
-**Plans**: 6/6 plans executed
+**Plans**: 6/8 plans executed
 **Wave 1**
 - [x] 24-01-PLAN.md — Tracer: включённый источник → Atom-фид → драфт (порт/адаптер листинга, курсор, батч, `ingest-collect`, env-ключи)
 
@@ -289,6 +289,12 @@ Plans:
 
 **Wave 6** *(blocked on Wave 5 completion)*
 - [x] 24-06-PLAN.md — SPA-блок «Автоматический сбор» на `/admin/pipeline` с немедленным PATCH и Playwright-тестами
+
+**Wave 7** *(gap closure — G-24-3)*
+- [ ] 24-07-PLAN.md — Gap closure G-24-3: `TimeoutStartSec=1800` for the oneshot start phase, inverted text contract, corrected runbook/security/verification, live systemd kill proof
+
+**Wave 8** *(gap closure — G-24-4; depends on Wave 7 completion)*
+- [ ] 24-08-PLAN.md — Gap closure G-24-4: alert reads `MONITOR_EXIT_STATUS`, inverted text contract, corrected runbook/security/verification, live exit-1/exit-2 proof
 
 **Notes**: YouTube Data API v3 / `google-api-python-client` / `yt-dlp` are rejected; the Atom-feed choice **removes the ADR-0002 gate** (do not plan a Data API spike). `@handle` resolution is out of scope.
 **Tripwires**: `test_cli_ingest_contract.py` `EXPECTED_SUCCESS_LINES` → **PRESERVE** (byte-identical stdout contract).
