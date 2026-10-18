@@ -21,10 +21,10 @@ affects:
 actuals:
   tokens: 4927
   tasks: 2
-  commits: 4
+  commits: 6
 
 plan_head_before: e6035210d52f35ed51fbc11aab360367c29f3c50
-plan_head_after: d7c613c6b6b144086f78905398e2f690b1228094
+plan_head_after: 77f734494e1eb423128caa451518df1eabcafae5
 
 tech-stack:
   added: []
@@ -135,7 +135,7 @@ Each task was committed atomically:
 3. **Task 2 RED: ING-07 guard stub scanner** - `f4da914` (test)
 4. **Task 2 GREEN: AST import-graph scanner** - `d7c613c` (feat)
 
-**Plan metadata:** (pending docs commit)
+**Plan metadata:** `36e64ea` (docs: complete plan); `50869e4` (docs: SUMMARY ledger fix)
 
 ## Files Created/Modified
 
