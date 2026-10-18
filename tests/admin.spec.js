@@ -2243,6 +2243,30 @@ test.describe("Admin pipeline — automatic collection (ING-06, D-15/D-16/D-17)"
     expect(after.schedule.time_of_day).toBe("07:30");
   });
 
+  test("ingestion schedule cleared time restores the saved value without a patch", async ({
+    page,
+  }) => {
+    await gotoAsRole(page, "admin", "/admin/pipeline");
+    await resetIngestionScheduleMock(page);
+
+    const time = page.getByTestId("ingestion-schedule-time");
+    await expect(time).toHaveValue("06:00");
+    const before = await page.evaluate(() =>
+      window.__DIGEST_INGESTION_SCHEDULE_HARNESS__.readIngestionScheduleMock().patchCount,
+    );
+
+    await time.fill("");
+    await time.blur();
+
+    // WR-05: an empty blur must restore the persisted value, not leave a blank draft.
+    await expect(time).toHaveValue("06:00");
+    const after = await page.evaluate(() =>
+      window.__DIGEST_INGESTION_SCHEDULE_HARNESS__.readIngestionScheduleMock().patchCount,
+    );
+    expect(after).toBe(before);
+    await expect(page.getByTestId("ingestion-schedule-status")).not.toContainText("Сохранено");
+  });
+
   test("ingestion schedule days normalize and refuse an empty week", async ({ page }) => {
     await gotoAsRole(page, "admin", "/admin/pipeline");
     await resetIngestionScheduleMock(page);
