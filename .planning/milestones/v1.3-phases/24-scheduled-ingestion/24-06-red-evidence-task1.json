@@ -1,0 +1,7 @@
+{
+  "expected_result": "getByTestId('ingestion-schedule-section') not found / harness absent — feature not implemented",
+  "actual_result": "page.waitForFunction: Test timeout of 30000ms exceeded waiting for window.__DIGEST_INGESTION_SCHEDULE_HARNESS__",
+  "failing_test": "tests/admin.spec.js › Admin pipeline — automatic collection › ingestion schedule sits between sources and YAML editor",
+  "exit_code": 1,
+  "command": "npx playwright test --project=web tests/admin.spec.js --grep \"automatic collection\""
+}

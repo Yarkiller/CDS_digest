@@ -1,0 +1,8 @@
+{
+  "expected_result": "parse_feed returns FeedListing with VideoRef dQw4w9WgXcQ",
+  "actual_result": "ModuleNotFoundError / ImportError — production symbol absent",
+  "output_tail": "F                                                                        [100%]\r\n================================== FAILURES ===================================\r\n____________________ test_parse_feed_happy_path_one_video _____________________\r\ntests\\unit\\test_youtube_feed_adapter.py:35: in test_parse_feed_happy_path_one_video\r\n    from data_collection.adapters.youtube_feed import parse_feed\r\nE   ModuleNotFoundError: No module named 'data_collection.adapters.youtube_feed'\r\n=========================== short test summary info ===========================\r\nFAILED tests/unit/test_youtube_feed_adapter.py::test_parse_feed_happy_path_one_video\r\n1 failed in 0.41s\r\n",
+  "failing_test": "tests/unit/test_youtube_feed_adapter.py::test_parse_feed_happy_path_one_video",
+  "exit_code": 1,
+  "command": "uv run pytest tests/unit/test_youtube_feed_adapter.py::test_parse_feed_happy_path_one_video -q --tb=short"
+}

@@ -1,0 +1,8 @@
+{
+  "command": "npx playwright test tests/auth.spec.js --project=web -g \"post-register copy|Регистрация завершена|confirmation letter\" --reporter=junit",
+  "exitCode": 1,
+  "output": "<testsuites id=\"\" name=\"\" tests=\"1\" failures=\"0\" skipped=\"0\" errors=\"1\" time=\"4.3697989999999995\">\n<testsuite name=\"auth.spec.js\" timestamp=\"2026-10-16T08:36:39.933Z\" hostname=\"web\" tests=\"1\" failures=\"0\" skipped=\"0\" time=\"2.119\" errors=\"1\">\n<testcase name=\"SPA auth contracts › post-register copy never claims a confirmation letter\" classname=\"auth.spec.js\" time=\"2.119\">\n<error message=\"page.evaluate: TypeError: window.__DIGEST_AUTH_HARNESS__.armSignUpWithoutSession is not a function\" type=\"Error\">\n</error>\n</testcase>\n</testsuite>\n</testsuites>",
+  "targetTest": "SPA auth contracts › post-register copy never claims a confirmation letter",
+  "expected": "role=alert contains honest (B) CONFIRM_MESSAGE; URL /register; no letter-claim",
+  "actual": "armSignUpWithoutSession is not a function"
+}

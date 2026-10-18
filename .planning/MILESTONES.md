@@ -1,5 +1,38 @@
 # Milestones
 
+## v1.3 v1.3 (Shipped: 2026-10-18)
+
+**Phases completed:** 8 phases, 28 plans, 68 tasks
+
+**Key accomplishments:**
+- The strict YAML validator now accepts `<<` merge documents with SafeLoader-identical mappings and refuses a 489-char fan-out merge bomb in ~2 ms with one structured 400 row, without weakening duplicate-key rejection
+- An extra top-level anchor-holder key now gets a key-naming Russian message that teaches the `<<` form, while a genuine unknown key keeps Pydantic's English `extra_forbidden` message and the 400 envelope stays byte-identical
+- A duplicate key written inside a mapping that is only ever used as a merge source is now rejected with the same single structured row as anywhere else, and anchor holders referenced only by a nested merge finally get the D-07 teaching message
+- A new `GET /admin/materials/{slug}` route behind `require_admin` serves a `draft` with the reader DTO verbatim (empty `tags`/`related`, no `status`, `Cache-Control: no-store`), while the reader route and `get_material_for_reader` stay byte-identical.
+- A new `admin/materials/:id` SPA route renders the REUSED `MaterialPage` (additive `preview` prop) with the persistent «Черновик — предпросмотр, не опубликовано» banner, maps the preview endpoint's 404 to a client-side `Navigate` back to `/materials/{slug}` and its 403 to `ForbiddenPage` — while the reader route, its loader and `tests/web-app.spec.js` stay byte-identical.
+- The email-preview «Читать →» CTA now opens a real top-level browsing context — `target="_blank" rel="noopener noreferrer"` on both the backend renderer and its SPA mock mirror inside a `allow-popups allow-popups-to-escape-sandbox` iframe that still withholds script and same-origin powers — and the admin shortlist's «Открыть материал →» reaches `/admin/materials/{slug}` for draft and ready rows alike, while the shared email href stays reader-facing for preview and the real send.
+- Migrated `web/src/App.jsx` to a single module-scope `createBrowserRouter` + `<RouterProvider>`, preserving every route and the RequireAuth layout; full Playwright `web` suite stayed at the measured Wave-0 baseline of 110.
+- Shipped the ADUX-09 leave guard as a reusable util/hook/dialog trio: boolean `useBlocker(dirty)` drives an in-app modal with the locked Russian copy, and a two-statement `armBeforeUnload` arms the browser prompt only while dirty — full Playwright `web` suite 113 passed (110 Wave-0 + 3 new).
+- Null-session register path shows locked honest copy «Регистрация завершена. Аккаунт активен — войдите.» via `armSignUpWithoutSession` harness; letter-claim language forbidden by Playwright regression.
+- Digest audience resolved from all usable `profiles` emails with planned-M/delivered-N honesty, a domain `MailDeliveryError` contained after publish, and D-09/D-12 two-sentence copy — all sealed with `StubMailer` before live SMTP lands in Plan 02
+- Live Supabase digest recipients (service_role, usable-email filtered) + planned `p_recipient_count` forwarding, an additive HTTP `delivered_count` that stays 200 through contained mail failure, the SPA contract, and the runbook digest SMTP smoke/rollback
+- One admin-gated AppShell «Админ» entry plus a shared in-page «Дайджест | Пайплайн» underline switch, with both admin URLs unchanged and page H1s retired
+- Dirty pipeline → in-page «Дайджест» (and the below-sm select) proven to raise the unchanged Phase 19 leave dialog with zero production edits, while 16-UI-SPEC A-2's second-shell «Пайплайн» mandate is retired
+- Admin can list and add a YouTube channel ingest source end-to-end through domain → port → HTTP → SPA service → section above YAML, with ADUX-10 dirty OR wired.
+- Server is the authority for canonical ingest-source ids: rejects never write, PATCH toggles enablement, hard DELETE returns 204, and CORS advertises DELETE for the live SPA.
+- Idempotent `pipeline_ingest_sources` (012) with RLS deny-by-default, `SupabaseIngestSourceRepository` on the live admin client, and shared-VM apply stamped in runbook §4i.
+- IngestSourcesSection ships full UI-SPEC chrome (toggle/delete/YouTube/empties/id-help/errors) with Playwright proving ADUX-10 against the existing Phase 19 leave guard.
+- `ingest-collect` vertical slice: Atom feed → VideoRef → `run_ingest_pipeline` (bare id, `on_stage=None`) → monotonic cursor → two-line stdout summary, with deterministic FeedError/FeedSkip taxonomy.
+- `select_window` + monotonic successful-only cursor + zero-LLM rescan at feed head; video/source isolation with graded exit codes 0/1/2 and fixed two-line stdout.
+- «Пора/не пора» считается в Europe/Moscow по БД; пустой прогон штампует last_run_at; миграция 013 применена на общей VM без seed-строки.
+- Checked-in ingest timer (15 min, Persistent=false), flock oneshot with RuntimeMaxSec/exit-75 success, journald alert distinguishing exit 1 vs 2, and dual-level ING-07 proof that collect_cli cannot reach publish/send.
+- Admin GET/PATCH `/admin/ingestion-schedule` с доменной валидацией (русские сообщения), портом и Supabase-адаптером на `ingestion_schedule(id=1)`.
+- Админ на `/admin/pipeline` настраивает автоматический сбор (переключатель, время МСК, дни) с немедленным PATCH и честным откатом — без кнопки запуска и без влияния на YAML-dirty.
+- Replaced the inert `RuntimeMaxSec=1800` with `TimeoutStartSec=1800`, inverted the text contract so the broken token cannot return, corrected every record that asserted it, and proved on a live systemd 255 host that a killed run does not stamp `last_run_at`.
+- The `OnFailure=` alert now reads `MONITOR_EXIT_STATUS` instead of the `exited`/`killed` qualifier, so exit 1 and exit 2 produce distinct journald lines — proven on the same host where the pre-fix exit-2 run had printed «unexpected failure (exit exited)».
+
+---
+
 ## v1.2 Admin UX + diagnostics + PIPE-01 MVP (Shipped: 2026-10-05)
 
 **Phases completed:** 5 phases, 26 plans, 56 tasks

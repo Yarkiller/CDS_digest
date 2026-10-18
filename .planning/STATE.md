@@ -2,20 +2,19 @@
 gsd_state_version: "1.0"
 milestone: v1.3
 milestone_name: Live mail, scheduled ingestion & backlog debt
-current_phase: 24
-current_plan: Not started
-status: completed
+status: Awaiting next milestone
 stopped_at: Phase 24 complete — all phases complete
-last_updated: "2026-10-18T18:04:18.124Z"
+last_updated: "2026-10-18T19:25:47.052Z"
 last_activity: 2026-10-18
-last_activity_desc: Phase 24 complete
-state_head: 4a4f8b12979b99ff122c9fc8ca94b1f6e21bd232
+last_activity_desc: Milestone v1.3 completed and archived
+state_head: 97e26d22f0e8558f50dde2a50eaed23dc90bfaed
 progress:
   total_phases: 8
   completed_phases: 8
   total_plans: 28
   completed_plans: 28
   percent: 100
+current_phase: 24
 ---
 
 # Project State
@@ -29,13 +28,10 @@ See: .planning/PROJECT.md (updated 2026-10-18 — v1.3 milestone complete)
 
 ## Current Position
 
-Phase: 24
-Current Plan: Not started
-Total Plans in Phase: 8
-Status: All phases complete
-Last activity: 2026-10-18 — Phase 24 complete
-
-Progress: [██████████] 100%
+Phase: Milestone v1.3 complete
+Plan: —
+Status: Awaiting next milestone
+Last activity: 2026-10-18 — Milestone v1.3 completed and archived
 
 ## Performance Metrics
 
@@ -230,8 +226,4 @@ Next: `/gsd-complete-milestone v1.3`
 
 ## Operator Next Steps
 
-- **v1.3 is complete — close the milestone:** `/gsd-complete-milestone v1.3` (archives the phase set, rolls up requirements, prepares the next milestone)
-- Deferred UAT checkpoint: add one enabled `pipeline_ingest_sources` row and let a 15-minute tick run to close `24-UAT.md` test 6 (live collection proof)
-- Optional: `/gsd-ui-review 24` — Phase 24 touched `/admin/pipeline` (the «Автоматический сбор» block)
-- Phase 18 deferred code-review info findings IN-01…IN-05 (see `18-REVIEW-DISPOSITION.md`) — none blocking
-- Phase 17 stale `17-VALIDATION.md` is a record-accuracy task: `/gsd-validate-phase 17`
+- Start the next milestone with /gsd-new-milestone
