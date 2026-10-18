@@ -47,7 +47,11 @@ export default function IngestionScheduleSection({
   }, [schedule?.time_of_day])
 
   const enabledLabel = schedule?.enabled ? 'Включён' : 'Выключен'
-  const statusText = [enabledLabel, statusMsg].filter(Boolean).join('. ')
+  // Empty-week validation is shown alone (D-15); other messages append after state.
+  const statusText =
+    statusMsg === EMPTY_WEEK_MSG
+      ? EMPTY_WEEK_MSG
+      : [enabledLabel, statusMsg].filter(Boolean).join('. ')
 
   async function onToggle() {
     if (!schedule || busy) return
