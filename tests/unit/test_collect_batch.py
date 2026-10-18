@@ -527,6 +527,57 @@ def test_run_collect_batch_failed_video_does_not_advance_cursor() -> None:
     assert any(v2 in line for line in diagnostics)
 
 
+def test_cursor_write_failure_is_isolated_and_batch_completes() -> None:
+    """CR-01: cursor-write SDK failure → failed counter, diagnostic, graded exit 1."""
+    from ingestion_service.application.use_cases.collect_batch import (
+        CollectDeps,
+        run_collect_batch,
+    )
+    from ingestion_service.tests_support.fakes import FakeClock, FakeCollectSourceReader, FakeFeed
+
+    v1, v2 = _vid(1), _vid(2)
+    t1 = BASE + timedelta(hours=1)
+    t2 = BASE + timedelta(hours=2)
+    listing = FeedListing(
+        videos=(VideoRef(v2, t2), VideoRef(v1, t1)),
+        skipped=(),
+    )
+    captions = _EchoCaptions()
+    # First cursor write raises; the second succeeds (batch must keep going).
+    sources = FakeCollectSourceReader(
+        [_enabled()], advance_error=RuntimeError("sdk down")
+    )
+    diagnostics: list[str] = []
+    deps = CollectDeps(
+        feed=FakeFeed(listing),
+        sources=sources,
+        captions=captions,
+        metadata_provider=_EchoMetadata(),
+        article=FakeArticleGenerator(result=_article()),
+        persist=_persist(),
+        emit_diagnostic=diagnostics.append,
+        clock=FakeClock([0.0], datetime(2026, 10, 19, 10, 0, tzinfo=timezone.utc)),
+        tz=timezone(timedelta(hours=3)),
+    )
+
+    outcome = asyncio.run(
+        run_collect_batch(deps, template=TemplateKind.LECTURE, limit=5)
+    )
+
+    # Both videos ran through the pipeline; only the cursor write failed.
+    assert captions.calls == [v1, v2]
+    assert outcome.counters.videos_new == 2
+    assert outcome.counters.videos_ingested == 1
+    assert outcome.counters.videos_failed == 1
+    assert outcome.exit_code == 1
+    # The failed write is not recorded; the later success still advances.
+    assert [c["video_id"] for c in sources.advance_calls] == [v2]
+    assert any(
+        line.startswith(f"cursor advance failed: {v1}: RuntimeError: sdk down")
+        for line in diagnostics
+    )
+
+
 def test_unreadable_source_continues_to_next_source() -> None:
     from data_collection.errors.feed import FeedError
     from ingestion_service.application.ports.collect_sources import EnabledSource
@@ -638,6 +689,102 @@ def test_all_sources_unreadable_exit_code_2() -> None:
 
     assert outcome.counters.sources_read == 0
     assert outcome.counters.sources_unreadable == 2
+    assert outcome.exit_code == 2
+
+
+def test_unexpected_feed_exception_is_isolated_per_source() -> None:
+    """WR-02: adapter bug (non-FeedError) degrades to unreadable + continue."""
+    from ingestion_service.application.ports.collect_sources import EnabledSource
+    from ingestion_service.application.use_cases.collect_batch import (
+        CollectDeps,
+        run_collect_batch,
+    )
+    from ingestion_service.tests_support.fakes import FakeClock, FakeCollectSourceReader, FakeFeed
+
+    src_a = "UCaaaaaaaaaaaaaaaaaaaa"
+    src_b = "UCbbbbbbbbbbbbbbbbbbbb"
+    captions = _EchoCaptions()
+    diagnostics: list[str] = []
+    sources = FakeCollectSourceReader(
+        [
+            EnabledSource(
+                id=1,
+                kind="channel",
+                source_id=src_a,
+                last_seen_published_at=None,
+                last_seen_video_id=None,
+            ),
+            EnabledSource(
+                id=2,
+                kind="channel",
+                source_id=src_b,
+                last_seen_published_at=None,
+                last_seen_video_id=None,
+            ),
+        ]
+    )
+    deps = CollectDeps(
+        feed=FakeFeed(
+            FeedListing(videos=(VideoRef(VIDEO_ID, PUBLISHED),), skipped=()),
+            failures={src_a: RuntimeError("adapter bug")},
+        ),
+        sources=sources,
+        captions=captions,
+        metadata_provider=_EchoMetadata(),
+        article=FakeArticleGenerator(result=_article()),
+        persist=_persist(),
+        emit_diagnostic=diagnostics.append,
+        clock=FakeClock([0.0], datetime(2026, 10, 19, 10, 0, tzinfo=timezone.utc)),
+        tz=timezone(timedelta(hours=3)),
+    )
+
+    outcome = asyncio.run(
+        run_collect_batch(deps, template=TemplateKind.LECTURE, limit=5)
+    )
+
+    assert outcome.counters.sources_unreadable == 1
+    assert outcome.counters.sources_read == 1
+    assert outcome.counters.videos_ingested == 1
+    assert outcome.exit_code == 0
+    assert captions.calls == [VIDEO_ID]
+    assert any(
+        src_a in line and "RuntimeError" in line and "adapter bug" in line
+        for line in diagnostics
+    )
+
+
+def test_unexpected_feed_exception_only_source_exit_code_2() -> None:
+    """WR-02: an adapter bug on every source grades exit 2, not a traceback."""
+    from ingestion_service.application.use_cases.collect_batch import (
+        CollectDeps,
+        run_collect_batch,
+    )
+    from ingestion_service.tests_support.fakes import FakeClock, FakeCollectSourceReader, FakeFeed
+
+    sources = FakeCollectSourceReader(
+        [_enabled()]
+    )
+    deps = CollectDeps(
+        feed=FakeFeed(
+            FeedListing(videos=(), skipped=()),
+            failures={CHANNEL_ID: RuntimeError("adapter bug")},
+        ),
+        sources=sources,
+        captions=_EchoCaptions(),
+        metadata_provider=_EchoMetadata(),
+        article=FakeArticleGenerator(result=_article()),
+        persist=_persist(),
+        emit_diagnostic=lambda _line: None,
+        clock=FakeClock([0.0], datetime(2026, 10, 19, 10, 0, tzinfo=timezone.utc)),
+        tz=timezone(timedelta(hours=3)),
+    )
+
+    outcome = asyncio.run(
+        run_collect_batch(deps, template=TemplateKind.LECTURE, limit=5)
+    )
+
+    assert outcome.counters.sources_read == 0
+    assert outcome.counters.sources_unreadable == 1
     assert outcome.exit_code == 2
 
 

@@ -64,12 +64,14 @@ class FakeCollectSourceReader:
         schedule: IngestionSchedule | None = None,
         schedule_error: CollectSourceError | None = None,
         stamp_error: CollectSourceError | None = None,
+        advance_error: BaseException | None = None,
     ) -> None:
         self._sources = list(sources or [])
         self._list_error = list_error
         self._schedule = schedule
         self._schedule_error = schedule_error
         self._stamp_error = stamp_error
+        self._advance_error = advance_error
         self.advance_calls: list[dict[str, object]] = []
         self.stamped: list[datetime] = []
 
@@ -93,6 +95,11 @@ class FakeCollectSourceReader:
     def advance_cursor(
         self, source_pk: int, *, published: datetime, video_id: str
     ) -> None:
+        # Scripted cursor-write failure: raise once, then behave normally (CR-01).
+        if self._advance_error is not None:
+            error = self._advance_error
+            self._advance_error = None
+            raise error
         self.advance_calls.append(
             {
                 "source_pk": source_pk,
