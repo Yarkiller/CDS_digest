@@ -212,3 +212,27 @@ def test_runbook_and_records_name_the_oneshot_start_limit() -> None:
     for name in ("24-VERIFICATION.md", "24-PATTERNS.md", "24-VALIDATION.md"):
         body = (phase / name).read_text(encoding="utf-8")
         assert "RuntimeMaxSec" not in body, f"{name} still asserts the inert runtime knob"
+
+
+def test_runbook_and_verification_name_numeric_status() -> None:
+    """Check 12 (G-24-4): the runbook and the verification record name the number, not the qualifier.
+
+    The §5e slice is the operator recipe, so it pins the exact substitution. The
+    verification-record scan is deliberately whole-file (frontmatter included):
+    every record that claimed the alert distinguishes exit 1 from exit 2 must now
+    name the variable that makes it true. It runs inside pytest because the
+    execution host is PowerShell, where a leading `!` is a parse error.
+    """
+    runbook = (_REPO / "docs" / "agents" / "local-platform-runbook.md").read_text(
+        encoding="utf-8"
+    )
+    section_5e = _section(runbook, "5e")
+    assert "MONITOR_EXIT_STATUS" in section_5e, "§5e must name MONITOR_EXIT_STATUS"
+    assert (
+        "${MONITOR_EXIT_STATUS:-${EXIT_STATUS:-unknown}}" in section_5e
+    ), "§5e must pin the full numeric substitution"
+    assert "MONITOR_EXIT_CODE" not in section_5e, "§5e must not name the qualifier"
+
+    phase = _REPO / ".planning" / "phases" / "24-scheduled-ingestion"
+    body = (phase / "24-VERIFICATION.md").read_text(encoding="utf-8")
+    assert "MONITOR_EXIT_CODE" not in body, "24-VERIFICATION.md still names the qualifier"
