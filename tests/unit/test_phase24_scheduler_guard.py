@@ -22,9 +22,30 @@ FORBIDDEN_ROOTS = frozenset({"backend", "publish", "send"})
 def _scan_forbidden_roots(
     src_root: Path, forbidden: frozenset[str]
 ) -> dict[str, set[str]]:
-    """RED stub — returns empty until GREEN implements the AST walker."""
-    del src_root, forbidden
-    return {}
+    """Map relative path → forbidden import roots found via AST."""
+    hits: dict[str, set[str]] = {}
+    for path in sorted(src_root.rglob("*.py")):
+        tree = ast.parse(path.read_text(encoding="utf-8"), filename=str(path))
+        found: set[str] = set()
+        for node in ast.walk(tree):
+            if isinstance(node, ast.Import):
+                for alias in node.names:
+                    root = alias.name.split(".", 1)[0]
+                    if root in forbidden:
+                        found.add(root)
+            elif isinstance(node, ast.ImportFrom):
+                if node.module is None:
+                    continue
+                # Relative imports (level > 0) stay inside the package; only
+                # absolute ImportFrom roots can cross into forbidden packages.
+                if node.level and node.level > 0:
+                    continue
+                root = node.module.split(".", 1)[0]
+                if root in forbidden:
+                    found.add(root)
+        if found:
+            hits[str(path.relative_to(src_root))] = found
+    return hits
 
 
 def test_import_graph_has_no_publish_roots() -> None:
