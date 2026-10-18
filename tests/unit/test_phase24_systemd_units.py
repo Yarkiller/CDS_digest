@@ -207,6 +207,17 @@ def test_runbook_and_records_name_the_oneshot_start_limit() -> None:
     section_5e = _section(runbook, "5e")
     assert "TimeoutStartSec" in section_5e, "§5e must name TimeoutStartSec"
     assert "RuntimeMaxSec" not in section_5e, "§5e must not name the inert runtime knob"
+    # The recipe must prescribe a limit the probe PROVED kills before the stamp. The live
+    # WSL2 probe recorded `Result=timeout` with `last_run_at` still ADVANCED at
+    # `TimeoutStartSec=2` -- the unreadable-feed path finished its REST writes as the
+    # timeout fired -- and a kill before the stamp only at 500ms. A 2s recipe therefore
+    # cannot demonstrate what it claims to demonstrate, and would read as a regression.
+    assert "TimeoutStartSec=2" not in section_5e, "§5e must not prescribe a 2s limit: 2s stamps"
+    assert "TimeoutStartSec=500ms" in section_5e, "§5e must prescribe the proven 500ms limit"
+    # `systemctl revert` deletes EVERY drop-in for the unit, persistent ones included -- so it
+    # is not a safe cleanup for a recipe that only ever created a `--runtime` drop-in. The
+    # recipe removes the runtime drop-in path instead.
+    assert "systemctl revert" not in section_5e, "§5e must not prescribe systemctl revert"
 
     phase = _REPO / ".planning" / "phases" / "24-scheduled-ingestion"
     for name in ("24-VERIFICATION.md", "24-PATTERNS.md", "24-VALIDATION.md"):

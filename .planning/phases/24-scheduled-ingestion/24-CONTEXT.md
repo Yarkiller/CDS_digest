@@ -16,7 +16,7 @@
 - High-water mark per source в БД + миграция `013` (колонки курсора и singleton настроек сбора).
 - Singleton `ingestion_schedule` (вкл/выкл, время, дни недели, `last_run_at`) и due-проверка в коде по `Europe/Moscow`.
 - Тонкая admin-поверхность для настроек сбора + блок «Автоматический сбор» на `/admin/pipeline` между источниками и YAML-редактором.
-- `deploy/systemd/`: `Type=oneshot` service + timer (опрос каждые 15 минут), alert-юнит на `OnFailure=`, `EnvironmentFile=` 0600, `flock -n`, `RuntimeMaxSec=`.
+- `deploy/systemd/`: `Type=oneshot` service + timer (опрос каждые 15 минут), alert-юнит на `OnFailure=`, `EnvironmentFile=` 0600, `flock -n`, `TimeoutStartSec=` (24-07 суперседировал `RuntimeMaxSec=`: на `Type=oneshot` systemd его игнорирует).
 - Guard-тест: путь планировщика не достигает publish/send.
 - Runbook: smoke-запуск, диагностика, ручной ретрай.
 
