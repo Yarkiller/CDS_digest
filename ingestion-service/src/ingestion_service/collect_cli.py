@@ -1,4 +1,4 @@
-"""Typer one-shot `ingest-collect` — scheduled batch collection (ING-02, ING-07, D-01)."""
+"""Typer one-shot `ingest-collect` — scheduled batch collection (ING-02, ING-06, ING-07)."""
 
 from __future__ import annotations
 
@@ -50,7 +50,7 @@ def main() -> None:
     try:
         settings = Settings.from_env()
         deps = build_collect_deps()
-        counters = asyncio.run(
+        outcome = asyncio.run(
             run_collect_batch(
                 deps,
                 template=settings.ingest_template,
@@ -61,6 +61,7 @@ def main() -> None:
         typer.echo(str(err), err=True)
         raise typer.Exit(code=1) from err
 
+    counters = outcome.counters
     typer.echo(
         f"sources: read={counters.sources_read} "
         f"unreadable={counters.sources_unreadable}"
@@ -72,7 +73,7 @@ def main() -> None:
         f"failed={counters.videos_failed} "
         f"skipped_limit={counters.videos_skipped_limit}"
     )
-    raise typer.Exit(code=0)
+    raise typer.Exit(code=outcome.exit_code)
 
 
 if __name__ == "__main__":
