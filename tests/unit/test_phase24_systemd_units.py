@@ -95,7 +95,10 @@ def test_timer_tokens() -> None:
 
 
 def test_alert_unit() -> None:
-    """Check 5: oneshot alert distinguishes exit 1 vs 2 via MONITOR_EXIT_CODE."""
+    """Check 5: oneshot alert distinguishes exit 1 vs 2 via MONITOR_EXIT_CODE.
+
+    Also pinned as check 10 (WR-04): the alert must not run as root.
+    """
     body = _read("digest-ingest-alert.service")
     assert "Type=oneshot" in body
     assert "journalctl -u digest-ingest.service" in body
@@ -104,6 +107,15 @@ def test_alert_unit() -> None:
     assert "2)" in body
     assert "partial failure" in body
     assert "no source could be read" in body
+
+
+def test_alert_unit_runs_unprivileged() -> None:
+    """Check 10 (WR-04): alert hardening mirrors the main service."""
+    body = _read("digest-ingest-alert.service")
+    assert "User=digestcds" in body
+    assert "Group=digestcds" in body
+    assert "NoNewPrivileges=true" in body
+    assert "PrivateTmp=true" in body
 
 
 def test_no_secrets_in_units() -> None:
