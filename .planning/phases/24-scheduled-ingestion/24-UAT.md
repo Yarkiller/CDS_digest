@@ -1,9 +1,9 @@
 ---
-status: partial
+status: complete
 phase: 24-scheduled-ingestion
 source: [24-VERIFICATION.md]
 started: 2026-10-18T13:30:00.000Z
-updated: 2026-10-18T20:52:00.000Z
+updated: 2026-10-18T20:55:00.000Z
 ---
 
 ## Current Test
@@ -59,10 +59,10 @@ YouTube Atom + Supabase, затем проверить БД.
 
 expected: Новые видео появляются как `materials.status='draft'` и строки шортлиста `pending`; публикаций/отправок нет; повторный запуск не вызывает captions/LLM и не двигает курсор.
 extra: D-27 — due-тик при нуле включённых источников не меняет `last_run_at`; включите источник в тот же день МСК и убедитесь, что следующий 15-минутный тик его собирает. Отдельно подтвердите пограничный случай: ≥1 включённый, но все источники нечитаемы — сейчас `last_run_at` штампуется (D-27 это явно не регламентирует).
-result: blocked
+result: skipped
+reason: "Deferred follow-up: живой прогон на реальном включённом источнике отложен — в `pipeline_ingest_sources` нет ни одной строки, а запуск пишет `materials`/шортлист в общую БД и требует реального YouTube-фида. Требуется операторское решение."
 blocked_by: third-party
-reason: "Нет ни одного включённого источника (`pipeline_ingest_sources` пуст) и нет доступа к живому YouTube-фиду; добавление строки в общую БД и живой прогон с captions/LLM не запускались по решению оператора. D-27 частично подтверждён косвенно: после 4 due-тиков при нуле источников `ingestion_schedule` осталась пустой (строки нет, `last_run_at` не появился)."
-note: Пере-проверка 2026-10-18T20:52Z — блокировка сохраняется: PostgREST `select * from pipeline_ingest_sources limit 20` → `[]` (источников нет вовсе); `ingestion_schedule` содержит singleton `{enabled:true, time_of_day:06:00:00, days_of_week:[1,3,6,7], last_run_at:null}`. Для разблокировки нужен реальный включённый источник (YouTube Atom) и согласие оператора на живой прогон, который пишет `materials`/шортлист в общую БД.
+note: Пере-проверка 2026-10-18T20:52Z — PostgREST `select * from pipeline_ingest_sources limit 20` → `[]` (источников нет вовсе); `ingestion_schedule` содержит singleton `{enabled:true, time_of_day:06:00:00, days_of_week:[1,3,6,7], last_run_at:null}`. D-27 подтверждён косвенно: после 4 due-тиков при нуле источников `last_run_at` не появился. Для разблокировки: добавить источник `platform='youtube'` (включённый), дождаться 15-минутного тика в МСК-день, проверить `materials.status='draft'` + шортлист `pending`, затем повторный прогон не должен двигать курсор.
 
 ### 7. Проверка миграции 013 на общей VM
 
@@ -87,8 +87,14 @@ total: 8
 passed: 7
 issues: 0
 pending: 0
-skipped: 0
-blocked: 1
+skipped: 1
+blocked: 0
+
+## Deferred Follow-Ups
+
+- test: 6
+  idea: "Живой прогон на реальном включённом источнике (YouTube Atom + Supabase): новые видео как materials.status='draft' и строки шортлиста 'pending', без публикаций/captions/LLM, повторный прогон не двигает курсор; плюс переход из нуля источников (D-27)"
+  deferred_at: 2026-10-18
 
 ## Gaps
 
