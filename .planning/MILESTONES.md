@@ -1,6 +1,6 @@
 # Milestones
 
-## v1.3 v1.3 (Shipped: 2026-10-18)
+## v1.3 Live mail, scheduled ingestion & backlog debt (Shipped: 2026-10-18)
 
 **Phases completed:** 8 phases, 28 plans, 68 tasks
 
