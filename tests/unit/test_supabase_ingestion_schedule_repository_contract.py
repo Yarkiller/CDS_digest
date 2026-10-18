@@ -60,11 +60,20 @@ class _FakeQuery:
 
         if self._op == "upsert":
             assert isinstance(self._payload, dict)
+            existing = next(
+                (r for r in self._table.rows if r.get("id") == self._payload.get("id")),
+                None,
+            )
+            # Supabase upsert keeps columns it was not given (e.g. last_run_at).
+            merged = {**(existing or {}), **self._payload}
             self._table.rows = [
                 r for r in self._table.rows if r.get("id") != self._payload.get("id")
             ]
-            self._table.rows.append(dict(self._payload))
-            return _FakeExecuteResult([dict(self._payload)])
+            if not self._table.drop_rows_after_upsert:
+                self._table.rows.append(dict(merged))
+            if self._table.upsert_returns_empty_data:
+                return _FakeExecuteResult([])
+            return _FakeExecuteResult([dict(merged)])
 
         if self._op == "insert":
             assert isinstance(self._payload, dict)
@@ -88,6 +97,9 @@ class _FakeTable:
         self.last_upsert_on_conflict: str | None = None
         self.selected: str | None = None
         self.ops: list[str] = []
+        # WR-06: script upsert responses that carry no representation.
+        self.upsert_returns_empty_data = False
+        self.drop_rows_after_upsert = False
 
     def query(self) -> _FakeQuery:
         return _FakeQuery(self)
@@ -172,6 +184,50 @@ def test_update_upserts_singleton_with_updated_at() -> None:
     assert returned.time_of_day == time(7, 30)
     assert returned.days_of_week == (1, 5)
     assert returned.updated_at is not None
+
+
+def test_update_empty_upsert_data_preserves_last_run_at_via_follow_up_read() -> None:
+    """WR-06: an empty upsert representation must not fabricate last_run_at=None."""
+    client = FakeSupabaseClient()
+    table = client.tables["ingestion_schedule"]
+    table.rows = [
+        {
+            "id": 1,
+            "enabled": True,
+            "time_of_day": "06:00:00",
+            "days_of_week": [1, 2, 3, 4, 5, 6, 7],
+            "last_run_at": "2026-10-18T03:00:00+00:00",
+            "updated_at": "2026-10-17T03:00:00+00:00",
+        }
+    ]
+    table.upsert_returns_empty_data = True
+    repo = _repo_cls()(client)
+
+    returned = repo.update(
+        enabled=False,
+        time_of_day=time(7, 30),
+        days_of_week=(5, 1),
+    )
+
+    assert returned.last_run_at == datetime(2026, 10, 18, 3, 0, tzinfo=timezone.utc)
+    assert returned.enabled is False
+    assert returned.time_of_day == time(7, 30)
+    assert returned.days_of_week == (1, 5)
+    assert "select" in table.ops
+
+
+def test_update_empty_upsert_and_missing_row_raises_persistence_error() -> None:
+    """WR-06: if the row is still missing after upsert, fail loudly."""
+    from backend.domain.errors import PersistenceError
+
+    client = FakeSupabaseClient()
+    table = client.tables["ingestion_schedule"]
+    table.upsert_returns_empty_data = True
+    table.drop_rows_after_upsert = True
+    repo = _repo_cls()(client)
+
+    with pytest.raises(PersistenceError):
+        repo.update(enabled=True, time_of_day=time(6, 0), days_of_week=(1,))
 
 
 def test_sdk_errors_map_to_persistence_error_without_secrets() -> None:
