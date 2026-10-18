@@ -51,19 +51,27 @@ def test_three_unit_files_exist() -> None:
 
 
 def test_service_tokens() -> None:
-    """Check 2: oneshot service pins flock, RuntimeMaxSec, OnFailure, RuntimeDirectory."""
+    """Check 2: oneshot service pins flock, the oneshot start-phase limit, OnFailure, RuntimeDirectory."""
     body = _read("digest-ingest.service")
     for token in (
         "Type=oneshot",
         "EnvironmentFile=",
         "OnFailure=digest-ingest-alert.service",
-        "RuntimeMaxSec=1800",
+        "TimeoutStartSec=1800",
         "RuntimeDirectory=digest-ingest",
         "flock -n",
         "-E 75",
         "SuccessExitStatus=",
     ):
         assert token in body, token
+
+
+def test_service_does_not_use_runtime_limit_on_oneshot() -> None:
+    """Check 2b: the runtime knob is inert on Type=oneshot, so it must never return."""
+    body = _read("digest-ingest.service")
+    assert "Type=oneshot" in body, "RuntimeMaxSec is only valid for a unit that reaches running"
+    assert "TimeoutStartSec=1800" in body, "TimeoutStartSec=1800"
+    assert "RuntimeMaxSec" not in body
 
 
 def test_service_exec_start_is_absolute() -> None:
