@@ -5,6 +5,9 @@ from pathlib import Path
 from supabase_integration.client import create_publishable_client, create_service_role_client
 from supabase_integration.digest_publisher import SupabaseDigestPublisher
 from supabase_integration.ingest_source_repository import SupabaseIngestSourceRepository
+from supabase_integration.ingestion_schedule_repository import (
+    SupabaseIngestionScheduleRepository,
+)
 from supabase_integration.issue_repository import SupabaseIssueRepository
 from supabase_integration.knowledge_chunk_repository import SupabaseKnowledgeChunkRepository
 from supabase_integration.material_repository import SupabaseMaterialRepository
@@ -24,6 +27,7 @@ def migrations_dir() -> Path:
 __all__ = [
     "SupabaseDigestPublisher",
     "SupabaseIngestSourceRepository",
+    "SupabaseIngestionScheduleRepository",
     "SupabaseIssueRepository",
     "SupabaseKnowledgeChunkRepository",
     "SupabaseMaterialRepository",

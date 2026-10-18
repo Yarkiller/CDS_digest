@@ -11,6 +11,7 @@ from backend.infrastructure.yaml_pipeline_config_validator import YamlPipelineCo
 from supabase_integration import (
     SupabaseDigestPublisher,
     SupabaseIngestSourceRepository,
+    SupabaseIngestionScheduleRepository,
     SupabaseIssueRepository,
     SupabaseKnowledgeChunkRepository,
     SupabaseMaterialRepository,
@@ -63,6 +64,8 @@ def build_live_container(settings: Settings) -> AppContainer:
         pipeline_config_validator=YamlPipelineConfigValidator(),
         # SRC-03 / D-21 / D-24: ingest sources behind the port (pipeline_ingest_sources, migration 012)
         ingest_sources=SupabaseIngestSourceRepository(admin_client),
+        # D-14 / migration 013: ingestion_schedule singleton behind the port
+        ingestion_schedule=SupabaseIngestionScheduleRepository(admin_client),
         # StubMailer or live SmtpMailer via resolve_mailer — MAILER=smtp fail-fast (D-15/D-16)
         mailer=resolve_mailer(settings),
         # Atomic claim+publish via claim_and_publish_digest RPC (CR-01/WR-01, migration 005)
