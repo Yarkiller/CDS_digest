@@ -993,12 +993,13 @@ def test_due_empty_run_stamps_last_run_at() -> None:
     assert sources.stamped == [now]
 
 
-def test_due_zero_enabled_sources_stamps_and_zeros() -> None:
+def test_due_zero_enabled_sources_does_not_stamp_and_zeros() -> None:
     from ingestion_service.application.use_cases.collect_batch import (
         CollectCounters,
         run_collect_batch,
     )
-    from ingestion_service.tests_support.fakes import FakeClock, FakeCollectSourceReader, FakeFeed
+    from ingestion_service.domain.schedule import due_decision
+    from ingestion_service.tests_support.fakes import FakeCollectSourceReader, FakeFeed
 
     feed = FakeFeed(FeedListing(videos=(), skipped=()))
     sources = FakeCollectSourceReader([], schedule=_always_due_schedule())
@@ -1019,8 +1020,13 @@ def test_due_zero_enabled_sources_stamps_and_zeros() -> None:
         videos_failed=0,
         videos_skipped_limit=0,
     )
-    assert sources.stamped == [now]
+    assert sources.stamped == []
     assert feed.calls == []
+
+    # WR-03: enabling a source later the same Moscow day must still be due.
+    still_due = due_decision(sources.get_schedule(), now_utc=now, tz=_MSK)
+    assert still_due.due is True
+    assert still_due.reason == "ok"
 
 
 def test_get_schedule_failure_exit_2_no_feed_no_stamp() -> None:

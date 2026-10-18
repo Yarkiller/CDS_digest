@@ -3,7 +3,7 @@
 from __future__ import annotations
 
 from collections.abc import Mapping, Sequence
-from dataclasses import dataclass, field
+from dataclasses import dataclass, field, replace
 from datetime import datetime, time
 from typing import TYPE_CHECKING
 
@@ -91,6 +91,9 @@ class FakeCollectSourceReader:
         if self._stamp_error is not None:
             raise self._stamp_error
         self.stamped.append(at)
+        # Model persisted state: a later tick re-reads the stamped schedule.
+        if self._schedule is not None:
+            self._schedule = replace(self._schedule, last_run_at=at)
 
     def advance_cursor(
         self, source_pk: int, *, published: datetime, video_id: str
