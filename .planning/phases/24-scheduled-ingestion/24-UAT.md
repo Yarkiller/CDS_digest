@@ -1,14 +1,14 @@
 ---
-status: diagnosed
+status: partial
 phase: 24-scheduled-ingestion
 source: [24-VERIFICATION.md]
 started: 2026-10-18T13:30:00.000Z
-updated: 2026-10-18T16:11:00.000Z
+updated: 2026-10-18T20:52:00.000Z
 ---
 
 ## Current Test
 
-[testing complete]
+[testing paused — 1 item outstanding]
 
 ## Tests
 
@@ -33,19 +33,17 @@ note: WSL2 Ubuntu 24.04, systemd 255. Лок держал `flock /run/digest-ing
 
 Дождаться/сымитировать прогон дольше 1800 с (или временно уменьшить лимит).
 
-expected: Прогон убит; `last_run_at` не обновлён; следующий тик снова `due` и продолжает с того же курсора.
-result: issue
-reported: "systemd 255: «RuntimeMaxSec= has no effect in combination with Type=oneshot. Ignoring.» Скретч-юнит с `Type=oneshot` + `RuntimeMaxSec=2` + `/bin/sleep 8` отработал все 8 с и завершился `Result=success`, не был убит. Контроль того же вида с `TimeoutStartSec=2` убивает через 2 с (`Result=timeout`, `15/TERM`). Значит D-23/T-24-32 не реализованы: зависший прогон не ограничен 1800 с."
-severity: blocker
+expected: Прогон убит по лимиту (`TimeoutStartSec=1800`); `last_run_at` не обновлён; следующий тик снова `due` и продолжает с того же курсора.
+result: pass
+note: Пере-проверено после закрытия G-24-3 (24-07). Живой host WSL2 Ubuntu 24.04 / systemd 255: `systemctl show digest-ingest.service -p Type -p TimeoutStartUSec -p RuntimeMaxUSec` → `Type=oneshot`, `TimeoutStartUSec=30min`, `RuntimeMaxUSec=infinity`; предупреждение «RuntimeMaxSec= has no effect … Ignoring.» больше не появляется. Live-проба T3 из 24-07-SUMMARY: `TimeoutStartSec=500ms` drop-in → `Result=timeout ExecMainStatus=15 elapsed 530 ms`, `last_run_at` остался `T_backdated2`; после `systemctl revert` следующий запуск заштамповал. Контракт: `uv run pytest tests/unit/test_phase24_systemd_units.py -q` → 15 passed.
 
 ### 4. OnFailure alert (exit 1 vs exit 2)
 
 Форсировать exit 1 и отдельно exit 2, затем `journalctl -u digest-ingest-alert.service`.
 
 expected: Разные сообщения «partial failure … (exit 1)» и «no source could be read … (exit 2)».
-result: issue
-reported: "Оба кода дают одну и ту же строку: «digest-ingest.service failed: unexpected failure (exit exited)». Проба OnFailure показала, что в alert-юнит приходят `MONITOR_EXIT_CODE=exited` и `MONITOR_EXIT_STATUS=2`, а `EXIT_CODE`/`EXIT_STATUS` пусты; юнит читает `${MONITOR_EXIT_CODE:-${EXIT_CODE:-unknown}}`, поэтому числовой код никогда не попадает в `case`."
-severity: major
+result: pass
+note: Пере-проверено после закрытия G-24-4 (24-08). На хосте установлен исправленный юнит: `ExecStart` читает `${MONITOR_EXIT_STATUS:-${EXIT_STATUS:-unknown}}`. Live-проба T3 из 24-08-SUMMARY: exit 1 → «partial failure: a video failed or the run state could not be recorded (exit 1)», exit 2 → «no source could be read or the schedule was unreadable (exit 2)»; до фикса тот же exit-2 печатал «unexpected failure (exit exited)». Контракт: `uv run pytest tests/unit/test_phase24_systemd_units.py -q` → 15 passed.
 
 ### 5. EnvironmentFile 0600
 
@@ -85,8 +83,8 @@ note: Проверено в живом SPA (`127.0.0.1:5173`, `VITE_USE_MOCKS=fa
 ## Summary
 
 total: 8
-passed: 5
-issues: 2
+passed: 7
+issues: 0
 pending: 0
 skipped: 0
 blocked: 1
@@ -95,7 +93,9 @@ blocked: 1
 
 - gap_id: G-24-3
   truth: "Зависший прогон убивается по лимиту 1800 с; `last_run_at` не штампуется, следующий тик снова due и продолжает с того же курсора"
-  status: failed
+  status: resolved
+  resolved_by: 24-07-PLAN.md
+  resolved_at: 2026-10-18
   reason: "Наблюдение в WSL2/systemd 255: `RuntimeMaxSec=` игнорируется для `Type=oneshot`, юнит не убивается. D-23 и T-24-32 не реализованы."
   severity: blocker
   test: 3
@@ -116,7 +116,9 @@ blocked: 1
   debug_session: .planning/debug/phase24-runtimemax-oneshot.md
 - gap_id: G-24-4
   truth: "Alert различает exit 1 («partial failure») и exit 2 («no source could be read»)"
-  status: failed
+  status: resolved
+  resolved_by: 24-08-PLAN.md
+  resolved_at: 2026-10-18
   reason: "Наблюдение: оба кода дают «unexpected failure (exit exited)»; alert читает `MONITOR_EXIT_CODE=exited`, а числовой код лежит в `MONITOR_EXIT_STATUS`. T-24-34 не реализован."
   severity: major
   test: 4
