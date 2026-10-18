@@ -595,7 +595,7 @@ select count(*) from information_schema.columns
 
 Record apply method below when confirmed.
 
-**Applied (дата):** _(pending operator apply on shared knowledge-db VM — BLOCKING gate 24-03)_
+**Applied (2026-10-18):** operator applied `013_phase24_scheduled_ingestion.sql` once on the shared knowledge-db VM (Studio SQL / psql path; no `supabase/config.toml` in repo). Operator confirmed resume-signal «applied». Post-apply read-only verification via Supabase PostgREST against the live project: `select * from public.ingestion_schedule limit 5` → `[]` (table exists and is reachable; 0 seed rows — matches D-14; defaults come from application code). Unit text-contract `tests/unit/test_phase24_migration_013.py` remains green. No destructive statement was run against the shared DB.
 
 ---
 
