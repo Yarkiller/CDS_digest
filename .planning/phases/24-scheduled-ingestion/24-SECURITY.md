@@ -60,7 +60,7 @@ created: "2026-10-18"
 | T-24-24 | Spoofing | отсутствие строки в БД | low | accept | Дефолты отдаются кодом; пустая таблица = рабочее состояние (D-14) | closed |
 | T-24-30 | Information Disclosure | `deploy/systemd/*` | high | mitigate | `EnvironmentFile=/etc/digest-cds/ingest.env` вне репозитория; text-скан юнитов на секреты (`test_phase24_systemd_units.py`); 0600 — ручной шаг §4k | closed |
 | T-24-31 | Elevation of Privilege | `ingest-collect` → publish/send | high | mitigate | AST-скан + рантайм `sys.modules` + anti-vacuum инъекционная проверка + отсутствие `run_ingest_pipeline` в `collect_cli` (`test_phase24_scheduler_guard.py:51-124`) | closed |
-| T-24-32 | Denial of Service | зависший прогон держит лок | high | mitigate | `RuntimeMaxSec=1800` + `flock -n -E 75` + `SuccessExitStatus=0 75` (`digest-ingest.service:16-19`) | closed |
+| T-24-32 | Denial of Service | зависший прогон держит лок | high | mitigate | `TimeoutStartSec=1800` на `Type=oneshot` (runtime-параметр для oneshot systemd игнорирует) + `flock -n -E 75` + `SuccessExitStatus=0 75` (`digest-ingest.service`); text-контракт `test_service_tokens` / `test_service_does_not_use_runtime_limit_on_oneshot`; живое доказательство — runbook §5e item 5 | closed |
 | T-24-33 | Tampering | одновременный двойной запуск | medium | mitigate | `flock -n` на `/run/digest-ingest/lock`; каталог создаёт `RuntimeDirectory=digest-ingest` (0750) под `User=digestcds` | closed |
 | T-24-34 | Repudiation | «почему не пришло» | medium | mitigate | `OnFailure=digest-ingest-alert.service`; alert различает exit 1/2 через `MONITOR_EXIT_CODE`/`EXIT_CODE` и ссылается на `journalctl`; UAT §5e | closed |
 | T-24-35 | Privilege Escalation | юнит под root | medium | mitigate | `User=digestcds`/`Group=digestcds` + `NoNewPrivileges=true` + `PrivateTmp=true` в обоих юнитах | closed |
@@ -75,6 +75,8 @@ created: "2026-10-18"
 *Disposition: mitigate (implementation required) · accept (documented risk) · transfer (third-party)*
 
 **Примечание к T-24-12.** Плановая формулировка — «`stamp_last_run` вызывается всегда после прохождения гейта». Реализация следует решению D-27: штамп выполняется после гейта для любого прогона с ≥1 включённым источником (включая пустой фид — `test_due_empty_run_stamps_last_run_at`), но пропускается, когда включённых источников ноль (`collect_batch.py:227-228`). Это устраняет обратный риск — «включил источник в тот же день и застрял до завтра». Для нуля источников тик остаётся «пора» и повторяется каждые 15 минут, но стоит один `SELECT` без обращений к фиду, captions и LLM. Отклонение задокументировано в `24-REVIEW-DISPOSITION.md` (WR-03) и `24-CONTEXT.md` (D-27); порог `high` не пробит.
+
+**Re-verification T-24-32 (G-24-3, 24-07).** UAT test 3 на WSL2 Ubuntu 24.04 (systemd 255) показал, что systemd игнорирует `RuntimeMaxSec=` на `Type=oneshot`, то есть заявленная митигация не работала: зависший `ingest-collect` держал лок, а последующие тики выходили 75 и считались успехом. Теперь граница — `TimeoutStartSec=1800`; инертный токен запрещён text-контрактом (`test_service_does_not_use_runtime_limit_on_oneshot`), живое доказательство — runbook §5e item 5 (scratch-unit kill) и checkpoint T3 шаг 5 (убитый прогон не штампует `last_run_at`, следующий тик снова due). **Aliases:** `T-24-45` — планово-локальный пересказ `T-24-32`, `T-24-46` — планово-локальный пересказ `T-24-34` (те же границы, те же митигации); новых строк в реестре нет.
 
 ---
 
@@ -93,7 +95,7 @@ created: "2026-10-18"
 
 | Audit Date | Threats Total | Closed | Open | Run By |
 |------------|---------------|--------|------|--------|
-| 2026-10-18 | 30 | 30 | 0 | /gsd-secure-phase 24 (Cursor agent, L1 / ASVS 1) |
+| 2026-10-18 | 30 distinct threats + 2 plan-local aliases (T-24-45 → T-24-32, T-24-46 → T-24-34) | 30 | 0 | /gsd-secure-phase 24 (Cursor agent, L1 / ASVS 1) |
 
 **Метод:** реестр собран из `<threat_model>` шести PLAN-файлов (authored at plan
 time) + `## Threat Flags` шести SUMMARY (все пусты сверх плана). Каждая

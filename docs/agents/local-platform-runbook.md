@@ -603,6 +603,8 @@ Record apply method below when confirmed.
 
 Checked-in units: `deploy/systemd/digest-ingest.service`, `deploy/systemd/digest-ingest.timer`, `deploy/systemd/digest-ingest-alert.service`.
 
+**Run limit (D-23):** the service is `Type=oneshot`, so its **start phase** is bounded by `TimeoutStartSec=1800`. `RuntimeMaxSec=` has no effect on `Type=oneshot` — systemd 255 logs «RuntimeMaxSec= has no effect in combination with Type=oneshot. Ignoring.» and the run stays unbounded — so it must not be reintroduced. On expiry systemd SIGTERMs the unit cgroup and escalates to SIGKILL after `TimeoutStopSec` (default 90 s); the run never reaches its final summary, `last_run_at` is not stamped, and the next tick is due from the same cursor.
+
 **Why the timer polls every 15 minutes:** the schedule lives in `public.ingestion_schedule` (`enabled` / `time_of_day` / `days_of_week` / `last_run_at`). systemd cannot read the DB for OnCalendar, so the timer only wakes `ingest-collect`; `due_decision` decides «пора / не пора». Persistent is false — catch-up after downtime is the due-check against `last_run_at`, not systemd (D-21).
 
 **Prerequisites** (clean VM):
@@ -714,7 +716,11 @@ Operator checklist after §4k install + §4j migration. Secrets stay in `/etc/di
 3. **Forced due:** `sudo systemctl stop digest-ingest.timer`, shift `last_run_at` into the past with the SQL from §4j verify notes / Studio, then `sudo systemctl start digest-ingest.service` — a due run collects again.
 4. **Manual retry (D-13):** retry a skipped video with the existing CLI — no new flag:
    `uv run --env-file ingestion-service/.env ingest <video_id> --template lecture`
-5. **RuntimeMaxSec (D-23):** a stuck long run is killed at 1800s; `last_run_at` is **not** stamped; the next tick is due again from the same cursor.
+5. **Run limit (TimeoutStartSec, D-23):** the service is `Type=oneshot`, so the bound is its **start phase** at 1800 s; a killed run does not reach its summary, `last_run_at` is **not** stamped, and the next tick is due again from the same cursor.
+   - (i) `systemctl show digest-ingest.service -p TimeoutStartUSec` reports `TimeoutStartUSec=30min`.
+   - (ii) a fresh `sudo systemctl start digest-ingest.service` produces no «has no effect in combination with Type=oneshot» warning: `journalctl -u digest-ingest.service --since "2 min ago" --no-pager` is clean of it.
+   - (iii) prove the kill with a scratch unit: `/etc/systemd/system/uat-timeoutstart.service` with `[Unit]` → `Description=UAT: TimeoutStartSec bounds a Type=oneshot`, and `[Service]` → `Type=oneshot`, `TimeoutStartSec=3`, `ExecStart=/bin/sleep 10`; then `sudo systemctl daemon-reload`; `start=$(date +%s); sudo systemctl start uat-timeoutstart.service; rc=$?; end=$(date +%s)` (expect a non-zero `rc` and ≈3 s, not 10 s); `systemctl show uat-timeoutstart.service -p Result -p ExecMainStatus` (expect `Result=timeout`, `ExecMainStatus=15`); finally `sudo rm /etc/systemd/system/uat-timeoutstart.service` and `sudo systemctl daemon-reload`.
+   - The discriminating real-unit round-trip (stamp-vs-kill) lives in `.planning/phases/24-scheduled-ingestion/24-07-PLAN.md`, checkpoint T3 step 5: seed the `ingestion_schedule` singleton and one enabled source, prove a **control** run stamps, apply the `TimeoutStartSec=2` runtime drop-in, confirm `Result=timeout` with `last_run_at` still at the seeded value, then `systemctl revert` and show the next start stamps. A bare `last_run_at` comparison without the control run is not acceptable — a zero-source run also skips the stamp (D-27), so it would not discriminate.
 6. **flock busy (D-20):** while a run holds `/run/digest-ingest/lock`, a second start exits **75**; `systemctl status digest-ingest.service` does **not** go failed; `digest-ingest-alert.service` does **not** start (`SuccessExitStatus=0 75`).
 7. **Live feed:** with outbound access to `youtube.com`, one enabled source, and an empty cursor, a due run yields at least one `VideoRef` with a non-empty `video_id` (proves `parse_feed` beyond the synthetic fixture).
 8. **Alert codes:** forced exit 1 → journald line with «partial failure»; exit 2 → «no source could be read». Confirm via `journalctl -u digest-ingest-alert.service` after `OnFailure=`.
