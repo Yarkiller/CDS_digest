@@ -1,0 +1,9 @@
+{
+  "ecosystem": "pypi",
+  "config": { "exa_search": false, "brave_search": false, "firecrawl": false, "tavily_search": true },
+  "questions": [
+    { "text": "PostgreSQL pgvector hybrid search combining cosine HNSW and tsvector FTS with reciprocal rank fusion", "kind": "docs", "library": "pgvector", "version": "" },
+    { "text": "FastAPI FileResponse download notebook ipynb with Content-Disposition attachment", "kind": "docs", "library": "fastapi", "version": "" },
+    { "text": "Best practices semantic search role filter empty results honesty no substitution", "kind": "web" }
+  ]
+}

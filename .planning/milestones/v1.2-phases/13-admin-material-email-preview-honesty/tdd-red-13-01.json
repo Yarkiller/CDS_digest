@@ -1,0 +1,8 @@
+{
+  "command": "uv run pytest tests/unit/test_http_admin.py::test_admin_shortlist_returns_full_items -x --tb=short",
+  "targetTest": "test_admin_shortlist_returns_full_items",
+  "exitCode": 1,
+  "expected": "Response item includes body_markdown, provenance_label, slug, reading_minutes, char_count, word_count",
+  "output": "# tests 1\n# pass 0\n# fail 1\nnot ok 1 - test_admin_shortlist_returns_full_items\nAssertionError: missing required key: body_markdown",
+  "actual": "AssertionError: missing required key: body_markdown"
+}

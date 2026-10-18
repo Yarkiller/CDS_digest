@@ -1,0 +1,13 @@
+{
+  "source_path": "C:/Users/Yarkiller/PycharmPET-Projects/Digital_CDS/docs/adr/0004-self-hosted-supabase-on-vm.md",
+  "type": "ADR",
+  "confidence": "high",
+  "manifest_override": false,
+  "title": "Self-hosted Supabase на отдельной VM",
+  "summary": "Chose self-hosted Supabase on a separate VM via Docker Compose with pgvector; managed Cloud options rejected.",
+  "scope": ["self-hosted Supabase", "VM", "Docker Compose", "PostgreSQL", "pgvector", "supabase-integration", "knowledge-db.ru"],
+  "cross_refs": [".cursor/rules/architecture.mdc", "../../supabase-integration/migrations/001_initial_schema.sql", "../../supabase-integration/README.md"],
+  "locked": false,
+  "precedence": null,
+  "notes": ""
+}

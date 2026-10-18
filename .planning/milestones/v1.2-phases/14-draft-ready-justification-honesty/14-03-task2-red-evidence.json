@@ -1,0 +1,9 @@
+{
+  "command": "npm run test:web -- tests/admin.spec.js -g \"Сделать ready|markReadyBatch|Approve does not auto-ready\"",
+  "exitCode": 1,
+  "targetTest": "per-row Сделать ready promotes draft and clears draft hint (ADUX-05)",
+  "targetFile": "tests/admin.spec.js",
+  "expected": "admin-mark-ready next to draft badge; empty-body confirm; optimistic ready; batch CTA + one markReadyBatch; Approve leaves draft (D-01…D-05, D-08, D-10; ADUX-05)",
+  "actual": "TimeoutError: getByTestId('admin-mark-ready') / admin-mark-ready-batch not found — UI promote controls absent",
+  "output": "TAP version 13\n# tests 3\n# pass 0\n# fail 3\nnot ok 1 - per-row Сделать ready promotes draft and clears draft hint (ADUX-05)\nnot ok 2 - batch Сделать ready одобренные черновики issues one markReadyBatch (ADUX-05)\nnot ok 3 - Approve does not auto-ready draft (D-02)\n"
+}

@@ -1,0 +1,1 @@
+No external API integration: Phase 6 only defines typed DTOs, Protocol ports, in-memory fakes, and a pure assembler inside `data-collection` — no SDK clients, network calls, or third-party API surface.

@@ -59,7 +59,7 @@ UI и статьи — на русском; исходный текст може
 
 ### 4. Knowledge base search
 
-- PostgreSQL + **pgvector** на той же VM (Docker Compose рядом с приложением).
+- Self-hosted Supabase (PostgreSQL + **pgvector**) на отдельной VM (Docker Compose).
 - Векторный + полнотекстовый поиск по карточкам знаний на сайте.
 
 ### 5. Activity tracking (silent in v1)
@@ -81,7 +81,7 @@ UI и статьи — на русском; исходный текст може
 | Hosting | VM Cloud.ru |
 | Backend | FastAPI (Python) |
 | Frontend | React SPA |
-| Database | PostgreSQL + pgvector (Docker Compose на VM Cloud.ru) |
+| Database | Self-hosted Supabase (PostgreSQL + pgvector) via Docker Compose on separate VM |
 | ML pipeline | FoundryModels API (Cloud.ru) |
 | External sources | YouTube Data API v3 / text import; source remains external |
 | Scheduler | cron + CLI commands on VM |
@@ -119,7 +119,7 @@ UI и статьи — на русском; исходный текст може
 | ADR-0001 | Public leaderboard (implement post-v1) |
 | ADR-0002 | Cloud.ru VM + FoundryModels for ML |
 | ADR-0003 | Email domains: @sberbank.ru, @omega.sbrf.ru |
-| ADR-0004 | PostgreSQL + pgvector in Docker Compose on VM |
+| ADR-0004 | Self-hosted Supabase (PostgreSQL + pgvector) via Docker Compose on separate VM |
 
 ## Domain glossary
 

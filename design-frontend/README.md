@@ -16,14 +16,16 @@ Editorial UI («Digest CDS: издание»). Директория являет
 
 ## Как открыть
 
-Из корня репозитория запустите статический сервер:
+Из корня репозитория запустите статический сервер (Node, без Python):
 
 ```bash
-python -m http.server 8765
+npm run serve:design
 ```
 
+Эквивалент: `npx --yes serve@14.2.4 . -l 8765 --no-port-switching`
+
 Затем откройте
-`http://localhost:8765/design-frontend/index.html`. Конкретные экраны
+`http://127.0.0.1:8765/design-frontend/index.html`. Конкретные экраны
 находятся в `pages/`; для интерактивных stubs нужен HTTP-сервер.
 
 ## Карта экранов

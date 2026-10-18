@@ -1,0 +1,35 @@
+{
+  "ecosystem": "pypi",
+  "config": {
+    "exa_search": false,
+    "brave_search": false,
+    "firecrawl": false,
+    "tavily_search": true
+  },
+  "questions": [
+    {
+      "text": "How does supabase-py table upsert on_conflict work for a composite primary key?",
+      "kind": "docs",
+      "library": "supabase-py",
+      "version": "2.31.0"
+    },
+    {
+      "text": "FastAPI HTTPException status 409 Conflict request body validation extra forbid",
+      "kind": "docs",
+      "library": "fastapi",
+      "version": "0.141.1"
+    },
+    {
+      "text": "PostgreSQL INSERT ON CONFLICT DO UPDATE composite primary key optimistic concurrency updated_at",
+      "kind": "docs",
+      "library": "postgresql",
+      "version": "15"
+    },
+    {
+      "text": "Playwright testing radiogroup aria-checked no preselected radio",
+      "kind": "docs",
+      "library": "playwright",
+      "version": "1.62.1"
+    }
+  ]
+}

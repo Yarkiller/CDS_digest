@@ -1,5 +1,7 @@
 .env
 .env.*
+!.env.example
+!.env*.example
 .cursor/*
 !.cursor/rules/
 !.cursor/rules/**
@@ -14,4 +16,51 @@ node_modules/
 dist/
 *.egg-info/
 
+.playwright-browsers/
 test-results/
+.cursor/mcp.json
+
+# --- Local tooling / agent workspace (not part of the product) ---
+.claude/
+.gsd/
+.idea/
+.scratch/
+
+# GSD transient run artifacts (tracked planning docs are unaffected)
+.planning/_*
+.planning/tmp/
+.planning/.tmp/
+.planning/research/.cache/
+.planning/ui-reviews/.gitignore
+.planning/config.json
+.planning/state.json
+.planning/estimation-calibration.json
+.planning/milestone.lock
+
+# Vercel CLI local state
+.vercel/
+
+# Extracted homework archive (derived from archive/*.zip)
+archive/extracted/
+
+# GSD Core local runtime (reinstallable via npx @opengsd/gsd-core@latest --cline --local)
+.cline/
+.gsd-staging/
+gsd-core/
+agents/
+scripts/changeset/
+scripts/fix-slash-commands.cjs
+scripts/gen-capability-registry.cjs
+scripts/gen-loop-host-contract.cjs
+scripts/lib/
+.gsd-profile
+gsd-file-manifest.json
+gsd-install-state.json
+
+# Local notebooks (demo content, not tracked)
+notebooks/
+
+# Stray accidental files
+/-H
+/-d
+/agent-skills-researcher.tmp.txt

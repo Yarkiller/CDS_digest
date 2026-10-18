@@ -203,7 +203,7 @@ changelog_1_3: "Frontend homework-app: Vite + React + React Router + Tailwind; �
 
 | ID | Требование |
 |----|------------|
-| NFR-R1 | Резервное копирование PostgreSQL выполняется по расписанию команды (ответственность за бэкапы на той же VM — следствие ADR-0004); восстановление проверяется не реже 1 раза в квартал |
+| NFR-R1 | Резервное копирование Supabase/PostgreSQL выполняется по расписанию команды (ответственность за бэкапы на self-hosted VM — следствие ADR-0004); восстановление проверяется не реже 1 раза в квартал |
 | NFR-R2 | Sticky TOC страницы разбора остаётся в пределах viewport на поддерживаемых ширинах при прокрутке longread (US-19 / FR-41) — usability-ограничение layout |
 | NFR-R3 | Клиентская валидация не заменяет серверные проверки доменных ограничений, прав админа и идемпотентности рассылки |
 
@@ -239,8 +239,8 @@ changelog_1_3: "Frontend homework-app: Vite + React + React Router + Tailwind; �
 |---------|---------|----------|
 | Хостинг приложения | Виртуальная машина **Cloud.ru** | [ADR-0002](../adr/0002-cloud-ru-foundrymodels-deployment.md) |
 | ML / обработка контента | API **FoundryModels** Cloud.ru (транскрибация/импорт текста, суммаризация, анализ, теги, эмбеддинги); без публичных зарубежных API и без локального Whisper на VM | ADR-0002 |
-| СУБД | **PostgreSQL** с **pgvector** на той же VM через **Docker Compose**; managed PostgreSQL Cloud.ru не используется | [ADR-0004](../adr/0004-postgresql-docker-compose-on-vm.md) |
-| Деплой БД и сервисов | Docker Compose на VM приложения (единый контур) | ADR-0004 |
+| СУБД | **Self-hosted Supabase** (PostgreSQL + **pgvector**) на отдельной VM через **Docker Compose**; базовый URL/ключи конфигурируемы; managed Supabase Cloud и managed PostgreSQL Cloud.ru не используются | [ADR-0004](../adr/0004-self-hosted-supabase-on-vm.md) |
+| Деплой БД и сервисов | Self-hosted Supabase (Docker Compose) на отдельной VM; доступ через адаптер `supabase-integration` | ADR-0004 |
 | Доступ пользователей | Только email-домены `@sberbank.ru`, `@omega.sbrf.ru` (фиксированный список в конфиге) | [ADR-0003](../adr/0003-email-domain-restriction.md) |
 | Frontend — канон дизайна | Статический Editorial UI (`design-frontend/`) — источник экранов, токенов и UX Concept 3 | `design-frontend/`, UI-SPEC |
 | Frontend — приложение ДЗ | **Vite + React + React Router + Tailwind CSS** в каталоге `web/`; визуальные токены переносятся из `design-frontend/styles/tokens.css` | `web/`, раздел 3.3 |
@@ -271,7 +271,7 @@ changelog_1_3: "Frontend homework-app: Vite + React + React Router + Tailwind; �
 
 1. Весь runtime-стек и секреты живут в контуре Cloud.ru (приложение + PostgreSQL + вызовы FoundryModels).
 2. Исходное видео/аудио — внешний вход pipeline; в БД и UI попадает статья и provenance, не медиафайл как материал.
-3. Ответственность за бэкапы, обновления и отказоустойчивость PostgreSQL на VM лежит на команде продукта (следствие ADR-0004).
+3. Ответственность за бэкапы, обновления и отказоустойчивость self-hosted Supabase (PostgreSQL) на VM лежит на команде продукта (следствие ADR-0004).
 4. Зависимость от доступности FoundryModels учитывается в NFR-A3 и NFR-P5; при смене провайдера потребуется адаптер ML-pipeline (ADR-0002).
 
 ### 3.5 Окружения (минимальный набор)

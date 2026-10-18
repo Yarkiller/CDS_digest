@@ -31,6 +31,15 @@
   }
 }
 
+/* G-14-3 / ADUX-05 — Tailwind v4 no longer sets a pointer cursor on native
+   buttons. Restore the affordance globally; `:not(:disabled)` keeps the
+   disabled/native cursor so `disabled:cursor-not-allowed` still wins. */
+@layer base {
+  button:not(:disabled) {
+    cursor: pointer;
+  }
+}
+
 :root {
   color: var(--color-ink);
   background: var(--color-paper);

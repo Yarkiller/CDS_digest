@@ -1,0 +1,33 @@
+{
+  "questions": [
+    {
+      "kind": "web",
+      "text": "How do YouTube caption to LLM to CMS draft ingestion pipelines typically work for editorial digests?"
+    },
+    {
+      "text": "youtube-transcript-api Python library fetch captions best practices limitations",
+      "kind": "docs",
+      "library": "youtube-transcript-api"
+    },
+    {
+      "text": "DeepSeek OpenAI-compatible chat completions API for content generation prompts",
+      "kind": "docs",
+      "library": "openai"
+    },
+    {
+      "kind": "web",
+      "text": "Editorial CMS draft workflow shortlist approve publish human-in-the-loop patterns"
+    },
+    {
+      "kind": "web",
+      "text": "Operator CLI one-shot video ingestion expected UX idempotency provenance failure modes"
+    }
+  ],
+  "ecosystem": "pypi",
+  "config": {
+    "exa_search": false,
+    "brave_search": false,
+    "tavily_search": true,
+    "firecrawl": false
+  }
+}

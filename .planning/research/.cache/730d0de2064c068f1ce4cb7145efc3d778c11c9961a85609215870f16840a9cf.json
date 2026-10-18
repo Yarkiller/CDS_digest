@@ -1,0 +1,1 @@
+{"content":"Self-hosted may still use JWT_SECRET HS256; new self-host supports JWT_JWKS/ES256. Official strongly against local HS256 secret verify; prefer Auth /user or JWKS. This project has SUPABASE_JWKS_URL in .env.","source":"web","provider":"tavily","confidence":"LOW","fetched_at":"2026-09-19T14:42:10.536Z","ttl":86400000,"kind":"web"}

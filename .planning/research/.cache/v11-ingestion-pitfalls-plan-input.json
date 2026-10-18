@@ -1,0 +1,33 @@
+{
+  "ecosystem": "pypi",
+  "config": {
+    "exa_search": false,
+    "brave_search": false,
+    "firecrawl": false,
+    "tavily_search": true
+  },
+  "questions": [
+    {
+      "text": "youtube-transcript-api Python missing captions TranscriptsDisabled NoTranscriptFound failure modes",
+      "kind": "docs",
+      "library": "youtube-transcript-api"
+    },
+    {
+      "text": "OpenAI-compatible DeepSeek API chat completions idempotency retries rate limits",
+      "kind": "web"
+    },
+    {
+      "text": "Supabase service_role RLS bypass write patterns vs authenticated policies",
+      "kind": "docs",
+      "library": "supabase"
+    },
+    {
+      "text": "Pipeline idempotency unique constraints duplicate YouTube video ingestion upsert patterns",
+      "kind": "web"
+    },
+    {
+      "text": "Common pitfalls storing LLM output as CMS draft without auto-publish content moderation",
+      "kind": "web"
+    }
+  ]
+}

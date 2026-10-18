@@ -58,6 +58,8 @@
 | Overflow на 320px | Playwright viewport-тест | `min-w-0 sm:min-w-[240px]` |
 | Локатор кнопки голоса ломался при смене текста | Падение loading-assert | `data-testid="confirm-vote"` |
 | Слишком короткая latency для loading | Флап тестов | Общий `UI_LATENCY_MS` (~600) |
+| `python` в Playwright ломал Mac | Ревью ДЗ | Node `serve` + фильтр webServer по `--project` |
+| Слабый error-state голоса | Ревью ДЗ | `votingApi` + `VoteSubmitError` + `ErrorPanel` |
 
 ## 5. Применённые техники и оценка
 
@@ -71,7 +73,9 @@
 
 ## 6. Тестирование
 
-Команда: `npx playwright test` (проекты `design-frontend` + `web`).
+Команды: `npm test` / `npm run test:web` / `npm run test:design`.
+
+Статический сервер макетов — Node (`serve`), без Python. При `--project=web` поднимается только Vite.
 
 Web-приложение (`tests/web-app.spec.js`), группы:
 
@@ -91,11 +95,13 @@ Web-приложение (`tests/web-app.spec.js`), группы:
 
 ```text
 web/src/
-├── components/     # shell, поиск, TOC, ballot, кнопки состояний
+├── components/     # shell, поиск, TOC, ballot, ErrorPanel, кнопки состояний
 ├── pages/          # маршруты экранов
+├── services/       # mock API (votingApi с typed errors)
 ├── data/mock.js    # контент для UI
 ├── utils/
-│   ├── filters.js  # фильтрация KB
+│   ├── filters.js  # фильтрация базы знаний
+│   ├── voting.js   # статусы/лейблы голосования
 │   └── delay.js    # общая симуляция latency
 ├── App.jsx
 └── index.css       # Tailwind + токены Editorial

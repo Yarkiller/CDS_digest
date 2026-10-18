@@ -1,0 +1,29 @@
+{
+  "source_path": "C:/Users/Yarkiller/PycharmPET-Projects/Digital_CDS/docs/digest-cds/error_handling.md",
+  "type": "SPEC",
+  "confidence": "medium",
+  "manifest_override": false,
+  "title": "Обработка ошибок и Edge Cases — Digest CDS (Concept 3)",
+  "summary": "Target UX and system contracts for Digest CDS negative scenarios across login, issue, voting, KB, admin, and archive.",
+  "scope": [
+    "error handling",
+    "edge cases",
+    "validation UX",
+    "empty states",
+    "network errors",
+    "401/403/404",
+    "login",
+    "voting",
+    "admin shortlist",
+    "knowledge base"
+  ],
+  "cross_refs": [
+    "../../design-frontend/",
+    "user_stories.md",
+    "../../CONTEXT.md",
+    "backlog_UI.md"
+  ],
+  "locked": false,
+  "precedence": null,
+  "notes": "Path unclear. Dominant signals are Trigger→System→UX tables with HTTP status contracts (400/401/403/404/409/5xx) and idempotency → SPEC. Also maps edge cases to user stories (PRD-adjacent); SPEC chosen by precedence ADR>SPEC>PRD>DOC."
+}

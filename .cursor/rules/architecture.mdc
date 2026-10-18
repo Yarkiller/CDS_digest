@@ -1,0 +1,126 @@
+---
+description: Hexagonal / layered architecture for Digest CDS (ports & adapters)
+alwaysApply: true
+---
+# Архитектура Digest CDS (Ports & Adapters)
+
+Качество архитектуры важнее скорости. Не жертвуй слабой связанностью ради «чтобы быстрее заработало».
+Стек: Backend — Python/FastAPI (deps через `uv`, см. `python-uv.mdc`), Frontend — React/Vite (`web/`).
+TDD обязателен, см. `tdd.mdc`.
+
+## Модули (bounded contexts)
+
+| Module | Роль |
+|--------|------|
+| `web/` | Frontend delivery (React/Vite) — уже есть |
+| `backend/` | FastAPI: domain, application, interface/http, composition |
+| `supabase-integration/` | DB-адаптер: Supabase SDK, схема, RLS, миграции |
+| `data-collection/` | Адаптеры внешних API (YouTube, FoundryModels, …) → доменные DTO |
+
+Границы модулей:
+- Общение только через публичный API (`__init__.py` / `public/`) и порты.
+- Запрещён deep-import во внутренности чужого модуля (`../../other/src/internal/...`).
+- Удаление модуля ломает только его точки подключения в composition root.
+
+## Слои backend
+
+```text
+backend/
+  domain/           # entities, value objects, доменные ошибки — ноль fastapi/httpx/supabase
+  application/
+    ports/          # интерфейсы: typing.Protocol / abc.ABC
+    use_cases/      # сценарии, зависят только от domain и ports
+  infrastructure/   # локальные адаптеры, если владелец — backend
+  interface/
+    http/           # FastAPI-роутеры — тонкие
+  composition/      # DI / bootstrap — единственное место wiring
+```
+
+Зависимости направлены **внутрь**: Infrastructure → Application → Domain. Никогда наоборот.
+Адаптеры внешних систем живут в своих модулях (`supabase-integration`, `data-collection`),
+реализуют порты из `application.ports` и подключаются в `composition/`.
+
+## Порты и адаптеры
+
+- Порт = `typing.Protocol` или `abc.ABC` в `application/ports/` (или в domain, если порт — часть домена).
+- В domain/use-case **запрещены** импорты `supabase`, `httpx`, `requests`, `fastapi`, прямой SQL.
+- Ошибки SDK/HTTP маппятся в доменные ошибки **на границе адаптера**.
+- Никаких `Any` в портах и на границах модулей — явные типы/DTO.
+- Frontend: обращения к API только через `web/src/services/`; UI не знает про Supabase/backend-детали.
+
+## Composition root
+
+Wiring только в `backend/.../composition/` (`container.py` / `bootstrap.py`).
+Никаких `create_client(...)` или `httpx.Client(...)` в бизнес-логике.
+Смена Supabase на другой backend = замена одного адаптера, без правок domain/application.
+
+## Тестируемость
+
+- Unit: domain + use_cases с in-memory fakes портов (`pytest`), без сети и БД.
+- Для каждого порта — in-memory реализация в тестах.
+- Integration: реальные адаптеры, явно помечены, не смешиваются с unit.
+- E2E: существующий Playwright (`tests/`) — UI; не заменяет unit портов.
+
+## Чеклист перед каждым изменением
+
+1. Определи слой. Не можешь — спроси.
+2. Работа с внешним миром? Нужен порт (нет — предложи создать).
+3. Проверь направление зависимостей: инфраструктура не течёт в domain/application.
+4. «Быстрый хак» в обход слоёв? Предупреди и предложи правильный вариант.
+
+## Anti-patterns
+
+- Импорт Supabase/HTTP-клиента в use-case или domain.
+- Бизнес-логика в React-компонентах или в FastAPI-роутерах.
+- «Утилиты» без владельца, размазанные по проекту.
+- Циклические импорты между модулями.
+- God-service, знающий про БД, HTTP и UI одновременно.
+- «Unit»-тесты, ходящие в реальную сеть/Supabase без пометки integration.
+
+## Incorrect
+
+```python
+# use-case напрямую тянет SDK
+from supabase import create_client
+
+def approve_material(id: str):
+    client = create_client(URL, KEY)
+    client.table("materials").update({"status": "approved"}).eq("id", id).execute()
+```
+
+```jsx
+// компонент считает бизнес-рейтинг
+function Ballot({ votes }) {
+  const score = votes.reduce((a, v) => a + v.weight * 1.5, 0) // бизнес-правило в UI
+  return <span>{score}</span>
+}
+```
+
+## Correct
+
+```python
+# application/ports/material_repository.py
+from typing import Protocol
+from backend.domain.material import Material
+
+class MaterialRepository(Protocol):
+    def approve(self, material_id: str) -> Material: ...
+
+# supabase-integration реализует порт; wiring — в composition
+def approve_material(repo: MaterialRepository, material_id: str) -> Material:
+    return repo.approve(material_id)
+```
+
+```jsx
+// UI показывает готовый DTO, рейтинг считает backend
+function Ballot({ topic }) {
+  return <span>{topic.score}</span>
+}
+```
+
+## Стиль ответа при изменениях
+
+1. Кратко: какие слои/порты затрагиваются.
+2. Код с файловой структурой.
+3. Что протестировать и какие адаптеры подменить в тестах.
+4. Если ТЗ противоречит принципам — остановись и спроси, не угадывай.

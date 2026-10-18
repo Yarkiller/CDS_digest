@@ -1,0 +1,19 @@
+============================= test session starts =============================
+platform win32 -- Python 3.12.13, pytest-9.1.1, pluggy-1.6.0
+rootdir: C:\Users\Yarkiller\PycharmPET-Projects\Digital_CDS
+configfile: pyproject.toml
+plugins: anyio-4.15.1
+collected 11 items / 7 deselected / 4 selected
+
+tests\unit\test_preview_digest.py F
+
+================================== FAILURES ===================================
+___________ test_preview_html_present_with_interstitial_paragraphs ____________
+tests\unit\test_preview_digest.py:265: in test_preview_html_present_with_interstitial_paragraphs
+    preview = preview_digest_email(
+E   TypeError: preview_digest_email() got an unexpected keyword argument 'site_url'
+- generated xml file: C:\Users\Yarkiller\PycharmPET-Projects\Digital_CDS\.planning\phases\13-admin-material-email-preview-honesty\13-02-task2-red-junit.xml -
+=========================== short test summary info ===========================
+FAILED tests/unit/test_preview_digest.py::test_preview_html_present_with_interstitial_paragraphs
+!!!!!!!!!!!!!!!!!!!!!!!!!! stopping after 1 failures !!!!!!!!!!!!!!!!!!!!!!!!!!
+======================= 1 failed, 7 deselected in 0.23s =======================

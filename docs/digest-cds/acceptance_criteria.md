@@ -1,6 +1,6 @@
 # Критерии приёмки (Acceptance Criteria) — Digest CDS Concept 3
 
-**Источник историй:** [user_stories.md](user_stories.md)  
+**Источник историй:** `user_stories.md` (родительский документ; без обратной markdown-ссылки — acyclic ingest)  
 **Frontend:** [design-frontend/](../../design-frontend/)
 **Ошибки / edge cases:** [error_handling.md](error_handling.md)  
 **Домен:** [CONTEXT.md](../../CONTEXT.md)
@@ -508,4 +508,4 @@
 | US-31 | Must | 3 |
 | **Итого** | **31/31 US** | **68** |
 
-Все User Stories из [user_stories.md](user_stories.md) имеют критерии приёмки в формате Given / When / Then.
+Все User Stories из `user_stories.md` имеют критерии приёмки в формате Given / When / Then.

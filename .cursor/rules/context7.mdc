@@ -1,8 +1,7 @@
 ---
 description: Always use Context7 MCP for library/API docs, codegen, setup and config
-alwaysApply: true
+alwaysApply: false
 ---
-
 # Use Context7 for Library Documentation
 
 When the task needs library or API documentation, code generation against an external library, setup steps, or configuration guidance, call Context7 MCP first. Do not wait for an explicit request.

@@ -1,20 +1,18 @@
 /**
- * Filter knowledge materials by free-text query and facet values.
+ * Role-only helper. Knowledge search is server-side (KNOW-02).
+ * Tag / format / topic selects are out of Phase 4 (D-63) and are not applied.
  */
-export function filterMaterials(items, { query = '', role = '', tag = '', format = '', topic = '' } = {}) {
+export function filterMaterials(items, { query = '', role = '' } = {}) {
   const tokens = query
     .toLowerCase()
     .split(/[\s,.#]+/)
     .filter(Boolean)
 
   return items.filter((item) => {
-    if (role && !item.roles.includes(role)) return false
-    if (tag && !item.tags.includes(tag)) return false
-    if (format && item.format !== format) return false
-    if (topic && item.topic !== topic) return false
+    if (role && !(item.roles ?? []).includes(role)) return false
 
     if (!tokens.length) return true
-    const haystack = `${item.title} ${item.keywords} ${item.tags.join(' ')}`.toLowerCase()
+    const haystack = `${item.title} ${item.keywords ?? ''} ${(item.tags ?? []).join(' ')}`.toLowerCase()
     return tokens.some((token) => haystack.includes(token))
   })
 }

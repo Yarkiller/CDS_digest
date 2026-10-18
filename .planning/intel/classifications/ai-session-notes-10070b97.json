@@ -1,0 +1,22 @@
+{
+  "source_path": "C:/Users/Yarkiller/PycharmPET-Projects/Digital_CDS/docs/digest-cds/ai_session_notes.md",
+  "type": "DOC",
+  "confidence": "medium",
+  "manifest_override": false,
+  "title": "AI session notes (homework Steps 5–6)",
+  "summary": "Working appendix of AI-assisted debugging, header search fix, Playwright coverage, and responsive layout notes.",
+  "scope": [
+    "header search",
+    "SearchPill",
+    "Playwright tests",
+    "responsive layout",
+    "Knowledge page"
+  ],
+  "cross_refs": [
+    "../../development_report.md",
+    "./responsive-evidence/"
+  ],
+  "locked": false,
+  "precedence": null,
+  "notes": "Filename and content are session/working notes with no ADR/PRD/SPEC hallmarks; classified DOC as supporting context appendix rather than UNKNOWN."
+}

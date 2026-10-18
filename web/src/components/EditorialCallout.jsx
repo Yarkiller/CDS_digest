@@ -1,8 +1,18 @@
 import { Link } from 'react-router-dom'
 
-export default function EditorialCallout({ children, actionTo, actionLabel }) {
+/**
+ * Editorial voting callout — open CTA optional; closed omits action (D-35).
+ * @param {{ children: import('react').ReactNode, actionTo?: string, actionLabel?: string, muted?: boolean }} props
+ */
+export default function EditorialCallout({ children, actionTo, actionLabel, muted = false }) {
+  const surface = muted
+    ? 'border-rule bg-paper-2 text-ink-2'
+    : 'border-voting bg-[oklch(94%_0.025_278)]'
   return (
-    <div className="my-8 flex flex-wrap items-center justify-between gap-4 border border-voting bg-[oklch(94%_0.025_278)] p-5">
+    <div
+      data-testid="editorial-callout"
+      className={`my-8 flex flex-wrap items-center justify-between gap-4 border p-5 ${surface}`}
+    >
       <div className="text-sm text-ink">{children}</div>
       {actionTo && actionLabel ? (
         <Link

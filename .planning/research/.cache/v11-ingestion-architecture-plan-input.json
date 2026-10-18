@@ -1,0 +1,30 @@
+{
+  "ecosystem": "pypi",
+  "config": {
+    "exa_search": false,
+    "brave_search": false,
+    "firecrawl": false,
+    "tavily_search": true
+  },
+  "questions": [
+    {
+      "text": "How does youtube-transcript-api fetch captions by video_id, language priority, and error taxonomy for disabled/unavailable transcripts?",
+      "kind": "docs",
+      "library": "youtube-transcript-api"
+    },
+    {
+      "text": "How to configure OpenAI Python SDK with custom base_url for DeepSeek OpenAI-compatible chat completions?",
+      "kind": "docs",
+      "library": "openai"
+    },
+    {
+      "text": "Hexagonal architecture patterns for CLI batch ingestion workers writing to shared Postgres while HTTP API remains reader-only",
+      "kind": "web"
+    },
+    {
+      "text": "Supabase Python service_role insert into RLS-enabled tables for materials and related rows",
+      "kind": "docs",
+      "library": "supabase-py"
+    }
+  ]
+}

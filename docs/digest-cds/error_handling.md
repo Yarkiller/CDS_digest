@@ -2,7 +2,7 @@
 
 **UI-концепция:** Editorial UI
 **Frontend-прототип:** [design-frontend/](../../design-frontend/)
-**User stories:** [user_stories.md](user_stories.md)  
+**User stories:** `user_stories.md` (родительский документ; без обратной markdown-ссылки — acyclic ingest)  
 **Домен:** [CONTEXT.md](../../CONTEXT.md)  
 **UI-gaps прототипа (контекст):** [backlog_UI.md](backlog_UI.md)
 

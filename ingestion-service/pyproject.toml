@@ -1,0 +1,27 @@
+[project]
+name = "ingestion-service"
+version = "0.1.0"
+description = "YouTube → LLM → Supabase ingestion CLI for Digest CDS"
+requires-python = ">=3.12"
+dependencies = [
+    "data-collection",
+    "openai>=3.0,<4",
+    "python-slugify>=8.0,<9",
+    "supabase>=2.0,<3",
+    "typer>=0.27.2",
+]
+
+[build-system]
+requires = ["uv_build>=0.10.9,<0.11.0"]
+build-backend = "uv_build"
+
+[tool.uv.build-backend]
+module-name = "ingestion_service"
+module-root = "src"
+
+[tool.uv.sources]
+data-collection = { workspace = true }
+
+[project.scripts]
+ingest = "ingestion_service.cli:app"
+ingest-collect = "ingestion_service.collect_cli:app"

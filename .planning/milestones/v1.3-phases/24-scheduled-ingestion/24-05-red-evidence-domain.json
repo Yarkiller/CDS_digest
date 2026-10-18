@@ -1,0 +1,8 @@
+{
+  "expected_result": "parse_time_of_day(\"06:00\") → time(6, 0); parse_time_of_day(\"06:00:00\") → time(6, 0)",
+  "actual_result": "ModuleNotFoundError / pytest.fail — production symbol absent",
+  "output_tail": "FAILED tests/unit/test_ingestion_schedule_domain.py::test_parse_time_of_day_accepts_hhmm_and_hhmmss\nFailed: parse_time_of_day not importable: No module named 'backend.domain.ingestion_schedule'",
+  "failing_test": "tests/unit/test_ingestion_schedule_domain.py::test_parse_time_of_day_accepts_hhmm_and_hhmmss",
+  "exit_code": 1,
+  "command": "uv run pytest tests/unit/test_ingestion_schedule_domain.py::test_parse_time_of_day_accepts_hhmm_and_hhmmss -q --tb=short"
+}

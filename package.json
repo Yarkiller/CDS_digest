@@ -5,8 +5,14 @@
     "dev": "npm run dev --prefix web",
     "build": "npm run build --prefix web",
     "preview": "npm run preview --prefix web",
+    "serve:design": "npx --yes serve@14.2.4 . -l 8765 --no-port-switching",
+    "playwright:install": "node scripts/ensure-playwright-browsers.cjs",
+    "postinstall": "node scripts/ensure-playwright-browsers.cjs",
     "test": "playwright test",
-    "test:web": "playwright test --project=web"
+    "test:web": "playwright test --project=web",
+    "test:design": "playwright test --project=design-frontend",
+    "test:unit": "uv run pytest",
+    "platform:runbook": "node -e \"console.log('Runbook: docs/agents/local-platform-runbook.md'); console.log('API: uv run --env-file .env uvicorn backend.interface.http.app:create_default_app --factory --host 127.0.0.1 --port 8000'); console.log('Web live proof: create web/.env.local with VITE_USE_MOCKS=false. No secrets printed.');\""
   },
   "devDependencies": {
     "@playwright/test": "^1.62.1"

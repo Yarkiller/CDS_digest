@@ -1,0 +1,35 @@
+
+Running 1 test using 1 worker
+
+[web] 09:55:01 [vite] (client) [console.warn] Something has shimmed the React DevTools global hook (__REACT_DEVTOOLS_GLOBAL_HOOK__). Fast Refresh is not compatible with this shim and will be disabled.
+[web] 09:55:02 [vite] (client) [console.warn] Something has shimmed the React DevTools global hook (__REACT_DEVTOOLS_GLOBAL_HOOK__). Fast Refresh is not compatible with this shim and will be disabled.
+  x  1 [web] › tests\admin.spec.js:520:3 › Admin Digest — email preview honesty (ADUX-02, D-08/D-12) › email-preview-frame shows sandboxed backend HTML with material title (7.5s)
+
+
+  1) [web] › tests\admin.spec.js:520:3 › Admin Digest — email preview honesty (ADUX-02, D-08/D-12) › email-preview-frame shows sandboxed backend HTML with material title 
+
+    Error: expect(locator).toBeVisible() failed
+
+    Locator: getByRole('dialog').filter({ has: getByRole('heading', { name: 'Превью письма', exact: true }) }).getByTestId('email-preview-frame')
+    Expected: visible
+    Timeout: 5000ms
+    Error: element(s) not found
+
+    Call log:
+      - Expect "toBeVisible" with timeout 5000ms
+      - waiting for getByRole('dialog').filter({ has: getByRole('heading', { name: 'Превью письма', exact: true }) }).getByTestId('email-preview-frame')
+
+
+      529 |     });
+      530 |     const iframe = emailDialog.getByTestId("email-preview-frame");
+    > 531 |     await expect(iframe).toBeVisible();
+          |                          ^
+      532 |     await expect(iframe).toHaveAttribute("title", "Превью письма HTML");
+      533 |     await expect(iframe).toHaveAttribute("sandbox", "");
+      534 |     await expect(emailDialog.getByTestId("email-preview-body")).toHaveCount(0);
+        at C:\Users\Yarkiller\PycharmPET-Projects\Digital_CDS\tests\admin.spec.js:531:26
+
+    Error Context: test-results\admin-Admin-Digest-—-email-50e10-nd-HTML-with-material-title-web\error-context.md
+
+  1 failed
+    [web] › tests\admin.spec.js:520:3 › Admin Digest — email preview honesty (ADUX-02, D-08/D-12) › email-preview-frame shows sandboxed backend HTML with material title 

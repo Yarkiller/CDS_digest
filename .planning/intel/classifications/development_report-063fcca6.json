@@ -1,0 +1,13 @@
+{
+  "source_path": "C:/Users/Yarkiller/PycharmPET-Projects/Digital_CDS/docs/digest-cds/development_report.md",
+  "type": "DOC",
+  "confidence": "medium",
+  "manifest_override": false,
+  "title": "Отчёт о разработке",
+  "summary": "Pointer stub directing to the canonical development report at repository root.",
+  "scope": ["development report", "docs/digest-cds"],
+  "cross_refs": ["../../development_report.md"],
+  "locked": false,
+  "precedence": null,
+  "notes": "Thin stub with no ADR/PRD/SPEC signals; prose pointer only → DOC."
+}

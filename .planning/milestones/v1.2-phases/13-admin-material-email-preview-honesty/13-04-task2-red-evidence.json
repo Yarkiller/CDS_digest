@@ -1,0 +1,9 @@
+{
+  "command": "npx playwright test --project=web tests/admin.spec.js --grep Пустая строка",
+  "exitCode": 1,
+  "targetTest": "Пустая строка = новый абзац hint under intro and connecting text",
+  "targetFile": "tests/admin.spec.js",
+  "expected": "muted hint «Пустая строка = новый абзац» under intro and connecting-text textareas",
+  "actual": "element(s) not found — hint copy not rendered under intro textarea",
+  "output": "1..1\nnot ok 1 - Пустая строка = новый абзац hint under intro and connecting text\n  ---\n  error: expect(locator).toBeVisible() failed — hint text not found under Контекст дайджеста\n  ...\n# tests 1\n# pass 0\n# fail 1\n# cancelled 0\n"
+}

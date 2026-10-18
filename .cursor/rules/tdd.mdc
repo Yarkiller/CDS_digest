@@ -1,8 +1,6 @@
 ---
-description: Обязательный TDD — Red–Green–Refactor перед любым production-кодом
 alwaysApply: true
 ---
-
 # Обязательный TDD
 
 Разработка Digest CDS ведётся по Red–Green–Refactor. Писать production-код до падающего теста запрещено.
