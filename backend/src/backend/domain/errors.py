@@ -218,3 +218,15 @@ class IngestSourceValidationError(DomainError):
     def __init__(self, errors: tuple[PipelineConfigError, ...]) -> None:
         super().__init__("ingest source validation failed")
         self.errors = errors
+
+
+class IngestionScheduleValidationError(DomainError):
+    """Raised when an ingestion-schedule PATCH fails validation (ING-06, D-16).
+
+    Same ``PipelineConfigError`` row shape as ingest-sources so HTTP maps to a
+    top-level ``{"errors": [...]}`` 400 payload (never nested under ``detail``).
+    """
+
+    def __init__(self, errors: tuple[PipelineConfigError, ...]) -> None:
+        super().__init__("ingestion schedule validation failed")
+        self.errors = errors

@@ -4,7 +4,7 @@ import logging
 import math
 import re
 from dataclasses import dataclass, field, replace
-from datetime import datetime, timezone
+from datetime import datetime, time, timezone
 from typing import Any
 
 from backend.application.ports.digest_publisher import DigestPublication
@@ -20,6 +20,10 @@ from backend.domain.issue import Issue, IssueItem
 from backend.domain.knowledge import KnowledgeChunk, KnowledgeHit
 from backend.domain.material import Material, MaterialStatus
 from backend.domain.ingest_source import IngestSource
+from backend.domain.ingestion_schedule import (
+    IngestionSchedule,
+    default_ingestion_schedule,
+)
 from backend.domain.pipeline_config import PipelineConfig
 from backend.domain.razbor import Razbor
 from backend.domain.shortlist import ShortlistBatch, ShortlistItem
@@ -748,3 +752,38 @@ class InMemoryIngestSourceRepository:
                 self.writes.append("delete")
                 return
         raise KeyError(f"ingest source {source_id_pk} not found")
+
+
+class InMemoryIngestionScheduleRepository:
+    """In-memory IngestionScheduleRepository with update_calls for zero-write asserts (ING-06, D-14).
+
+    ``get()`` returns domain defaults when ``current`` is None (no insert).
+    ``update()`` upserts the singleton and increments ``update_calls``.
+    """
+
+    def __init__(self, current: IngestionSchedule | None = None) -> None:
+        self.current: IngestionSchedule | None = current
+        self.update_calls: int = 0
+
+    def get(self) -> IngestionSchedule:
+        if self.current is None:
+            return default_ingestion_schedule()
+        return self.current
+
+    def update(
+        self,
+        *,
+        enabled: bool,
+        time_of_day: time,
+        days_of_week: tuple[int, ...],
+    ) -> IngestionSchedule:
+        self.update_calls += 1
+        prev = self.current
+        self.current = IngestionSchedule(
+            enabled=enabled,
+            time_of_day=time_of_day,
+            days_of_week=days_of_week,
+            last_run_at=prev.last_run_at if prev is not None else None,
+            updated_at=datetime.now(timezone.utc),
+        )
+        return self.current
