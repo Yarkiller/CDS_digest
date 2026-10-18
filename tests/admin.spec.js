@@ -2150,3 +2150,69 @@ test.describe("Admin Digest — предпросмотр черновика в �
     await expect(page.getByTestId("material-preview-banner")).toHaveCount(0);
   });
 });
+
+async function resetIngestionScheduleMock(page) {
+  await page.waitForFunction(() => Boolean(window.__DIGEST_INGESTION_SCHEDULE_HARNESS__));
+  await page.evaluate(() => {
+    window.__DIGEST_INGESTION_SCHEDULE_HARNESS__.resetIngestionScheduleMockStore();
+    window.__DIGEST_INGESTION_SCHEDULE_HARNESS__.resetIngestionScheduleHarness();
+  });
+  await page.reload();
+  await expect(page.getByTestId("ingestion-schedule-section")).toBeVisible();
+}
+
+test.describe("Admin pipeline — automatic collection (ING-06, D-15/D-16/D-17)", () => {
+  test("ingestion schedule sits between sources and YAML editor", async ({ page }) => {
+    await gotoAsRole(page, "admin", "/admin/pipeline");
+    await resetIngestionScheduleMock(page);
+
+    const sources = page.getByTestId("ingest-sources-section");
+    const schedule = page.getByTestId("ingestion-schedule-section");
+    const editor = page.getByTestId("pipeline-config-editor");
+    await expect(sources).toBeVisible();
+    await expect(schedule).toBeVisible();
+    await expect(page.getByTestId("ingestion-schedule-heading")).toHaveText("Автоматический сбор");
+    await expect(editor).toBeVisible();
+
+    const sourcesBox = await sources.boundingBox();
+    const scheduleBox = await schedule.boundingBox();
+    const editorBox = await editor.boundingBox();
+    expect(sourcesBox).not.toBeNull();
+    expect(scheduleBox).not.toBeNull();
+    expect(editorBox).not.toBeNull();
+    expect(sourcesBox.y).toBeLessThan(scheduleBox.y);
+    expect(scheduleBox.y).toBeLessThan(editorBox.y);
+
+    const harnessKeys = await page.evaluate(() => {
+      const h = window.__DIGEST_INGESTION_SCHEDULE_HARNESS__;
+      return h
+        ? [
+            typeof h.armFailNextLoad,
+            typeof h.armFailNextSave,
+            typeof h.resetIngestionScheduleHarness,
+            typeof h.resetIngestionScheduleMockStore,
+          ]
+        : null;
+    });
+    expect(harnessKeys).toEqual(["function", "function", "function", "function"]);
+
+    await expect(schedule.getByRole("button", { name: "Сохранить", exact: true })).toHaveCount(0);
+  });
+
+  test("ingestion schedule toggle patches immediately", async ({ page }) => {
+    await gotoAsRole(page, "admin", "/admin/pipeline");
+    await resetIngestionScheduleMock(page);
+
+    const status = page.getByTestId("ingestion-schedule-status");
+    const toggle = page.getByTestId("ingestion-schedule-enabled");
+    await expect(status).toContainText("Включён");
+
+    await toggle.click();
+    await expect(status).toContainText("Выключен");
+    await expect(status).toContainText("Сохранено");
+
+    await toggle.click();
+    await expect(status).toContainText("Включён");
+    await expect(status).toContainText("Сохранено");
+  });
+});
