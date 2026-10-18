@@ -64,7 +64,7 @@ class SupabaseIngestionScheduleRepository:
     def __init__(self, client: _SupabaseClient) -> None:
         self._client = client
 
-    def get(self) -> IngestionSchedule:
+    def _read_row(self) -> dict[str, Any] | None:
         try:
             result = (
                 self._client.table(_TABLE)
@@ -78,10 +78,13 @@ class SupabaseIngestionScheduleRepository:
             raise PersistenceError("Не удалось прочитать расписание ингеста") from exc
 
         rows = getattr(result, "data", None) or []
-        if not rows:
-            return default_ingestion_schedule()
-        row = rows[0]
-        if not isinstance(row, dict):
+        if not rows or not isinstance(rows[0], dict):
+            return None
+        return rows[0]
+
+    def get(self) -> IngestionSchedule:
+        row = self._read_row()
+        if row is None:
             return default_ingestion_schedule()
         return _row_to_schedule(row)
 
@@ -118,10 +121,12 @@ class SupabaseIngestionScheduleRepository:
         rows = getattr(result, "data", None) or []
         if rows and isinstance(rows[0], dict):
             return _row_to_schedule(rows[0])
-        return IngestionSchedule(
-            enabled=enabled,
-            time_of_day=time(time_of_day.hour, time_of_day.minute),
-            days_of_week=normalized_days,
-            last_run_at=None,
-            updated_at=now,
-        )
+
+        # WR-06: the upsert may omit its representation. Re-read the singleton so
+        # last_run_at/updated_at come from the database instead of being fabricated.
+        row = self._read_row()
+        if row is None:
+            raise PersistenceError(
+                "Не удалось подтвердить сохранение расписания ингеста"
+            )
+        return _row_to_schedule(row)
