@@ -605,6 +605,8 @@ Checked-in units: `deploy/systemd/digest-ingest.service`, `deploy/systemd/digest
 
 **Run limit (D-23):** the service is `Type=oneshot`, so its **start phase** is bounded by `TimeoutStartSec=1800`. `RuntimeMaxSec=` has no effect on `Type=oneshot` — systemd 255 logs «RuntimeMaxSec= has no effect in combination with Type=oneshot. Ignoring.» and the run stays unbounded — so it must not be reintroduced. On expiry systemd SIGTERMs the unit cgroup and escalates to SIGKILL after `TimeoutStopSec` (default 90 s); the run never reaches its final summary, `last_run_at` is not stamped, and the next tick is due from the same cursor.
 
+**OnFailure monitor variables (G-24-4):** on systemd 255 a failing unit's `OnFailure=` target receives `MONITOR_EXIT_CODE` as the **qualifier** (`exited` / `killed`) and `MONITOR_EXIT_STATUS` as the **number** (`1`, `2`, `15`, …); the legacy `EXIT_CODE` / `EXIT_STATUS` names are unset. That is why `digest-ingest-alert.service` reads `MONITOR_EXIT_STATUS` with the `EXIT_STATUS` fallback — reading the qualifier sends every run to the `*)` arm and the alert becomes permanently «unexpected failure». A future edit must not switch back.
+
 **Why the timer polls every 15 minutes:** the schedule lives in `public.ingestion_schedule` (`enabled` / `time_of_day` / `days_of_week` / `last_run_at`). systemd cannot read the DB for OnCalendar, so the timer only wakes `ingest-collect`; `due_decision` decides «пора / не пора». Persistent is false — catch-up after downtime is the due-check against `last_run_at`, not systemd (D-21).
 
 **Prerequisites** (clean VM):
@@ -723,6 +725,11 @@ Operator checklist after §4k install + §4j migration. Secrets stay in `/etc/di
    - The discriminating real-unit round-trip (stamp-vs-kill) lives in `.planning/phases/24-scheduled-ingestion/24-07-PLAN.md`, checkpoint T3 step 5: seed the `ingestion_schedule` singleton and one enabled source, prove a **control** run stamps, apply the `TimeoutStartSec=2` runtime drop-in, confirm `Result=timeout` with `last_run_at` still at the seeded value, then `systemctl revert` and show the next start stamps. A bare `last_run_at` comparison without the control run is not acceptable — a zero-source run also skips the stamp (D-27), so it would not discriminate.
 6. **flock busy (D-20):** while a run holds `/run/digest-ingest/lock`, a second start exits **75**; `systemctl status digest-ingest.service` does **not** go failed; `digest-ingest-alert.service` does **not** start (`SuccessExitStatus=0 75`).
 7. **Live feed:** with outbound access to `youtube.com`, one enabled source, and an empty cursor, a due run yields at least one `VideoRef` with a non-empty `video_id` (proves `parse_feed` beyond the synthetic fixture).
-8. **Alert codes:** forced exit 1 → journald line with «partial failure»; exit 2 → «no source could be read». Confirm via `journalctl -u digest-ingest-alert.service` after `OnFailure=`.
+8. **Alert codes (G-24-4):** the alert computes `code="${MONITOR_EXIT_STATUS:-${EXIT_STATUS:-unknown}}"` — the numeric code with the `EXIT_STATUS` fallback — so exit 1 and exit 2 produce different lines. Force each code with a runtime drop-in:
+   - `sudo systemctl edit --runtime digest-ingest.service`, add `[Service]`, `ExecStart=`, `ExecStart=/bin/sh -c 'exit 1'`.
+   - `sudo systemctl daemon-reload`; `sudo systemctl start digest-ingest.service`; `journalctl -u digest-ingest-alert.service -n 20 --no-pager` must show «partial failure … (exit 1)».
+   - Repeat with `ExecStart=/bin/sh -c 'exit 2'` and expect «no source could be read … (exit 2)».
+   - Clean up: `sudo systemctl revert digest-ingest.service`, `sudo systemctl daemon-reload`, `sudo systemctl reset-failed digest-ingest.service`.
+   The variable split behind this recipe is explained in §4k.
 
 Record pass/fail in the verify-work session notes. This path is **not** required for CI green.
