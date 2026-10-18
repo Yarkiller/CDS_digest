@@ -1,3 +1,12 @@
+---
+status: resolved
+resolved:
+  at: 2026-10-18
+  evidence: "G-24-3 closed by 24-07 (TimeoutStartSec=1800 replaces the inert RuntimeMaxSec; inverted text contract); live proof on WSL2/systemd 255: Result=timeout, last_run_at unchanged, next tick due; UAT test 3 re-run = pass"
+gap_id: G-24-3
+updated: 2026-10-18T20:55:00Z
+---
+
 # Debug: RuntimeMaxSec ignored for Type=oneshot
 
 - **Gap:** G-24-3 (UAT test 3)

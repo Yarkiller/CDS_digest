@@ -1,3 +1,12 @@
+---
+status: resolved
+resolved:
+  at: 2026-10-18
+  evidence: "G-24-4 closed by 24-08 (alert reads MONITOR_EXIT_STATUS, fallback EXIT_STATUS; inverted text contract forbids the qualifier); live proof on WSL2/systemd 255: exit 1 and exit 2 write distinct journald lines; UAT test 4 re-run = pass"
+gap_id: G-24-4
+updated: 2026-10-18T20:55:00Z
+---
+
 # Debug: alert cannot distinguish exit 1 from exit 2
 
 - **Gap:** G-24-4 (UAT test 4)
