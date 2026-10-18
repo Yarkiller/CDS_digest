@@ -356,11 +356,11 @@ Phases execute in numeric order: 17 → 18 → 19 → 20 → 21 → 22 → 23 �
 **Follow-ups:**
 - [ ] Test 1: AdminLayout chrome: убрать надпись «АДМИН» над вкладками Дайджест|Пайплайн; уменьшить пустоту сверху; уменьшить кегль вкладок до уровня остальных заголовков (как «Источники ингеста»); чуть увеличить расстояние между вкладками Дайджест и Пайплайн (deferred 2026-10-17)
 
-### Backlog 999.3: Follow-up — Phase 21 deferred UAT follow-up: Test 6 (BACKLOG)
+### Backlog 999.3: Follow-up — Phase 21 deferred UAT follow-up: Test 6 (DONE 2026-10-18)
 
 **Goal:** Resolve the UAT checkpoint deferred during Phase 21 verification
 **Source phase:** 21
 **Deferred at:** 2026-10-18 during /gsd-verify-work 21 session completion
-**Resume after:** 2026-10-19
+**Resolved at:** 2026-10-18 — MAILER confirmed account; live digest send works; UAT Test 6 pass
 **Follow-ups:**
-- [ ] Test 6: Живой smoke Haskimail (ADR-0005): верифицировать учётную запись MAILER / HASKIMAIL_FROM и повторить реальную отправку дайджеста. Предыдущий прогон 2026-10-17: auth OK, 422 до верификации FROM; адаптер корректно вернул failed без 5xx. (deferred 2026-10-18; resume 2026-10-19)
+- [x] Test 6: Живой smoke Haskimail (ADR-0005): верифицировать учётную запись MAILER / HASKIMAIL_FROM и повторить реальную отправку дайджеста. (resolved 2026-10-18)

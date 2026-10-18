@@ -1,7 +1,7 @@
 ---
 phase: 21-mail-01-live-smtp-digest-delivery
 verified: 2026-10-17T20:32:02Z
-status: human_needed
+status: passed
 score: 12/12 must-haves verified
 covered_files:
   - .env.example
@@ -34,6 +34,7 @@ covered_files:
   - tests/unit/test_haskimail_mailer.py
   - web/src/pages/AdminDigestPage.jsx
   - web/src/services/adminApi.js
+
 covered_digest: "v2:sha256:e574712d806f727687134390be68312e95530e1de25a6bd32bc4de763265c923"
 behavior_unverified: 0
 overrides_applied: 1

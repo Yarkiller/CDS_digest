@@ -3,7 +3,7 @@ status: complete
 phase: 21-mail-01-live-smtp-digest-delivery
 source: [21-VERIFICATION.md]
 started: 2026-10-16T15:30:02Z
-updated: 2026-10-18T10:24:00+03:00
+updated: 2026-10-18T10:40:00+03:00
 ---
 
 ## Current Test
@@ -34,16 +34,16 @@ result: pass
 
 ### 6. Живой smoke доставки дайджеста через Haskimail HTTP API (ADR-0005)
 expected: При MAILER=haskimail с валидным HASKIMAIL_API_KEY и верифицированным HASKIMAIL_FROM один реальный недельный дайджест уходит через https://api.haskimail.ru/email; API принимает каждое письмо (MessageID), recipient_count=M и delivered_count=N совпадают с фактически отправленным набором; при отказе API статус честно partial/failed.
-result: skipped
-reason: "Deferred follow-up: Рассылка не работает. MAILER ещё не проверил учётную запись. Отложить этот тест до завтра (19.10.2026). Если не блокер продолжить, сделать пометку."
+result: pass
+note: "2026-10-18: MAILER подтвердил учётку, рассылка работает — пользователь подтвердил pass."
 
 ## Summary
 
 total: 6
-passed: 5
+passed: 6
 issues: 0
 pending: 0
-skipped: 1
+skipped: 0
 blocked: 0
 
 ## Gaps
@@ -52,7 +52,4 @@ blocked: 0
 
 ## Deferred Follow-Ups
 
-- test: 6
-  idea: "Живой smoke Haskimail (ADR-0005): верифицировать учётную запись MAILER / HASKIMAIL_FROM и повторить реальную отправку дайджеста. Отложено до 2026-10-19. Предыдущий прогон 2026-10-17: auth OK, 422 до верификации FROM; адаптер корректно вернул failed без 5xx."
-  deferred_at: 2026-10-18
-  resume_after: 2026-10-19
+[resolved 2026-10-18 — Test 6 passed after MAILER account verification]
