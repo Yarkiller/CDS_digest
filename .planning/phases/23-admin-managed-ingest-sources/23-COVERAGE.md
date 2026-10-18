@@ -2,7 +2,13 @@
 
 **Detected:** false
 
-**No external API integration:** This phase CRUD-stores admin-managed YouTube channel/playlist *canonical ids* in Postgres behind `IngestSourceRepository`. It does **not** call YouTube Data API v3, Atom/RSS feeds, `google-api-python-client`, or `yt-dlp`. Canonical-id validation is local regex + kind match (D-14/D-06). Enumeration and scheduling are Phase 24 (`ING-02`+). ADR-0002 / REQUIREMENTS forbid Data API and `@handle`/URL resolution here.
+**No external API integration:** stores YouTube channel/playlist canonical ids in Postgres only; no Data API, RSS, yt-dlp, or handle/URL resolution (ADR-0002). Enumeration is Phase 24.
+
+Details (not part of the gate declaration):
+
+- CRUD via `IngestSourceRepository`; local regex + kind match (D-14/D-06).
+- Does **not** call YouTube Data API v3, Atom/RSS, `google-api-python-client`, or `yt-dlp`.
+- ADR-0002 / REQUIREMENTS forbid Data API and `@handle`/URL resolution here.
 
 | Surface | External call? | Notes |
 |---------|----------------|-------|

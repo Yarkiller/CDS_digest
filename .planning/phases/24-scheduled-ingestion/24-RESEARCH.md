@@ -334,7 +334,8 @@ Live (`[VERIFIED: backend/src/backend/composition/live.py:65]`): `ingest_sources
                        │        ▼                                                       │
                        │ digest-ingest.service  Type=oneshot, RuntimeMaxSec=1800        │
                        │   EnvironmentFile=/etc/digest-cds/ingest.env (0600)            │
-                       │   ExecStart=flock -n -E 75 /run/digest-ingest.lock \<venv>/ingest-collect │
+                       │   RuntimeDirectory=digest-ingest → /run/digest-ingest (owner=User=) │
+                       │   ExecStart=flock -n -E 75 /run/digest-ingest/lock \<venv>/ingest-collect │
                        └────────────┬───────────────────────────────────────────────────┘
                                     │ exec (stdout→journald, stderr→journald)
                                     ▼
@@ -485,7 +486,7 @@ deploy/systemd/
 
 **What goes wrong:** два прогона столкнулись (ручной `ingest-collect` во время таймера) → `flock -n` выходит **1** → `OnFailure=` срабатывает, `systemctl --failed` краснеет, а сообщение неотличимо от D-12 «упало видео». Оператор идёт искать сломанное видео, которого нет.
 **Why it happens:** `flock -n` по умолчанию возвращает 1 при конфликте; D-12 уже занял 1 под «частичный сбой».
-**How to avoid:** `ExecStart=/usr/bin/flock -n -E 75 /run/digest-ingest.lock <abs>/ingest-collect` + `SuccessExitStatus=0 75`. 75 = «занято, пропущено» — не failure. `flock -E` подтверждён на util-linux 2.39.3.
+**How to avoid:** `RuntimeDirectory=digest-ingest` (systemd создаёт `/run/digest-ingest` с владельцем `User=`) + `ExecStart=/usr/bin/flock -n -E 75 /run/digest-ingest/lock <abs>/ingest-collect` + `SuccessExitStatus=0 75`. 75 = «занято, пропущено» — не failure. `flock -E` подтверждён на util-linux 2.39.3. `/run` root-owned 0755, поэтому lock вне `RuntimeDirectory` дал бы `Permission denied` на первом же тике.
 **Warning signs:** в журнале `failed to get lock` рядом с unit-статусом `failed`; `systemctl --failed` показывает прогон, у которого в stdout нет сводки вообще.
 
 ### Pitfall 24-2: `import typer` в `collect_cli.py` ломает существующий тест чистоты
@@ -842,7 +843,9 @@ Group=digestcds
 WorkingDirectory=/opt/digest-cds
 EnvironmentFile=/etc/digest-cds/ingest.env
 Environment=TZ=UTC
-ExecStart=/usr/bin/flock -n -E 75 /run/digest-ingest.lock /opt/digest-cds/.venv/bin/ingest-collect
+RuntimeDirectory=digest-ingest
+RuntimeDirectoryMode=0750
+ExecStart=/usr/bin/flock -n -E 75 /run/digest-ingest/lock /opt/digest-cds/.venv/bin/ingest-collect
 RuntimeMaxSec=1800
 SuccessExitStatus=0 75
 NoNewPrivileges=true
@@ -986,7 +989,7 @@ ExecStart=/bin/sh -c 'echo "digest-ingest.service failed: journalctl -u digest-i
 | ING-02 | не-200 / битый XML / oversize → `FeedError` с reason | unit (adapter) | `::test_non_200_maps_to_feed_status`, `::test_invalid_xml`, `::test_oversize_rejected_before_parse` | `FeedError.reason in {...}` (D-26 `feed_too_large`) | ❌ Wave 0 |
 | ING-02 | только `is_enabled` источники попадают в прогон | unit (use-case) | `tests/unit/test_collect_batch.py::test_only_enabled_sources_listed` | fake reader вызван 1 раз, атомарный список = enabled | ❌ Wave 0 |
 | ING-02 | только draft + pending shortlist, никакого publish | unit (use-case) + guard | `test_collect_batch.py::test_persist_called_once_per_video` + §ING-07 | `FakeDraftPersister.stored` растёт, никакой publisher-порт не запрашивается | ❌ Wave 0 |
-| ING-05 | повторный прогон неизменённого фида = **0** вызовов LLM | unit (use-case) | `test_collect_batch.py::test_rescan_of_unchanged_feed_makes_zero_llm_calls` | `FakeArticleGenerator.calls == []` после второго прогона (PITFALL 21) | ❌ Wave 0 |
+| ING-05 | повторный прогон при курсоре на голове фида = **0** вызовов LLM | unit (use-case) | `test_collect_batch.py::test_rescan_at_feed_head_makes_zero_llm_calls` | `FakeArticleGenerator.calls == []` после второго прогона (PITFALL 21) | ❌ Wave 0 |
 | ING-05 | strict `>` + тай-брейк по `video_id` | unit (domain) | `tests/unit/test_schedule_due.py::test_cursor_tie_break_by_video_id` | `is_newer` True/False на равной секунде | ❌ Wave 0 |
 | ING-05 | первый прогон (`NULL`) берёт 5 **самых старых** | unit (use-case) | `test_collect_batch.py::test_first_run_takes_oldest_within_limit` | обработанные id = 5 старейших (Pitfall 24-5) | ❌ Wave 0 |
 | ING-05 | курсор двигается только вперёд, условие UPDATE | unit (adapter contract) | `test_supabase_collect_sources_contract.py::test_cursor_update_is_monotonic` | захваченный `update`-payload + фильтры | ❌ Wave 0 |
@@ -1025,7 +1028,7 @@ ExecStart=/bin/sh -c 'echo "digest-ingest.service failed: journalctl -u digest-i
 - [ ] `tests/unit/test_phase24_systemd_units.py` — text-контракт юнитов.
 - [ ] `tests/unit/test_phase24_scheduler_guard.py` — ING-07 (AST + subprocess).
 - [ ] `tests/unit/test_http_ingestion_schedule.py` — GET/PATCH admin-поверхности (JWT-харнесс копируется из `test_http_ingest_sources.py`).
-- [ ] `tests/unit/test_ingestion_schedule_use_cases.py` — нормализация `days_of_week`, валидация времени.
+- [ ] `tests/unit/test_ingestion_schedule_domain.py` — нормализация `days_of_week`, валидация времени.
 - [ ] `tests/admin.spec.js` — новый describe для блока сбора + `resetIngestionScheduleMock`.
 - [ ] **AMEND** `tests/unit/test_data_collection_public_api.py:124` — `path.name.endswith("cli.py")`; и `:52` + `PUBLIC_NAMES` — расширить `__all__`.
 - [ ] **AMEND** `tests/unit/test_ingestion_env_example.py` `REQUIRED_INGESTION_KEYS` — + `INGEST_TEMPLATE`, + `INGEST_MAX_VIDEOS_PER_SOURCE`.
@@ -1110,7 +1113,7 @@ ExecStart=/bin/sh -c 'echo "digest-ingest.service failed: journalctl -u digest-i
 | **T6. Use-case батча** | D-03, D-05, D-09, D-11, D-12 | `application/use_cases/collect_batch.py` | `test_collect_batch.py` (8 тестов: enabled-only, oldest-first, limit, isolation, 0-LLM, cursor, zero-sources, not-due) |
 | **T7. `ingest-collect` CLI** | D-01, D-03, D-12, D-13 | `collect_cli.py`, `pyproject.toml:[project.scripts]` | `test_collect_cli_contract.py` (summary/exit/exit-2) |
 | **T8. Миграция 013** | D-06, D-14 | `supabase-integration/migrations/013_phase24_scheduled_ingestion.sql` | `test_phase24_migration_013.py` (text) |
-| **T9. Backend: порт + use-case + HTTP** | D-14, D-15, D-16 | `backend/{domain/ingestion_schedule.py,application/ports/ingestion_schedule.py,application/use_cases/ingestion_schedule.py,interface/http/routes/admin.py}` | `test_http_ingestion_schedule.py` + `test_ingestion_schedule_use_cases.py` |
+| **T9. Backend: порт + use-case + HTTP** | D-14, D-15, D-16 | `backend/{domain/ingestion_schedule.py,application/ports/ingestion_schedule.py,application/use_cases/ingestion_schedule.py,interface/http/routes/admin.py}` | `test_http_ingestion_schedule.py` + `test_ingestion_schedule_domain.py` |
 | **T10. Backend wiring** | D-14 | `composition/{container,live}.py`, `tests_support/in_memory.py`, `supabase_integration/{ingestion_schedule_repository.py,__init__.py}` | `test_http_ingestion_schedule.py::test_missing_repo_503` + live-wiring тест |
 | **T11. SPA-сервис** | D-16 | `web/src/services/ingestScheduleApi.js`, `main.jsx` (harness) | Playwright describe (mock-арм) |
 | **T12. SPA-блок** | D-15, D-16, D-17, D-18 | `web/src/components/IngestionScheduleSection.jsx`, `pages/AdminPipelineConfigPage.jsx` | Playwright: порядок блоков, немедленное сохранение, трипваер бан-слов |
