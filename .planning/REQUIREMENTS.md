@@ -46,10 +46,10 @@ Ordering rule: **backlog tech debt first** (999.7 → 999.1 → 999.6), then mai
 
 ### Scheduled ingestion
 
-- [x] **ING-02**: A scheduled run enumerates new videos for each **enabled** source and ingests them through the existing pipeline, writing **drafts + pending shortlist rows only** — never publishing or sending
-- [x] **ING-05**: A per-source high-water mark prevents re-processing already-ingested videos, so a re-run is safe and does not re-pay caption/LLM cost
+- [ ] **ING-02**: A scheduled run enumerates new videos for each **enabled** source and ingests them through the existing pipeline, writing **drafts + pending shortlist rows only** — never publishing or sending
+- [ ] **ING-05**: A per-source high-water mark prevents re-processing already-ingested videos, so a re-run is safe and does not re-pay caption/LLM cost
 - [ ] **ING-06**: The schedule runs unattended from a systemd timer with the environment it needs; each run's outcome is visible, and one bad video does not abort the batch
-- [x] **ING-07**: The scheduled path is provably unable to reach publish/send, and the existing `ingest <url>` CLI stdout contract stays byte-identical
+- [ ] **ING-07**: The scheduled path is provably unable to reach publish/send, and the existing `ingest <url>` CLI stdout contract stays byte-identical
 
 ## v2+ Requirements
 
@@ -115,10 +115,10 @@ Deferred. Not in this milestone's roadmap.
 | SRC-01 | Phase 23 | Complete |
 | SRC-02 | Phase 23 | Complete |
 | SRC-03 | Phase 23 | Complete |
-| ING-02 | Phase 24 | Complete |
-| ING-05 | Phase 24 | Complete |
+| ING-02 | Phase 24 | Pending |
+| ING-05 | Phase 24 | Pending |
 | ING-06 | Phase 24 | Pending |
-| ING-07 | Phase 24 | Complete |
+| ING-07 | Phase 24 | Pending |
 
 **Coverage:**
 - v1.3 requirements: 19 total
