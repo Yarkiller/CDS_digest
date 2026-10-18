@@ -6,11 +6,11 @@ current_phase: 21
 current_phase_name: MAIL-01 live SMTP digest delivery
 current_plan: Not started
 status: planning
-stopped_at: Phase 20 complete, ready to plan Phase 21
-last_updated: "2026-10-17T20:29:13.752Z"
-last_activity: 2026-10-17
-last_activity_desc: Phase 20 complete, transitioned to Phase 21
-state_head: 20ad7d3af8899878cde37e68430616de7521d3c8
+stopped_at: Phase 22 complete, ready to plan Phase 21
+last_updated: "2026-10-18T07:38:25.533Z"
+last_activity: 2026-10-18
+last_activity_desc: Phase 22 complete, transitioned to Phase 21
+state_head: d60df3a3712504ef88a2b14e609bf708b8e6b303
 progress:
   total_phases: 8
   completed_phases: 6
@@ -26,22 +26,22 @@ progress:
 See: .planning/PROJECT.md (updated 2026-10-16 — after Phase 20)
 
 **Core value:** Trusted weekly prepared-article issue + one honest vote toward the next разбор
-**Current focus:** Phase 20 — MAIL-02 signup confirmation mail
+**Current focus:** Phase 21 — MAIL-01 live SMTP digest delivery
 
 ## Current Position
 
 Phase: 21 — MAIL-01 live SMTP digest delivery
 Current Plan: Not started
-Total Plans in Phase: 2
+Total Plans in Phase: 3
 Status: Ready to plan
-Last activity: 2026-10-17 — Phase 20 complete, transitioned to Phase 21
+Last activity: 2026-10-18 — Phase 22 complete, transitioned to Phase 21
 
 Progress: [████████░░] 75%
 
 ## Performance Metrics
 
 **Velocity:**
-- Total plans completed: 14 (40 v1 + 23 v1.1 + 26 v1.2)
+- Total plans completed: 17 (40 v1 + 23 v1.1 + 26 v1.2)
 - Prior milestones shipped: v1 (5 phases), v1.1 (6 phases), v1.2 (5 phases)
 - v1.3 plans completed: 3
 
@@ -62,6 +62,7 @@ Progress: [████████░░] 75%
 | 19 | 2 | - | - |
 | 20 | 2 | - | - |
 | 23 | 4 | - | - |
+| 22 | 3 | - | - |
 **Per-Plan Metrics:**
 
 | Plan | Duration | Tasks | Files |
@@ -193,7 +194,7 @@ Carried product deferrals beyond v1.3: leaderboard, quiz, Whisper/Foundry ASR, i
 ## Session Continuity
 
 Last session: 2026-10-17T17:47:34.957Z
-Stopped at: Phase 20 complete, ready to plan Phase 21
+Stopped at: Phase 22 complete, ready to plan Phase 21
 Resume file: None
 Next: `/gsd-plan-phase 19`
 

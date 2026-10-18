@@ -287,7 +287,7 @@ Phases execute in numeric order: 17 → 18 → 19 → 20 → 21 → 22 → 23 �
 | 19. Unsaved-changes guard | 2/2 | Complete    | 2026-10-16 |
 | 20. MAIL-02 signup mail | 2/2 | Complete    | 2026-10-16 |
 | 21. MAIL-01 live SMTP digest | 3/3 | In Progress|  |
-| 22. Admin nav grouping | 3/3 | Complete   | 2026-10-17 |
+| 22. Admin nav grouping | 3/3 | Complete    | 2026-10-17 |
 | 23. Admin-managed ingest sources | 4/4 | Complete    | 2026-10-17 |
 | 24. Scheduled ingestion | 0/TBD | Not started | - |
 
