@@ -23,7 +23,7 @@ progress:
 
 ## Project Reference
 
-See: .planning/PROJECT.md (updated 2026-10-16 — after Phase 20)
+See: .planning/PROJECT.md (updated 2026-10-18 — after Phase 22)
 
 **Core value:** Trusted weekly prepared-article issue + one honest vote toward the next разбор
 **Current focus:** Phase 21 — MAIL-01 live SMTP digest delivery

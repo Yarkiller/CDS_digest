@@ -122,13 +122,14 @@ v1 is done only when **all** of the following hold:
 - ✓ PIPE-03: validated config persists behind a `PipelineConfigRepository` port and reads back on later sessions; SPA has no deep Supabase coupling — Phase 16
 - ✓ Backlog 999.1 — reader-route honesty: an admin opens any draft **or ready** material at an admin-gated preview surface (`GET /admin/materials/{slug}`) in the normal reader rendering with a visible «Черновик — предпросмотр, не опубликовано» marker, while `GET /materials/{slug}` and `get_material_for_reader` stay ready-only and draft ≡ missing (opaque 404, never 403) (ADUX-07, ADUX-08) — Phase 18
 - ✓ MAIL-02 — path (B) honest autoconfirm post-register copy; no signup→`Mailer.send_digest`; criterion-4 relay → Phase 21 — Phase 20
+- ✓ Backlog 999.7 — strict pipeline-config validator accepts YAML merge keys (`<<`) while still rejecting duplicate keys — Phase 17
+- ✓ Backlog 999.6 — unsaved pipeline-config edits guarded on in-app SPA navigation and reload/close (ADUX-09) — Phase 19
+- ✓ Backlog 999.5 / ADUX-12 — one «Админ» shell entry → `/admin/digest` plus in-page «Дайджест | Пайплайн»; `/admin/pipeline` unchanged, no new route — Phase 22
 
 ### Active
 
 v1.3 scope (REQ-IDs are defined in `.planning/REQUIREMENTS.md`):
 
-- [ ] Backlog 999.6 — unsaved pipeline-config edits survive in-app SPA navigation or are guarded before leaving
-- [ ] Backlog 999.7 — the strict pipeline-config validator accepts valid YAML merge keys (`<<`) while still rejecting duplicate keys
 - [ ] MAIL-01 — weekly digest delivered by a real mailer to the `profiles` audience with an honest `recipient_count`
 - [ ] Scheduled ingestion — unattended collection against a YouTube channel/playlist writes drafts + shortlist rows only
 
@@ -139,7 +140,7 @@ v1.3 scope (REQ-IDs are defined in `.planning/REQUIREMENTS.md`):
 - Whisper / FoundryModels transcription — captions-only until FoundryModels revisit
 - Ingestion HTTP API and auto-publish/auto-send — deferred beyond v1.3 (ING-*); v1.3 ships scheduled CLI collection only, never a send trigger
 - PIPE-01 full pipeline execution — deferred past v1.3 (v1.2 shipped config + validation + UI only)
-- Backlog 999.4 (unify Approve + Mark ready) and 999.5 (admin nav grouping) — product preference, not debt; stays parked
+- Backlog 999.4 (unify Approve + Mark ready) — product preference, not debt; stays parked
 - Public leaderboard, quiz cards — still deferred
 - Managed Supabase Cloud / managed PostgreSQL Cloud.ru as primary DB — ADR-0004
 - Dynamic admin-managed email domain list — ADR-0003 (fixed two domains only)
@@ -205,7 +206,8 @@ v1.3 scope (REQ-IDs are defined in `.planning/REQUIREMENTS.md`):
 | Debug lines use the domain `Stage` vocabulary (`captions`/`metadata`/`llm`/`persist`) and metadata is `video_id`-only | 1:1 correlation with `IngestError.stage`; no URL/author leakage (D-04/D-06) | ✓ Phase 15 |
 | Pipeline config persistence sits behind a `PipelineConfigRepository` port; the Supabase adapter is wired only in `composition/live.py` | PIPE-03: the SPA reaches storage only through `pipelineConfigApi.js`; no deep Supabase coupling in UI | ✓ Phase 16 |
 | Strict validator maps parser `RecursionError` to a structured 400 (WR-02) | Deeply nested flow collections (< 20k cap) must not surface as an unhandled 500; strict validation stays honest | ✓ Phase 16 |
-| Unsaved-changes guard (WR-04/WR-05) and admin nav grouping deferred to ROADMAP backlog 999.5/999.6 | Optional UX, not v1.2 success criteria; DB is safe (no save → no write) | — Deferred → backlog |
+| Unsaved-changes guard (WR-04/WR-05) and admin nav grouping deferred to ROADMAP backlog 999.5/999.6 | Optional UX, not v1.2 success criteria; DB is safe (no save → no write) | ✓ Phase 19 + Phase 22 |
+| Phase 22: pathless `AdminLayout` hosts digest + pipeline under one shell «Админ» entry; materials preview stays a sibling; Phase 19 leave dialog reused without carve-out (ADUX-12) | Second top-level «Пайплайн» pill retired; URLs `/admin/digest` and `/admin/pipeline` unchanged; no `/admin` index | ✓ Phase 22 |
 | Phase 18 preview reuses `MaterialReaderResponse` verbatim with `tags=[]`/`related=[]`; no preview DTO and no `status` key (D-02/D-08) | A second DTO shape would be a second reader contract to keep in sync; empty collections are the honest answer since a draft's neighbours/taxonomy may themselves be unpublished | ✓ Phase 18 |
 | Phase 18: 403 comes only from `require_admin`; every non-draft slug is 404 `material_not_found` (D-03/D-04/D-12) | Keeps draft ≡ missing ≡ opaque 404 — no slug-existence oracle for a non-admin | ✓ Phase 18 |
 | Phase 18: `no-store` set on the preview route only via the declared `Response` param (D-07) | An unpublished body must not be cached, but the mitigation must not widen onto the reader route; both directions are pinned | ✓ Phase 18 |
@@ -252,4 +254,4 @@ After each phase transition: move validated/invalidated requirements; log decisi
 After milestone: full review of Core Value, Out of Scope, and Context against shipped reality.
 
 ---
-*Last updated: 2026-10-17 after Phase 23*
+*Last updated: 2026-10-18 after Phase 22 (stale verification refresh)*
