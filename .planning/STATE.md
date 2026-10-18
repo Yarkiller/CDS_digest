@@ -4,19 +4,19 @@ milestone: v1.3
 milestone_name: Live mail, scheduled ingestion & backlog debt
 current_phase: 24
 current_phase_name: Scheduled ingestion
-current_plan: 3
+current_plan: 4
 status: executing
-stopped_at: Completed 24-02-PLAN.md
-last_updated: "2026-10-18T11:41:55.907Z"
+stopped_at: Completed 24-03-PLAN.md
+last_updated: "2026-10-18T12:12:42.031Z"
 last_activity: 2026-10-18
 last_activity_desc: Phase 24 execution started
-state_head: eb9f4d131130d0fb0c62923c218052a0c1b65ce7
+state_head: d164b9b8273ccd73e031dffd23f436c2321ec0e4
 progress:
   total_phases: 8
   completed_phases: 7
   total_plans: 26
-  completed_plans: 22
-  percent: 85
+  completed_plans: 23
+  percent: 88
 ---
 
 # Project State
@@ -31,12 +31,12 @@ See: .planning/PROJECT.md (updated 2026-10-18 — after Phase 22)
 ## Current Position
 
 Phase: 24 (Scheduled ingestion) — EXECUTING
-Current Plan: 3
+Current Plan: 4
 Total Plans in Phase: 6
 Status: Ready to execute
 Last activity: 2026-10-18 — Phase 24 execution started
 
-Progress: [█████████░] 85%
+Progress: [█████████░] 88%
 
 ## Performance Metrics
 
@@ -89,6 +89,7 @@ Progress: [█████████░] 85%
 | Phase 23 P04 | 12min | 2 tasks | 4 files |
 | Phase 24 P01 | 10 min | 2 tasks | 24 files |
 | Phase 24 P02 | 7min | 2 tasks | 6 files |
+| Phase 24 P03 | 40min | 3 tasks | 14 files |
 
 ## Accumulated Context
 
@@ -170,6 +171,8 @@ v1.3 roadmap locks:
 - [Phase 24]: Blank INGEST_TEMPLATE defaults to lecture; invalid non-blank raises ConfigurationError
 - [Phase 24]: Older-than-cursor filtered by select_window; video try/except in Task 1 for D-09
 - [Phase 24]: CollectOutcome.exit_code is single source for typer.Exit in collect_cli
+- [Phase 24]: schema-013-now: cursor columns + singleton ingestion_schedule in one migration (D-06/D-14)
+- [Phase 24]: Operator applied migration 013 on shared VM 2026-10-18; PostgREST ingestion_schedule empty (D-14)
 
 ### Pending Todos
 
@@ -200,8 +203,8 @@ Carried product deferrals beyond v1.3: leaderboard, quiz, Whisper/Foundry ASR, i
 
 ## Session Continuity
 
-Last session: 2026-10-18T11:41:55.768Z
-Stopped at: Completed 24-02-PLAN.md
+Last session: 2026-10-18T12:12:41.883Z
+Stopped at: Completed 24-03-PLAN.md
 Resume file: None
 Next: `/gsd-verify-work 21`
 
