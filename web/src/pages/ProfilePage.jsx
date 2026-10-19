@@ -1,17 +1,22 @@
 import { Link } from 'react-router-dom'
 
 /**
- * Profile stub — full profile UI lands in a later phase.
+ * Profile stub. Concept 2 progress stats (XP, streak, rank) are deferred to the
+ * next version by ADR-0009 and banned in this release by ADR-0007, so the page
+ * keeps only the shell entry point.
  */
 export default function ProfilePage() {
   return (
     <section data-testid="profile-stub" className="mx-auto max-w-lg">
       <h1 className="font-display text-3xl font-semibold">Профиль</h1>
-      <p className="mt-4 text-ink-2">
-        Страница профиля будет разработана в следующих фазах. Пока здесь заглушка.
+
+      {/* No stats card: XP, streak and rank are the deferred next-version variant. */}
+
+      <p className="mt-6 text-text-secondary">
+        Полная страница профиля будет разработана в следующих фазах. Пока здесь заглушка.
       </p>
       <p className="mt-8">
-        <Link to="/" className="font-medium text-accent no-underline hover:underline">
+        <Link to="/" className="font-medium text-primary no-underline hover:underline">
           ← К текущему выпуску
         </Link>
       </p>

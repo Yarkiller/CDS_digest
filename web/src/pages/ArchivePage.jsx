@@ -35,7 +35,7 @@ export default function ArchivePage() {
   return (
     <section data-testid="archive-page">
       <p className="mb-4">
-        <Link to="/" className="inline-flex min-h-11 items-center text-sm text-accent no-underline hover:underline">
+        <Link to="/" className="inline-flex min-h-11 items-center text-sm text-primary no-underline hover:underline">
           ← К текущему выпуску
         </Link>
       </p>
@@ -44,8 +44,8 @@ export default function ArchivePage() {
 
       {status === 'loading' ? (
         <div aria-busy="true" data-testid="archive-loading">
-          <div className="h-4 w-48 animate-pulse rounded bg-rule" />
-          <div className="mt-4 h-24 animate-pulse rounded bg-rule" />
+          <div className="h-4 w-48 animate-pulse rounded bg-border" />
+          <div className="mt-4 h-24 animate-pulse rounded bg-border" />
         </div>
       ) : null}
 
@@ -54,9 +54,9 @@ export default function ArchivePage() {
       {status === 'ready' && issues.length === 0 ? (
         <div data-testid="archive-empty">
           <h2 className="font-display text-2xl font-semibold">Архив пуст</h2>
-          <p className="mt-3 max-w-prose text-ink-2">Прошлых выпусков пока нет.</p>
+          <p className="mt-3 max-w-prose text-text-secondary">Прошлых выпусков пока нет.</p>
           <p className="mt-6">
-            <Link to="/" className="inline-flex min-h-11 items-center font-medium text-accent no-underline hover:underline">
+            <Link to="/" className="inline-flex min-h-11 items-center font-medium text-primary no-underline hover:underline">
               К текущему выпуску →
             </Link>
           </p>
@@ -64,17 +64,27 @@ export default function ArchivePage() {
       ) : null}
 
       {status === 'ready' && issues.length > 0 ? (
-        <div className="archive-grid" data-testid="archive-list">
+        <ul className="grid gap-4 sm:grid-cols-2" data-testid="archive-list">
           {issues.map((issue) => (
-            <Link key={issue.number} to={`/issues/${issue.number}`} className="issue-cover">
-              <span className="text-overline">Выпуск №{issue.number}</span>
-              <h2 className="issue-cover__title">{issue.period_label}</h2>
-              <p className="text-caption">
-                {issue.title} · {materialCountLabel(issue.material_count ?? 0)}
-              </p>
-            </Link>
+            <li key={issue.number}>
+              <Link
+                to={`/issues/${issue.number}`}
+                className="block min-h-11 rounded-xl border border-border bg-bg-surface p-5 no-underline transition hover:border-primary"
+              >
+                <p className="text-xs uppercase tracking-wide text-text-disabled">
+                  Выпуск №{issue.number}
+                </p>
+                <h2 className="mt-2 font-display text-xl font-semibold text-text-primary">
+                  {issue.period_label}
+                </h2>
+                <p className="mt-1 text-sm text-text-secondary">{issue.title}</p>
+                <p className="mt-3 text-xs text-text-disabled">
+                  {materialCountLabel(issue.material_count ?? 0)}
+                </p>
+              </Link>
+            </li>
           ))}
-        </div>
+        </ul>
       ) : null}
     </section>
   )

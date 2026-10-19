@@ -6,9 +6,9 @@ import rehypeSanitize from 'rehype-sanitize'
 import rehypeSlug from 'rehype-slug'
 import ServiceUnavailable from '../components/ServiceUnavailable.jsx'
 import ForbiddenPage from './ForbiddenPage.jsx'
-import { clearFailNextContentFetch, fetchMaterial } from '../services/contentApi.js'
+import { ContentApiError, clearFailNextContentFetch, fetchMaterial } from '../services/contentApi.js'
 import { fetchMaterialPreview } from '../services/adminApi.js'
-import ReadingProgress from '../components/ReadingProgress.jsx'
+import { ANALYTICS_GOALS, trackGoal } from '../services/analyticsRuntime.js'
 import { extractMarkdownHeadings } from '../utils/markdownToc.js'
 
 function formatPublishedLabel(material) {
@@ -25,44 +25,35 @@ function formatPublishedLabel(material) {
   }
 }
 
-/**
- * Concept 3 Long Document TOC (layout.css:218-300).
- *
- * One data source, two presentations, exactly as material.html does it: the rail
- * (`.toc`, >= 80rem) links through `.toc__link`, while the narrow-layout
- * disclosure (`.toc-mobile`) uses bare anchors styled by `.toc-mobile__list a`.
- */
-function tocItems(headings, linkClassName) {
-  return headings.map((heading) => (
+function SectionToc({ headings }) {
+  if (!headings.length) return null
+
+  const links = headings.map((heading) => (
     <li key={heading.id} className={heading.level > 2 ? 'pl-3' : undefined}>
-      <a href={`#${heading.id}`} className={linkClassName}>
+      <a
+        href={`#${heading.id}`}
+        className="text-sm text-primary no-underline hover:underline"
+      >
         {heading.text}
       </a>
     </li>
   ))
-}
-
-function TocMobile({ headings }) {
-  if (!headings.length) return null
 
   return (
-    <details className="toc-mobile" data-testid="material-toc-mobile">
-      <summary className="toc-mobile__summary">
-        Содержание <span aria-hidden="true">⌄</span>
-      </summary>
-      <ul className="toc-mobile__list">{tocItems(headings)}</ul>
-    </details>
-  )
-}
-
-function TocRail({ headings }) {
-  if (!headings.length) return null
-
-  return (
-    <nav className="toc" aria-label="Содержание" data-testid="material-toc">
-      <span className="text-overline mb-3 block">Содержание</span>
-      <ul className="toc__list">{tocItems(headings, 'toc__link')}</ul>
-    </nav>
+    <>
+      <details className="mb-8 rounded-lg border border-border bg-bg-surface p-3 lg:hidden">
+        <summary className="cursor-pointer text-sm font-medium">Содержание</summary>
+        <ul className="mt-3 space-y-2">{links}</ul>
+      </details>
+      <nav
+        aria-label="Содержание"
+        data-testid="material-toc"
+        className="sticky top-24 hidden max-h-[70vh] w-56 shrink-0 overflow-auto lg:block"
+      >
+        <p className="text-xs font-semibold uppercase tracking-wide text-text-disabled">Содержание</p>
+        <ul className="mt-3 space-y-2">{links}</ul>
+      </nav>
+    </>
   )
 }
 
@@ -102,6 +93,7 @@ export default function MaterialPage({ preview = false, loadMaterial }) {
         if (cancelled) return
         setMaterial(dto)
         setStatus('ready')
+        trackGoal(ANALYTICS_GOALS.material_open, { slug })
       })
       .catch((err) => {
         if (cancelled) return
@@ -142,9 +134,9 @@ export default function MaterialPage({ preview = false, loadMaterial }) {
   if (status === 'loading') {
     return (
       <section aria-busy="true" data-testid="material-loading">
-        <div className="mt-3 h-4 w-40 animate-pulse rounded bg-rule" />
-        <div className="mt-4 h-10 max-w-xl animate-pulse rounded bg-rule" />
-        <div className="mt-6 h-40 animate-pulse rounded bg-rule" />
+        <div className="mt-3 h-4 w-40 animate-pulse rounded bg-border" />
+        <div className="mt-4 h-10 max-w-xl animate-pulse rounded bg-border" />
+        <div className="mt-6 h-40 animate-pulse rounded bg-border" />
       </section>
     )
   }
@@ -161,16 +153,16 @@ export default function MaterialPage({ preview = false, loadMaterial }) {
     return (
       <section data-testid="material-not-found">
         <h1 className="font-display text-3xl font-semibold">Материал не найден</h1>
-        <p className="mt-3 max-w-prose text-ink-2">
+        <p className="mt-3 max-w-prose text-text-secondary">
           Возможно, ссылка устарела или материал ещё готовится. Вернитесь к выпуску или в архив.
         </p>
         <p className="mt-6 flex flex-wrap gap-4">
-          <Link to="/" className="inline-flex min-h-11 items-center text-accent no-underline hover:underline">
+          <Link to="/" className="inline-flex min-h-11 items-center text-primary no-underline hover:underline">
             ← К выпуску
           </Link>
           <Link
             to="/archive"
-            className="inline-flex min-h-11 items-center text-accent no-underline hover:underline"
+            className="inline-flex min-h-11 items-center text-primary no-underline hover:underline"
           >
             В архив
           </Link>
@@ -189,7 +181,6 @@ export default function MaterialPage({ preview = false, loadMaterial }) {
 
   return (
     <article className="max-w-5xl">
-      <ReadingProgress />
       {preview ? (
         <p
           data-testid="material-preview-banner"
@@ -200,12 +191,12 @@ export default function MaterialPage({ preview = false, loadMaterial }) {
       ) : null}
 
       <div className="flex flex-wrap items-center gap-2">
-        <p className="text-xs font-semibold uppercase tracking-wide text-muted">
+        <p className="text-xs font-semibold uppercase tracking-wide text-text-disabled">
           Статья{overlineTag ? ` · ${overlineTag}` : ''}
         </p>
         <span
           data-testid="material-format-badge"
-          className="rounded bg-paper-2 px-2 py-0.5 text-xs font-semibold uppercase tracking-wide text-ink"
+          className="rounded bg-bg-surface px-2 py-0.5 text-xs font-semibold uppercase tracking-wide text-text-primary"
         >
           Статья
         </span>
@@ -214,12 +205,12 @@ export default function MaterialPage({ preview = false, loadMaterial }) {
       <h1 className="mt-3 font-display text-4xl font-semibold sm:text-5xl">{material.title}</h1>
 
       {dek ? (
-        <p data-testid="material-dek" className="mt-4 max-w-prose text-lg leading-relaxed text-ink-2">
+        <p data-testid="material-dek" className="mt-4 max-w-prose text-lg leading-relaxed text-text-secondary">
           {dek}
         </p>
       ) : null}
 
-      <p className="mt-3 text-sm text-ink-2">
+      <p className="mt-3 text-sm text-text-secondary">
         {[
           dateLabel,
           provenance ? `provenance: ${provenance}` : null,
@@ -229,28 +220,19 @@ export default function MaterialPage({ preview = false, loadMaterial }) {
           .join(' · ')}
       </p>
 
-      <hr className="my-8 border-rule" />
+      <hr className="my-8 border-border" />
 
-      {/* Concept 3 reading macro: the article takes track one and the sticky TOC
-          rail takes track two from 80rem up (layout.css:205-258). Below that the
-          rail is hidden and `.toc-mobile` carries the same links, so — exactly as
-          in material.html — the disclosure leads the reading column. */}
-      <div className="split-layout--reading" data-testid="material-layout">
-        <div className="min-w-0">
-          <TocMobile headings={headings} />
+      <div className="flex flex-col gap-8 lg:flex-row lg:items-start">
+        <SectionToc headings={headings} />
 
+        <div className="min-w-0 flex-1">
           <div
             data-testid="material-prose"
-            className="prose prose--column"
+            className="prose-column max-w-3xl leading-relaxed text-text-secondary [&_h1]:mt-8 [&_h1]:font-display [&_h1]:text-3xl [&_h1]:font-semibold [&_h1]:text-text-primary [&_h2]:mt-8 [&_h2]:font-display [&_h2]:text-2xl [&_h2]:font-semibold [&_h2]:text-text-primary [&_h3]:mt-6 [&_h3]:font-display [&_h3]:text-xl [&_h3]:font-semibold [&_h3]:text-text-primary [&_p]:mt-4 [&_ul]:mt-4 [&_ul]:list-disc [&_ul]:pl-5"
           >
             <Markdown
               remarkPlugins={[remarkGfm]}
               rehypePlugins={[rehypeSlug, rehypeSanitize]}
-              components={{
-                // Concept 3 Long Document accent: a markdown quote is a pull quote,
-                // not a browser-default indented block.
-                blockquote: ({ children }) => <blockquote className="pull-quote">{children}</blockquote>,
-              }}
             >
               {material.body_markdown}
             </Markdown>
@@ -262,7 +244,7 @@ export default function MaterialPage({ preview = false, loadMaterial }) {
                 <Link
                   key={tag}
                   to="/knowledge"
-                  className="rounded-full bg-paper-2 px-2 py-1 text-xs text-accent no-underline"
+                  className="rounded-full bg-bg-surface px-2 py-1 text-xs text-primary no-underline"
                 >
                   #{tag}
                 </Link>
@@ -271,31 +253,29 @@ export default function MaterialPage({ preview = false, loadMaterial }) {
           ) : null}
 
           {related.length > 0 ? (
-            <aside className="editorial-box" data-testid="material-related">
-              <div className="editorial-box__title">Связанные материалы</div>
+            <section className="mt-10" data-testid="material-related">
+              <h2 className="font-display text-xl font-semibold">Связанные материалы</h2>
               <ul className="mt-3 space-y-2">
                 {related.map((item) => (
                   <li key={item.slug}>
-                    <Link to={`/materials/${item.slug}`} className="text-accent no-underline hover:underline">
+                    <Link to={`/materials/${item.slug}`} className="text-primary no-underline hover:underline">
                       {item.title}
                     </Link>
                   </li>
                 ))}
               </ul>
-            </aside>
+            </section>
           ) : null}
 
           <p className="mt-10 flex flex-wrap gap-4">
-            <Link to="/" className="text-sm text-accent no-underline hover:underline">
+            <Link to="/" className="text-sm text-primary no-underline hover:underline">
               ← К выпуску
             </Link>
-            <Link to="/archive" className="text-sm text-accent no-underline hover:underline">
+            <Link to="/archive" className="text-sm text-primary no-underline hover:underline">
               В архив
             </Link>
           </p>
         </div>
-
-        <TocRail headings={headings} />
       </div>
     </article>
   )

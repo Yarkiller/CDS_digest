@@ -12,6 +12,21 @@ export function isMocksEnabled() {
 }
 
 /**
+ * Whether the login gate must be enforced even when mocks are enabled.
+ * Production sets VITE_REQUIRE_LOGIN=true so visitors must sign in.
+ * Pure form takes the env object so it is unit-testable.
+ * @param {Record<string, unknown> | null | undefined} env
+ * @returns {boolean}
+ */
+export function loginRequired(env) {
+  return Boolean(env) && env.VITE_REQUIRE_LOGIN === 'true'
+}
+
+export function isLoginRequired() {
+  return loginRequired(import.meta.env)
+}
+
+/**
  * Allow only same-origin relative paths (T-01-12).
  * @param {string | null | undefined} raw
  * @returns {string}

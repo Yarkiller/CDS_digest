@@ -1,68 +1,46 @@
-# Digest CDS — канонический дизайн и фронтенд
+# Digest CDS — Concept 2 (Visual)
 
-`design-frontend/` содержит единственный выбранный UI-прототип Digest CDS —
-Editorial UI («Digest CDS: издание»). Директория является источником истины
-для визуального языка и статического frontend-прототипа.
+Dark-first канон по [UI-SPEC_2.md](./UI-SPEC_2.md). Зафиксирован в
+[ADR-0009](../docs/adr/0009-concept2-canon-dark-light-no-gamification.md):
+тёмная тема по умолчанию, светлая через `[data-theme="light"]`, геймификация
+исключена из релиза ([ADR-0007](../docs/adr/0007-drop-gamification-supersedes-0001.md)).
 
-**Контентный контракт:** материал — только подготовленная агентом статья. Она
-создаётся из транскрипции или импортированного текста, дополняется уточняющим
-поиском и анализом; видео/аудио и необработанный транскрипт не являются
-материалом и не показываются в интерфейсе. Сложные термины связываются
-внутренними ссылками с отдельными поясняющими статьями; исходная ссылка
-хранится отдельно как provenance.
+## Открыть
 
-**Backlog C3 (2026-08-23):** пункты C3-01…C3-18 закрыты в прототипе (см.
-[`backlog_UI.md`](../docs/digest-cds/backlog_UI.md)).
+`index.html` → галерея экранов релиза. Сборка не нужна.
 
-## Как открыть
+## Экраны релиза
 
-Из корня репозитория запустите статический сервер (Node, без Python):
+| Файл | Описание |
+|------|----------|
+| `pages/home.html` | Главная: выпуск, материалы, голосование |
+| `pages/material.html` | Статья |
+| `pages/voting.html` | Голосование |
+| `pages/login.html` | Auth + theme toggle |
 
-```bash
-npm run serve:design
-```
+## Следующая версия (не входит в релиз)
 
-Эквивалент: `npx --yes serve@14.2.4 . -l 8765 --no-port-switching`
+Вариант UI для геймификации сохранён как референс. Эти страницы **не линкуются
+из навигации**, не входят в `index.html` и не имеют production-маршрутов —
+открывать напрямую по файлу.
 
-Затем откройте
-`http://127.0.0.1:8765/design-frontend/index.html`. Конкретные экраны
-находятся в `pages/`; для интерактивных stubs нужен HTTP-сервер.
+| Файл | Описание |
+|------|----------|
+| `pages/leaderboard.html` | Публичный лидерборд, top-3 glow |
+| `pages/profile.html` | XP, достижения hex-badge, настройки opt-out |
+| `pages/quiz.html` | Карточка с вопросами: progress dots, ScoreRing |
 
-## Карта экранов
+Токены отложенного варианта (`--color-xp`, `--color-stat`, `--color-rank-*`)
+остаются в `styles/tokens.css`, чтобы следующая версия не изобретала палитру
+заново. В production они не используются.
 
-| Путь | Экран | Прототипная логика |
-|------|-------|--------------------|
-| `pages/issue.html` | Текущий выпуск | — |
-| `pages/archive.html` | Архив выпусков | — |
-| `pages/knowledge.html` | База знаний | фильтры, load more, empty state |
-| `pages/material.html` | Подготовленная статья | — |
-| `pages/voting.html` | Цикл голосования | выбор и подтверждение |
-| `pages/razbory.html` | Список разборов | — |
-| `pages/razbor.html` | Разбор longread | — |
-| `pages/login.html` | Авторизация | — |
-| `pages/admin-digest.html` | Shortlist дайджеста | approve/reject, email preview |
+## Фичи канона
 
-## Структура
+- Dark theme по умолчанию, toggle ☀/☽ (`localStorage`, ключ `digest-cds-theme`)
+- Manrope + JetBrains Mono
+- Обложки материалов в `assets/covers/` (5 PNG + SVG)
 
-```text
-design-frontend/
-├── index.html
-├── README.md
-├── UI-SPEC_3.md
-├── design.md
-├── scripts/app.js
-├── styles/
-├── assets/
-│   ├── covers/
-│   └── notebooks/hybrid-retrieval.ipynb
-└── pages/
-```
+## Concept 1 / Concept 3
 
-## Источники истины
-
-- [`design.md`](design.md) — визуальная система, композиция и правила
-  взаимодействия.
-- [`styles/tokens.css`](styles/tokens.css) — фактические токены цветов,
-  типографики, отступов, радиусов и z-index.
-- [`UI-SPEC_3.md`](UI-SPEC_3.md) — самостоятельный контракт дизайна и
-  frontend-архитектуры.
+`Concept_1` и `Concept_3` не входят в текущий канон. Concept 3 (editorial) был
+каноном между ADR-0006 и ADR-0009 и снят этим решением.

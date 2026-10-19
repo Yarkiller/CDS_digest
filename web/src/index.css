@@ -1,128 +1,70 @@
-@import url("https://fonts.googleapis.com/css2?family=Bricolage+Grotesque:opsz,wght@12..96,400;12..96,600&family=IBM+Plex+Sans:wght@400;500;600&display=swap");
+@import url("https://fonts.googleapis.com/css2?family=JetBrains+Mono&family=Manrope:wght@400;500;600;700&display=swap");
 @import "tailwindcss";
 
-/* Tokens mirrored byte-for-byte from design-frontend/styles/tokens.css (Concept 3 Editorial UI).
-   `static` keeps every token in :root at runtime even before a utility consumes it.
-   Guarded by tests/unit/test_design_tokens.js — do not edit values here without the prototype. */
+/* Concept 2 tokens — dark-first, light via [data-theme="light"] (ADR-0009).
+   `static` keeps tokens that no utility happens to consume: they are a design-system
+   contract that must exist in :root at runtime, not only when Tailwind finds a user. */
 @theme static {
-  /* Palette */
-  --color-paper: oklch(97% 0.012 95);
-  --color-paper-2: oklch(93.5% 0.018 95);
-  --color-paper-3: oklch(90.5% 0.022 95);
-  --color-ink: oklch(20% 0.015 270);
-  --color-ink-2: oklch(43% 0.020 270);
-  --color-muted: oklch(48% 0.018 270);
-  --color-rule: oklch(84% 0.018 95);
-  --color-accent: oklch(52% 0.13 278);
-  --color-accent-hover: oklch(44% 0.14 278);
-  --color-accent-ink: oklch(98% 0.005 95);
-  --color-focus: oklch(42% 0.14 278);
-  --color-voting: oklch(62% 0.14 38);
-  --color-voting-hover: oklch(54% 0.15 38);
-  --color-voting-ink: oklch(24% 0.020 38);
-  --color-overlay: oklch(20% 0.015 270 / 0.48);
-  --color-success: oklch(45% 0.13 155);
-  --color-danger: oklch(48% 0.15 25);
-  --color-info: oklch(48% 0.12 230);
+  --color-bg-app: #0B0F17;
+  --color-bg-surface: #131925;
+  --color-bg-elevated: #1A2233;
+  --color-bg-muted: #242D3D;
+  --color-bg-glass: rgba(19, 25, 37, 0.72);
+  --color-text-primary: #F1F5F9;
+  --color-text-secondary: #94A3B8;
+  --color-text-disabled: #64748B;
+  --color-border: #2A3548;
+  --color-border-glow: rgba(139, 92, 246, 0.35);
+  --color-primary: #8B5CF6;
+  --color-primary-hover: #7C3AED;
+  --color-accent: #06B6D4;
+  --color-accent-hover: #0891B2;
+  --color-xp: #A3E635;
+  --color-xp-muted: #3F6212;
+  --color-xp-text: #1A2E05;
+  --color-streak: #F97316;
+  --color-voting: #EAB308;
+  --color-success: #22C55E;
+  --color-danger: #EF4444;
+  --color-info: #38BDF8;
+  --color-rank-1: #A3E635;
+  --color-rank-2: #94A3B8;
+  --color-rank-3: #CD7F32;
 
-  /* Roles */
-  --color-bg-app: var(--color-paper);
-  --color-bg-surface: oklch(98.5% 0.009 95);
-  --color-bg-prose: oklch(98% 0.009 95);
-  --color-bg-muted: var(--color-paper-2);
-  --color-bg-callout: oklch(94% 0.025 278);
-  --color-bg-highlight: oklch(93% 0.04 170);
-  --color-text-primary: var(--color-ink);
-  --color-text-secondary: var(--color-ink-2);
-  --color-text-muted: var(--color-muted);
-  --color-text-disabled: oklch(61% 0.015 270);
-  --color-border: var(--color-rule);
-  --color-border-strong: oklch(66% 0.025 270);
-  --color-primary: var(--color-accent);
-  --color-primary-hover: var(--color-accent-hover);
-  --color-voting-muted: oklch(93% 0.035 78);
+  --font-display: "Manrope", "Segoe UI", system-ui, sans-serif;
+  --font-sans: "Manrope", "Segoe UI", system-ui, sans-serif;
+  --font-mono: "JetBrains Mono", "Consolas", monospace;
 
-  /* Typefaces. `--font-serif` is the display face, per design.md (locked design system). */
-  --font-display: "Bricolage Grotesque", "Trebuchet MS", sans-serif;
-  --font-body: "IBM Plex Sans", "Segoe UI", sans-serif;
-  --font-outlier: "IBM Plex Mono", "Consolas", monospace;
-  --font-serif: var(--font-display);
-  --font-sans: var(--font-body);
-  --font-mono: var(--font-outlier);
+  /* Scales carried for parity with design-frontend/styles/tokens.css. Concept 2 pages
+     use the Tailwind default scale directly, but the canon scale is still a contract. */
+  --space-1: 4px;
+  --space-2: 8px;
+  --space-3: 12px;
+  --space-4: 16px;
+  --space-5: 20px;
+  --space-6: 24px;
+  --space-8: 32px;
+  --space-10: 40px;
+  --space-12: 48px;
+  --space-16: 64px;
 
-  /* Type scale */
-  --text-display: clamp(2.25rem, 5vw + 0.75rem, 4.75rem);
-  --text-display-lh: 1.05;
-  --text-h1: clamp(2rem, 3vw + 1rem, 3rem);
-  --text-h1-lh: 1.1;
-  --text-h2: clamp(1.5rem, 1.5vw + 1rem, 2rem);
-  --text-h2-lh: 1.2;
-  --text-h3: 1.125rem;
-  --text-h3-lh: 1.4;
-  --text-body: 1.0625rem;
-  --text-body-lh: 1.65;
-  --text-body-sm: 0.9375rem;
-  --text-body-sm-lh: 1.5;
-  --text-caption: 0.8125rem;
-  --text-caption-lh: 1.4;
-  --text-overline: 0.75rem;
-  --text-overline-lh: 1.4;
-  --text-pullquote: 1.375rem;
-  --text-pullquote-lh: 1.55;
+  --radius-sm: 6px;
+  --radius-md: 10px;
+  --radius-lg: 14px;
+  --radius-xl: 20px;
+  --radius-full: 9999px;
 
-  /* Spacing (numeric scale + semantic aliases) */
-  --space-1: 0.25rem;
-  --space-2: 0.5rem;
-  --space-3: 0.75rem;
-  --space-4: 1rem;
-  --space-5: 1.25rem;
-  --space-6: 1.5rem;
-  --space-8: 2rem;
-  --space-10: 2.5rem;
-  --space-12: 3rem;
-  --space-16: 4rem;
-  --space-2xs: var(--space-1);
-  --space-xs: var(--space-2);
-  --space-sm: var(--space-3);
-  --space-md: var(--space-4);
-  --space-lg: var(--space-6);
-  --space-xl: var(--space-10);
-  --space-2xl: var(--space-16);
-  --space-3xl: 6rem;
+  --shadow-sm: 0 1px 0 rgba(255, 255, 255, 0.04) inset;
+  --shadow-md: 0 0 0 1px var(--color-border), 0 4px 24px rgba(0, 0, 0, 0.4);
+  --shadow-glow: 0 0 0 1px var(--color-border-glow), 0 0 24px rgba(139, 92, 246, 0.12);
 
-  /* Radii */
-  --radius-sm: 0.625rem;
-  --radius-md: 0.875rem;
-  --radius-lg: 1.25rem;
-  --radius-pill: 999px;
+  --container-max: 1280px;
+  --header-height: 64px;
 
-  /* Shadows */
-  --shadow-sm: 0 0.25rem 1rem oklch(20% 0.015 270 / 0.08);
-  --shadow-modal: 0 1rem 3rem oklch(20% 0.015 270 / 0.16);
-
-  /* Layout */
-  --container-reading: 42.5rem;
-  --container-issue: 60rem;
-  --container-wide: 75rem;
-  --header-height: 4.25rem;
-  --toc-width: 15rem;
-
-  /* Motion */
-  --duration-fast: 120ms;
-  --duration-normal: 180ms;
-  --duration-modal: 280ms;
-  --ease-out: cubic-bezier(0.16, 1, 0.3, 1);
-  --ease-in: cubic-bezier(0.7, 0, 0.84, 0);
-  --ease-in-out: cubic-bezier(0.65, 0, 0.35, 1);
-  --ease-default: var(--ease-in-out);
-
-  /* Z-index */
-  --z-base: 1;
-  --z-raised: 10;
-  --z-dropdown: 100;
-  --z-sticky: 200;
-  --z-modal: 400;
-  --z-toast: 500;
+  --duration-fast: 150ms;
+  --duration-normal: 250ms;
+  --duration-xp: 600ms;
+  --ease-default: cubic-bezier(0.4, 0, 0.2, 1);
 }
 
 @layer utilities {
@@ -139,390 +81,42 @@
   }
 }
 
-/* Type layer mirrored from design-frontend/styles/typography.css (Concept 3 Editorial UI).
-   Shared by all three macros: Ecosystem Index, Long Document, Quiet form shell.
-   Guarded by tests/unit/test_design_typography.js — keep declarations in step with the prototype. */
-@layer base {
-  html {
-    font-size: 16px;
-  }
-
-  body {
-    min-width: 0;
-    margin: 0;
-    min-height: 100svh;
-    background: var(--color-bg-app);
-    color: var(--color-text-primary);
-    font-family: var(--font-body);
-    font-size: var(--text-body);
-    line-height: var(--text-body-lh);
-    -webkit-font-smoothing: antialiased;
-  }
-
-  h1, h2, h3, h4, h5, h6, .text-display, .text-h1, .text-h2, .text-h3 {
-    min-width: 0;
-    overflow-wrap: anywhere;
-    font-style: normal;
-  }
-
-  .text-display {
-    margin: 0;
-    font-family: var(--font-display);
-    font-size: var(--text-display);
-    line-height: var(--text-display-lh);
-    font-weight: 600;
-    letter-spacing: -0.025em;
-  }
-
-  .text-h1 {
-    margin: 0;
-    font-family: var(--font-display);
-    font-size: var(--text-h1);
-    line-height: var(--text-h1-lh);
-    font-weight: 600;
-    letter-spacing: -0.02em;
-  }
-
-  .text-h2 {
-    margin: 0;
-    font-family: var(--font-display);
-    font-size: var(--text-h2);
-    line-height: var(--text-h2-lh);
-    font-weight: 600;
-    letter-spacing: -0.015em;
-  }
-
-  .text-h3 {
-    margin: 0;
-    font-family: var(--font-display);
-    font-size: var(--text-h3);
-    line-height: var(--text-h3-lh);
-    font-weight: 600;
-  }
-
-  .text-body-sm {
-    font-size: var(--text-body-sm);
-    line-height: var(--text-body-sm-lh);
-  }
-
-  .text-caption {
-    color: var(--color-text-secondary);
-    font-size: var(--text-caption);
-    line-height: var(--text-caption-lh);
-  }
-
-  .text-overline {
-    color: var(--color-text-secondary);
-    font-size: var(--text-overline);
-    line-height: var(--text-overline-lh);
-    font-weight: 600;
-    letter-spacing: 0.08em;
-    text-transform: uppercase;
-  }
-
-  .text-secondary {
-    color: var(--color-text-secondary);
-  }
-
-  .text-mono {
-    font-family: var(--font-outlier);
-    font-size: var(--text-caption);
-    font-variant-numeric: tabular-nums;
-  }
-
-  /* `--font-serif` resolves to the display face; see ADR-0006. */
-  .text-serif {
-    font-family: var(--font-display);
-  }
-
-  .prose {
-    max-width: var(--container-reading);
-  }
-
-  .prose--column {
-    box-sizing: border-box;
-    min-width: 0;
-    background: var(--color-bg-prose);
-    padding: var(--space-12);
-  }
-
-  .prose p {
-    max-width: 65ch;
-    margin: 0 0 1em;
-  }
-
-  .prose h2 {
-    margin: var(--space-10) 0 var(--space-4);
-    font-family: var(--font-display);
-    font-size: var(--text-h2);
-    line-height: var(--text-h2-lh);
-    font-weight: 600;
-  }
-
-  .prose h2:first-child {
-    margin-top: 0;
-  }
-
-  mark {
-    padding: 0 var(--space-1);
-    border-radius: var(--radius-sm);
-    background: var(--color-bg-highlight);
-    color: inherit;
-  }
-
-  a {
-    color: var(--color-primary);
-    text-decoration: none;
-    transition: color var(--duration-fast) var(--ease-out);
-  }
-
-  a:hover {
-    color: var(--color-primary-hover);
-  }
-
-  .rule {
-    margin: var(--space-8) 0;
-    border: none;
-    border-top: 1px solid var(--color-border);
-  }
-}
-
-@layer utilities {
-  .max-w-prose {
-    max-width: 65ch;
-  }
-}
-
-/* Editorial components mirrored from design-frontend/styles/components.css and
-   layout.css (Concept 3 Editorial UI). These four carry the editorial genre that
-   UI-SPEC_3 names as missing from production: IssueCover, EditorialBox, PullQuote
-   and ReadingProgress. Guarded by tests/unit/test_design_components.js. */
-@layer components {
-  .editorial-box {
-    background: var(--color-bg-muted);
-    border: 1px solid var(--color-accent);
-    padding: var(--space-5);
-    margin: var(--space-8) 0;
-  }
-
-  .editorial-box__title {
-    font-size: var(--text-overline);
-    font-weight: 600;
-    letter-spacing: 0.08em;
-    text-transform: uppercase;
-    color: var(--color-text-secondary);
-    margin-bottom: var(--space-2);
-  }
-
-  /* Issue cover — the Ecosystem Index entry point. Both prototype rules are merged
-     here; the later `transition` wins, exactly as the cascade resolves it there. */
-  .issue-cover {
-    display: block;
-    padding: var(--space-6);
-    border: 1px solid var(--color-border);
-    background: var(--color-bg-surface);
-    text-decoration: none;
-    color: inherit;
-    transition: border-color var(--duration-fast);
-    border-radius: var(--radius-lg);
-    transition: border-color var(--duration-fast) var(--ease-out),
-      background-color var(--duration-fast) var(--ease-out),
-      transform var(--duration-fast) var(--ease-out);
-  }
-
-  .issue-cover:hover {
-    border-color: var(--color-border-strong);
-    color: inherit;
-    background: var(--color-bg-callout);
-    transform: translateY(-2px);
-  }
-
-  .issue-cover:hover .issue-cover__title {
-    text-decoration: underline;
-    color: var(--color-primary);
-  }
-
-  .issue-cover__title {
-    font-family: var(--font-serif);
-    font-size: var(--text-h2);
-    margin: var(--space-2) 0;
-  }
-
-  .issue-cover__thumbs {
-    display: flex;
-    margin-top: var(--space-4);
-  }
-
-  .issue-cover__thumb {
-    width: 48px;
-    height: 27px;
-    object-fit: cover;
-    border-radius: var(--radius-sm);
-    border: 1px solid var(--color-border);
-    margin-left: calc(-1 * var(--space-2));
-  }
-
-  .issue-cover__thumb:first-child {
-    margin-left: 0;
-  }
-
-  /* Archive grid — the Ecosystem Index issue grid (layout.css:314-324). */
-  .archive-grid {
-    display: grid;
-    min-width: 0;
-    gap: var(--space-6);
-  }
-
-  /* Pull quote — the Long Document accent. */
-  .pull-quote {
-    font-family: var(--font-serif);
-    font-size: var(--text-pullquote);
-    line-height: var(--text-pullquote-lh);
-    font-style: italic;
-    border-block: 1px solid var(--color-border-strong);
-    padding: var(--space-5) 0;
-    margin: var(--space-8) 0;
-    color: var(--color-text-secondary);
-  }
-
-  /* Reading progress — the scroll affordance under the sticky header. */
-  .reading-progress {
-    position: fixed;
-    top: var(--header-height);
-    left: 0;
-    z-index: var(--z-sticky);
-    width: 100%;
-    height: 0.25rem;
-    background: var(--color-primary);
-    transform: scaleX(0);
-    transform-origin: left center;
-    transition: transform var(--duration-fast) var(--ease-out);
-  }
-
-  /* Reading macro — the Long Document split (layout.css:205-300). One column by
-     default; from 80rem up the article shares the row with the sticky TOC rail,
-     which layout.css sizes with the canonical --toc-width token. */
-  .split-layout--reading {
-    display: grid;
-    min-width: 0;
-    gap: var(--space-8);
-  }
-
-  .toc {
-    display: none;
-  }
-
-  .toc-mobile {
-    display: block;
-    margin-bottom: var(--space-6);
-  }
-
-  .toc-mobile__summary {
-    min-height: 44px;
-    padding: var(--space-3) var(--space-4);
-    display: flex;
-    align-items: center;
-    justify-content: space-between;
-    color: var(--color-primary);
-    font-weight: 600;
-    background: var(--color-bg-muted);
-    border: 1px solid var(--color-border);
-    border-radius: var(--radius-md);
-    cursor: pointer;
-  }
-
-  .toc-mobile__list {
-    padding: var(--space-3) var(--space-4) var(--space-4);
-    margin: 0;
-    list-style: none;
-    background: var(--color-bg-muted);
-    border-right: 1px solid var(--color-border);
-    border-bottom: 1px solid var(--color-border);
-    border-left: 1px solid var(--color-border);
-    border-radius: 0 0 var(--radius-md) var(--radius-md);
-  }
-
-  .toc-mobile__list a {
-    display: block;
-    min-height: 44px;
-    padding-block: var(--space-2);
-  }
-}
-
-/* layout.css:320 — the archive grid goes two-up from tablet width up. */
-@media (min-width: 48rem) {
-  .archive-grid {
-    grid-template-columns: repeat(2, minmax(0, 1fr));
-  }
-}
-
-/* layout.css:211-258 — the reading rail only exists from 80rem up; below that
-   breakpoint `.toc-mobile` carries the same links as a disclosure. */
-@media (min-width: 80rem) {
-  .split-layout--reading {
-    grid-template-columns: minmax(0, 1fr) var(--toc-width);
-    align-items: start;
-  }
-
-  .toc {
-    position: sticky;
-    top: calc(var(--header-height) + var(--space-6));
-    display: block;
-    min-width: 0;
-    padding: var(--space-5);
-    background: var(--color-bg-muted);
-    border-radius: var(--radius-lg);
-  }
-
-  .toc__list {
-    display: flex;
-    flex-direction: column;
-    gap: var(--space-2);
-    padding: 0;
-    margin: 0;
-    list-style: none;
-  }
-
-  .toc__link {
-    display: block;
-    min-height: 44px;
-    padding: var(--space-2);
-    color: var(--color-text-secondary);
-    font-size: var(--text-body-sm);
-    line-height: 1.3;
-    border-radius: var(--radius-sm);
-  }
-
-  .toc__link:hover,
-  .toc__link:focus-visible,
-  .toc__link--active {
-    color: var(--color-primary);
-    background: var(--color-bg-callout);
-  }
-}
-
-/* layout.css:296 — the mobile disclosure steps aside once the rail is on screen. */
-@media (min-width: 80rem) {
-  .toc-mobile {
-    display: none;
-  }
-}
-
-/* G-14-3 / ADUX-05 — Tailwind v4 no longer sets a pointer cursor on native
-   buttons. Restore the affordance globally; `:not(:disabled)` keeps the
-   disabled/native cursor so `disabled:cursor-not-allowed` still wins. */
 @layer base {
   button:not(:disabled) {
     cursor: pointer;
   }
+
+  :root {
+    color: var(--color-text-primary);
+    background: var(--color-bg-app);
+    font-family: var(--font-sans);
+  }
+
+  body {
+    margin: 0;
+    min-height: 100svh;
+    background: var(--color-bg-app);
+    color: var(--color-text-primary);
+  }
+
+  #root {
+    min-height: 100svh;
+  }
+
+  [data-theme="light"] {
+    --color-bg-app: #F8FAFC;
+    --color-bg-surface: #FFFFFF;
+    --color-bg-elevated: #F1F5F9;
+    --color-bg-muted: #E2E8F0;
+    --color-bg-glass: rgba(255, 255, 255, 0.85);
+    --color-text-primary: #0F172A;
+    --color-text-secondary: #64748B;
+    --color-text-disabled: #94A3B8;
+    --color-border: #E2E8F0;
+    --color-border-glow: rgba(139, 92, 246, 0.2);
+    --color-xp-text: #1A2E05;
+    --shadow-md: 0 0 0 1px var(--color-border), 0 4px 24px rgba(15, 23, 42, 0.08);
+    --shadow-glow: 0 0 0 1px var(--color-border-glow), 0 0 20px rgba(139, 92, 246, 0.08);
+  }
 }
 
-:root {
-  color: var(--color-ink);
-  background: var(--color-paper);
-  font-family: var(--font-sans);
-}
-
-#root {
-  min-height: 100svh;
-}

@@ -1,10 +1,16 @@
 /**
- * Typography parity between the Concept 3 prototype and the production SPA.
+ * Typography contract for the Concept 2 canon (ADR-0009).
  *
- * `design-frontend/styles/typography.css` defines the shared type layer for all
- * three Concept 3 macros (Ecosystem Index, Long Document, Quiet form shell).
- * The production SPA must carry the same rules, otherwise headings fall back to
- * Tailwind defaults and prose loses its 65ch measure.
+ * The split is deliberate, so the test encodes it instead of pretending otherwise:
+ *
+ * - the prototype keeps the class layer (`design-frontend/styles/typography.css`:
+ *   `.text-h1`, `.text-overline`, `mark`, …) because static pages have no Tailwind;
+ * - production carries the same *faces* through `@theme` tokens (Manrope, JetBrains
+ *   Mono) and applies them in `@layer base`, while page-level sizes come from
+ *   Tailwind utilities.
+ *
+ * So parity is asserted on the tokens and the applied face, not on class names that
+ * production never had. A silent switch to a system font is what this guard catches.
  *
  * Run: node --test tests/unit/test_design_typography.js
  */
@@ -13,67 +19,37 @@ const { readFileSync } = require('node:fs')
 const path = require('node:path')
 const { describe, it } = require('node:test')
 
-const ROOT = path.join(__dirname, '..', '..')
-
-function readCss(relativePath) {
-  return readFileSync(path.join(ROOT, relativePath), 'utf8')
-}
-
 const { parseRules } = require('./helpers/cssRules')
 
-const prototypeRules = parseRules(readCss('design-frontend/styles/typography.css'))
-const productionRules = parseRules(readCss('web/src/index.css'))
+const ROOT = path.join(__dirname, '..', '..')
+const readCss = (relativePath) => readFileSync(path.join(ROOT, relativePath), 'utf8')
 
-describe('Concept 3 typography parity', () => {
-  it('reads the prototype type layer', () => {
-    assert.ok(
-      prototypeRules.size >= 18,
-      `expected the prototype typography layer to define its rules, parsed ${prototypeRules.size}`,
-    )
-    assert.ok(prototypeRules.has('.prose p'), 'prototype .prose p rule is missing from the parse')
+const canonRules = parseRules(readCss('design-frontend/styles/typography.css'))
+const productionCss = readCss('web/src/index.css')
+const productionRules = parseRules(productionCss)
+
+const tokenValue = (name) => {
+  const match = new RegExp(`${name}\\s*:\\s*([^;]+);`).exec(productionCss)
+  return match ? match[1].trim() : ''
+}
+
+describe('Concept 2 typography contract', () => {
+  it('keeps the class layer documented in the prototype', () => {
+    assert.ok(canonRules.size >= 14, `canon type layer lost rules, parsed ${canonRules.size}`)
+    for (const selector of ['body', '.text-h1', '.text-overline', '.text-mono']) {
+      assert.ok(canonRules.has(selector), `canon typography is missing ${selector}`)
+    }
   })
 
-  it('carries every prototype typography selector into production', () => {
-    const missing = [...prototypeRules.keys()].filter((selector) => !productionRules.has(selector))
-
-    assert.deepEqual(
-      missing,
-      [],
-      `${missing.length} Concept 3 typography selectors are missing from web/src/index.css: ${missing.join(', ')}`,
-    )
+  it('carries the canon faces as tokens', () => {
+    assert.match(tokenValue('--font-sans'), /Manrope/, '--font-sans must be Manrope per the canon')
+    assert.match(tokenValue('--font-mono'), /JetBrains Mono/, '--font-mono must be JetBrains Mono per the canon')
   })
 
-  it('keeps the prototype declarations for each typography selector', () => {
-    const drifted = [...prototypeRules.entries()]
-      .filter(([selector, declarations]) => {
-        const production = productionRules.get(selector)
-        if (!production) return false
-        return declarations.some((declaration) => !production.includes(declaration))
-      })
-      .map(([selector, declarations]) => {
-        const production = productionRules.get(selector)
-        const lost = declarations.filter((declaration) => !production.includes(declaration))
-        return `${selector}: missing ${lost.join('; ')}`
-      })
-
-    assert.deepEqual(
-      drifted,
-      [],
-      `typography declarations drifted from the locked design system:\n${drifted.join('\n')}`,
+  it('applies the sans face in the production base layer', () => {
+    const applied = [...productionRules.entries()].some(([, declarations]) =>
+      declarations.includes('font-family: var(--font-sans)'),
     )
-  })
-
-  it('sets the prose measure and the highlight treatment', () => {
-    const proseParagraph = productionRules.get('.prose p') ?? []
-    assert.ok(
-      proseParagraph.includes('max-width: 65ch'),
-      '.prose p must keep the 65ch reading measure from design.md',
-    )
-
-    const mark = productionRules.get('mark') ?? []
-    assert.ok(
-      mark.includes('background: var(--color-bg-highlight)'),
-      'mark must use the --color-bg-highlight token, not a hard-coded colour',
-    )
+    assert.ok(applied, 'a base rule must apply font-family: var(--font-sans), otherwise text falls back silently')
   })
 })
