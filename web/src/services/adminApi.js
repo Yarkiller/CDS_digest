@@ -325,7 +325,7 @@ function mockSeatRole() {
  * @returns {Promise<MaterialPreviewDto>}
  */
 export async function fetchMaterialPreview(slug, accessToken) {
-  if (useMocks()) {
+  if (mocksEnabled()) {
     await delay(80)
     // The seat-role gate runs BEFORE the slug lookup — the client mirror of
     // require_admin running before the repository read, so an employee cannot

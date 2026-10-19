@@ -1,6 +1,19 @@
 const { expect, test } = require("@playwright/test");
 
 test.describe("web app main flows", () => {
+  test("mounts the app shell without router-context errors (no blank screen)", async ({ page }) => {
+    const pageErrors = [];
+    page.on("pageerror", (error) => pageErrors.push(error.message));
+
+    await page.goto("/");
+
+    await expect(page.getByRole("heading", { name: /новости ds для сва/i })).toBeVisible();
+    expect(pageErrors.join("\n")).not.toContain(
+      "useLocation() may be used only in the context of a <Router>",
+    );
+  });
+
+
   test("opens material by stable slug /materials/rag-systems", async ({ page }) => {
     // Prefer slug URLs for MAT-* stability (phase gate)
     await page.goto("/materials/rag-systems");
