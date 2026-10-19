@@ -8,6 +8,7 @@ import ServiceUnavailable from '../components/ServiceUnavailable.jsx'
 import ForbiddenPage from './ForbiddenPage.jsx'
 import { clearFailNextContentFetch, fetchMaterial } from '../services/contentApi.js'
 import { fetchMaterialPreview } from '../services/adminApi.js'
+import ReadingProgress from '../components/ReadingProgress.jsx'
 import { extractMarkdownHeadings } from '../utils/markdownToc.js'
 
 function formatPublishedLabel(material) {
@@ -179,6 +180,7 @@ export default function MaterialPage({ preview = false, loadMaterial }) {
 
   return (
     <article className="max-w-5xl">
+      <ReadingProgress />
       {preview ? (
         <p
           data-testid="material-preview-banner"
@@ -226,11 +228,16 @@ export default function MaterialPage({ preview = false, loadMaterial }) {
         <div className="min-w-0 flex-1">
           <div
             data-testid="material-prose"
-            className="prose-column max-w-3xl leading-relaxed text-ink-2 [&_h1]:mt-8 [&_h1]:font-display [&_h1]:text-3xl [&_h1]:font-semibold [&_h1]:text-ink [&_h2]:mt-8 [&_h2]:font-display [&_h2]:text-2xl [&_h2]:font-semibold [&_h2]:text-ink [&_h3]:mt-6 [&_h3]:font-display [&_h3]:text-xl [&_h3]:font-semibold [&_h3]:text-ink [&_p]:mt-4 [&_ul]:mt-4 [&_ul]:list-disc [&_ul]:pl-5"
+            className="prose prose--column"
           >
             <Markdown
               remarkPlugins={[remarkGfm]}
               rehypePlugins={[rehypeSlug, rehypeSanitize]}
+              components={{
+                // Concept 3 Long Document accent: a markdown quote is a pull quote,
+                // not a browser-default indented block.
+                blockquote: ({ children }) => <blockquote className="pull-quote">{children}</blockquote>,
+              }}
             >
               {material.body_markdown}
             </Markdown>
@@ -251,8 +258,8 @@ export default function MaterialPage({ preview = false, loadMaterial }) {
           ) : null}
 
           {related.length > 0 ? (
-            <section className="mt-10" data-testid="material-related">
-              <h2 className="font-display text-xl font-semibold">Связанные материалы</h2>
+            <aside className="editorial-box" data-testid="material-related">
+              <div className="editorial-box__title">Связанные материалы</div>
               <ul className="mt-3 space-y-2">
                 {related.map((item) => (
                   <li key={item.slug}>
@@ -262,7 +269,7 @@ export default function MaterialPage({ preview = false, loadMaterial }) {
                   </li>
                 ))}
               </ul>
-            </section>
+            </aside>
           ) : null}
 
           <p className="mt-10 flex flex-wrap gap-4">

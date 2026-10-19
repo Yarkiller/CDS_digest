@@ -366,6 +366,13 @@
     margin-left: 0;
   }
 
+  /* Archive grid — the Ecosystem Index issue grid (layout.css:314-324). */
+  .archive-grid {
+    display: grid;
+    min-width: 0;
+    gap: var(--space-6);
+  }
+
   /* Pull quote — the Long Document accent. */
   .pull-quote {
     font-family: var(--font-serif);
@@ -390,6 +397,13 @@
     transform: scaleX(0);
     transform-origin: left center;
     transition: transform var(--duration-fast) var(--ease-out);
+  }
+}
+
+/* layout.css:320 — the archive grid goes two-up from tablet width up. */
+@media (min-width: 48rem) {
+  .archive-grid {
+    grid-template-columns: repeat(2, minmax(0, 1fr));
   }
 }
 

@@ -40,6 +40,7 @@ const production = parseRules(readCss('web/src/index.css'))
 
 /** The four components UI-SPEC_3 calls out as missing from production. */
 const TARGET_SELECTORS = [
+  '.archive-grid',
   '.editorial-box',
   '.editorial-box__title',
   '.issue-cover',

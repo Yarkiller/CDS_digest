@@ -40,6 +40,84 @@ test.describe("web app main flows", () => {
     await expect(page.getByText(/заглушк|stub|dek отсутствует|нет описания/i)).toHaveCount(0);
   });
 
+  test("shows reading progress on a long material and advances on scroll", async ({ page }) => {
+    // Short viewport guarantees the document overflows, so scroll ratio is meaningful.
+    await page.setViewportSize({ width: 1280, height: 400 });
+    await page.goto("/materials/rag-systems");
+
+    const progress = page.getByTestId("reading-progress");
+    await expect(progress).toBeAttached();
+    await expect(progress).toHaveAttribute("aria-hidden", "true");
+    await expect(progress).toHaveCSS("position", "fixed");
+
+    // Collapsed while the reader is at the top of the document.
+    await expect(progress).toHaveCSS("transform", "matrix(0, 0, 0, 1, 0, 0)");
+
+    // Advances once the reader scrolls to the bottom.
+    await page.evaluate(() => window.scrollTo(0, document.documentElement.scrollHeight));
+    await expect
+      .poll(async () => progress.evaluate((node) => node.style.transform))
+      .not.toBe("scaleX(0)");
+  });
+
+
+  test("renders archive issues as Concept 3 issue covers", async ({ page }) => {
+    await page.goto("/archive");
+
+    const list = page.getByTestId("archive-list");
+    await expect(list).toHaveClass(/archive-grid/);
+
+    const cover = list.locator("a.issue-cover").first();
+    await expect(cover).toBeVisible();
+    await expect(cover.locator(".text-overline").first()).toContainText(/выпуск №/i);
+    await expect(cover.locator(".issue-cover__title").first()).toBeVisible();
+    await expect(cover.locator(".text-caption").first()).toContainText(/материал/i);
+  });
+
+  test("renders related materials as a Concept 3 editorial box", async ({ page }) => {
+    await page.goto("/materials/rag-systems");
+
+    const related = page.getByTestId("material-related");
+    await expect(related).toBeVisible();
+    await expect(related).toHaveClass(/editorial-box/);
+    await expect(related.locator(".editorial-box__title")).toHaveText(/связанные материалы/i);
+    await expect(related.getByRole("link", { name: /anomaly detection/i })).toBeVisible();
+  });
+
+  test("renders a markdown blockquote as a Concept 3 pull quote", async ({ page }) => {
+    await page.goto("/materials/rag-systems");
+
+    const quote = page.getByTestId("material-prose").locator("blockquote.pull-quote");
+    await expect(quote).toBeVisible();
+    await expect(quote).toHaveCSS("font-style", "italic");
+
+    // `.pull-quote` resolves its face through --font-serif; assert against the token,
+    // not a hard-coded family, so a token change does not silently desync the test.
+    const displayFace = await page.evaluate(() =>
+      getComputedStyle(document.documentElement)
+        .getPropertyValue("--font-display")
+        .split(",")[0]
+        .replace(/["']/g, "")
+        .trim(),
+    );
+    expect(displayFace.length).toBeGreaterThan(0);
+    await expect(quote).toHaveCSS("font-family", new RegExp(displayFace, "i"));
+  });
+
+  test("applies the Concept 3 prose column to material bodies", async ({ page }) => {
+    await page.goto("/materials/rag-systems");
+
+    const prose = page.getByTestId("material-prose");
+    await expect(prose).toHaveClass(/(^|\s)prose(\s|$)/);
+    await expect(prose).toHaveClass(/prose--column/);
+
+    // --container-reading caps the column; `.prose p` caps the measure at 65ch.
+    expect(await prose.evaluate((node) => getComputedStyle(node).maxWidth)).not.toBe("none");
+    expect(await prose.locator("p").first().evaluate((node) => getComputedStyle(node).maxWidth)).not.toBe(
+      "none",
+    );
+  });
+
   test("shows empty current issue «Выпуск готовится» with archive CTA", async ({ page }) => {
     await page.addInitScript(() => {
       window.__DIGEST_EMPTY_CURRENT_ISSUE__ = true;

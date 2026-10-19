@@ -64,27 +64,17 @@ export default function ArchivePage() {
       ) : null}
 
       {status === 'ready' && issues.length > 0 ? (
-        <ul className="grid gap-4 sm:grid-cols-2" data-testid="archive-list">
+        <div className="archive-grid" data-testid="archive-list">
           {issues.map((issue) => (
-            <li key={issue.number}>
-              <Link
-                to={`/issues/${issue.number}`}
-                className="block min-h-11 rounded-xl border border-rule bg-paper-2 p-5 no-underline transition hover:border-accent"
-              >
-                <p className="text-xs uppercase tracking-wide text-muted">
-                  Выпуск №{issue.number}
-                </p>
-                <h2 className="mt-2 font-display text-xl font-semibold text-ink">
-                  {issue.period_label}
-                </h2>
-                <p className="mt-1 text-sm text-ink-2">{issue.title}</p>
-                <p className="mt-3 text-xs text-muted">
-                  {materialCountLabel(issue.material_count ?? 0)}
-                </p>
-              </Link>
-            </li>
+            <Link key={issue.number} to={`/issues/${issue.number}`} className="issue-cover">
+              <span className="text-overline">Выпуск №{issue.number}</span>
+              <h2 className="issue-cover__title">{issue.period_label}</h2>
+              <p className="text-caption">
+                {issue.title} · {materialCountLabel(issue.material_count ?? 0)}
+              </p>
+            </Link>
           ))}
-        </ul>
+        </div>
       ) : null}
     </section>
   )
