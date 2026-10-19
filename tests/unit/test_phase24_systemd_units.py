@@ -12,6 +12,15 @@ from pathlib import Path
 _REPO = Path(__file__).resolve().parents[2]
 _UNITS = _REPO / "deploy" / "systemd"
 
+# Phase 24 records ship with the closed v1.3 milestone. GSD archives a finished
+# milestone's phases under `.planning/milestones/v<N>-phases/`, so the records are
+# resolved from there -- the same layout `test_captions_error_mapping.py` already
+# reads (`.planning/milestones/v1.1-ROADMAP.md`). Resolving once keeps the two
+# consumers below from drifting apart when a milestone closes.
+_PHASE_RECORDS = (
+    _REPO / ".planning" / "milestones" / "v1.3-phases" / "24-scheduled-ingestion"
+)
+
 _UNIT_NAMES = (
     "digest-ingest.service",
     "digest-ingest.timer",
@@ -231,9 +240,8 @@ def test_runbook_and_records_name_the_oneshot_start_limit() -> None:
     # hazard is written up in §4k (outside this slice); §5e is prescriptive only.
     assert "systemctl revert" not in section_5e, "§5e must not prescribe systemctl revert"
 
-    phase = _REPO / ".planning" / "phases" / "24-scheduled-ingestion"
     for name in ("24-VERIFICATION.md", "24-PATTERNS.md", "24-VALIDATION.md"):
-        body = (phase / name).read_text(encoding="utf-8")
+        body = (_PHASE_RECORDS / name).read_text(encoding="utf-8")
         assert "RuntimeMaxSec" not in body, f"{name} still asserts the inert runtime knob"
 
 
@@ -256,6 +264,5 @@ def test_runbook_and_verification_name_numeric_status() -> None:
     ), "§5e must pin the full numeric substitution"
     assert "MONITOR_EXIT_CODE" not in section_5e, "§5e must not name the qualifier"
 
-    phase = _REPO / ".planning" / "phases" / "24-scheduled-ingestion"
-    body = (phase / "24-VERIFICATION.md").read_text(encoding="utf-8")
+    body = (_PHASE_RECORDS / "24-VERIFICATION.md").read_text(encoding="utf-8")
     assert "MONITOR_EXIT_CODE" not in body, "24-VERIFICATION.md still names the qualifier"
