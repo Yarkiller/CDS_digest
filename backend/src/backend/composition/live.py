@@ -10,7 +10,6 @@ from backend.infrastructure.local_notebook_storage import LocalNotebookStorage
 from backend.infrastructure.yaml_pipeline_config_validator import YamlPipelineConfigValidator
 from supabase_integration import (
     SupabaseDigestPublisher,
-    SupabaseHealthProbe,
     SupabaseIngestSourceRepository,
     SupabaseIngestionScheduleRepository,
     SupabaseIssueRepository,
@@ -71,5 +70,4 @@ def build_live_container(settings: Settings) -> AppContainer:
         mailer=resolve_mailer(settings),
         # Atomic claim+publish via claim_and_publish_digest RPC (CR-01/WR-01, migration 005)
         publisher=SupabaseDigestPublisher(admin_client),
-        health_probes=(SupabaseHealthProbe(admin_client),),
     )

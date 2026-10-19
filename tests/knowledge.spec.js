@@ -11,9 +11,7 @@ test.describe("knowledge honesty (KNOW-01…04)", () => {
     await page.goto("/knowledge");
 
     await expect(page.locator("select")).toHaveCount(0);
-    // D-62…D-65: no tag/format/topic filter controls in the page content.
-    // Scoped to <main> — the header theme toggle ("тема") is unrelated chrome.
-    await expect(page.locator("main").getByLabel(/теги|формат|тема/i)).toHaveCount(0);
+    await expect(page.getByLabel(/теги|формат|тема/i)).toHaveCount(0);
 
     const search = page.getByRole("searchbox", { name: /поиск по базе знаний/i });
     await search.fill("RAG");

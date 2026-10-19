@@ -19,7 +19,6 @@ dist/
 .playwright-browsers/
 test-results/
 .cursor/mcp.json
-<<<<<<< HEAD
 
 # --- Local tooling / agent workspace (not part of the product) ---
 .claude/
@@ -65,6 +64,3 @@ notebooks/
 /-H
 /-d
 /agent-skills-researcher.tmp.txt
-.vercel/
-.vercel
-

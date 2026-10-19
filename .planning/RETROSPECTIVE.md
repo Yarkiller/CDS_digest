@@ -144,61 +144,6 @@
 
 ---
 
-## Milestone: v1.3 — Live mail, scheduled ingestion & backlog debt
-
-**Shipped:** 2026-10-18
-**Phases:** 8 (17–24) | **Plans:** 28 | **Tasks:** 68
-
-### What Was Built
-
-- YAML merge-key (`<<`) acceptance in the strict validator, bounded against high-fan-out documents, duplicate-key rejection intact (Phase 17)
-- Admin-gated draft preview surface (`GET /admin/materials/{slug}`, `no-store`) while the reader route stays ready-only with an opaque 404 (Phase 18)
-- Reusable unsaved-changes guard (`useBlocker` + `armBeforeUnload` trio) on `/admin/pipeline`, reused by the ingest-sources editor (Phase 19)
-- Signup-confirmation honesty path (B): explicitly autoconfirmed copy that never claims a letter was sent (Phase 20)
-- Live SMTP weekly digest to the `profiles` audience with planned-M/delivered-N honesty and contained failures after publish (Phase 21)
-- One «Админ» shell entry plus the in-page «Дайджест | Пайплайн» tab-bar; both admin URLs unchanged (Phase 22)
-- DB-stored, admin-managed ingest sources validated server-side with zero writes on reject (Phase 23)
-- systemd timer driving the `ingest-collect` CLI against enabled sources — drafts + pending shortlist only, never publish/send (Phase 24)
-
-### What Worked
-
-- Backlog-first ordering (999.7 → 999.1 → 999.6) closed accumulated debt before any new feature work
-- Honesty framing everywhere (draft ≡ missing, planned/delivered counts, no mail-claim copy) kept every surface truthful
-- Gap-closure plans (17-03, 24-07/24-08) absorbed UAT and review findings without reopening finished phases
-- Contained-failure design kept publish honest even when mail delivery failed (HTTP 200 with honest N/M)
-- Key-free YouTube Atom feed removed the Data API gate with zero new runtime Python packages
-
-### What Was Inefficient
-
-- The milestone close archived phases but left `ROADMAP.md` un-collapsed and `REQUIREMENTS.md` in place; the archival step had to be completed manually afterwards
-- A concurrent `github/main` (Concept 2) merge landed at close time and forced conflict resolution in the SPA admin pages
-- Phase 24 UAT test 6 (live run against a real enabled source) stayed deferred because `pipeline_ingest_sources` had no row — the timer is proven on a live systemd host but not end-to-end with a real feed
-- `17-VALIDATION.md` was left stale and still needs a re-validate pass
-- Phase 24 P01 touched 24 files; the plan set grew to 8 plans for one phase
-
-### Patterns Established
-
-- `TimeoutStartSec` (not `RuntimeMaxSec`) bounds a oneshot ingest run; a killed run must not stamp `last_run_at`
-- systemd `OnFailure=` alerts read `MONITOR_EXIT_STATUS` so exit 1 and exit 2 stay distinguishable in journald
-- The server is the authority for canonical ingest-source ids; the UI only states where to obtain them
-- An admin preview surface serves a draft with the reader DTO verbatim (`no-store`, empty `related`/`tags`, no `status`)
-- Mail stays best-effort **after** publish; mailer errors are caught alongside `PersistenceError`
-
-### Key Lessons
-
-1. Collapse `ROADMAP.md` and delete `REQUIREMENTS.md` in the same close pass — a later merge can silently restore them.
-2. Land concurrent-branch merges before the close, not during it; planning files are the conflict-prone surface.
-3. Prove a scheduler on a live host **and** with a real enabled source row; host-level proof alone leaves an end-to-end gap.
-4. Invert text contracts (the `TimeoutStartSec` fix) so the broken token cannot silently return.
-5. Re-validate a phase whose `VALIDATION.md` was written before gap-closure plans landed.
-
-### Cost Observations
-
-- Model mix: not recorded for this milestone
-- Notable: 8 phases / 28 plans shipped 2026-10-14 → 2026-10-18; Phase 24 carried the largest plan set (8 plans)
-
----
-
 ## Cross-Milestone Trends
 
 ### Process Evolution
@@ -208,7 +153,6 @@
 | v1 | not recorded | 5 | First close. Gap-closure plans and mock Playwright gates became the default. |
 | v1.1 | not recorded | 6 | Separate ingestion CLI + RPC persist; audit tech_debt closed via inserted Phase 11. |
 | v1.2 | not recorded | 5 | Capability hooks (nyquist/security/ui) on the execute tail; stale re-verification route; code review moved ahead of nothing → still after the verifier. |
-| v1.3 | not recorded | 8 | Backlog-debt-first ordering; admin preview honesty surface; DB-backed ingest sources + systemd scheduled collection. Close must collapse ROADMAP.md and delete REQUIREMENTS.md in one pass. |
 
 ### Cumulative Quality
 
@@ -217,7 +161,6 @@
 | v1 | pytest + Playwright per phase | not measured | Ports & Adapters layout kept |
 | v1.1 | pytest unit + CliRunner + SQL contract tests; manual CLI-03 UAT | not measured | `ingestion-service` + DeepSeek adapter |
 | v1.2 | 761 pytest unit + 50 Playwright admin + node source locks; 49/49 verifier truths | not measured | PIPE-01 config port; debug `StageDiagnostics`/`Clock` ports; strict YAML validator |
-| v1.3 | 227 pytest unit + 17 Playwright (Phase 24 gate); `nyquist_compliant: true`, 0 gaps, 3 manual-only escalations | not measured | systemd ingest timer + `ingest-collect` CLI slice; admin draft preview surface; `IngestSourceRepository`/schedule ports; live SMTP mailer |
 
 ### Top Lessons (Verified Across Milestones)
 
@@ -227,5 +170,3 @@
 4. Order the tail gates review-before-verify: any source fix after the verifier stales the covered digest (#4682).
 5. Pin line endings (`eol=lf`) on covered files so the fingerprint stays stable across Windows/Linux checkouts.
 6. A milestone close will resurface every un-closed debug session; close them when their fix lands.
-7. Collapse `ROADMAP.md` and delete `REQUIREMENTS.md` in the same close pass — a later merge can silently restore them.
-8. Prove schedulers on a live host **and** with a real enabled source row; host-level proof alone leaves an end-to-end gap.

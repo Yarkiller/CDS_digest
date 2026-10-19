@@ -4,7 +4,6 @@ import ErrorPanel from '../components/ErrorPanel.jsx'
 import { AuthApiError, getSignUpInvocationCount, signUp, updateAuthDisplayName } from '../services/authApi.js'
 import { sanitizeReturnUrl } from '../services/authEnv.js'
 import { isAllowedCorporateEmail } from '../services/emailDomain.js'
-import { corporateAllowedDomains } from '../services/oauthSession.js'
 import { MeApiError, updateDisplayName } from '../services/meApi.js'
 import { armWelcomeToast } from '../services/welcomeSession.js'
 
@@ -42,7 +41,7 @@ export default function RegisterPage() {
       return
     }
 
-    if (!isAllowedCorporateEmail(email.trim(), corporateAllowedDomains(import.meta.env))) {
+    if (!isAllowedCorporateEmail(email.trim())) {
       setDomainError(DOMAIN_MESSAGE)
       setSignUpCalls(getSignUpInvocationCount())
       return
@@ -82,11 +81,11 @@ export default function RegisterPage() {
   }
 
   return (
-    <div className="flex min-h-svh items-center justify-center bg-bg-app px-4 text-text-primary">
-      <div className="w-full max-w-md rounded-2xl border border-border bg-bg-surface p-8 shadow-sm">
+    <div className="flex min-h-svh items-center justify-center bg-paper px-4 text-ink">
+      <div className="w-full max-w-md rounded-2xl border border-rule bg-paper-2 p-8 shadow-sm">
         <header className="mb-8 text-center">
-          <h1 className="font-display text-3xl font-semibold text-primary">Digest CDS</h1>
-          <p className="mt-1 text-xs uppercase tracking-wide text-text-disabled">СВА · внутреннее издание</p>
+          <h1 className="font-display text-3xl font-semibold text-accent">Digest CDS</h1>
+          <p className="mt-1 text-xs uppercase tracking-wide text-muted">СВА · внутреннее издание</p>
         </header>
 
         <form className="flex flex-col gap-5" onSubmit={handleSubmit} noValidate>
@@ -104,7 +103,7 @@ export default function RegisterPage() {
               {networkError.retryable ? (
                 <button
                   type="submit"
-                  className="min-h-11 self-start rounded-full bg-primary px-4 text-sm text-text-primary"
+                  className="min-h-11 self-start rounded-full bg-accent px-4 text-sm text-accent-ink"
                   disabled={submitting}
                 >
                   Повторить
@@ -124,7 +123,7 @@ export default function RegisterPage() {
               autoComplete="nickname"
               placeholder="Как вас показывать в шапке"
               aria-invalid={Boolean(fieldErrors.loginNickname) || undefined}
-              className="min-h-11 w-full rounded-xl border border-border bg-bg-app px-3 text-sm"
+              className="min-h-11 w-full rounded-xl border border-rule bg-paper px-3 text-sm"
               value={loginNickname}
               onChange={(e) => {
                 setLoginNickname(e.target.value)
@@ -134,11 +133,11 @@ export default function RegisterPage() {
               }}
               required
             />
-            <p className="mt-1 text-xs text-text-disabled">
+            <p className="mt-1 text-xs text-muted">
               Отображаемый ник для голосования — любое ненастоящее имя, не ФИО
             </p>
             {fieldErrors.loginNickname ? (
-              <p className="mt-1 text-sm text-danger" role="alert">
+              <p className="mt-1 text-sm text-[oklch(45%_0.14_25)]" role="alert">
                 {fieldErrors.loginNickname}
               </p>
             ) : null}
@@ -156,7 +155,7 @@ export default function RegisterPage() {
               placeholder="name@sberbank.ru"
               aria-describedby="register-email-help"
               aria-invalid={Boolean(domainError || fieldErrors.email) || undefined}
-              className="min-h-11 w-full rounded-xl border border-border bg-bg-app px-3 text-sm"
+              className="min-h-11 w-full rounded-xl border border-rule bg-paper px-3 text-sm"
               value={email}
               onChange={(e) => {
                 setEmail(e.target.value)
@@ -165,16 +164,16 @@ export default function RegisterPage() {
               }}
               required
             />
-            <p id="register-email-help" className="mt-1 text-xs text-text-disabled">
+            <p id="register-email-help" className="mt-1 text-xs text-muted">
               Только @sberbank.ru или @omega.sbrf.ru
             </p>
             {fieldErrors.email ? (
-              <p className="mt-1 text-sm text-danger" role="alert">
+              <p className="mt-1 text-sm text-[oklch(45%_0.14_25)]" role="alert">
                 {fieldErrors.email}
               </p>
             ) : null}
             {domainError ? (
-              <p className="mt-1 text-sm text-danger" role="alert">
+              <p className="mt-1 text-sm text-[oklch(45%_0.14_25)]" role="alert">
                 {domainError}
               </p>
             ) : null}
@@ -190,7 +189,7 @@ export default function RegisterPage() {
               type="password"
               autoComplete="new-password"
               aria-invalid={Boolean(fieldErrors.password) || undefined}
-              className="min-h-11 w-full rounded-xl border border-border bg-bg-app px-3 text-sm"
+              className="min-h-11 w-full rounded-xl border border-rule bg-paper px-3 text-sm"
               value={password}
               onChange={(e) => {
                 setPassword(e.target.value)
@@ -199,7 +198,7 @@ export default function RegisterPage() {
               required
             />
             {fieldErrors.password ? (
-              <p className="mt-1 text-sm text-danger" role="alert">
+              <p className="mt-1 text-sm text-[oklch(45%_0.14_25)]" role="alert">
                 {fieldErrors.password}
               </p>
             ) : null}
@@ -207,20 +206,20 @@ export default function RegisterPage() {
 
           <button
             type="submit"
-            className="min-h-11 w-full rounded-full bg-primary px-4 text-sm font-medium text-text-primary disabled:opacity-60"
+            className="min-h-11 w-full rounded-full bg-accent px-4 text-sm font-medium text-accent-ink disabled:opacity-60"
             disabled={submitting}
           >
             {submitting ? 'Регистрация…' : 'Зарегистрироваться'}
           </button>
         </form>
 
-        <p className="mt-6 text-center text-sm text-text-secondary">
+        <p className="mt-6 text-center text-sm text-ink-2">
           Уже есть аккаунт?{' '}
           <Link to="/login" className="underline">
             Войти
           </Link>
         </p>
-        <p className="mt-3 text-center text-xs text-text-disabled">
+        <p className="mt-3 text-center text-xs text-muted">
           Доступ: @sberbank.ru, @omega.sbrf.ru
         </p>
 

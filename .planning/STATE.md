@@ -24,7 +24,7 @@ current_phase: 24
 See: .planning/PROJECT.md (updated 2026-10-18 — v1.3 milestone complete)
 
 **Core value:** Trusted weekly prepared-article issue + one honest vote toward the next разбор
-**Current focus:** v1.3 closed 2026-10-18 (tag `v1.3`) — awaiting next milestone
+**Current focus:** v1.3 complete — milestone ready to close
 
 ## Current Position
 

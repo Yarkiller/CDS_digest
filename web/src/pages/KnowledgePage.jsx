@@ -10,7 +10,6 @@ import {
 import MaterialListRow from '../components/MaterialListRow.jsx'
 import ActionButton from '../components/ActionButton.jsx'
 import ErrorPanel from '../components/ErrorPanel.jsx'
-import { ANALYTICS_GOALS, trackGoal } from '../services/analyticsRuntime.js'
 
 /** Topic hint chips fill the query only — do not execute search (D-60). */
 const HINT_CHIPS = ['RAG', 'SQL', 'качество данных', 'pgvector']
@@ -89,10 +88,6 @@ export default function KnowledgePage() {
       setHasMore(Boolean(dto.has_more))
       setNextOffset(offset + (dto.items?.length ?? 0))
       setError(null)
-      if (!append && q) {
-        // Privacy: send only the role filter, never the raw user query, to Metrika.
-        trackGoal(ANALYTICS_GOALS.search, { role: roleValue })
-      }
     } catch (err) {
       const failure = searchFailureState(err, { roleValue, append, q })
       if (failure.invalidRole) {
@@ -239,7 +234,7 @@ function KnowledgeSearchForm({
             disabled={searching}
             aria-invalid={inlineError ? true : undefined}
             aria-describedby={inlineError ? 'kb-search-inline-error' : undefined}
-            className="min-w-0 flex-1 break-words rounded-xl border border-border bg-bg-surface px-4 py-3 text-sm outline-none focus-visible:outline focus-visible:outline-2 focus-visible:outline-primary"
+            className="min-w-0 flex-1 break-words rounded-xl border border-rule bg-[oklch(98%_0.009_95)] px-4 py-3 text-sm outline-none focus-visible:outline focus-visible:outline-2 focus-visible:outline-accent"
           />
           <ActionButton
             type="submit"
@@ -255,7 +250,7 @@ function KnowledgeSearchForm({
           <p
             id="kb-search-inline-error"
             role="alert"
-            className="mt-2 text-sm text-danger"
+            className="mt-2 text-sm text-[oklch(35%_0.12_25)]"
             data-testid="kb-inline-error"
           >
             {inlineError}
@@ -275,8 +270,8 @@ function KnowledgeSearchForm({
               onClick={() => onRoleChange(chip.value)}
               className={
                 selected
-                  ? 'min-h-11 rounded-full bg-primary px-3 text-sm text-text-primary'
-                  : 'min-h-11 rounded-full border border-border bg-bg-surface px-3 text-sm text-text-primary hover:bg-bg-app'
+                  ? 'min-h-11 rounded-full bg-accent px-3 text-sm text-accent-ink'
+                  : 'min-h-11 rounded-full border border-rule bg-paper-2 px-3 text-sm text-ink hover:bg-paper'
               }
             >
               {chip.label}
@@ -286,7 +281,7 @@ function KnowledgeSearchForm({
       </div>
 
       {toast ? (
-        <p className="mb-4 text-sm text-text-secondary" role="status" data-testid="kb-filter-toast">
+        <p className="mb-4 text-sm text-ink-2" role="status" data-testid="kb-filter-toast">
           {toast}
         </p>
       ) : null}
@@ -318,13 +313,13 @@ function KnowledgeResults({
     <>
       {preSearch ? (
         <div className="mb-8" data-testid="kb-hint-chips">
-          <p className="mb-3 text-xs text-text-secondary">Попробуйте тему:</p>
+          <p className="mb-3 text-xs text-ink-2">Попробуйте тему:</p>
           <div className="flex flex-wrap gap-2">
             {HINT_CHIPS.map((hint) => (
               <button
                 key={hint}
                 type="button"
-                className="min-h-11 rounded-full border border-border bg-bg-surface px-3 text-sm text-text-primary hover:bg-bg-app"
+                className="min-h-11 rounded-full border border-rule bg-paper-2 px-3 text-sm text-ink hover:bg-paper"
                 onClick={() => setQuery(hint)}
               >
                 {hint}
@@ -346,21 +341,21 @@ function KnowledgeResults({
       ) : null}
 
       {activeQuery !== null && !error ? (
-        <p className="mb-4 text-xs text-text-secondary" aria-live="polite">
+        <p className="mb-4 text-xs text-ink-2" aria-live="polite">
           {knowledgeResultSummary({ searching, items, hasMore })}
         </p>
       ) : null}
 
       {showZeroHit ? (
-        <div className="max-w-md rounded-2xl border border-border bg-bg-surface p-8">
+        <div className="max-w-md rounded-2xl border border-rule bg-[oklch(98.5%_0.009_95)] p-8">
           <h2 className="font-display text-2xl font-semibold">Ничего не нашли</h2>
-          <p className="mt-2 text-sm text-text-secondary">
+          <p className="mt-2 text-sm text-ink-2">
             По запросу нет материалов — уточните формулировку или смените роль.
           </p>
           <button
             type="button"
             onClick={onResetFilter}
-            className="mt-4 inline-flex min-h-11 items-center text-sm text-primary"
+            className="mt-4 inline-flex min-h-11 items-center text-sm text-accent"
           >
             Сбросить фильтр
           </button>
@@ -388,8 +383,8 @@ function KnowledgeHitList({ items, loadingMore, hasMore, searching, onLoadMore }
       ))}
       {loadingMore ? (
         <div data-testid="kb-skeleton" className="mt-4 space-y-3" aria-busy="true">
-          <div className="h-16 animate-pulse rounded-xl bg-bg-surface" />
-          <div className="h-16 animate-pulse rounded-xl bg-bg-surface" />
+          <div className="h-16 animate-pulse rounded-xl bg-paper-2" />
+          <div className="h-16 animate-pulse rounded-xl bg-paper-2" />
         </div>
       ) : null}
       {hasMore && !loadingMore ? (

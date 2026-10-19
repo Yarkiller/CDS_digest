@@ -1,7 +1,5 @@
 # Digest CDS
 
-[![CI](https://github.com/Yarkiller/digest_cds/actions/workflows/ci.yml/badge.svg)](https://github.com/Yarkiller/digest_cds/actions/workflows/ci.yml)
-
 Digest CDS — корпоративный сервис сбора, структурирования и распространения
 знаний для сотрудников СВА. В репозитории: канонический UI Concept 3
 (Editorial) и React-приложение ДЗ на его основе.
@@ -11,11 +9,6 @@ Digest CDS — корпоративный сервис сбора, структ�
 | Что | Куда |
 |-----|------|
 | GitHub | [https://github.com/Yarkiller/digest_cds](https://github.com/Yarkiller/digest_cds) |
-| Артефакты ДЗ (индекс) | [`SUBMISSION.md`](SUBMISSION.md) |
-| Демо (Vercel) | [https://digest-cds.vercel.app](https://digest-cds.vercel.app) |
-| API (Railway) | [https://digest-cds-api-production.up.railway.app](https://digest-cds-api-production.up.railway.app) (health: `/health/ready`) |
-| CI/CD и интеграции | [`integration_documentation.md`](integration_documentation.md) |
-| Отчёт по безопасности | [`security_audit.md`](security_audit.md) |
 | Отчёт о разработке | [`development_report.md`](development_report.md) |
 | ТЗ | [`docs/digest-cds/technical_specification.md`](docs/digest-cds/technical_specification.md) |
 | Скриншоты адаптива | [`docs/digest-cds/responsive-evidence/`](docs/digest-cds/responsive-evidence/) |
@@ -85,23 +78,6 @@ Quick start:
 3. `npm install` / `npm run dev` — set `VITE_USE_MOCKS=false` only for live proof.
 4. Seed 1–2 corporate Auth users on the dashboard (see runbook §4).
 
-## CI/CD и интеграции
-
-- **CI** — GitHub Actions ([`.github/workflows/ci.yml`](.github/workflows/ci.yml)):
-  lint (ruff + oxlint), unit (pytest + `node --test`), build (vite), security
-  (`npm audit` + `pip-audit` + `bandit`), e2e (Playwright).
-- **CD** — [`.github/workflows/deploy.yml`](.github/workflows/deploy.yml): после зелёного CI
-  на `main` фронтенд деплоится на Vercel, backend — на Railway (Render — альтернатива).
-- **OAuth2** — вход через Яндекс ID (Supabase custom provider, `custom:yandex`) при
-  `VITE_ENABLE_YANDEX_OAUTH=true`; доменная политика СВА сохраняется.
-- **Аналитика** — Яндекс.Метрика (`VITE_YM_COUNTER_ID`), события login/vote/search/material/send.
-- **Мониторинг** — `/health` (liveness), `/health/ready` (готовность БД) + UptimeRobot.
-- **Логи** — структурированный JSON (`structlog`), уровень через `LOG_LEVEL`.
-
-Пошаговая инструкция по получению ключей и имена переменных —
-[`integration_documentation.md`](integration_documentation.md). Отчёт по безопасности —
-[`security_audit.md`](security_audit.md).
-
 ## Тесты
 
 ```bash
@@ -110,8 +86,6 @@ npm run playwright:install    # явно доустановить браузер
 npm test                      # оба проекта
 npm run test:web              # только React-приложение (не поднимает статический сервер макетов)
 npm run test:design           # только design-frontend
-npm run test:js               # JS unit-тесты (node --test): web/ + tests/unit
-uv run pytest                 # Python unit-тесты (backend и модули)
 ```
 
 Браузеры Playwright хранятся в **`.playwright-browsers/`** (в корне репо, в git не коммитится).

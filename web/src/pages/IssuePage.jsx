@@ -28,9 +28,9 @@ function IssueStatusView({ status, notFound, isEmpty, isCurrent, reload }) {
     return (
       <section aria-busy="true" data-testid="issue-loading">
         {isCurrent ? <PlatformProofBanner /> : null}
-        <div className="mt-3 h-4 w-48 animate-pulse rounded bg-border" />
-        <div className="mt-4 h-10 max-w-xl animate-pulse rounded bg-border" />
-        <div className="mt-6 h-24 animate-pulse rounded bg-border" />
+        <div className="mt-3 h-4 w-48 animate-pulse rounded bg-rule" />
+        <div className="mt-4 h-10 max-w-xl animate-pulse rounded bg-rule" />
+        <div className="mt-6 h-24 animate-pulse rounded bg-rule" />
       </section>
     )
   }
@@ -46,13 +46,13 @@ function IssueStatusView({ status, notFound, isEmpty, isCurrent, reload }) {
     return (
       <section data-testid="issue-not-found">
         <h1 className="font-display text-3xl font-semibold">Выпуск не найден</h1>
-        <p className="mt-3 max-w-prose text-text-secondary">
+        <p className="mt-3 max-w-prose text-ink-2">
           Проверьте номер выпуска или вернитесь к актуальному.
         </p>
         <p className="mt-6">
           <Link
             to="/"
-            className="inline-flex min-h-11 items-center font-medium text-primary no-underline hover:underline"
+            className="inline-flex min-h-11 items-center font-medium text-accent no-underline hover:underline"
           >
             К текущему выпуску →
           </Link>
@@ -65,11 +65,11 @@ function IssueStatusView({ status, notFound, isEmpty, isCurrent, reload }) {
       <section data-testid="issue-empty">
         {isCurrent ? <PlatformProofBanner /> : null}
         <h2 className="font-display text-2xl font-semibold">Выпуск готовится</h2>
-        <p className="mt-3 max-w-prose text-text-secondary">
+        <p className="mt-3 max-w-prose text-ink-2">
           Свежий выпуск скоро появится. А пока — загляните в архив прошлых недель.
         </p>
         <p className="mt-6">
-          <Link to="/archive" className="font-medium text-primary no-underline hover:underline">
+          <Link to="/archive" className="font-medium text-accent no-underline hover:underline">
             В архив →
           </Link>
         </p>
@@ -159,17 +159,17 @@ export default function IssuePage({ isCurrent = true }) {
   return (
     <section data-testid="issue-ready">
       {isCurrent ? <PlatformProofBanner /> : null}
-      <p className="text-xs uppercase tracking-wide text-text-disabled">
+      <p className="text-xs uppercase tracking-wide text-muted">
         Выпуск №{issue.number} · {issue.period_label}
       </p>
       <h1 className="mt-3 max-w-4xl font-display text-4xl font-semibold leading-tight sm:text-5xl">
         {issue.title}
       </h1>
-      <p className="mt-3 text-sm text-text-secondary">
+      <p className="mt-3 text-sm text-ink-2">
         {issue.editor ?? 'Редакция Digest CDS'} · {materialCountLabel(items.length)}
       </p>
 
-      <hr className="my-8 border-border" />
+      <hr className="my-8 border-rule" />
 
       {showCallout && cycle.status === 'open' ? (
         <EditorialCallout actionTo="/voting" actionLabel="Выбрать тему →">

@@ -30,12 +30,12 @@ export default function ServiceUnavailable({ onRetry }) {
         height={360}
         className="h-auto w-full max-w-[360px] sm:max-w-[420px]"
       />
-      <p className="mt-6 max-w-prose text-sm leading-relaxed text-text-secondary sm:text-base">
+      <p className="mt-6 max-w-prose text-sm leading-relaxed text-ink-2 sm:text-base">
         Не удалось загрузить. Проверьте соединение и попробуйте ещё раз.
       </p>
       <button
         type="button"
-        className="mt-6 inline-flex min-h-11 items-center justify-center rounded-full bg-primary px-5 text-sm font-medium text-text-primary disabled:cursor-wait disabled:opacity-60"
+        className="mt-6 inline-flex min-h-11 items-center justify-center rounded-full bg-accent px-5 text-sm font-medium text-accent-ink disabled:cursor-wait disabled:opacity-60"
         disabled={busy}
         aria-busy={busy}
         onClick={handleRetry}

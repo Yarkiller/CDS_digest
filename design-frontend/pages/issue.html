@@ -1,0 +1,143 @@
+<!DOCTYPE html>
+<html lang="ru">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>Выпуск №14 — Digest CDS</title>
+  <link rel="preconnect" href="https://fonts.googleapis.com">
+  <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+  <link href="https://fonts.googleapis.com/css2?family=Bricolage+Grotesque:opsz,wght@12..96,400;12..96,600&family=IBM+Plex+Mono:wght@400&family=IBM+Plex+Sans:wght@400;500;600&display=swap" rel="stylesheet">
+  <link rel="stylesheet" href="../styles/tokens.css">
+  <link rel="stylesheet" href="../styles/typography.css">
+  <link rel="stylesheet" href="../styles/layout.css">
+  <link rel="stylesheet" href="../styles/components.css">
+</head>
+<body>
+  <div class="app-shell">
+    <header class="header">
+      <div class="header__inner">
+        <a class="logo" href="issue.html">
+          <span class="logo__title">Digest CDS</span>
+          <span class="logo__subtitle">СВА · издание</span>
+        </a>
+        <nav class="nav" id="primary-nav">
+          <a class="nav__link nav__link--active" href="issue.html">Выпуск</a>
+          <a class="nav__link" href="archive.html">Архив</a>
+          <a class="nav__link" href="knowledge.html">База</a>
+          <a class="nav__link" href="voting.html">Голосование</a>
+          <a class="nav__link" href="razbory.html">Разборы</a>
+          <a class="nav__link" href="admin-digest.html">Админ</a>
+        </nav>
+        <button class="nav-toggle" type="button" aria-controls="primary-nav" aria-expanded="false">Меню</button>
+        <div class="header__search">
+          <button class="search-pill" type="button" data-search-trigger aria-controls="search-dialog" aria-expanded="false" aria-label="Поиск (Ctrl K)">
+            <span class="search-pill__icon" aria-hidden="true">⌕</span>
+            <span class="search-pill__text">Поиск по базе</span>
+            <span class="search-pill__kbd" aria-hidden="true"><kbd>Ctrl</kbd><kbd>K</kbd></span>
+          </button>
+        </div>
+        <div class="header__user">
+          <span class="user-name">Мария Сидорова</span>
+          <span class="role-badge">Сотрудник СВА</span>
+        </div>
+      </div>
+    </header>
+
+    <dialog class="search-dialog" id="search-dialog" aria-labelledby="search-dialog-title">
+      <div class="search-dialog__panel">
+        <div class="search-dialog__header">
+          <h2 class="text-h2" id="search-dialog-title">Поиск Digest CDS</h2>
+          <button class="btn btn--ghost" type="button" data-close-search aria-label="Закрыть">✕</button>
+        </div>
+        <label class="search-dialog__label" for="global-search">Поиск по базе знаний</label>
+        <div class="search-dialog__field">
+          <span class="search-dialog__icon" aria-hidden="true">⌕</span>
+          <input class="search-dialog__input" id="global-search" type="search" placeholder="RAG, SQL, качество данных…" autocomplete="off">
+          <kbd>Esc</kbd>
+        </div>
+        <p class="search-dialog__hint" id="search-dialog-hint">↑ ↓ для навигации · Enter для открытия · Esc для закрытия</p>
+        <ul class="search-dialog__results" role="listbox" aria-label="Разделы Digest CDS">
+          <li><a class="search-dialog__result" role="option" href="knowledge.html" data-search-result><strong>База знаний</strong><span>Найти материалы по смыслу, роли или тегу</span></a></li>
+          <li><a class="search-dialog__result" role="option" href="issue.html" data-search-result><strong>Текущий выпуск</strong><span>Открыть подборку материалов недели</span></a></li>
+          <li><a class="search-dialog__result" role="option" href="razbory.html" data-search-result><strong>Разборы</strong><span>Посмотреть встречи и longread-материалы</span></a></li>
+          <li><a class="search-dialog__result" role="option" href="voting.html" data-search-result><strong>Голосование</strong><span>Выбрать тему следующего разбора</span></a></li>
+        </ul>
+      </div>
+    </dialog>
+
+    <main class="main main--issue">
+      <p class="text-overline">Выпуск №14 · 17–23 марта 2026</p>
+      <h1 class="text-display" style="margin-top: var(--space-3);">Новости DS для СВА</h1>
+      <p class="text-caption" style="margin-top: var(--space-3);">
+        Редакция Digest CDS · 5 материалов
+      </p>
+
+      <hr class="rule">
+
+      <div class="editorial-callout">
+        <p class="editorial-callout__text">
+          <strong>Голосование открыто</strong> до 28 марта 2026 — выберите тему следующего разбора.
+        </p>
+        <a class="btn btn--ghost" href="voting.html">Выбрать тему →</a>
+      </div>
+
+      <h2 class="text-h2" style="margin-bottom: var(--space-6);">В этом выпуске</h2>
+
+      <div class="issue-toc">
+        <div class="issue-toc__block">
+          <a class="issue-toc__row" href="material.html">
+            <span class="issue-toc__num">01</span>
+            <span class="issue-toc__title">Building Production RAG Systems</span>
+            <span class="issue-toc__meta">Статья · 8 мин</span>
+            <span class="issue-toc__arrow">→</span>
+          </a>
+          <p class="issue-toc__dek">Как быстро находить нужные фрагменты регламентов СВА без ручного перебора документов.</p>
+        </div>
+        <div class="issue-toc__block">
+          <a class="issue-toc__row" href="material.html">
+            <span class="issue-toc__num">02</span>
+            <span class="issue-toc__title">Anomaly Detection in Audit Pipelines</span>
+            <span class="issue-toc__meta">Статья · 5 мин</span>
+            <span class="issue-toc__arrow">→</span>
+          </a>
+          <p class="issue-toc__dek">Как вовремя замечать аномалии в аудиторских выборках и сокращать ручную проверку.</p>
+        </div>
+        <div class="issue-toc__block">
+          <a class="issue-toc__row" href="material.html">
+            <span class="issue-toc__num">03</span>
+            <span class="issue-toc__title">LangGraph Multi-Agent Systems</span>
+            <span class="issue-toc__meta">Статья · 12 мин</span>
+            <span class="issue-toc__arrow">→</span>
+          </a>
+          <p class="issue-toc__dek">Как разделить сложную проверку на шаги с контролем и понятным итогом для аудитора.</p>
+        </div>
+        <div class="issue-toc__block">
+          <a class="issue-toc__row" href="material.html">
+            <span class="issue-toc__num">04</span>
+            <span class="issue-toc__title">pgvector for Enterprise Search</span>
+            <span class="issue-toc__meta">Статья · 6 мин</span>
+            <span class="issue-toc__arrow">→</span>
+          </a>
+          <p class="issue-toc__dek">Как устроить поиск по внутренним документам СВА на знакомой инфраструктуре PostgreSQL.</p>
+        </div>
+        <div class="issue-toc__block">
+          <a class="issue-toc__row" href="material.html">
+            <span class="issue-toc__num">05</span>
+            <span class="issue-toc__title">Prompt Engineering Patterns 2026</span>
+            <span class="issue-toc__meta">Статья · 7 мин</span>
+            <span class="issue-toc__arrow">→</span>
+          </a>
+          <p class="issue-toc__dek">Как формулировать запросы к LLM, чтобы ответы были пригодны для аудиторских заключений.</p>
+        </div>
+      </div>
+
+      <a class="prev-issue-link" href="archive.html">← Предыдущий выпуск №13</a>
+    </main>
+    <footer class="site-footer">
+      <p class="site-footer__statement">Читайте выпуск в своём темпе. Возвращайтесь к материалам, когда нужно.</p>
+      <div class="site-footer__meta"><span>Digest CDS · выпуск №14</span><a href="archive.html">Архив</a><a href="voting.html">Голосование</a></div>
+    </footer>
+  </div>
+  <script src="../scripts/app.js"></script>
+</body>
+</html>

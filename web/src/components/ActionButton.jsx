@@ -1,8 +1,8 @@
 const stateClass = {
   idle: '',
   loading: 'cursor-wait opacity-80',
-  error: 'bg-danger text-text-primary',
-  success: 'bg-success text-text-primary',
+  error: 'bg-[oklch(48%_0.15_25)] text-accent-ink',
+  success: 'bg-[oklch(45%_0.13_155)] text-accent-ink',
 }
 
 export default function ActionButton({
@@ -15,10 +15,10 @@ export default function ActionButton({
 }) {
   const variantClass =
     variant === 'voting'
-      ? 'bg-voting text-bg-app'
+      ? 'bg-voting text-[oklch(24%_0.02_38)]'
       : variant === 'secondary'
-        ? 'border border-border bg-transparent text-primary'
-        : 'bg-primary text-text-primary'
+        ? 'border border-rule bg-transparent text-accent'
+        : 'bg-accent text-accent-ink'
 
   return (
     <button

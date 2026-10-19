@@ -1,30 +1,68 @@
-# Digest CDS — Concept 2 (Visual)
+# Digest CDS — канонический дизайн и фронтенд
 
-Dark-first прототип по [UI-SPEC_2.md](./UI-SPEC_2.md).
+`design-frontend/` содержит единственный выбранный UI-прототип Digest CDS —
+Editorial UI («Digest CDS: издание»). Директория является источником истины
+для визуального языка и статического frontend-прототипа.
 
-## Открыть
+**Контентный контракт:** материал — только подготовленная агентом статья. Она
+создаётся из транскрипции или импортированного текста, дополняется уточняющим
+поиском и анализом; видео/аудио и необработанный транскрипт не являются
+материалом и не показываются в интерфейсе. Сложные термины связываются
+внутренними ссылками с отдельными поясняющими статьями; исходная ссылка
+хранится отдельно как provenance.
 
-`index.html` → галерея экранов. Сборка не нужна.
+**Backlog C3 (2026-08-23):** пункты C3-01…C3-18 закрыты в прототипе (см.
+[`backlog_UI.md`](../docs/digest-cds/backlog_UI.md)).
 
-## Экраны
+## Как открыть
 
-| Файл | Описание |
-|------|----------|
-| `pages/home.html` | 3-column home: профиль, quest, voting, materials, top-5 |
-| `pages/leaderboard.html` | Полный лидерборд |
-| `pages/profile.html` | Статистика, hex-badges, settings |
-| `pages/material.html` | Статья + QuizPrompt |
-| `pages/quiz.html` | Карточка с вопросами + результат |
-| `pages/voting.html` | Голосование + XP hint |
-| `pages/login.html` | Auth |
+Из корня репозитория запустите статический сервер (Node, без Python):
 
-## Фичи
+```bash
+npm run serve:design
+```
 
-- Dark theme по умолчанию, toggle ☀/☽ (localStorage)
-- Quest banner dismissible (localStorage)
-- Обложки материалов в `assets/covers/` (5 PNG + SVG)
-- Manrope + JetBrains Mono
+Эквивалент: `npx --yes serve@14.2.4 . -l 8765 --no-port-switching`
 
-## Concept 1
+Затем откройте
+`http://127.0.0.1:8765/design-frontend/index.html`. Конкретные экраны
+находятся в `pages/`; для интерактивных stubs нужен HTTP-сервер.
 
-[../Concept_1](../Concept_1) или [../pages](../pages) — корпоративный light UI.
+## Карта экранов
+
+| Путь | Экран | Прототипная логика |
+|------|-------|--------------------|
+| `pages/issue.html` | Текущий выпуск | — |
+| `pages/archive.html` | Архив выпусков | — |
+| `pages/knowledge.html` | База знаний | фильтры, load more, empty state |
+| `pages/material.html` | Подготовленная статья | — |
+| `pages/voting.html` | Цикл голосования | выбор и подтверждение |
+| `pages/razbory.html` | Список разборов | — |
+| `pages/razbor.html` | Разбор longread | — |
+| `pages/login.html` | Авторизация | — |
+| `pages/admin-digest.html` | Shortlist дайджеста | approve/reject, email preview |
+
+## Структура
+
+```text
+design-frontend/
+├── index.html
+├── README.md
+├── UI-SPEC_3.md
+├── design.md
+├── scripts/app.js
+├── styles/
+├── assets/
+│   ├── covers/
+│   └── notebooks/hybrid-retrieval.ipynb
+└── pages/
+```
+
+## Источники истины
+
+- [`design.md`](design.md) — визуальная система, композиция и правила
+  взаимодействия.
+- [`styles/tokens.css`](styles/tokens.css) — фактические токены цветов,
+  типографики, отступов, радиусов и z-index.
+- [`UI-SPEC_3.md`](UI-SPEC_3.md) — самостоятельный контракт дизайна и
+  frontend-архитектуры.

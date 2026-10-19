@@ -6,6 +6,7 @@ Notebook download: GET /razbory/{id}/notebook FileResponse (RAZB-03 / D-70…72)
 from __future__ import annotations
 
 import json
+import shutil
 import time
 from datetime import datetime, timezone
 from pathlib import Path
@@ -24,8 +25,8 @@ from backend.interface.http.app import create_app
 from backend.tests_support.in_memory import InMemoryRazborRepository
 
 ISSUER = "https://auth.example/auth/v1"
-# Self-contained fixture: a minimal valid .ipynb (no repo-file dependency).
-_MINIMAL_IPYNB = b'{"cells": [], "metadata": {}, "nbformat": 4, "nbformat_minor": 5}'
+_REPO_ROOT = Path(__file__).resolve().parents[2]
+_SEED_IPYNB = _REPO_ROOT / "design-frontend" / "assets" / "notebooks" / "hybrid-retrieval.ipynb"
 
 
 def _public_jwk(private_key: ec.EllipticCurvePrivateKey) -> dict[str, Any]:
@@ -321,9 +322,10 @@ def test_razbory_notebook_without_authorization_returns_401(tmp_path: Path) -> N
 
 def test_razbory_notebook_streams_attachment_when_available(tmp_path: Path) -> None:
     """RAZB-03 / D-70: notebook_available → FileResponse attachment with ipynb bytes."""
+    assert _SEED_IPYNB.is_file()
     dest = tmp_path / "notebooks" / "anomaly.ipynb"
     dest.parent.mkdir(parents=True)
-    dest.write_bytes(_MINIMAL_IPYNB)
+    shutil.copyfile(_SEED_IPYNB, dest)
     expected = dest.read_bytes()
 
     private_key = ec.generate_private_key(ec.SECP256R1())

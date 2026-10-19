@@ -13,6 +13,7 @@ from data_collection.errors.article import (
     ArticleInvalidJson,
     ArticleNetworkError,
     ArticleProviderError,
+    ArticleUnknownError,
 )
 from ingestion_service.domain.errors import IngestError
 

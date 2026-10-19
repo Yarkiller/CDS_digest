@@ -1,21 +1,20 @@
 import { useEffect, useState } from 'react'
 import { Navigate, useLocation } from 'react-router-dom'
-import { getSession, signOut } from '../services/authApi.js'
-import { isLoginRequired, isMocksEnabled } from '../services/authEnv.js'
-import { corporateAllowedDomains, isCorporateSession } from '../services/oauthSession.js'
+import { getSession } from '../services/authApi.js'
+import { isMocksEnabled } from '../services/authEnv.js'
 
 /**
- * Auth gate. Mocks mode renders children immediately (D-09 offline tests) UNLESS
- * VITE_REQUIRE_LOGIN=true, which enforces a real sign-in on the deployed app.
+ * Auth gate: when mocks enabled (default), render children immediately (D-09).
+ * When mocks disabled (or test force-gate), require a session else redirect with returnUrl.
  */
 export default function RequireAuth({ children }) {
   const location = useLocation()
-  const gate = !isMocksEnabled() || isLoginRequired()
-  const [ready, setReady] = useState(!gate)
-  const [authed, setAuthed] = useState(!gate)
+  const mocksOn = isMocksEnabled()
+  const [ready, setReady] = useState(mocksOn)
+  const [authed, setAuthed] = useState(mocksOn)
 
   useEffect(() => {
-    if (!gate) {
+    if (isMocksEnabled()) {
       setAuthed(true)
       setReady(true)
       return undefined
@@ -28,16 +27,6 @@ export default function RequireAuth({ children }) {
       try {
         const session = await getSession()
         if (!cancelled) {
-          // OAuth sessions must still carry a corporate email (ADR-0003).
-          if (
-            session?.access_token &&
-            !isCorporateSession(session, corporateAllowedDomains(import.meta.env))
-          ) {
-            await signOut()
-            setAuthed(false)
-            setReady(true)
-            return
-          }
           setAuthed(Boolean(session?.access_token))
           setReady(true)
         }
@@ -53,15 +42,15 @@ export default function RequireAuth({ children }) {
     return () => {
       cancelled = true
     }
-  }, [location.pathname, location.search, gate])
+  }, [location.pathname, location.search])
 
-  if (!gate) {
+  if (mocksOn) {
     return children
   }
 
   if (!ready) {
     return (
-      <p className="text-sm text-text-disabled" role="status">
+      <p className="text-sm text-muted" role="status">
         Проверка сессии…
       </p>
     )
