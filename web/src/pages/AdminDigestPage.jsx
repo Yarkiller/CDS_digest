@@ -757,7 +757,7 @@ export default function AdminDigestPage() {
       {showTriage || restMode ? (
         <div
           data-testid="admin-send-footer"
-          className="fixed inset-x-0 bottom-0 z-40 border-t border-rule bg-paper/95 backdrop-blur"
+          className="fixed inset-x-0 bottom-0 z-40 border-t border-rule bg-bg-surface"
         >
           <div className="mx-auto flex max-w-6xl flex-col gap-3 px-4 py-3 sm:flex-row sm:items-center sm:justify-between">
             <div className="min-w-0">

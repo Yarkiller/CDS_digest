@@ -489,7 +489,7 @@ function VotingConfirmBar({
 }) {
   const needsTopic = loadState === 'ready' && !selectedId
   return (
-    <div className="sticky bottom-0 mt-8 flex flex-wrap items-center justify-end gap-3 border-t border-rule bg-paper/95 py-3 backdrop-blur">
+    <div className="sticky bottom-0 mt-8 flex flex-wrap items-center justify-end gap-3 border-t border-rule bg-bg-surface py-3">
       {validationMessage || needsTopic ? (
         <p className="text-sm text-[oklch(45%_0.14_25)]" role="alert">
           {validationMessage || 'Выберите тему'}

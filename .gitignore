@@ -64,3 +64,6 @@ notebooks/
 /-H
 /-d
 /agent-skills-researcher.tmp.txt
+
+# Transient local test-run logs (npm run test:web redirected output)
+/pw-*.txt
