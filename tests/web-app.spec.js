@@ -118,6 +118,55 @@ test.describe("web app main flows", () => {
     );
   });
 
+  test("lays the material reading column beside a Concept 3 TOC rail", async ({ page }) => {
+    await page.goto("/materials/rag-systems");
+
+    // `.split-layout--reading` puts the article in track one and the rail in track two.
+    const layout = page.getByTestId("material-layout");
+    await expect(layout).toHaveClass(/split-layout--reading/);
+
+    const toc = page.getByTestId("material-toc");
+    await expect(toc).toHaveClass(/(^|\s)toc(\s|$)/);
+    await expect(toc).toBeVisible();
+    await expect(toc).toHaveCSS("position", "sticky");
+    await expect(toc.locator(".toc__list .toc__link").first()).toBeVisible();
+
+    // The rail is a real second track, sized by the canonical --toc-width token.
+    const tracks = await layout.evaluate((node) =>
+      getComputedStyle(node).gridTemplateColumns.split(/\s+/).filter(Boolean),
+    );
+    expect(tracks).toHaveLength(2);
+    const railToken = await page.evaluate(() =>
+      getComputedStyle(document.documentElement).getPropertyValue("--toc-width").trim(),
+    );
+    expect(railToken).toBe("15rem");
+
+    // The narrow-layout disclosure steps aside once the rail is on screen.
+    await expect(page.getByTestId("material-toc-mobile")).toBeHidden();
+  });
+
+  test("collapses the material TOC into a Concept 3 mobile disclosure", async ({ page }) => {
+    await page.setViewportSize({ width: 390, height: 844 });
+    await page.goto("/materials/rag-systems");
+
+    const disclosure = page.getByTestId("material-toc-mobile");
+    await expect(disclosure).toHaveClass(/toc-mobile/);
+    await expect(disclosure).toBeVisible();
+    await expect(disclosure.locator(".toc-mobile__summary")).toContainText(/содержание/i);
+
+    await disclosure.locator(".toc-mobile__summary").click();
+    await expect(disclosure.locator(".toc-mobile__list a").first()).toBeVisible();
+
+    // Below 80rem the sticky rail is not part of the layout.
+    await expect(page.getByTestId("material-toc")).toBeHidden();
+
+    // The reading macro must not introduce horizontal overflow on a phone.
+    const overflow = await page.evaluate(
+      () => document.documentElement.scrollWidth - document.documentElement.clientWidth,
+    );
+    expect(overflow).toBeLessThanOrEqual(0);
+  });
+
   test("shows empty current issue «Выпуск готовится» with archive CTA", async ({ page }) => {
     await page.addInitScript(() => {
       window.__DIGEST_EMPTY_CURRENT_ISSUE__ = true;

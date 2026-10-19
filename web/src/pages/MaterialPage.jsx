@@ -25,35 +25,44 @@ function formatPublishedLabel(material) {
   }
 }
 
-function SectionToc({ headings }) {
-  if (!headings.length) return null
-
-  const links = headings.map((heading) => (
+/**
+ * Concept 3 Long Document TOC (layout.css:218-300).
+ *
+ * One data source, two presentations, exactly as material.html does it: the rail
+ * (`.toc`, >= 80rem) links through `.toc__link`, while the narrow-layout
+ * disclosure (`.toc-mobile`) uses bare anchors styled by `.toc-mobile__list a`.
+ */
+function tocItems(headings, linkClassName) {
+  return headings.map((heading) => (
     <li key={heading.id} className={heading.level > 2 ? 'pl-3' : undefined}>
-      <a
-        href={`#${heading.id}`}
-        className="text-sm text-accent no-underline hover:underline"
-      >
+      <a href={`#${heading.id}`} className={linkClassName}>
         {heading.text}
       </a>
     </li>
   ))
+}
+
+function TocMobile({ headings }) {
+  if (!headings.length) return null
 
   return (
-    <>
-      <details className="mb-8 rounded-lg border border-rule bg-paper-2 p-3 lg:hidden">
-        <summary className="cursor-pointer text-sm font-medium">Содержание</summary>
-        <ul className="mt-3 space-y-2">{links}</ul>
-      </details>
-      <nav
-        aria-label="Содержание"
-        data-testid="material-toc"
-        className="sticky top-24 hidden max-h-[70vh] w-56 shrink-0 overflow-auto lg:block"
-      >
-        <p className="text-xs font-semibold uppercase tracking-wide text-muted">Содержание</p>
-        <ul className="mt-3 space-y-2">{links}</ul>
-      </nav>
-    </>
+    <details className="toc-mobile" data-testid="material-toc-mobile">
+      <summary className="toc-mobile__summary">
+        Содержание <span aria-hidden="true">⌄</span>
+      </summary>
+      <ul className="toc-mobile__list">{tocItems(headings)}</ul>
+    </details>
+  )
+}
+
+function TocRail({ headings }) {
+  if (!headings.length) return null
+
+  return (
+    <nav className="toc" aria-label="Содержание" data-testid="material-toc">
+      <span className="text-overline mb-3 block">Содержание</span>
+      <ul className="toc__list">{tocItems(headings, 'toc__link')}</ul>
+    </nav>
   )
 }
 
@@ -222,10 +231,14 @@ export default function MaterialPage({ preview = false, loadMaterial }) {
 
       <hr className="my-8 border-rule" />
 
-      <div className="flex flex-col gap-8 lg:flex-row lg:items-start">
-        <SectionToc headings={headings} />
+      {/* Concept 3 reading macro: the article takes track one and the sticky TOC
+          rail takes track two from 80rem up (layout.css:205-258). Below that the
+          rail is hidden and `.toc-mobile` carries the same links, so — exactly as
+          in material.html — the disclosure leads the reading column. */}
+      <div className="split-layout--reading" data-testid="material-layout">
+        <div className="min-w-0">
+          <TocMobile headings={headings} />
 
-        <div className="min-w-0 flex-1">
           <div
             data-testid="material-prose"
             className="prose prose--column"
@@ -281,6 +294,8 @@ export default function MaterialPage({ preview = false, loadMaterial }) {
             </Link>
           </p>
         </div>
+
+        <TocRail headings={headings} />
       </div>
     </article>
   )
