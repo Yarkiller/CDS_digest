@@ -1,6 +1,6 @@
 # Shell-макроструктуры Concept 3 откладываются; reading-макро переносится
 
-**Статус:** принято. Уточняет [`ADR-0006 «Concept 3 Editorial UI — канон дизайн-системы»`](0006-concept3-editorial-ui-canon.md): канон `design-frontend/` остаётся в силе, но перенос shell-слоя (`.header`, `.nav`, `.header__search`, `.header__user`, `.site-footer`) выносится в отдельное решение, а reading-макро Long Document переносится сейчас.
+**Статус:** superseded — заменён [`ADR-0009 «Concept 2 — канон UI: тёмная и светлая тема, без геймификации»`](0009-concept2-canon-dark-light-no-gamification.md). Отсрочка shell-слоя отменена: канон Concept 2 переносит шапку вместе с остальным UI, а reading-макро Concept 3 в этом каноне отсутствует. Решение сохранено как история.
 
 Digest CDS воспроизводит из `design-frontend/styles/layout.css` макроструктуру чтения — `.split-layout--reading`, `.toc*` и `.toc-mobile*`. Шапка приложения и футер остаются production-специфичными: это зафиксированное отклонение, а не незакрытый дрейф.
 
