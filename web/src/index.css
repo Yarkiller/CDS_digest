@@ -139,6 +139,160 @@
   }
 }
 
+/* Type layer mirrored from design-frontend/styles/typography.css (Concept 3 Editorial UI).
+   Shared by all three macros: Ecosystem Index, Long Document, Quiet form shell.
+   Guarded by tests/unit/test_design_typography.js — keep declarations in step with the prototype. */
+@layer base {
+  html {
+    font-size: 16px;
+  }
+
+  body {
+    min-width: 0;
+    margin: 0;
+    min-height: 100svh;
+    background: var(--color-bg-app);
+    color: var(--color-text-primary);
+    font-family: var(--font-body);
+    font-size: var(--text-body);
+    line-height: var(--text-body-lh);
+    -webkit-font-smoothing: antialiased;
+  }
+
+  h1, h2, h3, h4, h5, h6, .text-display, .text-h1, .text-h2, .text-h3 {
+    min-width: 0;
+    overflow-wrap: anywhere;
+    font-style: normal;
+  }
+
+  .text-display {
+    margin: 0;
+    font-family: var(--font-display);
+    font-size: var(--text-display);
+    line-height: var(--text-display-lh);
+    font-weight: 600;
+    letter-spacing: -0.025em;
+  }
+
+  .text-h1 {
+    margin: 0;
+    font-family: var(--font-display);
+    font-size: var(--text-h1);
+    line-height: var(--text-h1-lh);
+    font-weight: 600;
+    letter-spacing: -0.02em;
+  }
+
+  .text-h2 {
+    margin: 0;
+    font-family: var(--font-display);
+    font-size: var(--text-h2);
+    line-height: var(--text-h2-lh);
+    font-weight: 600;
+    letter-spacing: -0.015em;
+  }
+
+  .text-h3 {
+    margin: 0;
+    font-family: var(--font-display);
+    font-size: var(--text-h3);
+    line-height: var(--text-h3-lh);
+    font-weight: 600;
+  }
+
+  .text-body-sm {
+    font-size: var(--text-body-sm);
+    line-height: var(--text-body-sm-lh);
+  }
+
+  .text-caption {
+    color: var(--color-text-secondary);
+    font-size: var(--text-caption);
+    line-height: var(--text-caption-lh);
+  }
+
+  .text-overline {
+    color: var(--color-text-secondary);
+    font-size: var(--text-overline);
+    line-height: var(--text-overline-lh);
+    font-weight: 600;
+    letter-spacing: 0.08em;
+    text-transform: uppercase;
+  }
+
+  .text-secondary {
+    color: var(--color-text-secondary);
+  }
+
+  .text-mono {
+    font-family: var(--font-outlier);
+    font-size: var(--text-caption);
+    font-variant-numeric: tabular-nums;
+  }
+
+  /* `--font-serif` resolves to the display face; see ADR-0006. */
+  .text-serif {
+    font-family: var(--font-display);
+  }
+
+  .prose {
+    max-width: var(--container-reading);
+  }
+
+  .prose--column {
+    box-sizing: border-box;
+    min-width: 0;
+    background: var(--color-bg-prose);
+    padding: var(--space-12);
+  }
+
+  .prose p {
+    max-width: 65ch;
+    margin: 0 0 1em;
+  }
+
+  .prose h2 {
+    margin: var(--space-10) 0 var(--space-4);
+    font-family: var(--font-display);
+    font-size: var(--text-h2);
+    line-height: var(--text-h2-lh);
+    font-weight: 600;
+  }
+
+  .prose h2:first-child {
+    margin-top: 0;
+  }
+
+  mark {
+    padding: 0 var(--space-1);
+    border-radius: var(--radius-sm);
+    background: var(--color-bg-highlight);
+    color: inherit;
+  }
+
+  a {
+    color: var(--color-primary);
+    text-decoration: none;
+    transition: color var(--duration-fast) var(--ease-out);
+  }
+
+  a:hover {
+    color: var(--color-primary-hover);
+  }
+
+  .rule {
+    margin: var(--space-8) 0;
+    border: none;
+    border-top: 1px solid var(--color-border);
+  }
+}
+
+@layer utilities {
+  .max-w-prose {
+    max-width: 65ch;
+  }
+}
+
 /* G-14-3 / ADUX-05 — Tailwind v4 no longer sets a pointer cursor on native
    buttons. Restore the affordance globally; `:not(:disabled)` keeps the
    disabled/native cursor so `disabled:cursor-not-allowed` still wins. */
@@ -152,11 +306,6 @@
   color: var(--color-ink);
   background: var(--color-paper);
   font-family: var(--font-sans);
-}
-
-body {
-  margin: 0;
-  min-height: 100svh;
 }
 
 #root {
