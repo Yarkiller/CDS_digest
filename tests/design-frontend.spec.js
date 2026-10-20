@@ -1,76 +1,88 @@
 const { expect, test } = require("@playwright/test");
 
-test("opens the N13 search spotlight from the keyboard", async ({ page }) => {
-  await page.goto("/design-frontend/pages/issue.html");
+/**
+ * Concept 2 canon, release slice (ADR-0009).
+ *
+ * The prototype documents two things at once: the screens that ship, and the
+ * gamification variant that ADR-0007 keeps out of this release. The tests below
+ * assert both halves — release screens carry no XP/streak/leaderboard chrome, and
+ * the deferred pages still render so the next version has a real reference.
+ */
 
-  const trigger = page.getByRole("button", { name: /поиск/i });
-  await expect(trigger).toBeVisible();
-  await expect(trigger.locator("kbd")).toHaveCount(2);
+const GAMIFICATION = [
+  ".header__gamification",
+  ".xp-widget",
+  ".streak-pill",
+  ".rank-chip",
+  ".quest-banner",
+  ".profile-stats__xp",
+  ".leaderboard-mini__row",
+  ".quiz-prompt",
+  ".xp-hint",
+  ".text-xp",
+];
 
-  await page.keyboard.press("Control+k");
+test("gallery lists only release screens", async ({ page }) => {
+  await page.goto("/design-frontend/index.html");
 
-  const dialog = page.getByRole("dialog", { name: /поиск digest cds/i });
-  await expect(dialog).toBeVisible();
-  await expect(dialog.getByRole("searchbox")).toBeFocused();
+  await expect(page.getByRole("heading", { name: "Digest CDS — Concept 2" })).toBeVisible();
+
+  for (const pageHref of ["home.html", "material.html", "voting.html", "login.html"]) {
+    await expect(page.locator(`a[href="pages/${pageHref}"]`)).toBeVisible();
+  }
+
+  for (const deferred of ["leaderboard.html", "quiz.html", "profile.html", "home-gamified.html"]) {
+    await expect(page.locator(`a[href="pages/${deferred}"]`)).toHaveCount(0);
+  }
 });
 
-test("keeps search available as a compact mobile trigger", async ({ page }) => {
-  await page.setViewportSize({ width: 390, height: 844 });
-  await page.goto("/design-frontend/pages/issue.html");
+test("defaults to the dark theme and persists the light choice", async ({ page }) => {
+  await page.goto("/design-frontend/pages/home.html");
 
-  const trigger = page.getByRole("button", { name: /поиск/i });
-  await expect(trigger).toBeVisible();
-  await expect(trigger).toHaveCSS("width", "44px");
+  await expect(page.locator("html")).not.toHaveAttribute("data-theme", "light");
+  expect(await page.evaluate(() => getComputedStyle(document.body).backgroundColor)).toBe("rgb(11, 15, 23)");
 
-  await trigger.click();
-  await expect(page.getByRole("dialog", { name: /поиск digest cds/i })).toBeVisible();
+  await page.locator("[data-theme-toggle]").first().click();
+  await expect(page.locator("html")).toHaveAttribute("data-theme", "light");
+
+  await page.reload();
+  await expect(page.locator("html")).toHaveAttribute("data-theme", "light");
 });
 
-test("updates reading progress while scrolling a material", async ({ page }) => {
+test("release screens carry no gamification chrome", async ({ page }) => {
+  for (const releasePage of ["home.html", "material.html", "voting.html"]) {
+    await page.goto(`/design-frontend/pages/${releasePage}`);
+
+    for (const selector of GAMIFICATION) {
+      await expect(page.locator(selector), `${selector} must not appear on ${releasePage}`).toHaveCount(0);
+    }
+  }
+});
+
+test("material page keeps the hero without a quiz prompt", async ({ page }) => {
   await page.goto("/design-frontend/pages/material.html");
 
-  const progress = page.locator(".reading-progress");
-  await expect(progress).toBeAttached();
-  await page.evaluate(() => window.scrollTo(0, document.body.scrollHeight));
-  await expect(progress).not.toHaveCSS("transform", "none");
+  await expect(page.locator(".material-hero")).toBeVisible();
+  await expect(page.locator(".quiz-prompt")).toHaveCount(0);
 });
 
-test("keeps metrics inside a responsive scroll region", async ({ page }) => {
-  await page.setViewportSize({ width: 390, height: 844 });
-  await page.goto("/design-frontend/pages/razbor.html");
+test("keeps the deferred gamification variant renderable for the next version", async ({ page }) => {
+  await page.goto("/design-frontend/pages/leaderboard.html");
+  await expect(page.locator(".leaderboard-table")).toBeVisible();
 
-  const region = page.getByRole("region", { name: /метрики качества/i });
-  await expect(region).toBeVisible();
-  await expect(region.locator("table")).toBeVisible();
-  const dimensions = await region.evaluate((element) => ({
-    clientWidth: element.clientWidth,
-    scrollWidth: element.scrollWidth,
-  }));
-  expect(dimensions.scrollWidth).toBeGreaterThan(dimensions.clientWidth);
-});
+  await page.goto("/design-frontend/pages/quiz.html");
+  await expect(page.locator(".score-ring")).toBeVisible();
 
-test("preserves the outlined secondary action", async ({ page }) => {
-  await page.goto("/design-frontend/pages/admin-digest.html");
-
-  const button = page.getByRole("button", { name: "Предпросмотр письма" });
-  const borderColor = await button.evaluate((element) => getComputedStyle(element).borderTopColor);
-  expect(borderColor).not.toBe("rgba(0, 0, 0, 0)");
-});
-
-test("keeps admin row spacing on the 4-point scale", async ({ page }) => {
-  await page.goto("/design-frontend/pages/admin-digest.html");
-
-  const rank = page.locator(".admin-row__rank").first();
-  await expect(rank).toHaveCSS("padding-top", "8px");
+  // The gamified home keeps the quest banner, profile stats and the leaderboard rail.
+  await page.goto("/design-frontend/pages/home-gamified.html");
+  await expect(page.locator(".header__gamification")).toBeVisible();
+  await expect(page.locator("#quest-banner")).toBeVisible();
+  await expect(page.locator(".profile-stats__xp")).toBeVisible();
+  await expect(page.locator(".leaderboard-mini__row").first()).toBeVisible();
 });
 
 test("reserves intrinsic space for cover images", async ({ page }) => {
-  for (const path of [
-    "/design-frontend/pages/knowledge.html",
-    "/design-frontend/pages/material.html",
-    "/design-frontend/pages/archive.html",
-    "/design-frontend/pages/admin-digest.html",
-  ]) {
+  for (const path of ["/design-frontend/pages/material.html", "/design-frontend/pages/home.html"]) {
     await page.goto(path);
 
     const images = page.locator('img[src*="/assets/covers/"]');
@@ -79,11 +91,10 @@ test("reserves intrinsic space for cover images", async ({ page }) => {
       elements.map((image) => ({
         width: image.getAttribute("width"),
         height: image.getAttribute("height"),
-      }))
+      })),
     );
 
-    expect(dimensions).toEqual(
-      dimensions.map(() => ({ width: "480", height: "270" }))
-    );
+    expect(dimensions).toEqual(dimensions.map(() => ({ width: "480", height: "270" })));
   }
 });
+

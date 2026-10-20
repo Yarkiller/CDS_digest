@@ -22,15 +22,11 @@
           <a class="nav__link" href="home.html">Главная</a>
           <a class="nav__link nav__link--active" href="material.html">База знаний</a>
           <a class="nav__link" href="voting.html">Голосование</a>
-          <a class="nav__link" href="leaderboard.html">Лидерборд</a>
+          <!-- Лидерборд отложен: ADR-0009. -->
         </nav>
         <div class="header__search"><div class="search-bar"><span class="search-bar__icon">⌕</span><input class="search-bar__input" type="search" placeholder="Поиск…"></div></div>
-        <div class="header__gamification">
-          <span class="streak-pill"><span class="streak-pill__icon"><svg width="14" height="14" viewBox="0 0 24 24" fill="currentColor"><path d="M12 2C12 2 7 10 7 14a5 5 0 0 0 10 0c0-4-5-12-5-12z"/></svg></span>12</span>
-          <div class="xp-widget"><span class="xp-widget__level">Ур. 7</span><div class="xp-widget__track"><div class="xp-widget__fill"></div></div></div>
-          <a class="rank-chip" href="leaderboard.html">#8</a>
-        </div>
-        <div class="header__user"><button class="theme-toggle" type="button" data-theme-toggle>☀</button><a href="profile.html" class="avatar">ИП</a></div>
+        <!-- Геймификация шапки отложена: ADR-0007/0009. -->
+        <div class="header__user"><button class="theme-toggle" type="button" data-theme-toggle>☀</button><span class="avatar">ИП</span></div>
       </div>
     </header>
 
@@ -44,7 +40,6 @@
         <h1 class="text-display">Building Production RAG Systems</h1>
         <p class="text-caption" style="margin:var(--space-3) 0;">
           20 марта 2026 · arXiv / Medium
-          <span class="xp-hint">+5 XP</span>
         </p>
 
         <h2 class="text-h2">Резюме</h2>
@@ -57,12 +52,7 @@
           <span class="tag-pill">#pgvector</span>
         </div>
 
-        <section class="quiz-prompt">
-          <span class="text-overline">Карточка с вопросами</span>
-          <h2 class="text-h2 quiz-prompt__title" style="margin-top:var(--space-2);">Проверь понимание</h2>
-          <p class="text-body-sm text-secondary" style="margin:var(--space-2) 0 var(--space-5);">5 вопросов · ~3 мин · до <strong class="text-xp">+40 XP</strong> при результате ≥80%</p>
-          <a class="btn btn--primary" href="quiz.html">Начать →</a>
-        </section>
+        <!-- Карточка с вопросами (+40 XP) отложена: ADR-0007/0009. Вариант — quiz.html. -->
       </article>
     </main>
   </div>

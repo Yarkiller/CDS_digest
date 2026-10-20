@@ -40,127 +40,77 @@ test.describe("web app main flows", () => {
     await expect(page.getByText(/заглушк|stub|dek отсутствует|нет описания/i)).toHaveCount(0);
   });
 
-  test("shows reading progress on a long material and advances on scroll", async ({ page }) => {
-    // Short viewport guarantees the document overflows, so scroll ratio is meaningful.
-    await page.setViewportSize({ width: 1280, height: 400 });
-    await page.goto("/materials/rag-systems");
+  test("ships Concept 2 dark by default and a working light theme", async ({ page }) => {
+    await page.goto("/");
 
-    const progress = page.getByTestId("reading-progress");
-    await expect(progress).toBeAttached();
-    await expect(progress).toHaveAttribute("aria-hidden", "true");
-    await expect(progress).toHaveCSS("position", "fixed");
+    // Dark is `:root` in the canon, so the attribute is absent there.
+    await expect(page.locator("html")).not.toHaveAttribute("data-theme", "light");
 
-    // Collapsed while the reader is at the top of the document.
-    await expect(progress).toHaveCSS("transform", "matrix(0, 0, 0, 1, 0, 0)");
+    const bgToken = () =>
+      page.evaluate(() =>
+        getComputedStyle(document.documentElement).getPropertyValue("--color-bg-app").trim(),
+      );
+    expect(await bgToken()).toBe("#0B0F17");
 
-    // Advances once the reader scrolls to the bottom.
-    await page.evaluate(() => window.scrollTo(0, document.documentElement.scrollHeight));
-    await expect
-      .poll(async () => progress.evaluate((node) => node.style.transform))
-      .not.toBe("scaleX(0)");
+    await page.getByTestId("theme-toggle").click();
+    await expect(page.locator("html")).toHaveAttribute("data-theme", "light");
+    expect(await bgToken()).toBe("#F8FAFC");
+
+    // The choice is part of the canon contract: it survives a reload via `digest-cds-theme`.
+    await page.reload();
+    await expect(page.locator("html")).toHaveAttribute("data-theme", "light");
+    expect(await page.evaluate(() => localStorage.getItem("digest-cds-theme"))).toBe("light");
   });
 
 
-  test("renders archive issues as Concept 3 issue covers", async ({ page }) => {
+  test("renders archive issues as linked cards with period and count", async ({ page }) => {
     await page.goto("/archive");
 
     const list = page.getByTestId("archive-list");
-    await expect(list).toHaveClass(/archive-grid/);
+    await expect(list).toBeVisible();
 
-    const cover = list.locator("a.issue-cover").first();
-    await expect(cover).toBeVisible();
-    await expect(cover.locator(".text-overline").first()).toContainText(/выпуск №/i);
-    await expect(cover.locator(".issue-cover__title").first()).toBeVisible();
-    await expect(cover.locator(".text-caption").first()).toContainText(/материал/i);
+    const firstIssue = list.getByRole("link").first();
+    await expect(firstIssue).toBeVisible();
+    await expect(firstIssue).toContainText(/выпуск №/i);
+    await expect(firstIssue).toContainText(/материал/i);
   });
 
-  test("renders related materials as a Concept 3 editorial box", async ({ page }) => {
+  test("renders related materials under a heading", async ({ page }) => {
     await page.goto("/materials/rag-systems");
 
     const related = page.getByTestId("material-related");
     await expect(related).toBeVisible();
-    await expect(related).toHaveClass(/editorial-box/);
-    await expect(related.locator(".editorial-box__title")).toHaveText(/связанные материалы/i);
+    await expect(related.getByRole("heading", { name: /связанные материалы/i })).toBeVisible();
     await expect(related.getByRole("link", { name: /anomaly detection/i })).toBeVisible();
   });
 
-  test("renders a markdown blockquote as a Concept 3 pull quote", async ({ page }) => {
-    await page.goto("/materials/rag-systems");
-
-    const quote = page.getByTestId("material-prose").locator("blockquote.pull-quote");
-    await expect(quote).toBeVisible();
-    await expect(quote).toHaveCSS("font-style", "italic");
-
-    // `.pull-quote` resolves its face through --font-serif; assert against the token,
-    // not a hard-coded family, so a token change does not silently desync the test.
-    const displayFace = await page.evaluate(() =>
-      getComputedStyle(document.documentElement)
-        .getPropertyValue("--font-display")
-        .split(",")[0]
-        .replace(/["']/g, "")
-        .trim(),
-    );
-    expect(displayFace.length).toBeGreaterThan(0);
-    await expect(quote).toHaveCSS("font-family", new RegExp(displayFace, "i"));
-  });
-
-  test("applies the Concept 3 prose column to material bodies", async ({ page }) => {
+  test("renders the material body as markdown prose", async ({ page }) => {
     await page.goto("/materials/rag-systems");
 
     const prose = page.getByTestId("material-prose");
-    await expect(prose).toHaveClass(/(^|\s)prose(\s|$)/);
-    await expect(prose).toHaveClass(/prose--column/);
-
-    // --container-reading caps the column; `.prose p` caps the measure at 65ch.
-    expect(await prose.evaluate((node) => getComputedStyle(node).maxWidth)).not.toBe("none");
-    expect(await prose.locator("p").first().evaluate((node) => getComputedStyle(node).maxWidth)).not.toBe(
-      "none",
-    );
+    await expect(prose).toBeVisible();
+    await expect(prose.getByRole("heading", { name: /введение/i })).toBeVisible();
+    await expect(prose).toContainText(/регламент/i);
   });
 
-  test("lays the material reading column beside a Concept 3 TOC rail", async ({ page }) => {
+  test("keeps the material TOC as a desktop rail and a mobile disclosure", async ({ page }) => {
     await page.goto("/materials/rag-systems");
 
-    // `.split-layout--reading` puts the article in track one and the rail in track two.
-    const layout = page.getByTestId("material-layout");
-    await expect(layout).toHaveClass(/split-layout--reading/);
+    const rail = page.getByTestId("material-toc");
+    await expect(rail).toBeVisible();
+    await expect(rail).toHaveCSS("position", "sticky");
+    await expect(rail.getByRole("link").first()).toBeVisible();
 
-    const toc = page.getByTestId("material-toc");
-    await expect(toc).toHaveClass(/(^|\s)toc(\s|$)/);
-    await expect(toc).toBeVisible();
-    await expect(toc).toHaveCSS("position", "sticky");
-    await expect(toc.locator(".toc__list .toc__link").first()).toBeVisible();
-
-    // The rail is a real second track, sized by the canonical --toc-width token.
-    const tracks = await layout.evaluate((node) =>
-      getComputedStyle(node).gridTemplateColumns.split(/\s+/).filter(Boolean),
-    );
-    expect(tracks).toHaveLength(2);
-    const railToken = await page.evaluate(() =>
-      getComputedStyle(document.documentElement).getPropertyValue("--toc-width").trim(),
-    );
-    expect(railToken).toBe("15rem");
-
-    // The narrow-layout disclosure steps aside once the rail is on screen.
-    await expect(page.getByTestId("material-toc-mobile")).toBeHidden();
-  });
-
-  test("collapses the material TOC into a Concept 3 mobile disclosure", async ({ page }) => {
+    // Below the lg breakpoint the rail gives way to a disclosure with the same links.
     await page.setViewportSize({ width: 390, height: 844 });
-    await page.goto("/materials/rag-systems");
+    await expect(rail).toBeHidden();
 
-    const disclosure = page.getByTestId("material-toc-mobile");
-    await expect(disclosure).toHaveClass(/toc-mobile/);
+    const disclosure = page.locator("details", { hasText: "Содержание" }).first();
     await expect(disclosure).toBeVisible();
-    await expect(disclosure.locator(".toc-mobile__summary")).toContainText(/содержание/i);
+    await disclosure.locator("summary").click();
+    await expect(disclosure.getByRole("link").first()).toBeVisible();
 
-    await disclosure.locator(".toc-mobile__summary").click();
-    await expect(disclosure.locator(".toc-mobile__list a").first()).toBeVisible();
-
-    // Below 80rem the sticky rail is not part of the layout.
-    await expect(page.getByTestId("material-toc")).toBeHidden();
-
-    // The reading macro must not introduce horizontal overflow on a phone.
+    // Neither layout may introduce horizontal overflow on a phone.
     const overflow = await page.evaluate(
       () => document.documentElement.scrollWidth - document.documentElement.clientWidth,
     );

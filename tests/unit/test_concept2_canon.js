@@ -132,6 +132,7 @@ describe('Concept 2 gamification boundary (ADR-0007 + ADR-0009)', () => {
       'design-frontend/pages/leaderboard.html',
       'design-frontend/pages/quiz.html',
       'design-frontend/pages/profile.html',
+      'design-frontend/pages/home-gamified.html',
     ]
     const missing = variantPages.filter((page) => !exists(page))
     assert.deepEqual(missing, [], `the next-version UI variant must stay documented: ${missing.join(', ')}`)
@@ -139,7 +140,7 @@ describe('Concept 2 gamification boundary (ADR-0007 + ADR-0009)', () => {
 
   it('keeps the deferred variant out of the prototype gallery navigation', () => {
     const gallery = read('design-frontend/index.html')
-    const linked = ['leaderboard.html', 'quiz.html', 'profile.html'].filter((page) =>
+    const linked = ['leaderboard.html', 'quiz.html', 'profile.html', 'home-gamified.html'].filter((page) =>
       gallery.includes(`href="pages/${page}"`),
     )
     assert.deepEqual(linked, [], `deferred pages must not be linked from the gallery: ${linked.join(', ')}`)

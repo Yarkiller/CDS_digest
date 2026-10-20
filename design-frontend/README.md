@@ -26,6 +26,7 @@ Dark-first канон по [UI-SPEC_2.md](./UI-SPEC_2.md). Зафиксиров�
 
 | Файл | Описание |
 |------|----------|
+| `pages/home-gamified.html` | Геймифицированная главная целиком: квест, XP-профиль, мини-лидерборд |
 | `pages/leaderboard.html` | Публичный лидерборд, top-3 glow |
 | `pages/profile.html` | XP, достижения hex-badge, настройки opt-out |
 | `pages/quiz.html` | Карточка с вопросами: progress dots, ScoreRing |

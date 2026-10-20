@@ -21,15 +21,11 @@
         <nav class="nav">
           <a class="nav__link" href="home.html">Главная</a>
           <a class="nav__link nav__link--active" href="voting.html">Голосование</a>
-          <a class="nav__link" href="leaderboard.html">Лидерборд</a>
+          <!-- Лидерборд отложен: ADR-0009. -->
         </nav>
         <div class="header__search"><div class="search-bar"><span class="search-bar__icon">⌕</span><input class="search-bar__input" type="search" placeholder="Поиск…"></div></div>
-        <div class="header__gamification">
-          <span class="streak-pill"><span class="streak-pill__icon"><svg width="14" height="14" viewBox="0 0 24 24" fill="currentColor"><path d="M12 2C12 2 7 10 7 14a5 5 0 0 0 10 0c0-4-5-12-5-12z"/></svg></span>12</span>
-          <div class="xp-widget"><span class="xp-widget__level">Ур. 7</span><div class="xp-widget__track"><div class="xp-widget__fill"></div></div></div>
-          <a class="rank-chip" href="leaderboard.html">#8</a>
-        </div>
-        <div class="header__user"><button class="theme-toggle" type="button" data-theme-toggle>☀</button><a href="profile.html" class="avatar">ИП</a></div>
+        <!-- Геймификация шапки отложена: ADR-0007/0009. -->
+        <div class="header__user"><button class="theme-toggle" type="button" data-theme-toggle>☀</button><span class="avatar">ИП</span></div>
       </div>
     </header>
 
@@ -41,7 +37,6 @@
         </div>
         <div style="text-align:right;">
           <p class="text-mono text-h2" style="color:var(--color-voting);">5д 14ч</p>
-          <p class="text-caption text-xp">+25 XP за участие</p>
         </div>
       </div>
 
@@ -72,9 +67,7 @@
         </div>
       </div>
 
-      <div class="sidebar-panel" style="border-color:var(--color-accent);">
-        <p class="text-body-sm" style="margin:0;">После голосования: <strong class="text-xp">+25 XP</strong> · Вы на <strong>#8</strong> в лидерборде недели</p>
-      </div>
+      <!-- XP-подсказка отложена: ADR-0007/0009. -->
     </main>
   </div>
   <script src="../scripts/app.js"></script>
