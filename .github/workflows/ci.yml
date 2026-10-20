@@ -155,23 +155,5 @@ jobs:
           if-no-files-found: ignore
           retention-days: 7
 
-  docker:
-    name: Docker image build + health smoke
-    runs-on: ubuntu-latest
-    steps:
-      - uses: actions/checkout@v4
-
-      - name: Build backend image
-        run: docker build -t digest-cds-backend:ci .
-
-      - name: Run container and probe health endpoints
-        run: |
-          docker run -d --name cds-smoke -e APP_CONTAINER=memory -e PORT=8080 -p 8080:8080 digest-cds-backend:ci
-          for i in $(seq 1 20); do
-            if curl -fsS http://127.0.0.1:8080/health >/dev/null; then break; fi
-            sleep 3
-          done
-          curl -fsS http://127.0.0.1:8080/health
-          curl -fsS http://127.0.0.1:8080/health/ready
-          docker logs cds-smoke
-          docker rm -f cds-smoke
+  # The Docker image build is not part of this slice: the rollback removed the root
+  # Dockerfile, so this job returns together with the image — not in advance of it.

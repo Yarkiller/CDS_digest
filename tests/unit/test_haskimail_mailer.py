@@ -403,7 +403,7 @@ def test_default_session_factory_builds_the_official_sdk_client() -> None:
     )
 
     try:
-        assert isinstance(getattr(session, "_client"), ServerClient)
+        assert isinstance(session._client, ServerClient)
     finally:
         session.close()
 

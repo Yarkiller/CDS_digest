@@ -14,8 +14,6 @@ from backend.tests_support.in_memory import InMemoryPingRecorder, InMemoryProfil
 from backend.tests_support.in_memory import (
     InMemoryIssueRepository,
     InMemoryMaterialRepository,
-    InMemoryPingRecorder,
-    InMemoryProfileRepository,
 )
 from supabase_integration import SupabasePingRecorder, SupabaseProfileRepository
 

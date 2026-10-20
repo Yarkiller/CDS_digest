@@ -8,7 +8,6 @@ from datetime import datetime, timezone
 from typing import Any
 
 import jwt
-import pytest
 from cryptography.hazmat.primitives.asymmetric import ec
 from fastapi.testclient import TestClient
 from jwt.algorithms import ECAlgorithm

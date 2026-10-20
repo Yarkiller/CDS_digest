@@ -379,7 +379,6 @@ def test_collect_cli_not_due_one_line_exit_0_no_feed(monkeypatch) -> None:
     )
     # Rebuild with article spy on deps — CollectDeps is frozen; use helper fields.
     from ingestion_service.application.use_cases.collect_batch import CollectDeps
-    from ingestion_service.tests_support.fakes import FakeClock
 
     deps = CollectDeps(
         feed=feed,
@@ -408,7 +407,7 @@ def test_collect_cli_not_due_one_line_exit_0_no_feed(monkeypatch) -> None:
 
 def test_collect_cli_due_zero_videos_stamps_last_run(monkeypatch) -> None:
     from data_collection.dto.video_ref import FeedListing
-    from ingestion_service.tests_support.fakes import FakeClock, FakeCollectSourceReader, FakeFeed
+    from ingestion_service.tests_support.fakes import FakeCollectSourceReader, FakeFeed
     from typer.testing import CliRunner
 
     from ingestion_service import collect_cli as cli_mod
@@ -442,7 +441,7 @@ def test_collect_cli_due_zero_videos_stamps_last_run(monkeypatch) -> None:
 def test_collect_cli_schedule_read_failed_exit_2(monkeypatch) -> None:
     from data_collection.dto.video_ref import FeedListing
     from ingestion_service.application.ports.collect_sources import CollectSourceError
-    from ingestion_service.tests_support.fakes import FakeClock, FakeCollectSourceReader, FakeFeed
+    from ingestion_service.tests_support.fakes import FakeCollectSourceReader, FakeFeed
     from typer.testing import CliRunner
 
     from ingestion_service import collect_cli as cli_mod

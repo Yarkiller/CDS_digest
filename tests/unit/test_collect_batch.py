@@ -951,7 +951,7 @@ def _deps_with_schedule(
 
 def test_not_due_skips_feed_and_returns_reason() -> None:
     from ingestion_service.application.use_cases.collect_batch import run_collect_batch
-    from ingestion_service.tests_support.fakes import FakeClock, FakeCollectSourceReader, FakeFeed
+    from ingestion_service.tests_support.fakes import FakeCollectSourceReader, FakeFeed
 
     feed = FakeFeed(
         FeedListing(videos=(VideoRef(VIDEO_ID, PUBLISHED),), skipped=())
@@ -974,7 +974,7 @@ def test_not_due_skips_feed_and_returns_reason() -> None:
 
 def test_due_empty_run_stamps_last_run_at() -> None:
     from ingestion_service.application.use_cases.collect_batch import run_collect_batch
-    from ingestion_service.tests_support.fakes import FakeClock, FakeCollectSourceReader, FakeFeed
+    from ingestion_service.tests_support.fakes import FakeCollectSourceReader, FakeFeed
 
     feed = FakeFeed(FeedListing(videos=(), skipped=()))
     sources = FakeCollectSourceReader(
@@ -1032,7 +1032,7 @@ def test_due_zero_enabled_sources_does_not_stamp_and_zeros() -> None:
 def test_get_schedule_failure_exit_2_no_feed_no_stamp() -> None:
     from ingestion_service.application.ports.collect_sources import CollectSourceError
     from ingestion_service.application.use_cases.collect_batch import run_collect_batch
-    from ingestion_service.tests_support.fakes import FakeClock, FakeCollectSourceReader, FakeFeed
+    from ingestion_service.tests_support.fakes import FakeCollectSourceReader, FakeFeed
 
     feed = FakeFeed(FeedListing(videos=(), skipped=()))
     diagnostics: list[str] = []
@@ -1058,7 +1058,7 @@ def test_get_schedule_failure_exit_2_no_feed_no_stamp() -> None:
 def test_stamp_last_run_failure_keeps_counters_exit_1() -> None:
     from ingestion_service.application.ports.collect_sources import CollectSourceError
     from ingestion_service.application.use_cases.collect_batch import run_collect_batch
-    from ingestion_service.tests_support.fakes import FakeClock, FakeCollectSourceReader, FakeFeed
+    from ingestion_service.tests_support.fakes import FakeCollectSourceReader, FakeFeed
 
     feed = FakeFeed(
         FeedListing(videos=(VideoRef(VIDEO_ID, PUBLISHED),), skipped=())
