@@ -627,6 +627,38 @@ test.describe("web app responsive", () => {
       fullPage: true,
     });
   });
+
+  test("regenerates the same evidence in the light theme", async ({ page }) => {
+    // ADR-0009: the light layer is a contract, so evidence in one theme proves nothing.
+    await page.addInitScript(() => {
+      try {
+        localStorage.setItem("digest-cds-theme", "light");
+      } catch {}
+    });
+
+    for (const shot of [
+      { width: 320, height: 568, path: "/", file: "mobile-320-issue-light.png", ready: /новости ds для сва/i },
+      { width: 390, height: 844, path: "/", file: "mobile-390-issue-light.png", ready: /новости ds для сва/i },
+      { width: 390, height: 844, path: "/voting", file: "mobile-390-voting-light.png", ready: /RAG в корпоративной среде/i },
+      { width: 1280, height: 800, path: "/", file: "desktop-1280-issue-light.png", ready: /новости ds для сва/i },
+    ]) {
+      await page.setViewportSize({ width: shot.width, height: shot.height });
+      await page.goto(shot.path);
+      await expect(page.locator("html")).toHaveAttribute("data-theme", "light");
+      // Evidence of a loading skeleton proves nothing: wait for real content first.
+      await expect(page.getByText(shot.ready).first()).toBeVisible();
+
+      const overflow = await page.evaluate(
+        () => document.documentElement.scrollWidth - document.documentElement.clientWidth,
+      );
+      expect(overflow, `overflow on ${shot.path} at ${shot.width}px`).toBeLessThanOrEqual(1);
+
+      await page.screenshot({
+        path: `docs/digest-cds/responsive-evidence/${shot.file}`,
+        fullPage: true,
+      });
+    }
+  });
 });
 
 /*
