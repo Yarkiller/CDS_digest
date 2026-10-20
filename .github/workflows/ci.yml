@@ -1,0 +1,177 @@
+name: CI
+
+# Runs on every push and pull request. Deploy (`deploy.yml`) is triggered only
+# after this workflow succeeds on `main`.
+on:
+  push:
+  pull_request:
+  workflow_dispatch:
+
+concurrency:
+  group: ci-${{ github.workflow }}-${{ github.ref }}
+  cancel-in-progress: true
+
+permissions:
+  contents: read
+
+jobs:
+  lint:
+    name: Lint (ruff + oxlint)
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v4
+
+      - name: Install uv
+        uses: astral-sh/setup-uv@v5
+        with:
+          enable-cache: true
+
+      - name: Python lint (ruff)
+        run: |
+          uv sync --frozen
+          uv run ruff check .
+
+      - name: Setup Node.js
+        uses: actions/setup-node@v4
+        with:
+          node-version: 22
+          cache: npm
+          cache-dependency-path: web/package-lock.json
+
+      - name: Frontend lint (oxlint)
+        run: |
+          npm ci --prefix web
+          npm run lint --prefix web
+
+  backend-tests:
+    name: Backend unit tests (pytest)
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v4
+
+      - name: Install uv
+        uses: astral-sh/setup-uv@v5
+        with:
+          enable-cache: true
+
+      - name: Run pytest
+        run: |
+          uv sync --frozen
+          uv run pytest -q
+
+  frontend-tests:
+    name: Frontend unit tests + build
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v4
+
+      - name: Setup Node.js
+        uses: actions/setup-node@v4
+        with:
+          node-version: 22
+          cache: npm
+          cache-dependency-path: |
+            package-lock.json
+            web/package-lock.json
+
+      - name: Install dependencies
+        run: |
+          npm ci --ignore-scripts
+          npm ci --prefix web
+
+      - name: JS unit tests (node:test)
+        run: npm run test:js
+
+      - name: Production build (vite)
+        run: npm run build
+
+  security:
+    name: Security scan (npm audit + pip-audit + bandit)
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v4
+
+      - name: Install uv
+        uses: astral-sh/setup-uv@v5
+        with:
+          enable-cache: true
+
+      - name: Setup Node.js
+        uses: actions/setup-node@v4
+        with:
+          node-version: 22
+          cache: npm
+          cache-dependency-path: |
+            package-lock.json
+            web/package-lock.json
+
+      - name: npm audit (root + web)
+        run: |
+          npm audit --audit-level=high
+          npm audit --prefix web --audit-level=high
+
+      - name: pip-audit
+        run: |
+          uv sync --frozen
+          uv run --with pip-audit pip-audit
+
+      - name: bandit (SAST)
+        run: uv run --with bandit bandit -r backend/src supabase-integration/src data-collection/src ingestion-service/src
+
+  e2e:
+    name: E2E (Playwright web)
+    runs-on: ubuntu-latest
+    env:
+      PLAYWRIGHT_BROWSERS_PATH: .playwright-browsers
+    steps:
+      - uses: actions/checkout@v4
+
+      - name: Setup Node.js
+        uses: actions/setup-node@v4
+        with:
+          node-version: 22
+          cache: npm
+          cache-dependency-path: |
+            package-lock.json
+            web/package-lock.json
+
+      - name: Install dependencies
+        run: |
+          npm ci --ignore-scripts
+          npm ci --prefix web
+
+      - name: Install Playwright browsers
+        run: npx playwright install --with-deps chromium
+
+      - name: Run Playwright (web project)
+        run: npx playwright test --project=web
+
+      - name: Upload Playwright report
+        if: always()
+        uses: actions/upload-artifact@v4
+        with:
+          name: playwright-report
+          path: test-results/
+          if-no-files-found: ignore
+          retention-days: 7
+
+  docker:
+    name: Docker image build + health smoke
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v4
+
+      - name: Build backend image
+        run: docker build -t digest-cds-backend:ci .
+
+      - name: Run container and probe health endpoints
+        run: |
+          docker run -d --name cds-smoke -e APP_CONTAINER=memory -e PORT=8080 -p 8080:8080 digest-cds-backend:ci
+          for i in $(seq 1 20); do
+            if curl -fsS http://127.0.0.1:8080/health >/dev/null; then break; fi
+            sleep 3
+          done
+          curl -fsS http://127.0.0.1:8080/health
+          curl -fsS http://127.0.0.1:8080/health/ready
+          docker logs cds-smoke
+          docker rm -f cds-smoke
