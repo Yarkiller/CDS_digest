@@ -284,7 +284,7 @@ class InMemoryShortlistRepository:
             raise AlreadySentError(batch_id)
         # Persist overlaid statuses so claim+publish pool matches live materials join (ADUX-05).
         overlaid = self._overlay_batch(self._batch)
-        assert overlaid is not None
+        assert overlaid is not None  # nosec B101 - test double invariant, never shipped.
         self._batch = ShortlistBatch(
             id=overlaid.id,
             week_start=overlaid.week_start,

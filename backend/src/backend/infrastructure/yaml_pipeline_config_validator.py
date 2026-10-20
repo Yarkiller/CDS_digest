@@ -291,7 +291,9 @@ class YamlPipelineConfigValidator:
             )
 
         try:
-            data = yaml.load(yaml_text, Loader=_StrictSafeLoader)
+            data = yaml.load(  # nosec B506 - _StrictSafeLoader forbids arbitrary object construction.
+                yaml_text, Loader=_StrictSafeLoader
+            )
         except yaml.MarkedYAMLError as exc:
             mark = exc.problem_mark
             raise PipelineConfigValidationError(

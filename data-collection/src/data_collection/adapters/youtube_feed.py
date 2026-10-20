@@ -3,7 +3,7 @@
 from __future__ import annotations
 
 import re
-import xml.etree.ElementTree as ET
+import xml.etree.ElementTree as ET  # nosec B405 - DOCTYPE/ENTITY rejected before parsing.
 from datetime import datetime, timezone
 from typing import Any
 
@@ -45,7 +45,7 @@ def parse_feed(raw: bytes, *, source_id: str) -> FeedListing:
         raise FeedError(source_id, reason="feed_doctype")
 
     try:
-        root = ET.fromstring(raw)
+        root = ET.fromstring(raw)  # nosec B314 - DTD markers rejected above; capped at 1 MiB.
     except ET.ParseError as exc:
         raise FeedError(source_id, reason="feed_invalid_xml") from exc
 
