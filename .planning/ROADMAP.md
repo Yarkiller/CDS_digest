@@ -67,23 +67,19 @@ Full phase detail: [milestones/v1.3-ROADMAP.md](milestones/v1.3-ROADMAP.md)
 
 ## Backlog
 
-> **Triaged 2026-10-13** (`/gsd-review-backlog`).
-> - **Queued for v1.3** — Bucket A tech debt; promote with `/gsd-new-milestone` (next free phase numbers 17+).
-> - **Deferred** — product preference, not debt.
-> - **Removed 2026-10-13** — former 999.2 (merged into 999.1, identical root cause) and former 999.3 (stale: fixed by the global `@layer base button:not(:disabled) { cursor: pointer }` rule shipped in v1.2 Phase 15).
->
-> **Moved into v1.3 (2026-10-14):** 999.7 → Phase 17 · 999.1 → Phase 18 · 999.6 → Phase 19 · 999.5 → Phase 22. **999.4 stays parked** (product preference, not debt).
+> **Reviewed 2026-10-20** (`/gsd-review-backlog`) — v1.3 shipped 2026-10-18.
+> - **Closed and removed** — 999.7 → Phase 17 · 999.1 → Phase 18 · 999.6 → Phase 19 (ADUX-10 → Phase 23) · 999.5 → Phase 22 · 999.3 resolved 2026-10-18.
+> - **Open** — 999.2: AdminLayout chrome polish; candidate for the next milestone.
+> - **Parked** — 999.4: product preference, not debt.
 
-### Backlog 999.1: Reader-route honesty for draft materials — `/materials/<slug>` error page (→ v1.3 Phase 18)
+### Backlog 999.2: Follow-up — Phase 23 deferred UAT follow-up: AdminLayout chrome
 
-**Goal:** A reader link opened from the admin shortlist or the email preview must not land on an error page while the material is still a draft
-**Source phase:** 13
-**Tech-debt id:** `W-1` (`.planning/milestones/v1.2-MILESTONE-AUDIT.md`)
-**Deferred at:** 2026-10-03 during /gsd-verify-work 13 session completion
-**Merged:** former 999.2 folded in on 2026-10-13 — identical root cause (`GET /materials/{slug}` is ready-only → 404)
+**Goal:** Resolve the UAT checkpoint deferred during Phase 23 verification
+**Source phase:** 23
+**Deferred at:** 2026-10-17 during /gsd-verify-work 23 session completion
+**Status:** open — re-checked 2026-10-20 against `web/src/components/AdminLayout.jsx`: the «Админ» label, the `text-3xl` tab size and the `mt-2`/`gap-2` spacing are all still as described
 **Follow-ups:**
-- [ ] Reader `/materials/<slug>` returns an error page. Check: slug validity, reader endpoint health, SPA route. (deferred 2026-10-03)
-- [ ] «Открыть материал →» from the email/admin preview leads to an error page — reader route issue, not admin preview. (deferred 2026-10-03)
+- [ ] Test 1: AdminLayout chrome: убрать надпись «АДМИН» над вкладками Дайджест|Пайплайн; уменьшить пустоту сверху; уменьшить кегль вкладок до уровня остальных заголовков (как «Источники ингеста»); чуть увеличить расстояние между вкладками Дайджест и Пайплайн (deferred 2026-10-17)
 
 ### Backlog 999.4: Follow-up — Phase 14 deferred UAT follow-up: Test 1 (Deferred — stays parked)
 
@@ -93,48 +89,3 @@ Full phase detail: [milestones/v1.3-ROADMAP.md](milestones/v1.3-ROADMAP.md)
 **Deferred at:** 2026-10-04 during /gsd-verify-work 14 session completion
 **Follow-ups:**
 - [ ] Test 1: UX (для Phase 15+): две операции на одно editorial-решение избыточны для single-operator workflow — объединить Approve (decision) + Mark ready (material_status) в одну кнопку «Одобрить и подготовить → ready»; переименовать «Сделать ready» → «Отобрать», ready → «Отобран». (deferred 2026-10-03)
-
-### Backlog 999.5: Follow-up — Phase 16 deferred UAT follow-up: admin nav grouping (→ v1.3 Phase 22)
-
-**Goal:** Resolve the UAT checkpoint deferred during Phase 16 verification
-**Source phase:** 16
-**Triaged:** 2026-10-13 — product preference, not debt; promoted into v1.3 as Phase 22 (own separate phase, immediately before the sources phase)
-**Deferred at:** 2026-10-04 during /gsd-verify-work 16 session completion
-**Follow-ups:**
-- [ ] Test 0: UX (предпочтение, не SPEC): убрать top-level nav-пункт «Пайплайн»; открывать конфиг только из админ-раздела. Вариант C — tab-bar «Дайджест | Пайплайн» на админ-страницах, top-level «Админ» → /admin/digest. Route /admin/pipeline не меняется, новый route не нужен. При реализации обновить 16-UI-SPEC A-2 и писать TDD (failing Playwright test first). (deferred 2026-10-04)
-
-### Backlog 999.6: Follow-up — Phase 16 deferred UAT follow-up: unsaved-changes guard WR-04/WR-05 (→ v1.3 Phase 19)
-
-**Goal:** Resolve the UAT checkpoint deferred during Phase 16 verification
-**Source phase:** 16
-**Tech-debt ids:** `WR-04`, `WR-05` (`16-REVIEW-DISPOSITION.md` — both an accepted known limitation)
-**Deferred at:** 2026-10-04 during /gsd-verify-work 16 session completion
-**Follow-ups:**
-- [ ] Test 3: WR-04/WR-05 — unsaved-changes guard принят как known limitation: window.confirm внутри beforeunload ненадёжен в реальных браузерах, router-level guard не зарегистрирован, поэтому in-app SPA-навигация молча теряет черновик. БД безопасна (не сохранил → не записано); теряется только набранный текст. Fix: корректный beforeunload (event.preventDefault/returnValue) + router guard (useBlocker) с той же копией «Есть несохранённые изменения. Уйти без сохранения?». (deferred 2026-10-04)
-- [ ] ADUX-10 — extend the guard to the ingest-sources editor; owned by v1.3 Phase 23 (sources), not Phase 19.
-
-### Backlog 999.7: Follow-up — Phase 16 code-review advisory WR-01: YAML merge-key regression (→ v1.3 Phase 17)
-
-**Goal:** Restore valid YAML merge-key (`<<`) acceptance in the strict pipeline-config validator without weakening duplicate-key rejection
-**Source phase:** 16
-**Tech-debt id:** `999.7` (`v1.2-MILESTONE-AUDIT.md` — `WR-01`, fails closed)
-**Deferred at:** 2026-10-05 at v1.2 milestone close
-**Follow-ups:**
-- [ ] WR-01: `_StrictSafeLoader.construct_mapping` pre-constructs key nodes before `flatten_mapping`, so a valid YAML merge-key document (`<<`) is rejected with a cryptic internal-tag error instead of merging. Fails closed (still a structured 400 `{errors:[...]}`, zero writes) and the fixed 4-key `extra="forbid"` schema cannot yield a valid config from such a document, so it is not a v1.2 must-have. Fix: run `flatten_mapping` (or pre-resolve merge keys) BEFORE duplicate-key detection so `<<` documents behave like `SafeLoader` while duplicate-key rejection stays intact. Advisory only — fails closed. (deferred 2026-10-05)
-
-### Backlog 999.2: Follow-up — Phase 23 deferred UAT follow-up: Test 1 (BACKLOG)
-
-**Goal:** Resolve the UAT checkpoint deferred during Phase 23 verification
-**Source phase:** 23
-**Deferred at:** 2026-10-17 during /gsd-verify-work 23 session completion
-**Follow-ups:**
-- [ ] Test 1: AdminLayout chrome: убрать надпись «АДМИН» над вкладками Дайджест|Пайплайн; уменьшить пустоту сверху; уменьшить кегль вкладок до уровня остальных заголовков (как «Источники ингеста»); чуть увеличить расстояние между вкладками Дайджест и Пайплайн (deferred 2026-10-17)
-
-### Backlog 999.3: Follow-up — Phase 21 deferred UAT follow-up: Test 6 (DONE 2026-10-18)
-
-**Goal:** Resolve the UAT checkpoint deferred during Phase 21 verification
-**Source phase:** 21
-**Deferred at:** 2026-10-18 during /gsd-verify-work 21 session completion
-**Resolved at:** 2026-10-18 — MAILER confirmed account; live digest send works; UAT Test 6 pass
-**Follow-ups:**
-- [x] Test 6: Живой smoke Haskimail (ADR-0005): верифицировать учётную запись MAILER / HASKIMAIL_FROM и повторить реальную отправку дайджеста. (resolved 2026-10-18)
