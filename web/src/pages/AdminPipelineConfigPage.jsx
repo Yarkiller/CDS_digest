@@ -215,8 +215,6 @@ export default function AdminPipelineConfigPage() {
   if (roleState === 'error') {
     return (
       <section data-testid="admin-pipeline-page">
-        <p className="text-xs font-semibold uppercase tracking-wide text-text-disabled">Админ</p>
-        <h1 className="mt-2 font-sans text-3xl font-semibold text-text-primary">Конфиг пайплайна</h1>
         <ServiceUnavailable onRetry={reloadRole} />
       </section>
     )
@@ -225,8 +223,6 @@ export default function AdminPipelineConfigPage() {
   if (loadState === 'loading') {
     return (
       <section aria-busy="true" data-testid="admin-pipeline-page">
-        <p className="text-xs font-semibold uppercase tracking-wide text-text-disabled">Админ</p>
-        <h1 className="mt-2 font-sans text-3xl font-semibold text-text-primary">Конфиг пайплайна</h1>
         <p className="mt-2 text-sm text-text-disabled">Просмотр и правка без запуска пайплайна</p>
         <p data-testid="pipeline-config-loading" className="mt-4 text-sm text-text-disabled">
           Загрузка…
@@ -238,8 +234,6 @@ export default function AdminPipelineConfigPage() {
   if (loadState === 'error') {
     return (
       <section data-testid="admin-pipeline-page">
-        <p className="text-xs font-semibold uppercase tracking-wide text-text-disabled">Админ</p>
-        <h1 className="mt-2 font-sans text-3xl font-semibold text-text-primary">Конфиг пайплайна</h1>
         <p className="mt-2 text-sm text-text-disabled">Просмотр и правка без запуска пайплайна</p>
         <p className="mt-4 text-sm text-text-secondary">{loadError || 'Не удалось загрузить конфиг'}</p>
         <button
@@ -267,8 +261,6 @@ export default function AdminPipelineConfigPage() {
 
   return (
     <section data-testid="admin-pipeline-page" className="pb-16">
-      <p className="text-xs font-semibold uppercase tracking-wide text-text-disabled">Админ</p>
-      <h1 className="mt-2 font-sans text-3xl font-semibold text-text-primary">Конфиг пайплайна</h1>
       <p className="mt-2 text-sm text-text-disabled">Просмотр и правка без запуска пайплайна</p>
 
       <IngestSourcesSection

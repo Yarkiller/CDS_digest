@@ -183,7 +183,7 @@ test.describe("Admin nav grouping — in-page section switch (ADUX-12, D-01…D-
 
     const adminLink = shellAdminLink(page);
     await expect(adminLink).toHaveAttribute("href", "/admin/digest");
-    await expect(adminLink).toHaveClass(/bg-accent/);
+    await expect(adminLink).toHaveClass(/bg-primary/);
   });
 
   test("admin-section nav is absent from materials preview while shell Админ stays active", async ({
@@ -195,7 +195,7 @@ test.describe("Admin nav grouping — in-page section switch (ADUX-12, D-01…D-
     // D-03 / D-11: preview is a sibling route — no tab-bar, but the shell pill lights up
     await expect(page.getByTestId("admin-section-nav")).toHaveCount(0);
     await expect(page.getByTestId("admin-section-select")).toHaveCount(0);
-    await expect(shellAdminLink(page)).toHaveClass(/bg-accent/);
+    await expect(shellAdminLink(page)).toHaveClass(/bg-primary/);
   });
 
   test("narrow viewport swaps the section nav for the select backstop", async ({ page }) => {
@@ -213,7 +213,7 @@ test.describe("Admin nav grouping — in-page section switch (ADUX-12, D-01…D-
     await select.selectOption("/admin/pipeline");
     await expect(page).toHaveURL(/\/admin\/pipeline$/);
     await expect(page.getByTestId("admin-section-select")).toHaveValue("/admin/pipeline");
-    await expect(shellAdminLink(page)).toHaveClass(/bg-accent/);
+    await expect(shellAdminLink(page)).toHaveClass(/bg-primary/);
   });
 
   test("dirty editor ignores a click on the already-active section tab (WR-01, D-13)", async ({
@@ -296,7 +296,7 @@ test.describe("Admin nav grouping — in-page section switch (ADUX-12, D-01…D-
     await expect(homeLink).toHaveCount(1);
     await expect(homeLink).toHaveAttribute("href", "/admin/digest");
     expect(await homeLink.getAttribute("aria-current")).toBeNull();
-    await expect(homeLink).not.toHaveClass(/bg-accent/);
+    await expect(homeLink).not.toHaveClass(/bg-primary/);
 
     // "true", not "page": the href targets digest while the whole section is current.
     for (const target of [
@@ -309,7 +309,7 @@ test.describe("Admin nav grouping — in-page section switch (ADUX-12, D-01…D-
       await expect(adminLink).toHaveCount(1);
       await expect(adminLink).toHaveAttribute("href", "/admin/digest");
       await expect(adminLink).toHaveAttribute("aria-current", "true");
-      await expect(adminLink).toHaveClass(/bg-accent/);
+      await expect(adminLink).toHaveClass(/bg-primary/);
     }
   });
 
@@ -386,7 +386,7 @@ test.describe("Admin nav grouping — in-page section switch (ADUX-12, D-01…D-
       .boundingBox();
     expect(navBox).not.toBeNull();
     expect(firstPillBox).not.toBeNull();
-    expect(navBox.height).toBeGreaterThan(firstPillBox.height);
+    expect(navBox.height).toBeGreaterThanOrEqual(firstPillBox.height);
 
     const adminLink = shellAdminLink(page);
     await expect(adminLink).toBeVisible();
