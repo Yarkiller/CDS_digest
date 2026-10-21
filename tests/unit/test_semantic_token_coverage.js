@@ -148,7 +148,13 @@ function arbitraryColourUtilities(literal) {
     .map((match) => ({ prefix: match[1], raw: match[2], utility: match[0] }))
 }
 
-/** Theme-dependent veils: `bg-ink` always, `bg-text-primary` only with an alpha modifier. */
+/**
+ * Theme-dependent veils: forbidden outright, with or without an alpha modifier.
+ *
+ * `bg-text-primary` used to be carved out of G-10 as "the known adjacent toast defect". The
+ * toast is repaired in 25-06, so the carve-out is gone and the veil form is now as illegal
+ * as `bg-ink` — a second allow-list path is exactly what let the 1.00:1 toast survive.
+ */
 const VEIL_TOKENS = ['bg-ink', 'bg-text-primary']
 
 /**
@@ -255,6 +261,149 @@ function sources() {
 /** `label = ratio` lines, so a failure message prints the measurement instead of a guess. */
 function summarise(measured) {
   return measured.map((entry) => `${entry.label} = ${entry.ratio.toFixed(3)}`).join('; ')
+}
+
+/**
+ * G-18: the status tokens that are fills and are *never* labels.
+ *
+ * `--color-success` (#22C55E), `--color-voting` (#EAB308) and `--color-danger` (#EF4444)
+ * fail 4.5:1 as text on every surface the tree paints them on — light theme 2.279 / 1.918 /
+ * 3.763 on `paper`, and 1.925 / 1.62 / 3.17 on their own tint. There is no legal text use.
+ * G-4 only proves the token is *declared*, so a regression `text-success-ink` ->
+ * `text-success` would pass the whole suite without this usage-level scan (T-25-13).
+ */
+const FORBIDDEN_STATUS_LABELS = ['text-success', 'text-voting', 'text-danger']
+
+/**
+ * Every status token used as a text role in one source, as `file: token`.
+ *
+ * Exact token equality plus the opacity form (`text-danger/70`), never a substring match:
+ * `text-success-ink`, `text-voting-ink-on-tint` and `text-voting-ink` are the legal label
+ * roles, and `bg-success` / `bg-voting` / `bg-danger` stay legal fills.
+ */
+function statusLabelOffences(relative, source) {
+  const offenders = []
+  for (const literal of stringLiterals(source)) {
+    for (const token of tokenSet(literal)) {
+      const forbidden = FORBIDDEN_STATUS_LABELS.find(
+        (label) => token === label || token.startsWith(`${label}/`),
+      )
+      if (forbidden) offenders.push(`${relative}: ${token}`)
+    }
+  }
+  return offenders
+}
+
+/**
+ * G-16: the status literals the tree really sets, and the assertion contract over them.
+ *
+ * `AdminDigestPage.jsx` renders «Выпуск опубликован» (:443), «Уже отправлено» (:454) and
+ * «Рассылка не отправлена» (:463) in the send banner, and toasts «Не сохранено» (:316/:318)
+ * or «Не удалось сделать ready» (:366). A single regex alternation covering two of these
+ * proves "one of the outcomes renders", never "each outcome renders" (T-25-16), and the
+ * toast's defect is its *colour*, so a text-only check cannot see it either.
+ *
+ * The refusal path «Рассылка не отправлена» has no harness arm, so R2 requires only the two
+ * outcomes that can actually be driven — the literal is registered for R1, not invented as
+ * a required assertion.
+ */
+const STATUS_LITERALS = [
+  'Выпуск опубликован',
+  'Рассылка не отправлена',
+  'Уже отправлено',
+  'Не сохранено',
+  'Не удалось сделать ready',
+]
+
+/** Assertion forms that can carry a regex literal (R1). */
+const REGEX_ASSERTION =
+  /\b(toMatch|toContainText|toHaveText|getByText)\s*\(\s*\/((?:\\\/|[^/\n\\]|\\.)+)\/([a-z]*)/g
+
+/** The subset of STATUS_LITERALS one regex alternation can match. */
+function literalsCoveredBy(patternBody) {
+  const alternatives = patternBody
+    .split('|')
+    .map((part) => part.trim())
+    .filter(Boolean)
+  return STATUS_LITERALS.filter((literal) =>
+    alternatives.some((alternative) => {
+      try {
+        return new RegExp(alternative, 'i').test(literal)
+      } catch {
+        return false
+      }
+    }),
+  )
+}
+
+/** A literal used in a statement, not only in a `test(...)` title. */
+function literalIsAsserted(source, literal) {
+  return source
+    .split(/\r?\n/)
+    .filter((line) => !/^\s*(test|it)\s*\(/.test(line))
+    .some((line) => line.includes(literal))
+}
+
+/** The e2e specs that own the status contract. */
+function specSources() {
+  return readdirSync(path.join(ROOT, 'tests'))
+    .filter((entry) => entry.endsWith('.spec.js'))
+    .map((entry) => ({ relative: `tests/${entry}`, source: read(`tests/${entry}`) }))
+}
+
+/**
+ * G-16 core — shared by the gate and by its proof so the detector cannot go green by
+ * measuring a shape no spec can produce.
+ *
+ * R1: one assertion, one outcome (no alternation covering two registered literals).
+ * R2: each driftable send outcome has its own assertion.
+ * R3: `admin-toast` is checked at least once, by its computed colours.
+ */
+function statusContractOffences(specs) {
+  const offenders = []
+
+  for (const { relative, source } of specs) {
+    for (const match of source.matchAll(REGEX_ASSERTION)) {
+      const covered = literalsCoveredBy(match[2])
+      if (covered.length >= 2) {
+        offenders.push(
+          `${relative}: one assertion matches ${covered.length} status literals (${covered.join(' | ')}) — /${match[2]}/`,
+        )
+      }
+    }
+  }
+
+  for (const literal of ['Выпуск опубликован', 'Уже отправлено']) {
+    if (!specs.some(({ source }) => literalIsAsserted(source, literal))) {
+      offenders.push(`tests/*.spec.js: no assertion checks the send outcome «${literal}»`)
+    }
+  }
+  for (const { relative, source } of specs) {
+    for (const line of source.split(/\r?\n/)) {
+      if (line.includes('Выпуск опубликован') && line.includes('Уже отправлено')) {
+        offenders.push(`${relative}: one line asserts two send outcomes — ${line.trim()}`)
+      }
+    }
+  }
+
+  const toastReaders = specs.filter(({ source }) => source.includes('admin-toast'))
+  if (toastReaders.length === 0) {
+    offenders.push(
+      'tests/*.spec.js: no spec checks admin-toast, so the 1.00:1 toast stays unproven',
+    )
+  }
+  for (const { relative, source } of toastReaders) {
+    const missing = ['backgroundColor', 'borderTopColor'].filter(
+      (property) => !source.includes(property),
+    )
+    if (missing.length > 0) {
+      offenders.push(
+        `${relative}: reads admin-toast but never its computed ${missing.join(' / ')} — a text-only check cannot see a 1.00:1 toast`,
+      )
+    }
+  }
+
+  return offenders
 }
 
 describe('semantic token coverage (criterion 3)', () => {
@@ -586,9 +735,6 @@ describe('semantic token coverage (criterion 3)', () => {
       for (const literal of stringLiterals(source)) {
         for (const token of tokenSet(literal)) {
           if (!VEIL_TOKENS.some((veil) => token === veil || token.startsWith(`${veil}/`))) continue
-          // `bg-text-primary` without alpha is the known adjacent toast defect (UI-SPEC
-          // § Known adjacent defects 1), not an overlay — only the veil form is forbidden.
-          if (token === 'bg-text-primary') continue
           offenders.push(`${relative}: ${token}`)
         }
       }
@@ -783,5 +929,100 @@ describe('semantic token coverage (criterion 3)', () => {
       `expected the recorded 1.485 light rule, got ${lightRule.toFixed(3)}`,
     )
     assert.ok(darkRule < 3 && lightRule < 3, 'the decorative rule must not clear the boundary floor')
+  })
+
+  it('G-18: a status token is a fill, never a label', () => {
+    const offenders = sources().flatMap(({ relative, source }) =>
+      statusLabelOffences(relative, source),
+    )
+
+    assert.deepEqual(
+      offenders,
+      [],
+      `a status token is legal as a fill only — the label rides its -ink role (GAP-25-1): ${offenders.join('; ')}`,
+    )
+  })
+
+  it('G-18 proof: the label scan rejects the base token and accepts the -ink roles', () => {
+    assert.deepEqual(statusLabelOffences('synthetic.jsx', "'bg-success/15 text-success'"), [
+      'synthetic.jsx: text-success',
+    ])
+
+    assert.deepEqual(
+      statusLabelOffences('synthetic.jsx', "'bg-success/15 text-success-ink'"),
+      [],
+    )
+
+    assert.deepEqual(statusLabelOffences('synthetic.jsx', "'text-danger/70'"), [
+      'synthetic.jsx: text-danger/70',
+    ])
+
+    // The legal roles stay legal — the gate may not widen into `-ink` (a substring match would).
+    assert.deepEqual(
+      statusLabelOffences('synthetic.jsx', "'rounded-md bg-voting/20 text-voting-ink-on-tint'"),
+      [],
+    )
+    assert.deepEqual(
+      statusLabelOffences('synthetic.jsx', "'border-danger-ink/60 bg-danger/10 text-danger-ink'"),
+      [],
+    )
+  })
+
+  it('G-16: the status contract holds across the e2e specs', () => {
+    const offenders = statusContractOffences(specSources())
+
+    assert.deepEqual(
+      offenders,
+      [],
+      `a status assertion must prove one real outcome, and the toast must be read by colour (T-25-16): ${offenders.join('; ')}`,
+    )
+  })
+
+  it('G-16 proof: one assertion per outcome, and the toast is read by colour', () => {
+    const good = `
+      await expect(page.getByText('Выпуск опубликован. Доставка писем: stub (0 из 0)', { exact: true })).toBeVisible()
+      await expect(page.getByRole('status').filter({ hasText: 'Уже отправлено' })).toBeVisible()
+      const toast = await page.getByTestId('admin-toast').evaluate((el) => {
+        const cs = getComputedStyle(el)
+        return { background: cs.backgroundColor, border: cs.borderTopColor }
+      })
+    `
+    const textOnly = `
+      await expect(page.getByText('Выпуск опубликован. Доставка писем: stub (0 из 0)', { exact: true })).toBeVisible()
+      await expect(page.getByRole('status').filter({ hasText: 'Уже отправлено' })).toBeVisible()
+      await expect(page.getByTestId('admin-toast')).toHaveText('Не сохранено')
+    `
+    const bad = `${good}
+      await expect(page.getByText(/Выпуск опубликован|Рассылка не отправлена/)).toBeVisible()
+    `
+
+    assert.deepEqual(
+      statusContractOffences([{ relative: 'synthetic.spec.js', source: good }]),
+      [],
+      'two separate outcome assertions plus a colour-read toast must be accepted',
+    )
+
+    const textOffenders = statusContractOffences([
+      { relative: 'synthetic.spec.js', source: textOnly },
+    ])
+    assert.equal(
+      textOffenders.length,
+      1,
+      `a text-only toast check must be rejected: ${textOffenders.join('; ')}`,
+    )
+    assert.match(textOffenders[0], /backgroundColor/)
+
+    const badOffenders = statusContractOffences([
+      { relative: 'synthetic.spec.js', source: bad },
+    ])
+    assert.equal(
+      badOffenders.length,
+      1,
+      `one alternation over two literals must be exactly one offender: ${badOffenders.join('; ')}`,
+    )
+    assert.match(
+      badOffenders[0],
+      /Выпуск опубликован \| Рассылка не отправлена|Рассылка не отправлена \| Выпуск опубликован/,
+    )
   })
 })
