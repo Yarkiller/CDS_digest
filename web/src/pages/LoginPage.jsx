@@ -157,12 +157,12 @@ export default function LoginPage() {
               Только @sberbank.ru или @omega.sbrf.ru
             </p>
             {fieldErrors.email ? (
-              <p className="mt-1 text-sm text-danger" role="alert">
+              <p className="mt-1 text-sm text-danger-ink" role="alert">
                 {fieldErrors.email}
               </p>
             ) : null}
             {domainError ? (
-              <p className="mt-1 text-sm text-danger" role="alert">
+              <p className="mt-1 text-sm text-danger-ink" role="alert">
                 {domainError}
               </p>
             ) : null}
@@ -187,7 +187,7 @@ export default function LoginPage() {
               required
             />
             {fieldErrors.password ? (
-              <p className="mt-1 text-sm text-danger" role="alert">
+              <p className="mt-1 text-sm text-danger-ink" role="alert">
                 {fieldErrors.password}
               </p>
             ) : null}

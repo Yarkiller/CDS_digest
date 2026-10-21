@@ -88,6 +88,23 @@ async function waitForTheme(page, theme) {
   );
 }
 
+/**
+ * Shared Pattern 5b — apply the theme on a page that mounts no `ThemeToggle`.
+ *
+ * The auth shell (`web/src/pages/LoginPage.jsx`) renders no toggle, so the attribute
+ * `ThemeToggle` writes in its effect never appears on `/login` and `waitForTheme` cannot
+ * settle. Write the attribute exactly as `ThemeToggle` does (`ThemeToggle.jsx:12-15`) —
+ * `index.css` overrides `[data-theme="light"]` for the whole document — and then wait for
+ * it so the computed style is read after the cascade updated.
+ */
+async function forceTheme(page, theme) {
+  await page.evaluate((expected) => {
+    if (expected === "light") document.documentElement.setAttribute("data-theme", "light");
+    else document.documentElement.removeAttribute("data-theme");
+  }, theme);
+  await waitForTheme(page, theme);
+}
+
 /** The three computed colours a surface can be judged by (colour, fill, top edge). */
 function styleTriple(locator) {
   return locator.evaluate((el) => {
@@ -369,7 +386,7 @@ test("auth field errors legible", async ({ page }) => {
 
   for (const theme of ["dark", "light"]) {
     await gotoAdmin(page, "/login", theme);
-    await waitForTheme(page, theme);
+    await forceTheme(page, theme);
 
     await page.getByRole("button", { name: /^Войти$/ }).click();
 

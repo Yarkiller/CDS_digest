@@ -330,9 +330,9 @@ export default function AdminPipelineConfigPage() {
         <div
           data-testid="pipeline-config-errors"
           role="alert"
-          className="mt-4 rounded-2xl border border-danger bg-danger/10 p-4"
+          className="mt-4 rounded-2xl border border-danger-ink/60 bg-danger/10 p-4"
         >
-          <h2 className="font-sans text-2xl font-semibold text-danger">
+          <h2 className="font-sans text-2xl font-semibold text-danger-ink">
             Проверьте конфиг перед сохранением
           </h2>
           {validationErrors.length > 0 ? (
@@ -341,7 +341,7 @@ export default function AdminPipelineConfigPage() {
                 <li
                   key={`${error?.path ?? 'error'}-${index}`}
                   data-testid="pipeline-config-error"
-                  className="break-words text-sm text-danger"
+                  className="break-words text-sm text-danger-ink"
                 >
                   {errorPrefix(error) ? (
                     <span className="font-mono">{errorPrefix(error)}</span>
@@ -351,7 +351,7 @@ export default function AdminPipelineConfigPage() {
               ))}
             </ol>
           ) : (
-            <p className="mt-2 text-sm text-danger">Конфиг не прошёл проверку</p>
+            <p className="mt-2 text-sm text-danger-ink">Конфиг не прошёл проверку</p>
           )}
         </div>
       ) : null}
@@ -359,9 +359,9 @@ export default function AdminPipelineConfigPage() {
       {saveError ? (
         <div
           role="alert"
-          className="mt-4 rounded-2xl border border-danger bg-danger/10 p-4"
+          className="mt-4 rounded-2xl border border-danger-ink/60 bg-danger/10 p-4"
         >
-          <h2 className="font-sans text-base font-semibold text-danger">
+          <h2 className="font-sans text-base font-semibold text-danger-ink">
             Конфиг не сохранён
           </h2>
           <button

@@ -138,7 +138,7 @@ export default function RegisterPage() {
               Отображаемый ник для голосования — любое ненастоящее имя, не ФИО
             </p>
             {fieldErrors.loginNickname ? (
-              <p className="mt-1 text-sm text-danger" role="alert">
+              <p className="mt-1 text-sm text-danger-ink" role="alert">
                 {fieldErrors.loginNickname}
               </p>
             ) : null}
@@ -169,12 +169,12 @@ export default function RegisterPage() {
               Только @sberbank.ru или @omega.sbrf.ru
             </p>
             {fieldErrors.email ? (
-              <p className="mt-1 text-sm text-danger" role="alert">
+              <p className="mt-1 text-sm text-danger-ink" role="alert">
                 {fieldErrors.email}
               </p>
             ) : null}
             {domainError ? (
-              <p className="mt-1 text-sm text-danger" role="alert">
+              <p className="mt-1 text-sm text-danger-ink" role="alert">
                 {domainError}
               </p>
             ) : null}
@@ -199,7 +199,7 @@ export default function RegisterPage() {
               required
             />
             {fieldErrors.password ? (
-              <p className="mt-1 text-sm text-danger" role="alert">
+              <p className="mt-1 text-sm text-danger-ink" role="alert">
                 {fieldErrors.password}
               </p>
             ) : null}

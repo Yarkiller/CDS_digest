@@ -2,7 +2,7 @@ export default function ErrorPanel({ title, message, meta, onDismiss }) {
   return (
     <div
       role="alert"
-      className="mr-auto w-full max-w-md rounded-xl border border-danger bg-danger/10 p-4 text-danger sm:w-auto"
+      className="mr-auto w-full max-w-md rounded-xl border border-danger-ink/60 bg-danger/10 p-4 text-danger-ink sm:w-auto"
     >
       <div className="flex items-start justify-between gap-3">
         <div>

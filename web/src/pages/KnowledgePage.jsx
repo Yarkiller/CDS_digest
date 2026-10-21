@@ -255,7 +255,7 @@ function KnowledgeSearchForm({
           <p
             id="kb-search-inline-error"
             role="alert"
-            className="mt-2 text-sm text-danger"
+            className="mt-2 text-sm text-danger-ink"
             data-testid="kb-inline-error"
           >
             {inlineError}

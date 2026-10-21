@@ -714,8 +714,8 @@ export default function AdminDigestPage() {
                         className={[
                           'rounded-md px-2 py-0.5 text-xs font-medium',
                           item.material_status === 'ready'
-                            ? 'bg-success/15 text-success'
-                            : 'bg-voting/20 text-voting',
+                            ? 'bg-success/15 text-success-ink'
+                            : 'bg-voting/20 text-voting-ink-on-tint',
                         ].join(' ')}
                       >
                         {materialStatusLabel(item.material_status)}
@@ -767,7 +767,7 @@ export default function AdminDigestPage() {
                 {sendHint}
               </p>
               {banner ? (
-                <p className="mt-1 text-sm font-medium text-success" role="status">
+                <p className="mt-1 text-sm font-medium text-success-ink" role="status">
                   <span>{banner}</span>
                   {issueUrl ? (
                     <>
@@ -805,7 +805,7 @@ export default function AdminDigestPage() {
       {toast ? (
         <p
           data-testid="admin-toast"
-          className="fixed bottom-24 left-1/2 z-50 -translate-x-1/2 rounded-full bg-text-primary px-4 py-2 text-sm text-text-primary"
+          className="fixed bottom-24 left-1/2 z-50 -translate-x-1/2 rounded-full border border-rule bg-paper-2 px-4 py-2 text-sm text-ink"
           role="status"
         >
           {toast}

@@ -493,7 +493,7 @@ function VotingConfirmBar({
   return (
     <div className="sticky bottom-0 mt-8 flex flex-wrap items-center justify-end gap-3 border-t border-border bg-bg-app/95 py-3 backdrop-blur">
       {validationMessage || needsTopic ? (
-        <p className="text-sm text-danger" role="alert">
+        <p className="text-sm text-danger-ink" role="alert">
           {validationMessage || 'Выберите тему'}
         </p>
       ) : null}
@@ -508,7 +508,7 @@ function VotingConfirmBar({
       {toast ? (
         <p
           data-testid="vote-toast"
-          className="text-sm text-success"
+          className="text-sm text-success-ink"
           aria-live="polite"
         >
           {toast}
