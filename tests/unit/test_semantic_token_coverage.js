@@ -535,6 +535,25 @@ describe('semantic token coverage (criterion 3)', () => {
   })
 
 
+  it('G-13: the destructive label role clears 4.5:1 on both surfaces, both themes', () => {
+    // CR-01 closure. The pre-fix label was `text-[oklch(45%_0.14_25)]` = 1.98:1 on dark
+    // paper-2; these are the ratios the replacement token actually measures.
+    const rows = []
+    for (const [themeLabel, block] of [
+      ['dark', dark],
+      ['light', light],
+    ]) {
+      for (const surface of ['paper', 'paper-2']) {
+        const foreground = block.get('--color-danger-ink')
+        const background = block.get(`--color-${surface}`)
+        const ratio = contrastRatio(foreground, background)
+        rows.push(`${themeLabel} ${surface}: ${ratio.toFixed(3)} (${foreground} on ${background})`)
+        assert.ok(ratio >= 4.5, `danger-ink must clear 4.5:1 — ${rows[rows.length - 1]}`)
+      }
+    }
+    console.log(`  danger-ink — ${rows.join(' | ')}`)
+  })
+
   it('G-10: no theme-dependent veil survives under web/src', () => {
     const offenders = []
 

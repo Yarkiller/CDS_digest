@@ -234,7 +234,7 @@ export default function IngestSourcesSection({
                   </button>
                   <button
                     type="button"
-                    className="inline-flex min-h-11 items-center rounded-xl border border-[oklch(70%_0.12_25)] px-3 text-sm font-normal text-[oklch(45%_0.14_25)] disabled:cursor-not-allowed disabled:opacity-45"
+                    className="inline-flex min-h-11 items-center rounded-xl border border-danger-ink/60 px-3 text-sm font-normal text-danger-ink disabled:cursor-not-allowed disabled:opacity-45"
                     disabled={rowBusy}
                     onClick={() => onDelete(row)}
                   >
@@ -250,7 +250,7 @@ export default function IngestSourcesSection({
                   </a>
                 </div>
                 {rowErrors[id] ? (
-                  <p role="alert" className="mt-2 text-sm text-[oklch(45%_0.14_25)]">
+                  <p role="alert" className="mt-2 text-sm text-danger-ink">
                     {rowErrors[id]}
                   </p>
                 ) : null}
@@ -333,9 +333,9 @@ export default function IngestSourcesSection({
         <div
           data-testid="ingest-sources-errors"
           role="alert"
-          className="mt-4 rounded-2xl border border-[oklch(70%_0.12_25)] bg-[oklch(96%_0.03_25)] p-4"
+          className="mt-4 rounded-2xl border border-danger-ink/60 bg-danger/10 p-4"
         >
-          <h3 className="font-sans text-2xl font-semibold text-[oklch(45%_0.14_25)]">
+          <h3 className="font-sans text-2xl font-semibold text-danger-ink">
             Проверьте данные источника
           </h3>
           {validationErrors.length > 0 ? (
@@ -343,7 +343,7 @@ export default function IngestSourcesSection({
               {validationErrors.map((error, index) => (
                 <li
                   key={`${error?.path ?? 'error'}-${index}`}
-                  className="break-words text-sm text-[oklch(45%_0.14_25)]"
+                  className="break-words text-sm text-danger-ink"
                 >
                   {errorPrefix(error) ? (
                     <span className="font-mono">{errorPrefix(error)}</span>
@@ -353,13 +353,13 @@ export default function IngestSourcesSection({
               ))}
             </ol>
           ) : (
-            <p className="mt-2 text-sm text-[oklch(45%_0.14_25)]">Источник не добавлен</p>
+            <p className="mt-2 text-sm text-danger-ink">Источник не добавлен</p>
           )}
         </div>
       ) : null}
 
       {addError ? (
-        <p role="alert" className="mt-4 text-sm text-[oklch(45%_0.14_25)]">
+        <p role="alert" className="mt-4 text-sm text-danger-ink">
           {addError}
         </p>
       ) : null}
