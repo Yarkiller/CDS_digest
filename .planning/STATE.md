@@ -3,19 +3,19 @@ gsd_state_version: 1.0
 milestone: v1.4
 milestone_name: UI polish & honest navigation
 current_phase: 25
-current_phase_name: Admin «Настройка» — naming, readable surfaces, token repair
-status: verifying
+current_phase_name: admin-nastroyka-naming-readable-surfaces-token-repair
+status: executing
 stopped_at: Completed 25-04-PLAN.md
-last_updated: "2026-10-21T13:30:00.544Z"
+last_updated: "2026-10-21T16:39:41.526Z"
 last_activity: 2026-10-21
 last_activity_desc: Phase 25 execution started
-state_head: cae43420ef2e201f45db0a386ee5604a134c491c
+state_head: 0d3822eb7f11a7b5891da6df619f45e919583b6a
 progress:
   total_phases: 4
   completed_phases: 0
-  total_plans: 4
+  total_plans: 7
   completed_plans: 4
-  percent: 100
+  percent: 0
 ---
 
 # Project State
@@ -29,9 +29,9 @@ See: .planning/PROJECT.md (updated 2026-10-21 — v1.4 milestone started)
 
 ## Current Position
 
-Phase: 25 (Admin «Настройка» — naming, readable surfaces, token repair) — EXECUTING
+Phase: 25 (admin-nastroyka-naming-readable-surfaces-token-repair) — READY TO EXECUTE
 Plan: 4 of 4
-Status: Phase complete — ready for verification
+Status: Ready to execute
 Last activity: 2026-10-21 — Phase 25 plan 04 executed (theme-independent labels)
 
 ## Performance Metrics

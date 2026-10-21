@@ -94,11 +94,9 @@ Full phase detail: [milestones/v1.3-ROADMAP.md](milestones/v1.3-ROADMAP.md)
 5. The ingest-sources heading reads exactly «Источники», the «Админ» eyebrow is absent from the DOM, the tab font-size equals the content `h2` scale, the tab gap is wider than the pre-fix `gap-2`, and the space above the tab row is smaller than pre-fix. *Proof:* Playwright text-absence plus computed-style assertions on the shared admin chrome.
 
 **Plans:** 4/7 plans executed — 25-01…25-04 green; 25-05…25-07 are gap closure for GAP-25-1…GAP-25-4 (+WR-03, WR-04)
+**Wave 1**
 
 - [x] 25-01-PLAN.md
-- [x] 25-02-PLAN.md
-- [x] 25-03-PLAN.md
-- [x] 25-04-PLAN.md
 - [ ] `25-01-PLAN.md` — Tracer: собрать `admin-chrome.spec.js` в проекте `web` (`testMatch`), naming-RED на трёх поверхностях, «Настройка» в `AdminLayout.jsx` (PIPEUI-01, wave 1)
 - [ ] `25-02-PLAN.md` — Хром админки: убрать eyebrow, кегль вкладок = `h2`, `gap-4`, `mt-0`, заголовок блока «Источники» (PIPEUI-03, PIPEUI-04, wave 2)
 - [ ] `25-03-PLAN.md` — WCAG-хелпер + гейт покрытия токенов G-0…G-8, 13 токенов в существующих блоках `index.css`, читаемый «Тип» (THEME-02, PIPEUI-02, wave 3)
@@ -106,6 +104,18 @@ Full phase detail: [milestones/v1.3-ROADMAP.md](milestones/v1.3-ROADMAP.md)
 - [ ] `25-05-PLAN.md` — gap closure: `blendOver`, роли `success-ink` / `voting-ink-on-tint` / `accent-text` / `field-border`, гейты G-14 (тинт-композит ≥ 4.5) и G-15 (граница поля ≥ 3:1) (THEME-02, wave 5)
 - [ ] `25-06-PLAN.md` — gap closure: все 18 статусных подписей на `-ink`, тост на `bg-paper-2`/`border-rule`/`text-ink`, снятие carve-out G-10, G-18 (label-role scan) и G-16 (контракт e2e-ассертов), e2e на пилюли / ошибку поля / баннер отправки / тост в обеих темах (PIPEUI-02, THEME-02, wave 6)
 - [ ] `25-07-PLAN.md` — gap closure: `text-accent-text` на трёх подписях акцента, `border-field-border` на всех 16 контролах, G-17 и G-19, единственная заливка `ActionButton` (без `bg-transparent`), ожидание `data-theme` в `gotoAdmin` (PIPEUI-01, PIPEUI-03, PIPEUI-04, THEME-01, wave 7)
+
+**Wave 2** *(blocked on Wave 1 completion)*
+
+- [x] 25-02-PLAN.md
+
+**Wave 3** *(blocked on Wave 2 completion)*
+
+- [x] 25-03-PLAN.md
+
+**Wave 4** *(blocked on Wave 3 completion)*
+
+- [x] 25-04-PLAN.md
 
 ### Phase 26: Section context — anchor scrolling and header active state
 
