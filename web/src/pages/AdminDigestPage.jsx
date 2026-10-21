@@ -791,7 +791,7 @@ export default function AdminDigestPage() {
               </button>
               <button
                 type="button"
-                className="inline-flex min-h-11 w-full items-center justify-center rounded-full bg-success px-4 text-sm font-medium text-text-primary disabled:cursor-not-allowed disabled:opacity-45 sm:w-auto"
+                className="inline-flex min-h-11 w-full items-center justify-center rounded-full bg-success-solid px-4 text-sm font-medium text-on-solid disabled:cursor-not-allowed disabled:opacity-45 sm:w-auto"
                 disabled={restMode || !sendUnlocked || sending}
                 onClick={() => setConfirmOpen(true)}
               >
@@ -818,7 +818,7 @@ export default function AdminDigestPage() {
 
       {emailModal ? (
         <div
-          className="fixed inset-0 z-[400] flex items-center justify-center bg-text-primary/40 p-4"
+          className="fixed inset-0 z-[400] flex items-center justify-center bg-scrim p-4"
           role="dialog"
           aria-modal="true"
           aria-labelledby="email-preview-title"
@@ -882,7 +882,7 @@ export default function AdminDigestPage() {
 
       {confirmOpen ? (
         <div
-          className="fixed inset-0 z-[400] flex items-center justify-center bg-text-primary/40 p-4"
+          className="fixed inset-0 z-[400] flex items-center justify-center bg-scrim p-4"
           role="dialog"
           aria-modal="true"
           aria-labelledby="confirm-send-title"
@@ -916,7 +916,7 @@ export default function AdminDigestPage() {
               </button>
               <button
                 type="button"
-                className="inline-flex min-h-11 items-center justify-center rounded-full bg-success px-4 text-sm font-medium text-text-primary disabled:opacity-55"
+                className="inline-flex min-h-11 items-center justify-center rounded-full bg-success-solid px-4 text-sm font-medium text-on-solid disabled:opacity-55"
                 disabled={sending}
                 onClick={confirmSend}
               >
@@ -945,7 +945,7 @@ function AdminItemPreview({ item, onClose }) {
 
   return (
     <div
-      className="fixed inset-0 z-[400] flex items-center justify-center bg-text-primary/40 p-4"
+      className="fixed inset-0 z-[400] flex items-center justify-center bg-scrim p-4"
       role="dialog"
       aria-modal="true"
       aria-labelledby="item-preview-title"

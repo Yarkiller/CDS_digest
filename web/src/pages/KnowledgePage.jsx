@@ -275,7 +275,7 @@ function KnowledgeSearchForm({
               onClick={() => onRoleChange(chip.value)}
               className={
                 selected
-                  ? 'min-h-11 rounded-full bg-primary px-3 text-sm text-text-primary'
+                  ? 'min-h-11 rounded-full bg-primary-solid px-3 text-sm text-on-solid'
                   : 'min-h-11 rounded-full border border-border bg-bg-surface px-3 text-sm text-text-primary hover:bg-bg-app'
               }
             >

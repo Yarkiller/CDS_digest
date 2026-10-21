@@ -104,7 +104,7 @@ export default function RegisterPage() {
               {networkError.retryable ? (
                 <button
                   type="submit"
-                  className="min-h-11 self-start rounded-full bg-primary px-4 text-sm text-text-primary"
+                  className="min-h-11 self-start rounded-full bg-primary-solid px-4 text-sm text-on-solid"
                   disabled={submitting}
                 >
                   Повторить
@@ -207,7 +207,7 @@ export default function RegisterPage() {
 
           <button
             type="submit"
-            className="min-h-11 w-full rounded-full bg-primary px-4 text-sm font-medium text-text-primary disabled:opacity-60"
+            className="min-h-11 w-full rounded-full bg-primary-solid px-4 text-sm font-medium text-on-solid disabled:opacity-60"
             disabled={submitting}
           >
             {submitting ? 'Регистрация…' : 'Зарегистрироваться'}
