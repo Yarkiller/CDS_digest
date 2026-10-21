@@ -5,16 +5,16 @@ milestone_name: UI polish & honest navigation
 current_phase: 25
 current_phase_name: Admin «Настройка» — naming, readable surfaces, token repair
 status: executing
-stopped_at: Completed 25-05-PLAN.md
-last_updated: "2026-10-21T16:47:02.474Z"
+stopped_at: Completed 25-06-PLAN.md
+last_updated: "2026-10-21T17:06:15.856Z"
 last_activity: 2026-10-21
 last_activity_desc: Phase 25 execution started
-state_head: 77a83151d0339649e1ef8bfa9a65705a9580b40b
+state_head: 6d2c35370e2f58aa39d1b7f8eca424817a42f93b
 progress:
   total_phases: 4
   completed_phases: 0
   total_plans: 7
-  completed_plans: 5
+  completed_plans: 6
   percent: 0
 ---
 
@@ -30,8 +30,8 @@ See: .planning/PROJECT.md (updated 2026-10-21 — v1.4 milestone started)
 ## Current Position
 
 Phase: 25 (Admin «Настройка» — naming, readable surfaces, token repair) — EXECUTING
-Plan: 5 of 7
-Status: Executing Phase 25
+Plan: 6 of 7
+Status: Ready to execute
 Last activity: 2026-10-21 — Phase 25 plan 05 executed (status label roles + field boundary)
 
 ## Performance Metrics
@@ -98,6 +98,7 @@ Last activity: 2026-10-21 — Phase 25 plan 05 executed (status label roles + fi
 | Phase 25 P03 | 15min | 2 tasks | 7 files |
 | Phase 25 P04 | 17min | 3 tasks | 10 files |
 | Phase 25 P05 | 8 min | 2 tasks | 3 files |
+| Phase 25 P06 | 21min | 3 tasks | 9 files |
 
 ## Accumulated Context
 
@@ -214,6 +215,9 @@ v1.3 roadmap locks:
 - [Phase 25]: 25-05: `--color-field-border` — плоский `#64748B` без light-override; заявленная в постановке пара `#4B5563`/`#64748B` провалила бы собственный 3:1-гейт в тёмной теме (2.328), поэтому отклонение записано измеряемо, а не вкусово
 - [Phase 25]: 25-05: `success-ink` / `voting-ink-on-tint` / `accent-text` намеренно НЕ добавлены в `THEMED` — иначе G-4 anti-vacuum потребовал бы потребителей, которых до 25-06/25-07 нет; их темо-зависимость пинится внутри G-14 (наличие в блоке + отличающийся light-override)
 - [Phase 25]: 25-05: имя `accent-text` выбрано именно потому, что G-5 запрещает подстроку `accent-ink`; базовый `--color-accent` не изменён, тёмное значение новой роли байт-идентично ему, поэтому тёмная тема визуально не двигается
+- [Phase 25]: Status fills stay as brand colours; only labels moved to the -ink roles (G-18 enforces the split).
+- [Phase 25]: admin-toast uses the alias family (bg-paper-2 + border-rule + text-ink), not a one-off colour.
+- [Phase 25]: G-16 asserts only status literals the harness can render; the send-failure banner literal is registered but not demanded.
 
 ### Pending Todos
 
@@ -247,8 +251,8 @@ Carried product deferrals beyond v1.3: leaderboard, quiz, Whisper/Foundry ASR, i
 
 ## Session Continuity
 
-Last session: 2026-10-21T16:47:02.427Z
-Stopped at: Completed 25-05-PLAN.md
+Last session: 2026-10-21T17:06:09.445Z
+Stopped at: Completed 25-06-PLAN.md
 Resume file: None
 Next: `/gsd-discuss-phase 25` (or `/gsd-plan-phase 25`)
 
