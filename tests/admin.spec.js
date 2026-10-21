@@ -413,7 +413,7 @@ test.describe("Admin Digest — shortlist triage (ADMIN-01…03, ADMIN-05, D-79,
     await expect(page.getByTestId("admin-digest-page").getByText("Админ", { exact: true })).toHaveCount(0);
     const digestTab = page.getByTestId("admin-tab-digest");
     await expect(digestTab).toHaveAttribute("aria-current", "page");
-    await expect(digestTab).toHaveClass(/text-3xl/);
+    await expect(digestTab).toHaveClass(/text-2xl/);
     await expect(digestTab).toHaveClass(/font-semibold/);
     const list = page.getByTestId("admin-shortlist");
     await expect(list).toBeVisible();
@@ -1304,7 +1304,7 @@ test.describe("Admin pipeline config — view + save (PIPE-01/PIPE-03, D-11/D-13
     await expect(page.getByTestId("admin-pipeline-page").getByText("Админ", { exact: true })).toHaveCount(0);
     const pipelineTab = page.getByTestId("admin-tab-pipeline");
     await expect(pipelineTab).toHaveAttribute("aria-current", "page");
-    await expect(pipelineTab).toHaveClass(/text-3xl/);
+    await expect(pipelineTab).toHaveClass(/text-2xl/);
     await expect(pipelineTab).toHaveClass(/font-semibold/);
     // No-execution honesty (PIPE-EXEC-* deferred): the surface states its scope.
     await expect(page.getByText("Просмотр и правка без запуска пайплайна", { exact: true })).toBeVisible();
@@ -1831,7 +1831,7 @@ test.describe("Admin pipeline — ingest sources (SRC-01, D-01/D-02)", () => {
     await expect(page.getByTestId("admin-pipeline-page")).toBeVisible();
     const section = page.getByTestId("ingest-sources-section");
     await expect(section).toBeVisible();
-    await expect(page.getByTestId("ingest-sources-heading")).toHaveText("Источники ингеста");
+    await expect(page.getByTestId("ingest-sources-heading")).toHaveText("Источники");
 
     const editor = page.getByTestId("pipeline-config-editor");
     await expect(editor).toBeVisible();

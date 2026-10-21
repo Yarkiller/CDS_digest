@@ -113,3 +113,58 @@ test("naming: the section reads Настройка on all three surfaces and the
   );
   await expect(sectionSelect).toHaveAttribute("aria-label", "Разделы админки");
 });
+
+test("chrome: tab scale, gap and top space; no eyebrow; Источники heading", async ({ page }) => {
+  await gotoAdmin(page, "/admin/pipeline", "dark");
+
+  // The five facts below are the criterion-5 baseline; `expect.soft` reports them together so a
+  // single RED run names every measured regression instead of stopping at the first one. A soft
+  // failure still fails the test — this changes reporting, not the gate.
+  //
+  // 1. PIPEUI-04 — the «Админ» eyebrow left the DOM. Assert the DOM string, not the rendered
+  // uppercased glyphs: `uppercase` made the eyebrow *look* like «АДМИН».
+  const adminNodes = page.getByText("Админ", { exact: true });
+  await expect.soft(adminNodes).toHaveCount(1);
+  const shellAdminLink = page
+    .getByRole("navigation", { name: /основная навигация/i })
+    .getByRole("link", { name: "Админ", exact: true });
+  await expect(shellAdminLink).toHaveCount(1);
+  const soleNodeIsShellLink = await adminNodes
+    .first()
+    .evaluate((el, shellEl) => el === shellEl, await shellAdminLink.elementHandle());
+  expect.soft(soleNodeIsShellLink).toBe(true);
+
+  // 2. PIPEUI-04 — the tab reads at the content h2 scale, not one step above it.
+  const tabStyle = await stylePair(page.getByTestId("admin-tab-pipeline"));
+  const headingStyle = await stylePair(page.getByTestId("ingest-sources-heading"));
+  expect.soft(tabStyle.fontSize).toBe(headingStyle.fontSize);
+  expect.soft(tabStyle.fontSize).toBe("24px");
+  expect.soft(headingStyle.fontSize).toBe("24px");
+
+  // 3. PIPEUI-04 — the tab gap widens from 8px to 16px.
+  const navMetrics = await page.getByTestId("admin-section-nav").evaluate((el) => {
+    const cs = getComputedStyle(el);
+    return { columnGap: cs.columnGap, marginTop: cs.marginTop };
+  });
+  expect.soft(navMetrics.columnGap).toBe("16px");
+  expect.soft(parseFloat(navMetrics.columnGap)).toBeGreaterThan(8);
+
+  // 4. PIPEUI-04 — no eyebrow + no top margin: the strip sits directly under the shell's py-10.
+  expect.soft(navMetrics.marginTop).toBe("0px");
+  const mainBox = await page.locator("main").first().boundingBox();
+  const navBox = await page.getByTestId("admin-section-nav").boundingBox();
+  expect(mainBox).not.toBeNull();
+  expect(navBox).not.toBeNull();
+  expect.soft(navBox.y - mainBox.y).toBeLessThan(48);
+
+  // 5. PIPEUI-03 — the block heading drops the word «ингеста».
+  await expect.soft(page.getByTestId("ingest-sources-heading")).toHaveText("Источники");
+
+  // 6. The navigation contract is not rewritten by the type/spacing move.
+  await expect(page.getByTestId("admin-section-nav")).toHaveAttribute(
+    "aria-label",
+    "Разделы админки",
+  );
+  await expect(page.getByTestId("admin-tab-digest")).toHaveCount(1);
+  await expect(page.getByTestId("admin-tab-pipeline")).toHaveCount(1);
+});
