@@ -5,16 +5,16 @@ milestone_name: UI polish & honest navigation
 current_phase: 25
 current_phase_name: Admin «Настройка» — naming, readable surfaces, token repair
 status: executing
-stopped_at: Completed 25-07-PLAN.md
-last_updated: "2026-10-21T18:54:12.485Z"
+stopped_at: Completed 25-08-PLAN.md
+last_updated: "2026-10-21T19:20:07.946Z"
 last_activity: 2026-10-21
 last_activity_desc: Phase 25 execution started
-state_head: c2bbc2e94b1ba549e37867a9870c61b0395d700c
+state_head: bc9653a42029c184ab0f68f42714ff157bf0e00f
 progress:
   total_phases: 4
   completed_phases: 0
   total_plans: 10
-  completed_plans: 7
+  completed_plans: 8
   percent: 0
 ---
 
@@ -100,6 +100,7 @@ Last activity: 2026-10-21 — Phase 25 plan 05 executed (status label roles + fi
 | Phase 25 P05 | 8 min | 2 tasks | 3 files |
 | Phase 25 P06 | 21min | 3 tasks | 9 files |
 | Phase 25 P07 | 19 | 2 tasks | 12 files |
+| Phase 25 P08 | 12m | 3 tasks | 22 files |
 
 ## Accumulated Context
 
@@ -222,6 +223,9 @@ v1.3 roadmap locks:
 - [Phase 25]: 25-07: gotoAdmin awaits data-theme only where the theme toggle is mounted, so WR-04 is closed without making the auth shell hang.
 - [Phase 25]: 25-07: ActionButton keeps stateFill.loading empty and dims via an additive stateChrome map, preserving the variant fill mid-flight (must_have #13).
 - [Phase 25]: 25-07: G-17 pins 16 controls plus four decorative literals; G-19 forbids text-accent as a label, keeping boundary and divider roles from re-merging.
+- [Phase 25]: The base --color-primary stays byte-identical (#8B5CF6) as fill/border/ring/tint (D-05); only the label role moves to the theme-dependent --color-primary-text (#A78BFA dark / #6D28D9 light).
+- [Phase 25]: G-20 scans className string literals token-exact, never substrings: text-primary-text, text-text-primary, bg-primary, border-primary and outline-primary are all non-offenders, so the gate cannot self-trigger on its own fix.
+- [Phase 25]: The save-retry background is assembled from tokens via blendOver(--color-danger, --color-bg-app, 0.1) because getComputedStyle serializes bg-danger/10 to oklab(…/0.1), which parseColor refuses.
 
 ### Pending Todos
 
@@ -255,8 +259,8 @@ Carried product deferrals beyond v1.3: leaderboard, quiz, Whisper/Foundry ASR, i
 
 ## Session Continuity
 
-Last session: 2026-10-21T17:24:57.863Z
-Stopped at: Completed 25-07-PLAN.md
+Last session: 2026-10-21T19:20:07.892Z
+Stopped at: Completed 25-08-PLAN.md
 Resume file: None
 Next: `/gsd-discuss-phase 25` (or `/gsd-plan-phase 25`)
 
