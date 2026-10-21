@@ -14,14 +14,14 @@ already-committed streamed DeepSeek fix (`0dddc75`).
 ### Admin section naming and readable surfaces
 
 - [x] **PIPEUI-01**: An admin sees the pipeline section named «Настройка» everywhere it is announced — the section tab, the screen-reader heading and the narrow-viewport section select — while the `/admin/pipeline` URL stays unchanged
-- [ ] **PIPEUI-02**: The ingest-source «Тип» select and both «Канал» / «Плейлист» options are legible in the dark and the light theme, with an explicit surface and text colour instead of the user-agent field look
+- [x] **PIPEUI-02**: The ingest-source «Тип» select and both «Канал» / «Плейлист» options are legible in the dark and the light theme, with an explicit surface and text colour instead of the user-agent field look
 - [x] **PIPEUI-03**: The ingest-sources block heading reads «Источники» — the word «ингеста» is gone
 - [x] **PIPEUI-04**: Backlog 999.2 admin chrome polish — the «Админ» eyebrow is gone, the tab type matches the content `h2` scale, the gap between tabs grows, and the empty space above the tabs shrinks
 
 ### Theme contrast
 
 - [ ] **THEME-01**: In the light theme the labels on filled buttons and the active nav pill are white, so no near-black text sits on a purple or accent fill; the yellow voting button keeps its dark label because white on `#EAB308` fails contrast
-- [ ] **THEME-02**: The semantic admin token family the admin components already use (`paper`, `paper-2`, `ink`, `ink-2`, `muted`, `rule`, `accent-ink`) is declared in the Tailwind `@theme` with light-theme overrides, and a test fails when a token used by those components is undeclared
+- [x] **THEME-02**: The semantic admin token family the admin components already use (`paper`, `paper-2`, `ink`, `ink-2`, `muted`, `rule`, `accent-ink`) is declared in the Tailwind `@theme` with light-theme overrides, and a test fails when a token used by those components is undeclared
 
 ### Section context
 
@@ -63,11 +63,11 @@ Acknowledged but not in this milestone's roadmap. IDs are reserved and never reu
 | Requirement | Phase | Status |
 |-------------|-------|--------|
 | PIPEUI-01 | Phase 25 | Complete |
-| PIPEUI-02 | Phase 25 | Pending |
+| PIPEUI-02 | Phase 25 | Complete |
 | PIPEUI-03 | Phase 25 | Complete |
 | PIPEUI-04 | Phase 25 | Complete |
 | THEME-01 | Phase 25 | Pending |
-| THEME-02 | Phase 25 | Pending |
+| THEME-02 | Phase 25 | Complete |
 | NAV-01 | Phase 26 | Pending |
 | NAV-02 | Phase 26 | Pending |
 | KNOW-05 | Phase 27 | Pending |

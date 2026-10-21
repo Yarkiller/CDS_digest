@@ -5,17 +5,17 @@ milestone_name: UI polish & honest navigation
 current_phase: 25
 current_phase_name: Admin «Настройка» — naming, readable surfaces, token repair
 status: executing
-stopped_at: Completed 25-02-PLAN.md
-last_updated: "2026-10-21T12:48:07.446Z"
+stopped_at: Completed 25-03-PLAN.md
+last_updated: "2026-10-21T13:08:22.865Z"
 last_activity: 2026-10-21
 last_activity_desc: Phase 25 execution started
-state_head: b01f14e21cb3f2ca7078048b22498d9c85788102
+state_head: 0a7abdcf656523199977540a7ba102cb4b6f0592
 progress:
   total_phases: 4
   completed_phases: 0
   total_plans: 4
-  completed_plans: 2
-  percent: 50
+  completed_plans: 3
+  percent: 75
 ---
 
 # Project State
@@ -30,7 +30,7 @@ See: .planning/PROJECT.md (updated 2026-10-21 — v1.4 milestone started)
 ## Current Position
 
 Phase: 25 (Admin «Настройка» — naming, readable surfaces, token repair) — EXECUTING
-Plan: 3 of 4
+Plan: 4 of 4
 Status: Ready to execute
 Last activity: 2026-10-21 — Phase 25 execution started
 
@@ -95,6 +95,7 @@ Last activity: 2026-10-21 — Phase 25 execution started
 | Phase 24 P08 | 20min | 3 tasks | 6 files |
 | Phase 25 P01 | 11min | 2 tasks | 4 files |
 | Phase 25 P02 | 13min | 2 tasks | 4 files |
+| Phase 25 P03 | 15min | 2 tasks | 7 files |
 
 ## Accumulated Context
 
@@ -197,6 +198,9 @@ v1.3 roadmap locks:
 - [Phase 25]: 25-02: eyebrow «Админ» удалён из DOM — getByText('Админ', { exact: true }) теперь 1 узел и это shell-ссылка; sr-only h1 (IN-01) сохранён и остаётся единственным
 - [Phase 25]: 25-02: кегль вкладки сравнивается с контентным h2 двусторонне (tab === ingest-sources-heading И оба === 24px), зазор 16px, margin-top 0, nav.top − main.top < 48 — относительный порог вместо литерала 40px
 - [Phase 25]: 25-02: пять замеров критерия 5 оформлены expect.soft — иначе RED показывает только первое падение, а acceptance требует все пять причин в одном выводе; soft-падение всё равно валит тест
+- [Phase 25]: 25-03: семейство paper/paper-2/ink/ink-2/muted/rule объявлено в существующих блоках @theme static и [data-theme=light] (6 light-override'ов); семь тема-независимых ролей (-solid, on-solid, voting-ink, scrim) — только в @theme static, отсутствие override пинится G-3
+- [Phase 25]: 25-03: tests/helpers/contrast.js дополнительно бросает исключение при alpha < 1 и на var()/% в каналах — прозрачные/полупрозрачные фоны устраняются конструктивно, а не проверкой
+- [Phase 25]: 25-03: канонический контраст ui-select — --color-paper / #eef1f8 (light, 15.0:1) и канал/плейлист — --color-paper-2 / #f7f8fb (dark, 6.04:1)
 
 ### Pending Todos
 
@@ -229,8 +233,8 @@ Carried product deferrals beyond v1.3: leaderboard, quiz, Whisper/Foundry ASR, i
 
 ## Session Continuity
 
-Last session: 2026-10-21T12:48:07.424Z
-Stopped at: Completed 25-02-PLAN.md
+Last session: 2026-10-21T13:08:22.844Z
+Stopped at: Completed 25-03-PLAN.md
 Resume file: None
 Next: `/gsd-discuss-phase 25` (or `/gsd-plan-phase 25`)
 
