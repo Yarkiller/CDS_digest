@@ -66,6 +66,60 @@ const UTILITY_PATTERN = new RegExp(
   'g',
 )
 
+/** Fills: a label painted on one of these must not read a theme-dependent token. */
+const FILL_TOKENS = ['bg-primary', 'bg-accent', 'bg-success', 'bg-danger', 'bg-voting']
+
+/** Labels that flip with the theme — illegal on top of a fill (THEME-01). */
+const THEME_DEPENDENT_LABELS = ['text-text-primary', 'text-accent-ink', 'text-bg-app']
+
+/** Theme-dependent veils: `bg-ink` always, `bg-text-primary` only with an alpha modifier. */
+const VEIL_TOKENS = ['bg-ink', 'bg-text-primary']
+
+/**
+ * Every string literal of a JS/JSX source, verbatim.
+ *
+ * A class list can only live in a string — a `className` attribute value or an element of
+ * the `stateClass` / `variantClass` / `linkClass` arrays — so scanning literals is both
+ * complete and immune to prose in comments and JSX text. The scan deliberately stops at a
+ * newline for `'`/`"` literals: a stray apostrophe in prose must not swallow the file.
+ */
+function stringLiterals(source) {
+  const literals = []
+  let quote = null
+  let start = 0
+  for (let index = 0; index < source.length; index += 1) {
+    const char = source[index]
+    if (quote === null) {
+      if (char === "'" || char === '"' || char === '`') {
+        quote = char
+        start = index + 1
+      }
+      continue
+    }
+    if (char === '\\') {
+      index += 1
+      continue
+    }
+    if (char === quote) {
+      literals.push(source.slice(start, index))
+      quote = null
+      continue
+    }
+    if (char === '\n' && quote !== '`') quote = null
+  }
+  return literals
+}
+
+/** One utility, without its variant prefixes: `hover:bg-primary` -> `bg-primary`. */
+function baseToken(token) {
+  return token.slice(token.lastIndexOf(':') + 1)
+}
+
+/** The token set of one class list. Token equality, never a substring match. */
+function tokenSet(literal) {
+  return new Set(literal.split(/\s+/).filter(Boolean).map(baseToken))
+}
+
 /** Every .js/.jsx source under web/src, as `{ relative, source }` pairs. */
 function sources() {
   return readdirSync(path.join(ROOT, 'web/src'), { recursive: true })
@@ -272,6 +326,51 @@ describe('semantic token coverage (criterion 3)', () => {
       light.get('--color-muted'),
       light.get('--color-text-secondary'),
       'light muted deviates from text-secondary by design; #64748B only reaches 4.34:1 on paper-2',
+    )
+  })
+
+  it('G-9: no theme-dependent label sits on a filled surface', () => {
+    const offenders = []
+
+    for (const { relative, source } of sources()) {
+      for (const literal of stringLiterals(source)) {
+        const tokens = tokenSet(literal)
+        // Token equality is the whole point: `bg-primary-solid` must not read as
+        // `bg-primary`, or the gate would be green on the very defect it forbids.
+        const fills = FILL_TOKENS.filter((fill) => tokens.has(fill))
+        if (fills.length === 0) continue
+        const labels = THEME_DEPENDENT_LABELS.filter((label) => tokens.has(label))
+        if (labels.length === 0) continue
+        offenders.push(`${relative}: ${fills.join('+')} with ${labels.join('+')} — "${literal}"`)
+      }
+    }
+
+    assert.deepEqual(
+      offenders,
+      [],
+      `a label painted on a fill must not read the theme (THEME-01): ${offenders.join('; ')}`,
+    )
+  })
+
+  it('G-10: no theme-dependent veil survives under web/src', () => {
+    const offenders = []
+
+    for (const { relative, source } of sources()) {
+      for (const literal of stringLiterals(source)) {
+        for (const token of tokenSet(literal)) {
+          if (!VEIL_TOKENS.some((veil) => token === veil || token.startsWith(`${veil}/`))) continue
+          // `bg-text-primary` without alpha is the known adjacent toast defect (UI-SPEC
+          // § Known adjacent defects 1), not an overlay — only the veil form is forbidden.
+          if (token === 'bg-text-primary') continue
+          offenders.push(`${relative}: ${token}`)
+        }
+      }
+    }
+
+    assert.deepEqual(
+      offenders,
+      [],
+      `a full-screen scrim must not ride a theme-dependent token (T-25-03): ${offenders.join('; ')}`,
     )
   })
 })

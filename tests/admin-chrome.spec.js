@@ -214,3 +214,61 @@ test("select legible in both themes", async ({ page }) => {
     ).toEqual(["Канал", "Плейлист"]);
   }
 });
+
+test("theme-independent labels in both themes", async ({ page }) => {
+  // Criterion 4 (THEME-01): a label painted on a fill must not flip with the theme. The
+  // pair is asserted as an exact value in BOTH themes — "different from before" would pass
+  // on a different theme-dependent value.
+  const pillFill = { color: "rgb(255, 255, 255)", background: "rgb(124, 58, 237)" };
+  const addFill = { color: "rgb(255, 255, 255)", background: "rgb(14, 116, 144)" };
+  const votingFill = { color: "rgb(15, 23, 42)", background: "rgb(234, 179, 8)" };
+
+  for (const theme of ["dark", "light"]) {
+    await gotoAdmin(page, "/admin/pipeline", theme);
+
+    // 1. The active shell pill — the surface whose label was grey-on-violet in light theme.
+    const pill = page
+      .getByRole("navigation", { name: /основная навигация/i })
+      .getByRole("link", { name: "Админ", exact: true });
+    const pillPair = await stylePair(pill);
+    // Asserted first: a transparent fill would make `contrastRatio` meaningless.
+    expect(pillPair.background, `pill (${theme}) must paint an opaque fill`).not.toBe(
+      "rgba(0, 0, 0, 0)",
+    );
+    expect(pillPair.color, `pill (${theme}) color`).toBe(pillFill.color);
+    expect(pillPair.background, `pill (${theme}) background`).toBe(pillFill.background);
+    expect(contrastRatio(pillPair.color, pillPair.background), `pill (${theme}) contrast`)
+      .toBeGreaterThanOrEqual(4.5);
+
+    // 2. Token-exact class check: `bg-primary` is a substring of `bg-primary-solid`, so a
+    // regex over the raw attribute would stay green with the bare base class left behind.
+    const pillTokens = await classTokens(pill);
+    expect(pillTokens, `pill (${theme}) tokens`).toContain("bg-primary-solid");
+    expect(pillTokens, `pill (${theme}) must not keep the base fill`).not.toContain("bg-primary");
+
+    // 3. The accent CTA (migrated in 25-03) — this row holds it from being reverted.
+    const addPair = await stylePair(page.getByTestId("ingest-sources-add"));
+    expect(addPair.background, `add CTA (${theme}) must paint an opaque fill`).not.toBe(
+      "rgba(0, 0, 0, 0)",
+    );
+    expect(addPair.color, `add CTA (${theme}) color`).toBe(addFill.color);
+    expect(addPair.background, `add CTA (${theme}) background`).toBe(addFill.background);
+    expect(contrastRatio(addPair.color, addPair.background), `add CTA (${theme}) contrast`)
+      .toBeGreaterThanOrEqual(4.5);
+
+    // 4. `voting` is a POSITIVE assertion of the recorded ROADMAP exception, not a skip:
+    // white on #EAB308 measures 1.92 and must fail here.
+    await page.goto("/voting");
+    const confirm = page.getByTestId("confirm-vote");
+    await page.getByRole("radio", { name: /RAG в корпоративной среде/i }).click();
+    await expect(confirm).toBeEnabled();
+    const votingPair = await stylePair(confirm);
+    expect(votingPair.background, `voting (${theme}) must paint an opaque fill`).not.toBe(
+      "rgba(0, 0, 0, 0)",
+    );
+    expect(votingPair.color, `voting (${theme}) color`).toBe(votingFill.color);
+    expect(votingPair.background, `voting (${theme}) background`).toBe(votingFill.background);
+    expect(contrastRatio(votingPair.color, votingPair.background), `voting (${theme}) contrast`)
+      .toBeGreaterThanOrEqual(4.5);
+  }
+});

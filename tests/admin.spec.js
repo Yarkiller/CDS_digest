@@ -183,7 +183,11 @@ test.describe("Admin nav grouping — in-page section switch (ADUX-12, D-01…D-
 
     const adminLink = shellAdminLink(page);
     await expect(adminLink).toHaveAttribute("href", "/admin/digest");
-    await expect(adminLink).toHaveClass(/bg-primary/);
+    // Token-exact (THEME-01): `bg-primary` is a substring of `bg-primary-solid`, so the
+    // content-bearing positive goes first and the bare base class is forbidden.
+    const adminTokens = (await adminLink.getAttribute("class")).split(/\s+/);
+    expect(adminTokens).toContain("bg-primary-solid");
+    expect(adminTokens).not.toContain("bg-primary");
   });
 
   test("admin-section nav is absent from materials preview while shell Админ stays active", async ({
@@ -195,7 +199,10 @@ test.describe("Admin nav grouping — in-page section switch (ADUX-12, D-01…D-
     // D-03 / D-11: preview is a sibling route — no tab-bar, but the shell pill lights up
     await expect(page.getByTestId("admin-section-nav")).toHaveCount(0);
     await expect(page.getByTestId("admin-section-select")).toHaveCount(0);
-    await expect(shellAdminLink(page)).toHaveClass(/bg-primary/);
+    const pill = shellAdminLink(page);
+    const tokens = (await pill.getAttribute("class")).split(/\s+/);
+    expect(tokens).toContain("bg-primary-solid");
+    expect(tokens).not.toContain("bg-primary");
   });
 
   test("narrow viewport swaps the section nav for the select backstop", async ({ page }) => {
@@ -213,7 +220,10 @@ test.describe("Admin nav grouping — in-page section switch (ADUX-12, D-01…D-
     await select.selectOption("/admin/pipeline");
     await expect(page).toHaveURL(/\/admin\/pipeline$/);
     await expect(page.getByTestId("admin-section-select")).toHaveValue("/admin/pipeline");
-    await expect(shellAdminLink(page)).toHaveClass(/bg-primary/);
+    const pill = shellAdminLink(page);
+    const tokens = (await pill.getAttribute("class")).split(/\s+/);
+    expect(tokens).toContain("bg-primary-solid");
+    expect(tokens).not.toContain("bg-primary");
   });
 
   test("dirty editor ignores a click on the already-active section tab (WR-01, D-13)", async ({
@@ -296,7 +306,11 @@ test.describe("Admin nav grouping — in-page section switch (ADUX-12, D-01…D-
     await expect(homeLink).toHaveCount(1);
     await expect(homeLink).toHaveAttribute("href", "/admin/digest");
     expect(await homeLink.getAttribute("aria-current")).toBeNull();
-    await expect(homeLink).not.toHaveClass(/bg-primary/);
+    // The negative site: the inactive pill must carry neither the -solid fill nor a stray
+    // bare base class — this is the only row that catches a leftover `bg-primary`.
+    const homeTokens = (await homeLink.getAttribute("class")).split(/\s+/);
+    expect(homeTokens).not.toContain("bg-primary");
+    expect(homeTokens).not.toContain("bg-primary-solid");
 
     // "true", not "page": the href targets digest while the whole section is current.
     for (const target of [
@@ -309,7 +323,9 @@ test.describe("Admin nav grouping — in-page section switch (ADUX-12, D-01…D-
       await expect(adminLink).toHaveCount(1);
       await expect(adminLink).toHaveAttribute("href", "/admin/digest");
       await expect(adminLink).toHaveAttribute("aria-current", "true");
-      await expect(adminLink).toHaveClass(/bg-primary/);
+      const loopTokens = (await adminLink.getAttribute("class")).split(/\s+/);
+      expect(loopTokens).toContain("bg-primary-solid");
+      expect(loopTokens).not.toContain("bg-primary");
     }
   });
 
