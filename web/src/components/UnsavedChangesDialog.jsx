@@ -23,7 +23,7 @@ export default function UnsavedChangesDialog({ open, onStay, onLeave }) {
 
   return (
     <div
-      className="fixed inset-0 z-[400] flex items-center justify-center bg-ink/40 p-4"
+      className="fixed inset-0 z-[400] flex items-center justify-center bg-scrim p-4"
       role="dialog"
       aria-modal="true"
       aria-labelledby="unsaved-changes-title"
@@ -50,7 +50,7 @@ export default function UnsavedChangesDialog({ open, onStay, onLeave }) {
           <button
             type="button"
             data-testid="unsaved-changes-leave"
-            className="inline-flex min-h-11 items-center justify-center rounded-full bg-accent px-4 text-sm font-medium text-accent-ink"
+            className="inline-flex min-h-11 items-center justify-center rounded-full bg-accent-solid px-4 text-sm font-medium text-on-solid"
             onClick={onLeave}
           >
             Уйти без сохранения

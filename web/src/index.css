@@ -31,6 +31,29 @@
   --color-rank-2: #94A3B8;
   --color-rank-3: #CD7F32;
 
+  /* Semantic admin family. The components already say `bg-paper` / `text-ink-2` /
+     `border-rule`, but Tailwind v4 emits no utility for a token that does not exist —
+     which is why the «Тип» select stayed a transparent field with inherited text. These
+     six values depend on the theme, so their light counterparts live in the
+     [data-theme="light"] block below. */
+  --color-paper: #131925;
+  --color-paper-2: #1A2233;
+  --color-ink: #F1F5F9;
+  --color-ink-2: #CBD5E1;
+  --color-muted: #94A3B8;
+  --color-rule: #2A3548;
+
+  /* Theme-independent roles: identical in both themes, so they get no override. A label
+     that flips with the theme is the defect this family exists to remove; every pair is
+     measured in tests/unit/test_semantic_token_coverage.js (G-7). */
+  --color-primary-solid: #7C3AED;
+  --color-accent-solid: #0E7490;
+  --color-success-solid: #15803D;
+  --color-danger-solid: #DC2626;
+  --color-on-solid: #FFFFFF;
+  --color-voting-ink: #0F172A;
+  --color-scrim: rgba(0, 0, 0, 0.6);
+
   --font-display: "Manrope", "Segoe UI", system-ui, sans-serif;
   --font-sans: "Manrope", "Segoe UI", system-ui, sans-serif;
   --font-mono: "JetBrains Mono", "Consolas", monospace;
@@ -114,6 +137,17 @@
     --color-text-disabled: #94A3B8;
     --color-border: #E2E8F0;
     --color-border-glow: rgba(139, 92, 246, 0.2);
+
+    /* Theme-dependent half of the semantic family declared in @theme above. The seven
+       theme-independent roles are deliberately absent — an override there would make a
+       label flip with the theme again. */
+    --color-paper: #FFFFFF;
+    --color-paper-2: #F1F5F9;
+    --color-ink: #0F172A;
+    --color-ink-2: #334155;
+    --color-muted: #475569;
+    --color-rule: #CBD5E1;
+
     --color-xp-text: #1A2E05;
     --shadow-md: 0 0 0 1px var(--color-border), 0 4px 24px rgba(15, 23, 42, 0.08);
     --shadow-glow: 0 0 0 1px var(--color-border-glow), 0 0 20px rgba(139, 92, 246, 0.08);

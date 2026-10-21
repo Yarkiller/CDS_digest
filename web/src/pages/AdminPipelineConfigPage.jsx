@@ -302,7 +302,7 @@ export default function AdminPipelineConfigPage() {
         <button
           type="button"
           data-testid="pipeline-config-save"
-          className="inline-flex min-h-11 items-center justify-center rounded-full bg-accent px-5 text-sm font-medium text-accent-ink disabled:cursor-not-allowed disabled:opacity-45"
+          className="inline-flex min-h-11 items-center justify-center rounded-full bg-accent-solid px-5 text-sm font-medium text-on-solid disabled:cursor-not-allowed disabled:opacity-45"
           disabled={!yamlDirty || saving}
           onClick={onSave}
         >

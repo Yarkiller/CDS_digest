@@ -216,7 +216,7 @@ export default function IngestSourcesSection({
               <li
                 key={row.id}
                 data-testid="ingest-source-row"
-                className="rounded-xl border border-rule bg-paper-2/40 p-3"
+                className="rounded-xl border border-rule bg-paper-2 p-3"
               >
                 <p className="break-words font-mono text-base text-ink-2">{row.source_id}</p>
                 <p className="mt-1 break-words text-xs text-muted">
@@ -261,7 +261,7 @@ export default function IngestSourcesSection({
         </ul>
       ) : null}
 
-      <div className="mt-6 space-y-3 rounded-xl bg-paper-2/40 p-4">
+      <div className="mt-6 space-y-3 rounded-xl bg-paper-2 p-4">
         <div className="flex flex-wrap items-end gap-2">
           <label className="flex flex-col gap-1 text-xs font-semibold text-ink-2">
             Тип
@@ -305,7 +305,7 @@ export default function IngestSourcesSection({
           <button
             type="button"
             data-testid="ingest-sources-add"
-            className="inline-flex min-h-11 items-center justify-center rounded-full bg-accent px-5 text-sm font-medium text-accent-ink disabled:cursor-not-allowed disabled:opacity-45"
+            className="inline-flex min-h-11 items-center justify-center rounded-full bg-accent-solid px-5 text-sm font-medium text-on-solid disabled:cursor-not-allowed disabled:opacity-45"
             disabled={!canAdd}
             onClick={onAdd}
           >
