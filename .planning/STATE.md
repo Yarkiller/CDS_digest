@@ -5,16 +5,16 @@ milestone_name: UI polish & honest navigation
 current_phase: 25
 current_phase_name: Admin «Настройка» — naming, readable surfaces, token repair
 status: executing
-stopped_at: Completed 25-06-PLAN.md
-last_updated: "2026-10-21T17:06:15.856Z"
+stopped_at: Completed 25-07-PLAN.md
+last_updated: "2026-10-21T17:24:57.906Z"
 last_activity: 2026-10-21
 last_activity_desc: Phase 25 execution started
-state_head: 6d2c35370e2f58aa39d1b7f8eca424817a42f93b
+state_head: 716bdfed8654e328b6bcf77428ec732e38316d66
 progress:
   total_phases: 4
   completed_phases: 0
   total_plans: 7
-  completed_plans: 6
+  completed_plans: 7
   percent: 0
 ---
 
@@ -30,7 +30,7 @@ See: .planning/PROJECT.md (updated 2026-10-21 — v1.4 milestone started)
 ## Current Position
 
 Phase: 25 (Admin «Настройка» — naming, readable surfaces, token repair) — EXECUTING
-Plan: 6 of 7
+Plan: 7 of 7
 Status: Ready to execute
 Last activity: 2026-10-21 — Phase 25 plan 05 executed (status label roles + field boundary)
 
@@ -99,6 +99,7 @@ Last activity: 2026-10-21 — Phase 25 plan 05 executed (status label roles + fi
 | Phase 25 P04 | 17min | 3 tasks | 10 files |
 | Phase 25 P05 | 8 min | 2 tasks | 3 files |
 | Phase 25 P06 | 21min | 3 tasks | 9 files |
+| Phase 25 P07 | 19 | 2 tasks | 12 files |
 
 ## Accumulated Context
 
@@ -218,6 +219,9 @@ v1.3 roadmap locks:
 - [Phase 25]: Status fills stay as brand colours; only labels moved to the -ink roles (G-18 enforces the split).
 - [Phase 25]: admin-toast uses the alias family (bg-paper-2 + border-rule + text-ink), not a one-off colour.
 - [Phase 25]: G-16 asserts only status literals the harness can render; the send-failure banner literal is registered but not demanded.
+- [Phase 25]: 25-07: gotoAdmin awaits data-theme only where the theme toggle is mounted, so WR-04 is closed without making the auth shell hang.
+- [Phase 25]: 25-07: ActionButton keeps stateFill.loading empty and dims via an additive stateChrome map, preserving the variant fill mid-flight (must_have #13).
+- [Phase 25]: 25-07: G-17 pins 16 controls plus four decorative literals; G-19 forbids text-accent as a label, keeping boundary and divider roles from re-merging.
 
 ### Pending Todos
 
@@ -251,8 +255,8 @@ Carried product deferrals beyond v1.3: leaderboard, quiz, Whisper/Foundry ASR, i
 
 ## Session Continuity
 
-Last session: 2026-10-21T17:06:09.445Z
-Stopped at: Completed 25-06-PLAN.md
+Last session: 2026-10-21T17:24:57.863Z
+Stopped at: Completed 25-07-PLAN.md
 Resume file: None
 Next: `/gsd-discuss-phase 25` (or `/gsd-plan-phase 25`)
 
