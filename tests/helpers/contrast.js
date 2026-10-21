@@ -157,4 +157,34 @@ function contrastRatio(foreground, background) {
   return (high + 0.05) / (low + 0.05)
 }
 
-module.exports = { parseColor, channelLuminance, relativeLuminance, contrastRatio }
+/**
+ * Composite a translucent tint over an opaque base and return the resulting opaque colour.
+ *
+ * `bg-success/15` is translucent by construction and `relativeLuminance` throws on alpha, so a
+ * ratio against a tint can only be taken on the composite. Doing it here keeps the arithmetic
+ * in one place, next to `contrastRatio`, instead of an ad-hoc expression inside each gate.
+ *
+ * The alpha carried by `colour` is deliberately ignored: a browser serializes the tint as
+ * `rgba(34, 197, 94, 0.15)`, and the strength being measured is the `alpha` argument, never the
+ * serialization. Only `base` must be opaque — a composite over a translucent base is as
+ * undefined as a ratio against one, so it throws rather than guessing.
+ *
+ * @param {string} colour serialized tint colour (its own alpha is not transferred)
+ * @param {string} base serialized opaque base colour
+ * @param {number} alpha tint strength, 0…1
+ * @returns {string} opaque `rgb(r, g, b)` — the exact form `parseColor` reads back
+ */
+function blendOver(colour, base, alpha) {
+  if (!(alpha >= 0 && alpha <= 1)) throw new Error(`blendOver alpha must be within 0..1: ${alpha}`)
+
+  const front = parseColor(colour)
+  const back = parseColor(base)
+  if (back.a < 1) throw new Error(`blendOver needs an opaque base: ${base}`)
+
+  const channel = (foreground, background) =>
+    Math.round(foreground * alpha + background * (1 - alpha))
+
+  return `rgb(${channel(front.r, back.r)}, ${channel(front.g, back.g)}, ${channel(front.b, back.b)})`
+}
+
+module.exports = { parseColor, channelLuminance, relativeLuminance, contrastRatio, blendOver }

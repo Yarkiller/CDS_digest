@@ -23,7 +23,7 @@ const { readFileSync, readdirSync } = require('node:fs')
 const path = require('node:path')
 const { describe, it } = require('node:test')
 
-const { contrastRatio } = require('../helpers/contrast')
+const { contrastRatio, blendOver } = require('../helpers/contrast')
 
 const ROOT = path.join(__dirname, '..', '..')
 
@@ -57,17 +57,19 @@ const FLAT = [
   'on-solid',
   'voting-ink',
   'scrim',
+  'field-border',
 ]
 
 const UTILITY_PREFIXES = ['bg', 'text', 'border', 'ring', 'outline', 'divide', 'fill', 'stroke']
 
 /**
- * `<prefix>-(paper-2|paper|ink-2|ink|muted|rule|danger-ink)`, optionally with an opacity
- * modifier (tolerated here so the hit is attributed to the family, and separately forbidden
- * for `bg-paper*` by G-6). Longest names first so `text-ink-2` is not read as `text-ink`.
+ * `<prefix>-(voting-ink-on-tint|success-ink|accent-text|field-border|danger-ink|paper-2|paper|
+ * ink-2|ink|muted|rule)`, optionally with an opacity modifier (tolerated here so the hit is
+ * attributed to the family, and separately forbidden for `bg-paper*` by G-6). Longest names
+ * first so `text-success-ink` is not read as `text-success` and `text-ink-2` not as `text-ink`.
  */
 const UTILITY_PATTERN = new RegExp(
-  `(?<![\\w-])(?:${UTILITY_PREFIXES.join('|')})-(paper-2|paper|ink-2|ink|muted|rule|danger-ink)(?:/[0-9.]+)?`,
+  `(?<![\\w-])(?:${UTILITY_PREFIXES.join('|')})-(voting-ink-on-tint|success-ink|accent-text|field-border|danger-ink|paper-2|paper|ink-2|ink|muted|rule)(?:/[0-9.]+)?`,
   'g',
 )
 
@@ -93,6 +95,29 @@ const FILL_TOKENS = [
 
 /** Labels that flip with the theme — illegal on top of a fill (THEME-01). */
 const THEME_DEPENDENT_LABELS = ['text-text-primary', 'text-accent-ink', 'text-bg-app']
+
+/**
+ * G-14: the surfaces a tint can sit on. `bg-app` is a base too — a status chip may be painted
+ * straight onto the page shell, not only onto a card.
+ */
+const TINT_BASES = ['paper', 'paper-2', 'bg-app']
+
+/**
+ * G-14: the status label roles and the translucent tint each one sits on.
+ *
+ * The tint tokens (`success` / `voting` / `danger`) are fill/status colours and stay theme-flat
+ * by design — G-3 pins the absence of a light override. The label on top of them is *not* flat:
+ * `bg-success/15` over a light surface composites to a pale green that a green label cannot
+ * survive, which is the 1.925:1 defect this gate exists to close.
+ */
+const STATUS_LABEL_TINTS = [
+  { ink: 'success-ink', tint: 'success', alpha: 0.15 },
+  { ink: 'voting-ink-on-tint', tint: 'voting', alpha: 0.2 },
+  { ink: 'danger-ink', tint: 'danger', alpha: 0.1 },
+]
+
+/** G-14: label roles that also stand on a bare surface (a pill with no tint, a link). */
+const LABELS_ON_SURFACE = ['accent-text', 'success-ink', 'danger-ink']
 
 /**
  * Arbitrary-value colour utilities: `<prefix>-[<colour>]`, e.g. `text-[oklch(45%_0.14_25)]`.
@@ -574,5 +599,189 @@ describe('semantic token coverage (criterion 3)', () => {
       [],
       `a full-screen scrim must not ride a theme-dependent token (T-25-03): ${offenders.join('; ')}`,
     )
+  })
+
+  it('G-14: a status label clears 4.5:1 on its tint and on bare surfaces, both themes', () => {
+    const failures = []
+    const measured = []
+
+    for (const [themeLabel, block] of [
+      ['dark', dark],
+      ['light', light],
+    ]) {
+      for (const { ink, tint, alpha } of STATUS_LABEL_TINTS) {
+        const inkToken = `--color-${ink}`
+        const inkValue = block.get(inkToken)
+        if (inkValue === undefined) {
+          const message = `${inkToken} is not declared in the ${themeLabel} block`
+          if (!failures.includes(message)) failures.push(message)
+          continue
+        }
+        if (themeLabel === 'light' && light.get(inkToken) === dark.get(inkToken)) {
+          failures.push(`${inkToken} has no real light override (${dark.get(inkToken)} in both themes)`)
+        }
+
+        // The tint resolves by cascade, not from this theme's block alone: `success` / `voting`
+        // / `danger` are theme-flat by design, and demanding a light override here would
+        // contradict G-3 in the same run.
+        const tintValue = light.get(`--color-${tint}`) ?? dark.get(`--color-${tint}`)
+        if (tintValue === undefined) {
+          failures.push(`--color-${tint} is not declared at all`)
+          continue
+        }
+
+        for (const base of TINT_BASES) {
+          const surface = block.get(`--color-${base}`)
+          if (surface === undefined) {
+            failures.push(`--color-${base} is not declared in the ${themeLabel} block`)
+            continue
+          }
+          const composite = blendOver(tintValue, surface, alpha)
+          measured.push({
+            label: `${ink} on ${tint}/${alpha} over ${base} (${themeLabel}) (${inkValue} on ${composite})`,
+            ratio: contrastRatio(inkValue, composite),
+          })
+        }
+      }
+    }
+
+    // The same roles also stand on the bare surfaces — a status pill without a tint, a link on
+    // the page — so the floor is measured there without the composite.
+    for (const [themeLabel, block] of [
+      ['dark', dark],
+      ['light', light],
+    ]) {
+      for (const ink of LABELS_ON_SURFACE) {
+        const inkValue = block.get(`--color-${ink}`)
+        if (inkValue === undefined) {
+          const message = `--color-${ink} is not declared in the ${themeLabel} block`
+          if (!failures.includes(message)) failures.push(message)
+          continue
+        }
+        for (const base of TINT_BASES) {
+          const surface = block.get(`--color-${base}`)
+          if (surface === undefined) continue
+          measured.push({
+            label: `${ink} on ${base} (${themeLabel}) (${inkValue} on ${surface})`,
+            ratio: contrastRatio(inkValue, surface),
+          })
+        }
+      }
+    }
+
+    for (const entry of measured) console.log(`  ${entry.label} = ${entry.ratio.toFixed(3)}`)
+    for (const entry of measured) {
+      if (entry.ratio < 4.5) failures.push(`${entry.label} = ${entry.ratio.toFixed(3)}`)
+    }
+
+    assert.deepEqual(
+      failures,
+      [],
+      `a status label must survive its own tint in both themes: ${failures.join('; ')}`,
+    )
+  })
+
+  it('G-14 proof: the detector reproduces the recorded 1.925:1 tint offender', () => {
+    // The light-theme success pill exactly as it measures today. Pinned numerically so the
+    // floor cannot be softened once the real tree is green (the CR-01 pattern).
+    assert.equal(
+      blendOver('#22C55E', '#F8FAFC', 0.15),
+      'rgb(216, 242, 228)',
+      'blendOver must return the opaque composite as normalized rgb()',
+    )
+
+    const successOnTint = contrastRatio('#22C55E', blendOver('#22C55E', '#F8FAFC', 0.15))
+    assert.ok(
+      successOnTint > 1.9 && successOnTint < 1.95,
+      `expected the recorded 1.925 success-on-tint, got ${successOnTint.toFixed(3)}`,
+    )
+
+    const votingOnTint = contrastRatio('#EAB308', blendOver('#EAB308', '#F8FAFC', 0.2))
+    assert.ok(
+      votingOnTint < 4.5,
+      `the recorded voting-on-tint offender must stay below the floor, got ${votingOnTint.toFixed(3)}`,
+    )
+
+    const whiteOnVoting = contrastRatio('#FFFFFF', '#EAB308')
+    assert.ok(
+      whiteOnVoting > 1.9 && whiteOnVoting < 1.95,
+      `expected the recorded 1.918 white-on-voting, got ${whiteOnVoting.toFixed(3)}`,
+    )
+  })
+
+  it('G-14 proof: blendOver always returns an opaque normalized rgb()', () => {
+    // alpha 1 must normalize rather than echo the input: `getComputedStyle` hands back
+    // `rgba(34, 197, 94, 0.15)`, and a verbatim return would reach `contrastRatio` and throw.
+    assert.equal(blendOver('#22C55E', '#F8FAFC', 1), 'rgb(34, 197, 94)')
+    assert.equal(blendOver('#22C55E', '#F8FAFC', 0), 'rgb(248, 250, 252)')
+
+    // The tint's own alpha is never transferred — only the argument decides the strength.
+    assert.equal(blendOver('rgba(34, 197, 94, 0.15)', '#F8FAFC', 0.15), 'rgb(216, 242, 228)')
+    assert.equal(blendOver('rgba(34, 197, 94, 0.15)', '#F8FAFC', 1), 'rgb(34, 197, 94)')
+
+    assert.throws(() => blendOver('#22C55E', 'rgba(0, 0, 0, 0)', 0.15), /opaque base/)
+    assert.throws(() => blendOver('#22C55E', '#F8FAFC', 1.5), /0\.\.1/)
+    assert.throws(() => blendOver('#22C55E', '#F8FAFC', -0.1), /0\.\.1/)
+  })
+
+  it('G-15: the field boundary clears the 3:1 non-text floor in both themes', () => {
+    const failures = []
+    const measured = []
+    const token = '--color-field-border'
+
+    if (!dark.has(token)) {
+      failures.push(`${token} is not declared in @theme (WCAG 1.4.11 needs a boundary role of its own)`)
+    }
+    if (light.has(token)) {
+      failures.push(`${token} must not have a light override — #64748B is the theme-independent boundary`)
+    }
+
+    const fieldBorder = dark.get(token)
+    if (fieldBorder !== undefined) {
+      for (const [themeLabel, block] of [
+        ['dark', dark],
+        ['light', light],
+      ]) {
+        for (const base of TINT_BASES) {
+          const surface = block.get(`--color-${base}`)
+          if (surface === undefined) {
+            failures.push(`--color-${base} is not declared in the ${themeLabel} block`)
+            continue
+          }
+          measured.push({
+            label: `field-border on ${base} (${themeLabel}) (${fieldBorder} on ${surface})`,
+            ratio: contrastRatio(fieldBorder, surface),
+          })
+        }
+      }
+    }
+
+    for (const entry of measured) console.log(`  ${entry.label} = ${entry.ratio.toFixed(3)}`)
+    for (const entry of measured) {
+      if (entry.ratio < 3) failures.push(`${entry.label} = ${entry.ratio.toFixed(3)}`)
+    }
+
+    assert.deepEqual(
+      failures,
+      [],
+      `a form boundary must clear WCAG 1.4.11's 3:1 (a decorative divider must not be reused as one): ${failures.join('; ')}`,
+    )
+  })
+
+  it('G-15 proof: the same 3:1 floor rejects the decorative rule', () => {
+    // The light field edge today, and its dark twin: both fail the non-text floor, so the gate
+    // above is measuring a role and not simply waving every border through.
+    const darkRule = contrastRatio('#2A3548', '#131925')
+    const lightRule = contrastRatio('#CBD5E1', '#FFFFFF')
+
+    assert.ok(
+      darkRule > 1.4 && darkRule < 1.45,
+      `expected the recorded 1.425 dark rule, got ${darkRule.toFixed(3)}`,
+    )
+    assert.ok(
+      lightRule > 1.45 && lightRule < 1.5,
+      `expected the recorded 1.485 light rule, got ${lightRule.toFixed(3)}`,
+    )
+    assert.ok(darkRule < 3 && lightRule < 3, 'the decorative rule must not clear the boundary floor')
   })
 })
