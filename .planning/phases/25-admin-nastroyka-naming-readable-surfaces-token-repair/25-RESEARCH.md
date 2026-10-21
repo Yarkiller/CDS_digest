@@ -561,7 +561,7 @@ playwright.config.js                # EDIT (config): testMatch должен вк
 
 ### `playwright.config.js` (конфиг, не прод-код)
 
-Текущее (verbatim, `[VERIFIED: playwright.config.js:72]`):
+Текущее (verbatim, `[VERIFIED: playwright.config.js:71]`; строка 72 рядом — `use.baseURL`, её не трогать):
 ```js
       testMatch: /(web-app|auth|knowledge|razbory|admin)\.spec\.js/,
 ```
