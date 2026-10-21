@@ -106,21 +106,95 @@ const THEME_DEPENDENT_LABELS = ['text-text-primary', 'text-accent-ink', 'text-bg
 const TINT_BASES = ['paper', 'paper-2', 'bg-app']
 
 /**
- * G-14: the status label roles and the translucent tint each one sits on.
+ * G-14: which label role sits on each status tint. The alpha is *not* here — it is read
+ * from the class token itself (`bg-success/15` -> 0.15) by `tintAlphaSites`, because a
+ * hard-coded alpha let `bg-success/15 -> /60` drift stay green (GAP-25-6).
  *
  * The tint tokens (`success` / `voting` / `danger`) are fill/status colours and stay theme-flat
  * by design — G-3 pins the absence of a light override. The label on top of them is *not* flat:
  * `bg-success/15` over a light surface composites to a pale green that a green label cannot
  * survive, which is the 1.925:1 defect this gate exists to close.
  */
-const STATUS_LABEL_TINTS = [
-  { ink: 'success-ink', tint: 'success', alpha: 0.15 },
-  { ink: 'voting-ink-on-tint', tint: 'voting', alpha: 0.2 },
-  { ink: 'danger-ink', tint: 'danger', alpha: 0.1 },
-]
+const TINT_LABEL_ROLES = {
+  success: 'success-ink',
+  voting: 'voting-ink-on-tint',
+  danger: 'danger-ink',
+}
+
+/**
+ * G-14: one tint site token, with an optional variant prefix (`hover:bg-danger/15`) and a
+ * percentage alpha suffix. The alpha is the token's own `/N`, never a constant.
+ */
+const TINT_TOKEN = /^(?:[\w-]+:)?bg-(success|voting|danger)\/(\d{1,3})$/
 
 /** G-14: label roles that also stand on a bare surface (a pill with no tint, a link). */
 const LABELS_ON_SURFACE = ['accent-text', 'success-ink', 'danger-ink']
+
+/**
+ * G-14: every tint site of one source, read from the class token, not a constant.
+ *
+ * A class list can only live in a string literal, so scanning `stringLiterals` is complete.
+ * `tokenSet` already strips the variant prefix (`hover:bg-danger/15` -> `bg-danger/15`), and
+ * `TINT_TOKEN` demands a percentage alpha suffix: `bg-success/[0.15]` is *not* a site here —
+ * the gate flags it separately as an unparseable alpha.
+ */
+function tintAlphaSites(relative, source) {
+  const sites = []
+  for (const literal of stringLiterals(source)) {
+    for (const token of tokenSet(literal)) {
+      const match = TINT_TOKEN.exec(token)
+      if (!match) continue
+      sites.push({ relative, token, tint: match[1], alpha: Number(match[2]) / 100 })
+    }
+  }
+  return sites
+}
+
+/**
+ * G-14: the `label = ratio` pairs for each unique tint token, de-duplicated by token so four
+ * `bg-danger/10` sites measure once while the label lists every file the token appears in.
+ */
+function tintLabelMeasurements({ sites, blocks }) {
+  const { dark, light } = blocks
+  const measured = []
+
+  const grouped = new Map()
+  for (const site of sites) {
+    if (!grouped.has(site.token)) {
+      grouped.set(site.token, { tint: site.tint, alpha: site.alpha, files: [] })
+    }
+    grouped.get(site.token).files.push(site.relative.split('/').pop())
+  }
+
+  for (const [token, { tint, alpha, files }] of grouped) {
+    const ink = TINT_LABEL_ROLES[tint]
+    const inkToken = `--color-${ink}`
+    // The tint resolves by cascade, not from this theme's block alone: `success` / `voting`
+    // / `danger` are theme-flat by design, and demanding a light override here would
+    // contradict G-3 in the same run.
+    const tintValue = light.get(`--color-${tint}`) ?? dark.get(`--color-${tint}`)
+    const fileLabel = files.join(', ')
+
+    for (const [themeLabel, block] of [
+      ['dark', dark],
+      ['light', light],
+    ]) {
+      const inkValue = block.get(inkToken)
+      if (inkValue === undefined) continue
+      for (const base of TINT_BASES) {
+        const surface = block.get(`--color-${base}`)
+        if (surface === undefined) continue
+        const composite = blendOver(tintValue, surface, alpha)
+        measured.push({
+          label: `${token} (${fileLabel}) ${ink} on ${base} (${themeLabel})`,
+          ratio: contrastRatio(inkValue, composite),
+        })
+      }
+    }
+  }
+
+  return measured
+}
 
 /**
  * Arbitrary-value colour utilities: `<prefix>-[<colour>]`, e.g. `text-[oklch(45%_0.14_25)]`.
@@ -516,25 +590,58 @@ const STATUS_LITERALS = [
   'Не удалось сделать ready',
 ]
 
-/** Assertion forms that can carry a regex literal (R1). */
-const REGEX_ASSERTION =
-  /\b(toMatch|toContainText|toHaveText|getByText)\s*\(\s*\/((?:\\\/|[^/\n\\]|\\.)+)\/([a-z]*)/g
+/**
+ * Every regex literal, anchored to its opening slash (R1).
+ *
+ * The leading `\/` is load-bearing, not cosmetic: without it the scanner starts a match at
+ * `await expect(...)`, the `[a-z]*` flags greedily eat `stack`, and the next body begins with
+ * `|` — the phantom `|traceback|Error:` at tests/web-app.spec.js:388 that compiled to
+ * "matches everything" and covered all five status literals (14/11/1 vs the anchored 13/10/0).
+ */
+const REGEX_LITERAL = /\/((?![*\/])(?:\\\/|[^/\n\\]|\\.)+)\/([a-z]*)/g
 
-/** The subset of STATUS_LITERALS one regex alternation can match. */
+/**
+ * Every regex literal of one source as `{ body, line }`.
+ *
+ * The scan runs over a comment-masked copy: block comments and whole-line `//` comments
+ * become spaces so their contents can never masquerade as a literal, while the mask keeps
+ * offsets and newlines so `line` stays accurate (removal would shift every line after a
+ * multi-line block comment). Line comments are masked whole-line only — never from `//` to
+ * end-of-line — or a `https://` inside a string literal would be truncated (trap 4).
+ */
+function regexLiterals(source) {
+  const masked = source
+    .replace(/\/\*[\s\S]*?\*\//g, (block) => block.replace(/[^\n]/g, ' '))
+    .replace(/^\s*\/\/.*$/gm, (line) => line.replace(/[^\n]/g, ' '))
+  const literals = []
+  for (const match of masked.matchAll(REGEX_LITERAL)) {
+    literals.push({
+      body: match[1],
+      line: masked.slice(0, match.index).split('\n').length,
+    })
+  }
+  return literals
+}
+
+/** The alternatives of a regex body, for the *form* check only (`< 2` -> not an alternation). */
+function alternativesOf(body) {
+  return body.split('|').map((part) => part.trim()).filter(Boolean)
+}
+
+/**
+ * The subset of STATUS_LITERALS a whole regex body matches.
+ *
+ * The body is compiled once, not per alternative: `new RegExp('(?:A|B)')` and
+ * `new RegExp('^(A|B)$')` both match `A` and `B`, while the old per-alternative compile
+ * measured 0 matches on the grouped spellings — the most natural way to write the check.
+ */
 function literalsCoveredBy(patternBody) {
-  const alternatives = patternBody
-    .split('|')
-    .map((part) => part.trim())
-    .filter(Boolean)
-  return STATUS_LITERALS.filter((literal) =>
-    alternatives.some((alternative) => {
-      try {
-        return new RegExp(alternative, 'i').test(literal)
-      } catch {
-        return false
-      }
-    }),
-  )
+  try {
+    const regex = new RegExp(patternBody, 'i')
+    return STATUS_LITERALS.filter((literal) => regex.test(literal))
+  } catch {
+    return []
+  }
 }
 
 /** A literal used in a statement, not only in a `test(...)` title. */
@@ -564,11 +671,12 @@ function statusContractOffences(specs) {
   const offenders = []
 
   for (const { relative, source } of specs) {
-    for (const match of source.matchAll(REGEX_ASSERTION)) {
-      const covered = literalsCoveredBy(match[2])
+    for (const { body, line } of regexLiterals(source)) {
+      if (alternativesOf(body).length < 2) continue
+      const covered = literalsCoveredBy(body)
       if (covered.length >= 2) {
         offenders.push(
-          `${relative}: one assertion matches ${covered.length} status literals (${covered.join(' | ')}) — /${match[2]}/`,
+          `${relative}:${line}: one regex matches ${covered.length} status literals (${covered.join(' | ')}) — /${body}/`,
         )
       }
     }
@@ -587,6 +695,10 @@ function statusContractOffences(specs) {
     }
   }
 
+  // R3: the toast must be read by colour, and the colours must be *at* the toast, not
+  // "somewhere in the file" — `styleTriple()` (tests/admin-chrome.spec.js:153-154) holds both
+  // `backgroundColor` and `borderTopColor` ~370 lines away from the check, so a whole-file
+  // read made R3 vacuously green (WR-09).
   const toastReaders = specs.filter(({ source }) => source.includes('admin-toast'))
   if (toastReaders.length === 0) {
     offenders.push(
@@ -594,13 +706,20 @@ function statusContractOffences(specs) {
     )
   }
   for (const { relative, source } of toastReaders) {
-    const missing = ['backgroundColor', 'borderTopColor'].filter(
-      (property) => !source.includes(property),
-    )
-    if (missing.length > 0) {
-      offenders.push(
-        `${relative}: reads admin-toast but never its computed ${missing.join(' / ')} — a text-only check cannot see a 1.00:1 toast`,
+    const lines = source.split(/\r?\n/)
+    for (let index = 0; index < lines.length; index += 1) {
+      if (!lines[index].includes('admin-toast')) continue
+      const window = lines
+        .slice(Math.max(0, index - 15), Math.min(lines.length, index + 16))
+        .join('\n')
+      const missing = ['backgroundColor', 'borderTopColor'].filter(
+        (property) => !window.includes(property),
       )
+      if (missing.length > 0) {
+        offenders.push(
+          `${relative}:${index + 1}: reads admin-toast but never its computed ${missing.join(' / ')} within ±15 lines — a text-only check cannot see a 1.00:1 toast`,
+        )
+      }
     }
   }
 
@@ -952,45 +1071,56 @@ describe('semantic token coverage (criterion 3)', () => {
     const failures = []
     const measured = []
 
-    for (const [themeLabel, block] of [
-      ['dark', dark],
-      ['light', light],
-    ]) {
-      for (const { ink, tint, alpha } of STATUS_LABEL_TINTS) {
-        const inkToken = `--color-${ink}`
-        const inkValue = block.get(inkToken)
-        if (inkValue === undefined) {
-          const message = `${inkToken} is not declared in the ${themeLabel} block`
-          if (!failures.includes(message)) failures.push(message)
-          continue
-        }
-        if (themeLabel === 'light' && light.get(inkToken) === dark.get(inkToken)) {
-          failures.push(`${inkToken} has no real light override (${dark.get(inkToken)} in both themes)`)
-        }
+    // The tint sites come from the tree, not a constant: the alpha is the class token's own
+    // `/N` suffix, so a `bg-success/15 -> /60` drift reddens this gate (GAP-25-6) instead of
+    // staying green on a hard-coded 0.15.
+    const sites = sources().flatMap(({ relative, source }) => tintAlphaSites(relative, source))
 
-        // The tint resolves by cascade, not from this theme's block alone: `success` / `voting`
-        // / `danger` are theme-flat by design, and demanding a light override here would
-        // contradict G-3 in the same run.
-        const tintValue = light.get(`--color-${tint}`) ?? dark.get(`--color-${tint}`)
-        if (tintValue === undefined) {
-          failures.push(`--color-${tint} is not declared at all`)
-          continue
-        }
-
-        for (const base of TINT_BASES) {
-          const surface = block.get(`--color-${base}`)
-          if (surface === undefined) {
-            failures.push(`--color-${base} is not declared in the ${themeLabel} block`)
-            continue
+    // A tint site whose alpha is not a percentage suffix must be flagged, never skipped:
+    // `bg-success/[0.15]` / `bg-success/[--alpha]` cannot be measured here and must not pass.
+    for (const { relative, source } of sources()) {
+      for (const literal of stringLiterals(source)) {
+        for (const token of tokenSet(literal)) {
+          if (
+            /^(?:[\w-]+:)?bg-(success|voting|danger)\//.test(token) &&
+            !TINT_TOKEN.test(token)
+          ) {
+            failures.push(`${relative}: ${token} — tint alpha must be a percentage suffix`)
           }
-          const composite = blendOver(tintValue, surface, alpha)
-          measured.push({
-            label: `${ink} on ${tint}/${alpha} over ${base} (${themeLabel}) (${inkValue} on ${composite})`,
-            ratio: contrastRatio(inkValue, composite),
-          })
         }
       }
     }
+
+    // Anti-vacuum: the tree must actually carry every tint role and at least four unique
+    // tokens, or the gate would pass an empty (or near-empty) measurement.
+    const uniqueTints = new Set(sites.map((site) => site.tint))
+    for (const tint of ['success', 'voting', 'danger']) {
+      if (!uniqueTints.has(tint)) failures.push(`no tint site found for ${tint} under web/src`)
+    }
+    const uniqueTokens = new Set(sites.map((site) => site.token))
+    if (uniqueTokens.size < 4) {
+      failures.push(`only ${uniqueTokens.size} unique tint tokens under web/src (need 4)`)
+    }
+
+    // A status label on its tint must have a *real* light override, or the light-theme
+    // composite reads a flat label and passes the floor. `voting-ink-on-tint` is the role
+    // `LABELS_ON_SURFACE` cannot reach, so this check lives on the sites, not the bare list.
+    for (const tint of uniqueTints) {
+      const inkToken = `--color-${TINT_LABEL_ROLES[tint]}`
+      const tintToken = `--color-${tint}`
+      if (light.get(tintToken) === undefined && dark.get(tintToken) === undefined) {
+        failures.push(`${tintToken} is not declared at all`)
+      }
+      const darkInk = dark.get(inkToken)
+      const lightInk = light.get(inkToken)
+      if (darkInk === undefined || lightInk === undefined) {
+        failures.push(`${inkToken} is not declared in both themes`)
+      } else if (lightInk === darkInk) {
+        failures.push(`${inkToken} has no real light override (${darkInk} in both themes)`)
+      }
+    }
+
+    measured.push(...tintLabelMeasurements({ sites, blocks: { dark, light } }))
 
     // The same roles also stand on the bare surfaces — a status pill without a tint, a link on
     // the page — so the floor is measured there without the composite.

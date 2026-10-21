@@ -93,6 +93,24 @@ async function classTokens(locator) {
 }
 
 /**
+ * The translucent tint's alpha, read from the pill's own class list. A status pill is
+ * `bg-success/15 text-success-ink` or `bg-voting/20 text-voting-ink-on-tint`; the `/N` is
+ * the composite strength `blendOver` needs. Reading it from the class — not a constant —
+ * keeps the e2e measurement honest when the class drifts (GAP-25-6 / T-25-32).
+ */
+function pillAlpha(tokens, label) {
+  const match = tokens
+    .map((token) => /^(?:[\w-]+:)?bg-(success|voting|danger)\/(\d{1,3})$/.exec(token))
+    .find((result) => result !== null);
+  if (!match) {
+    throw new Error(
+      `${label} pill must carry a bg-(success|voting|danger)/<alpha> class, got: ${tokens.join(" ")}`,
+    );
+  }
+  return Number(match[2]) / 100;
+}
+
+/**
  * A link's own label colour plus the first opaque surface behind it.
  *
  * A text link paints no fill, so `stylePair(link).background` is always `rgba(0, 0, 0, 0)`
@@ -376,7 +394,6 @@ test("status labels legible in both themes", async ({ page }) => {
     dark: { ready: "rgb(74, 222, 128)", draft: "rgb(253, 230, 138)" },
     light: { ready: "rgb(22, 101, 52)", draft: "rgb(113, 63, 18)" },
   };
-  const tintAlpha = { success: 0.15, voting: 0.2 };
 
   for (const theme of ["dark", "light"]) {
     await gotoAdmin(page, "/admin/digest", theme);
@@ -400,17 +417,21 @@ test("status labels legible in both themes", async ({ page }) => {
     expect(draftPair.color, `draft pill (${theme}) color`).toBe(expected[theme].draft);
 
     // The label sits on a translucent tint over the row, so the ratio is taken on the
-    // composite — the same arithmetic G-14 uses statically.
+    // composite — the same arithmetic G-14 uses statically. The alpha comes from the pill's
+    // own class token, so any class drift changes what is measured.
     const rowBackground = (await styleTriple(rows.first())).backgroundColor;
     const successTint = await cssToken(page, "--color-success");
     const votingTint = await cssToken(page, "--color-voting");
 
+    const readyAlpha = pillAlpha(await classTokens(readyPill), "ready");
+    const draftAlpha = pillAlpha(await classTokens(draftPill), "draft");
+
     expect(
-      contrastRatio(readyPair.color, blendOver(successTint, rowBackground, tintAlpha.success)),
+      contrastRatio(readyPair.color, blendOver(successTint, rowBackground, readyAlpha)),
       `ready pill (${theme}) contrast on its tint`,
     ).toBeGreaterThanOrEqual(4.5);
     expect(
-      contrastRatio(draftPair.color, blendOver(votingTint, rowBackground, tintAlpha.voting)),
+      contrastRatio(draftPair.color, blendOver(votingTint, rowBackground, draftAlpha)),
       `draft pill (${theme}) contrast on its tint`,
     ).toBeGreaterThanOrEqual(4.5);
   }
