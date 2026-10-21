@@ -840,15 +840,17 @@ function classTokens(locator) {
 
 ## Open Questions
 
-1. **Читаемость раскрытого списка опций (A1)**
+1. **Читаемость раскрытого списка опций (A1) — (RESOLVED)**
    - What we know: закрытое поле после фикса будет иметь непрозрачную объявленную поверхность и `ink-2` текст (критерий 2 — computed style).
    - What's unclear: рисует ли Chromium попап из `color`/`background-color` контрола в этом стеке; headless-скриншот нативные попапы не захватывает.
    - Recommendation: ассертить точно то, что названо в ROADMAP (computed pair + наличие опций `Канал`/`Плейлист`) и зафиксировать A1 в плане как ограничение доказательства; не добавлять `color-scheme` (вне объёма).
+   - **(RESOLVED)** Доказательство ограничено ровно тем, что называет ROADMAP: computed-пара закрытого контрола + наличие опций `Канал`/`Плейлист` (тест `select legible in both themes`, план 25-03); раскрытый попап не ассертится, `color-scheme` не вводится — принятое ограничение, а не долг.
 
-2. **Где физически живёт общий `contrastRatio`**
+2. **Где физически живёт общий `contrastRatio` — (RESOLVED)**
    - What we know: оба раннера CommonJS; `tests/helpers/` не собирается ни одним из них.
    - What's unclear: предпочтёт ли планировщик `tests/unit/helpers/contrast.js` (рядом с `cssRules.js`) или `tests/helpers/contrast.js`.
    - Recommendation: `tests/helpers/contrast.js` — явный сигнал «общий», и это не ломает `run-unit-js.cjs` (перечисляет только `tests/unit/*.js`).
+   - **(RESOLVED)** Файл — `tests/helpers/contrast.js` (план 25-03, task 1a): единственная реализация WCAG-формулы, импортируется node-гейтом через `require('../helpers/contrast')` и Playwright-спеком; `run-unit-js.cjs` его не перечисляет, поэтому двойного запуска нет.
 
 ---
 
@@ -1012,7 +1014,7 @@ function classTokens(locator) {
 
 ### Key Findings
 
-- **`admin-chrome.spec.js` сегодня не запускается:** `playwright.config.js:72` `testMatch: /(web-app|auth|knowledge|razbory|admin)\.spec\.js/` не матчит это имя — `--list` даёт «148 tests in 5 files» без него. Правка конфига обязательна, иначе четыре из пяти критериев не имеют RED'а.
+- **`admin-chrome.spec.js` сегодня не запускается:** `playwright.config.js:71` `testMatch: /(web-app|auth|knowledge|razbory|admin)\.spec\.js/` (строка 72 рядом — `use.baseURL`) не матчит это имя — `--list` даёт «148 tests in 5 files» без него. Правка конфига обязательна, иначе четыре из пяти критериев не имеют RED'а.
 - **Корень нечитаемого `<select>` — прозрачный фон, не белый:** замерено `background-color: rgba(0, 0, 0, 0)` и унаследованный `color` в обеих темах (Tailwind preflight задаёт `select { background-color: transparent; color: inherit }`). Валидный ассерт — равенство объявленному `rgb(19, 25, 37)` / `rgb(255, 255, 255)`, а не «не белый».
 - **Механика overrides подтверждена сборкой:** `@layer theme` → `@layer base` (`[data-theme="light"]`) → `@layer utilities`; поэтому light-override перебивает `:root` из `@theme`. Второй блок `@theme`/`[data-theme]` создавать нельзя — `parseBlock` читает только первое вхождение.
 - **`tests/admin.spec.js:1834` уже пинит `"Источники ингеста"`** — этой правки нет в таблице амендментов UI-SPEC; без неё PIPEUI-03 останется красным.
@@ -1033,7 +1035,7 @@ function classTokens(locator) {
 
 ### Open Questions
 
-- A1: рисует ли Chromium раскрытый список опций из `color`/`background-color` контрола — помечено `[ASSUMED]`, доказательство ограничено computed style закрытого контрола + наличием опций.
+- A1 **(RESOLVED)**: рисует ли Chromium раскрытый список опций из `color`/`background-color` контрола — остаётся `[ASSUMED]`, но вопрос закрыт как принятое ограничение: доказательство ограничено computed style закрытого контрола + наличием опций (см. § Open Questions, п. 1).
 
 ### Ready for Planning
 
