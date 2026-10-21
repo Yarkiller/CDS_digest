@@ -68,7 +68,7 @@ module.exports = defineConfig({
     },
     {
       name: "web",
-      testMatch: /(web-app|auth|knowledge|razbory|admin)\.spec\.js/,
+      testMatch: /(web-app|auth|knowledge|razbory|admin(-chrome)?)\.spec\.js/,
       use: { baseURL: "http://127.0.0.1:5174" },
     },
   ],
