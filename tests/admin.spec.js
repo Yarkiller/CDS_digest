@@ -136,7 +136,7 @@ test.describe("Admin nav grouping — in-page section switch (ADUX-12, D-01…D-
     });
   }
 
-  test("admin-section nav lists Дайджест then Пайплайн and marks digest active", async ({
+  test("admin-section nav lists Дайджест then Настройка and marks digest active", async ({
     page,
   }) => {
     await gotoAsRole(page, "admin", "/admin/digest");
@@ -148,7 +148,7 @@ test.describe("Admin nav grouping — in-page section switch (ADUX-12, D-01…D-
     const sectionLinks = sectionNav.getByRole("link");
     await expect(sectionLinks).toHaveCount(2);
     await expect(sectionLinks.nth(0)).toHaveText("Дайджест");
-    await expect(sectionLinks.nth(1)).toHaveText("Пайплайн");
+    await expect(sectionLinks.nth(1)).toHaveText("Настройка");
 
     await expect(page.getByTestId("admin-tab-digest")).toHaveAttribute("href", "/admin/digest");
     await expect(page.getByTestId("admin-tab-pipeline")).toHaveAttribute(
@@ -162,7 +162,7 @@ test.describe("Admin nav grouping — in-page section switch (ADUX-12, D-01…D-
     );
 
     // Adjacency (resolved explicit): the shell landmark never owns a «Пайплайн» link
-    await expect(shellNav(page).getByRole("link", { name: "Пайплайн", exact: true })).toHaveCount(
+    await expect(shellNav(page).getByRole("link", { name: "Настройка", exact: true })).toHaveCount(
       0,
     );
   });
@@ -271,7 +271,7 @@ test.describe("Admin nav grouping — in-page section switch (ADUX-12, D-01…D-
     await gotoAsRole(page, "admin", "/admin/pipeline");
     const pipelineHeading = page.getByRole("heading", {
       level: 1,
-      name: "Пайплайн",
+      name: "Настройка",
       exact: true,
     });
     await expect(pipelineHeading).toHaveCount(1);
@@ -1751,17 +1751,17 @@ test.describe("Admin pipeline config — empty/dirty/reset/nav/no-execution (PIP
   test("pipeline config nav item renders only in the in-page section switch", async ({ page }) => {
     await gotoAsRole(page, "admin", "/");
     const shell = page.getByRole("navigation", { name: /основная навигация/i });
-    // ADUX-12 / D-10: the shell keeps exactly one admin entry and never a «Пайплайн» pill.
+    // ADUX-12 / D-10: the shell keeps exactly one admin entry and never a «Настройка» pill.
     await expect(shell.getByRole("link", { name: /^Админ$/ })).toHaveAttribute(
       "href",
       "/admin/digest",
     );
-    await expect(shell.getByRole("link", { name: "Пайплайн", exact: true })).toHaveCount(0);
+    await expect(shell.getByRole("link", { name: "Настройка", exact: true })).toHaveCount(0);
 
     await gotoAsRole(page, "admin", "/admin/digest");
     const pipelineTab = page
       .getByTestId("admin-section-nav")
-      .getByRole("link", { name: "Пайплайн", exact: true });
+      .getByRole("link", { name: "Настройка", exact: true });
     await expect(pipelineTab).toBeVisible();
     await expect(pipelineTab).toHaveAttribute("href", "/admin/pipeline");
   });
