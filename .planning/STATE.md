@@ -3,10 +3,10 @@ gsd_state_version: "1.0"
 milestone: v1.4
 milestone_name: UI polish & honest navigation
 status: planning
-last_updated: "2026-10-21T11:01:24.050Z"
+last_updated: "2026-10-21T11:05:00.000Z"
 last_activity: 2026-10-21
 progress:
-  total_phases: 0
+  total_phases: 4
   completed_phases: 0
   total_plans: 0
   completed_plans: 0
@@ -20,14 +20,14 @@ progress:
 See: .planning/PROJECT.md (updated 2026-10-21 — v1.4 milestone started)
 
 **Core value:** Trusted weekly prepared-article issue + one honest vote toward the next разбор
-**Current focus:** v1.4 UI polish & honest navigation (status: defining requirements)
+**Current focus:** v1.4 UI polish & honest navigation (roadmap ready — Phase 25 next)
 
 ## Current Position
 
-Phase: Not started (defining requirements)
+Phase: Not started (roadmap ready — Phases 25-28)
 Plan: —
-Status: Defining requirements
-Last activity: 2026-10-21 — Milestone v1.4 started
+Status: Roadmap ready; 10 requirements mapped, 0 unmapped
+Last activity: 2026-10-21 — Milestone v1.4 roadmap created (UI polish & honest navigation)
 
 ## Performance Metrics
 
@@ -215,11 +215,29 @@ Carried product deferrals beyond v1.3: leaderboard, quiz, Whisper/Foundry ASR, i
 
 ## Session Continuity
 
-Last session: 2026-10-18T21:05:00.000Z
-Stopped at: Phase 24 complete — v1.3 milestone 100% (8/8 phases, 28/28 plans)
+Last session: 2026-10-21T11:05:00.000Z
+Stopped at: v1.4 roadmap created — Phases 25-28, 10/10 requirements mapped, 0 plans
 Resume file: None
-Next: `/gsd-complete-milestone v1.3`
+Next: `/gsd-discuss-phase 25` (or `/gsd-plan-phase 25`)
 
 ## Operator Next Steps
 
-- Start the next milestone with /gsd-new-milestone
+- Start Phase 25 with `/gsd-discuss-phase 25` (or `/gsd-plan-phase 25` to skip discussion)
+
+## v1.4 roadmap (Phases 25-28)
+
+| Phase | Name | Requirements |
+|-------|------|--------------|
+| 25 | Admin «Настройка» — naming, readable surfaces, token repair | PIPEUI-01…04, THEME-01/02 |
+| 26 | Section context — anchor scrolling and header active state | NAV-01, NAV-02 |
+| 27 | Header search runs on submit | KNOW-05 |
+| 28 | Live proof — streamed DeepSeek ingest | ING-09 |
+
+**v1.4 roadmap locks (for phase planners):**
+
+- **Order:** 25 → 26 → 27 → 28. Phase 25 is the only phase that touches `web/src/index.css` (declaring the `paper` / `paper-2` / `ink` / `ink-2` / `muted` / `rule` / `accent-ink` token family plus its light overrides); 26 and 27 consume that tree, so they must not re-declare tokens.
+- **Phase 25 (PIPEUI/THEME):** all three «Пайплайн» surfaces in `AdminLayout.jsx` (sr-only h1 line 49, tab line 70, mobile option line 82) become «Настройка»; `/admin/pipeline` and every `data-testid` stay unchanged. `IngestSourcesSection.jsx:171` becomes «Источники». Filled buttons and the active nav pill get a theme-independent white label, with the yellow `voting` fill (#EAB308) keeping a dark label. Backlog 999.2 chrome polish ships here (no «Админ» eyebrow, `h2`-scale tabs, wider gap, less top space).
+- **Phase 26 (NAV-01/02):** Bug 3 is ANCHOR SCROLLING — no breadcrumb component, no route change. Use `scroll-margin-top` on prose headings (or `scroll-padding-top`), sized to the 64px sticky header, proven on a short and a long section. Section origin rides `location.state`, degrades honestly on a direct URL visit; reuse the `adminActive` prefix pattern — never derive origin from the URL, never persist it in `localStorage`.
+- **Phase 27 (KNOW-05):** header submit must run the search immediately — exactly one API call per submission, zero calls for an empty query, no double-fire on re-render. `knowledgeApi.searchKnowledge` and the backend stay untouched.
+- **Phase 28 (ING-09):** proof only — `0dddc75` (`stream=True` + delta assembly) is already committed. Live run on a >10 min video; no adapter rewrite. If it still fails, record the failure and stop.
+- **Out of scope (do not plan):** breadcrumbs, `/admin/settings`, reader-surface re-theme, white label on the yellow `voting` fill, DeepSeek retry/backoff work, 999.4.
