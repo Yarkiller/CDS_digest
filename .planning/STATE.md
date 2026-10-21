@@ -5,16 +5,16 @@ milestone_name: UI polish & honest navigation
 current_phase: 25
 current_phase_name: Admin «Настройка» — naming, readable surfaces, token repair
 status: executing
-stopped_at: Completed 25-08-PLAN.md
-last_updated: "2026-10-21T19:20:07.946Z"
+stopped_at: Completed 25-09-PLAN.md
+last_updated: "2026-10-21T19:45:52.895Z"
 last_activity: 2026-10-21
 last_activity_desc: Phase 25 execution started
-state_head: bc9653a42029c184ab0f68f42714ff157bf0e00f
+state_head: 80b9c131bd2dcc42bde42f0bcbd58a6171dcea0c
 progress:
   total_phases: 4
   completed_phases: 0
   total_plans: 10
-  completed_plans: 8
+  completed_plans: 9
   percent: 0
 ---
 
@@ -101,6 +101,7 @@ Last activity: 2026-10-21 — Phase 25 plan 05 executed (status label roles + fi
 | Phase 25 P06 | 21min | 3 tasks | 9 files |
 | Phase 25 P07 | 19 | 2 tasks | 12 files |
 | Phase 25 P08 | 12m | 3 tasks | 22 files |
+| Phase 25 P09 | 17min | 2 tasks | 2 files |
 
 ## Accumulated Context
 
@@ -226,6 +227,9 @@ v1.3 roadmap locks:
 - [Phase 25]: The base --color-primary stays byte-identical (#8B5CF6) as fill/border/ring/tint (D-05); only the label role moves to the theme-dependent --color-primary-text (#A78BFA dark / #6D28D9 light).
 - [Phase 25]: G-20 scans className string literals token-exact, never substrings: text-primary-text, text-text-primary, bg-primary, border-primary and outline-primary are all non-offenders, so the gate cannot self-trigger on its own fix.
 - [Phase 25]: The save-retry background is assembled from tokens via blendOver(--color-danger, --color-bg-app, 0.1) because getComputedStyle serializes bg-danger/10 to oklab(…/0.1), which parseColor refuses.
+- [Phase 25]: 25-09: regexLiterals masks comments (block + whole-line // become spaces) instead of removing them, so file:line stays exact — mutation #5 pinned the phantom at tests/web-app.spec.js:388.
+- [Phase 25]: 25-09: the e2e helper is named pillAlpha (not tintAlpha*) so the Select-String 'tintAlpha' -> 0 acceptance holds literally.
+- [Phase 25]: 25-09: R1 offender keeps the 'one regex matches N status literals' shape so the existing proof filter stays green.
 
 ### Pending Todos
 
@@ -259,8 +263,8 @@ Carried product deferrals beyond v1.3: leaderboard, quiz, Whisper/Foundry ASR, i
 
 ## Session Continuity
 
-Last session: 2026-10-21T19:20:07.892Z
-Stopped at: Completed 25-08-PLAN.md
+Last session: 2026-10-21T19:45:52.845Z
+Stopped at: Completed 25-09-PLAN.md
 Resume file: None
 Next: `/gsd-discuss-phase 25` (or `/gsd-plan-phase 25`)
 
