@@ -99,13 +99,50 @@ class DeepSeekArticleGenerator:
                 max_chars=self._max_transcript_chars,
             )
         messages = build_article_messages(transcript, template, self._templates)
+        content = await self._stream_content(transcript, messages)
+        if not isinstance(content, str) or content == "":
+            raise ArticleInvalidJson(transcript.video_id)
+
         try:
-            response = await self._client.chat.completions.create(
+            payload = json.loads(content)
+        except (json.JSONDecodeError, ValueError, TypeError) as exc:
+            raise ArticleInvalidJson(transcript.video_id) from exc
+
+        if not isinstance(payload, dict):
+            raise ArticleInvalidJson(transcript.video_id)
+
+        try:
+            draft = ArticleDraft.model_validate(payload)
+        except ValidationError as exc:
+            raise ArticleInvalidDraft(
+                transcript.video_id,
+                exception_class=_exception_class(exc),
+            ) from exc
+        draft.roles = normalize_roles(draft.roles)
+        return draft
+
+    async def _stream_content(
+        self, transcript: Transcript, messages: list[dict[str, str]]
+    ) -> str:
+        """Stream deltas and join them: a non-streaming call keeps the socket idle
+        for 8-12 s on long articles, which middleboxes reset (APIConnectionError)."""
+        parts: list[str] = []
+        try:
+            stream = await self._client.chat.completions.create(
                 model=self._model,
                 messages=messages,
                 response_format={"type": "json_object"},
                 extra_body={"thinking": {"type": "disabled"}},
+                stream=True,
             )
+            async for chunk in stream:
+                choices = getattr(chunk, "choices", None) or []
+                if not choices:
+                    continue
+                delta = getattr(choices[0], "delta", None)
+                text = getattr(delta, "content", None)
+                if isinstance(text, str) and text:
+                    parts.append(text)
         except APITimeoutError as exc:
             raise ArticleNetworkError(
                 transcript.video_id,
@@ -145,25 +182,4 @@ class DeepSeekArticleGenerator:
                 transcript.video_id,
                 exception_class=_exception_class(exc),
             ) from exc
-
-        content = response.choices[0].message.content if response.choices else None
-        if not isinstance(content, str) or content == "":
-            raise ArticleInvalidJson(transcript.video_id)
-
-        try:
-            payload = json.loads(content)
-        except (json.JSONDecodeError, ValueError, TypeError) as exc:
-            raise ArticleInvalidJson(transcript.video_id) from exc
-
-        if not isinstance(payload, dict):
-            raise ArticleInvalidJson(transcript.video_id)
-
-        try:
-            draft = ArticleDraft.model_validate(payload)
-        except ValidationError as exc:
-            raise ArticleInvalidDraft(
-                transcript.video_id,
-                exception_class=_exception_class(exc),
-            ) from exc
-        draft.roles = normalize_roles(draft.roles)
-        return draft
+        return "".join(parts)

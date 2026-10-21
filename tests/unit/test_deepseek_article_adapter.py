@@ -25,25 +25,17 @@ from data_collection.dto.transcript import Transcript
 
 
 def _stub_client(content: str) -> Any:
-    @dataclass
-    class _Message:
-        content: str
-
-    @dataclass
-    class _Choice:
-        message: _Message
-
-    @dataclass
-    class _Response:
-        choices: list[_Choice]
-
     class _Completions:
         def __init__(self) -> None:
             self.calls: list[dict[str, Any]] = []
 
         async def create(self, **kwargs: Any) -> Any:
             self.calls.append(kwargs)
-            return _Response(choices=[_Choice(message=_Message(content=content))])
+
+            async def _gen():
+                yield _delta_chunk(content)
+
+            return _gen()
 
     class _Client:
         def __init__(self) -> None:
@@ -401,21 +393,12 @@ def test_fenced_json_raises_article_invalid_json() -> None:
 def test_null_content_raises_article_invalid_json() -> None:
     from data_collection.errors.article import ArticleInvalidJson
 
-    @dataclass
-    class _Message:
-        content: str | None
-
-    @dataclass
-    class _Choice:
-        message: _Message
-
-    @dataclass
-    class _Response:
-        choices: list[_Choice]
-
     class _Completions:
         async def create(self, **kwargs: Any) -> Any:
-            return _Response(choices=[_Choice(message=_Message(content=None))])
+            async def _gen():
+                yield _delta_chunk(None)
+
+            return _gen()
 
     class _Client:
         def __init__(self) -> None:
@@ -439,13 +422,12 @@ def test_empty_content_raises_article_invalid_json() -> None:
 def test_empty_choices_raises_article_invalid_json() -> None:
     from data_collection.errors.article import ArticleInvalidJson
 
-    @dataclass
-    class _Response:
-        choices: list[Any]
-
     class _Completions:
         async def create(self, **kwargs: Any) -> Any:
-            return _Response(choices=[])
+            async def _gen():
+                yield _choice_less_chunk()
+
+            return _gen()
 
     class _Client:
         def __init__(self) -> None:
@@ -645,3 +627,136 @@ def test_process_single_ds_role_round_trips() -> None:
         _make_generator(client).process(_make_transcript("ru"), TemplateKind.LECTURE)
     )
     assert draft.roles == ["ds"]
+
+
+# ─── Streaming transport (idle-connection reset workaround) ──────────────────
+
+
+def _delta_chunk(text: str | None) -> Any:
+    @dataclass
+    class _Delta:
+        content: str | None
+
+    @dataclass
+    class _Choice:
+        delta: _Delta
+
+    @dataclass
+    class _Chunk:
+        choices: list[_Choice]
+
+    return _Chunk(choices=[_Choice(delta=_Delta(content=text))])
+
+
+def _choice_less_chunk() -> Any:
+    @dataclass
+    class _Chunk:
+        choices: list[Any]
+
+    return _Chunk(choices=[])
+
+
+def _streaming_stub_client(chunks: list[Any]) -> Any:
+    class _Completions:
+        def __init__(self) -> None:
+            self.calls: list[dict[str, Any]] = []
+
+        async def create(self, **kwargs: Any) -> Any:
+            self.calls.append(kwargs)
+
+            async def _gen():
+                for chunk in chunks:
+                    yield chunk
+
+            return _gen()
+
+    class _Client:
+        def __init__(self) -> None:
+            self.chat = type("_Chat", (), {"completions": _Completions()})()
+
+    return _Client()
+
+
+def _streaming_failing_stub_client(prefix: list[Any], exc: Exception) -> Any:
+    class _Completions:
+        def __init__(self) -> None:
+            self.calls: list[dict[str, Any]] = []
+
+        async def create(self, **kwargs: Any) -> Any:
+            self.calls.append(kwargs)
+
+            async def _gen():
+                for chunk in prefix:
+                    yield chunk
+                raise exc
+
+            return _gen()
+
+    class _Client:
+        def __init__(self) -> None:
+            self.chat = type("_Chat", (), {"completions": _Completions()})()
+
+    return _Client()
+
+
+def test_create_is_called_with_stream_true() -> None:
+    body = json.dumps({"title": "T", "dek": "D", "body_markdown": "B"})
+    client = _streaming_stub_client([_delta_chunk(body)])
+    generator = _make_generator(client)
+
+    asyncio.run(generator.process(_make_transcript("ru"), TemplateKind.LECTURE))
+
+    call = client.chat.completions.calls[0]
+    assert call["stream"] is True
+    assert call["response_format"] == {"type": "json_object"}
+    assert call["extra_body"] == {"thinking": {"type": "disabled"}}
+
+
+def test_stream_assembles_deltas_into_one_article_draft() -> None:
+    body = json.dumps({"title": "Стрим", "dek": "Dek", "body_markdown": "## Тело"})
+    cut = len(body) // 3
+    client = _streaming_stub_client(
+        [_delta_chunk(body[:cut]), _delta_chunk(body[cut : 2 * cut]), _delta_chunk(body[2 * cut :])]
+    )
+    generator = _make_generator(client)
+
+    draft = asyncio.run(generator.process(_make_transcript("ru"), TemplateKind.LECTURE))
+
+    assert draft.title == "Стрим"
+    assert draft.dek == "Dek"
+    assert draft.body_markdown == "## Тело"
+
+
+def test_stream_skips_choice_less_and_null_delta_chunks() -> None:
+    body = json.dumps({"title": "T", "dek": "D", "body_markdown": "B"})
+    client = _streaming_stub_client(
+        [_choice_less_chunk(), _delta_chunk(None), _delta_chunk(body), _choice_less_chunk()]
+    )
+    generator = _make_generator(client)
+
+    draft = asyncio.run(generator.process(_make_transcript("ru"), TemplateKind.LECTURE))
+
+    assert draft.title == "T"
+
+
+def test_connection_error_mid_stream_raises_article_network_error() -> None:
+    from data_collection.errors.article import ArticleNetworkError
+
+    body = json.dumps({"title": "T", "dek": "D", "body_markdown": "B"})
+    client = _streaming_failing_stub_client(
+        [_delta_chunk(body[:10])], APIConnectionError(request=_FAKE_REQUEST)
+    )
+    generator = _make_generator(client)
+
+    with pytest.raises(ArticleNetworkError):
+        asyncio.run(generator.process(_make_transcript("ru"), TemplateKind.LECTURE))
+
+
+def test_empty_stream_raises_article_invalid_json() -> None:
+    from data_collection.errors.article import ArticleInvalidJson
+
+    client = _streaming_stub_client([])
+    generator = _make_generator(client)
+
+    with pytest.raises(ArticleInvalidJson):
+        asyncio.run(generator.process(_make_transcript("ru"), TemplateKind.LECTURE))
