@@ -5,17 +5,17 @@ milestone_name: UI polish & honest navigation
 current_phase: 25
 current_phase_name: Admin «Настройка» — naming, readable surfaces, token repair
 status: executing
-stopped_at: Completed 25-01-PLAN.md
-last_updated: "2026-10-21T12:29:52.180Z"
+stopped_at: Completed 25-02-PLAN.md
+last_updated: "2026-10-21T12:48:07.446Z"
 last_activity: 2026-10-21
 last_activity_desc: Phase 25 execution started
-state_head: 456e3e902ec7b8869baf146581fd9acce12153cc
+state_head: b01f14e21cb3f2ca7078048b22498d9c85788102
 progress:
   total_phases: 4
   completed_phases: 0
   total_plans: 4
-  completed_plans: 1
-  percent: 25
+  completed_plans: 2
+  percent: 50
 ---
 
 # Project State
@@ -30,7 +30,7 @@ See: .planning/PROJECT.md (updated 2026-10-21 — v1.4 milestone started)
 ## Current Position
 
 Phase: 25 (Admin «Настройка» — naming, readable surfaces, token repair) — EXECUTING
-Plan: 2 of 4
+Plan: 3 of 4
 Status: Ready to execute
 Last activity: 2026-10-21 — Phase 25 execution started
 
@@ -94,6 +94,7 @@ Last activity: 2026-10-21 — Phase 25 execution started
 | Phase 24 P07 | 35min | 3 tasks | 10 files |
 | Phase 24 P08 | 20min | 3 tasks | 6 files |
 | Phase 25 P01 | 11min | 2 tasks | 4 files |
+| Phase 25 P02 | 13min | 2 tasks | 4 files |
 
 ## Accumulated Context
 
@@ -193,6 +194,9 @@ v1.3 roadmap locks:
 - [Phase 25]: 25-01: three admin section labels read «Настройка» — sr-only h1, tab and mobile option renamed as literals; PIPELINE_PATH/DIGEST_PATH, handleSectionTabClick, every data-testid and both aria-labels stayed byte-identical
 - [Phase 25]: 25-01: the web project's testMatch widened to /(web-app|auth|knowledge|razbory|admin(-chrome)?)\.spec\.js/ — admin-chrome.spec.js is the single home for criteria 1/2/4/5, so a new file never silently drops out of the runner
 - [Phase 25]: 25-01: the tracer gate ran as a TDD pair (RED commit then GREEN commit) instead of a blocking human-verify stop — the tracer's own verify demands a failing result, so there is nothing sane for a human to approve until the component edit lands
+- [Phase 25]: 25-02: eyebrow «Админ» удалён из DOM — getByText('Админ', { exact: true }) теперь 1 узел и это shell-ссылка; sr-only h1 (IN-01) сохранён и остаётся единственным
+- [Phase 25]: 25-02: кегль вкладки сравнивается с контентным h2 двусторонне (tab === ingest-sources-heading И оба === 24px), зазор 16px, margin-top 0, nav.top − main.top < 48 — относительный порог вместо литерала 40px
+- [Phase 25]: 25-02: пять замеров критерия 5 оформлены expect.soft — иначе RED показывает только первое падение, а acceptance требует все пять причин в одном выводе; soft-падение всё равно валит тест
 
 ### Pending Todos
 
@@ -225,8 +229,8 @@ Carried product deferrals beyond v1.3: leaderboard, quiz, Whisper/Foundry ASR, i
 
 ## Session Continuity
 
-Last session: 2026-10-21T12:29:52.162Z
-Stopped at: Completed 25-01-PLAN.md
+Last session: 2026-10-21T12:48:07.424Z
+Stopped at: Completed 25-02-PLAN.md
 Resume file: None
 Next: `/gsd-discuss-phase 25` (or `/gsd-plan-phase 25`)
 

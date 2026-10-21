@@ -15,8 +15,8 @@ already-committed streamed DeepSeek fix (`0dddc75`).
 
 - [x] **PIPEUI-01**: An admin sees the pipeline section named «Настройка» everywhere it is announced — the section tab, the screen-reader heading and the narrow-viewport section select — while the `/admin/pipeline` URL stays unchanged
 - [ ] **PIPEUI-02**: The ingest-source «Тип» select and both «Канал» / «Плейлист» options are legible in the dark and the light theme, with an explicit surface and text colour instead of the user-agent field look
-- [ ] **PIPEUI-03**: The ingest-sources block heading reads «Источники» — the word «ингеста» is gone
-- [ ] **PIPEUI-04**: Backlog 999.2 admin chrome polish — the «Админ» eyebrow is gone, the tab type matches the content `h2` scale, the gap between tabs grows, and the empty space above the tabs shrinks
+- [x] **PIPEUI-03**: The ingest-sources block heading reads «Источники» — the word «ингеста» is gone
+- [x] **PIPEUI-04**: Backlog 999.2 admin chrome polish — the «Админ» eyebrow is gone, the tab type matches the content `h2` scale, the gap between tabs grows, and the empty space above the tabs shrinks
 
 ### Theme contrast
 
@@ -64,8 +64,8 @@ Acknowledged but not in this milestone's roadmap. IDs are reserved and never reu
 |-------------|-------|--------|
 | PIPEUI-01 | Phase 25 | Complete |
 | PIPEUI-02 | Phase 25 | Pending |
-| PIPEUI-03 | Phase 25 | Pending |
-| PIPEUI-04 | Phase 25 | Pending |
+| PIPEUI-03 | Phase 25 | Complete |
+| PIPEUI-04 | Phase 25 | Complete |
 | THEME-01 | Phase 25 | Pending |
 | THEME-02 | Phase 25 | Pending |
 | NAV-01 | Phase 26 | Pending |

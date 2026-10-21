@@ -93,10 +93,10 @@ Full phase detail: [milestones/v1.3-ROADMAP.md](milestones/v1.3-ROADMAP.md)
 4. In the light theme the labels on the purple `primary` and cyan `accent` fills and on the active nav pill are white, and the yellow `voting` fill keeps its dark label; both combinations hold ≥ 4.5:1. *Proof:* computed-colour assertions in both themes, with the `voting` exception pinned as a positive assertion (not an omission).
 5. The ingest-sources heading reads exactly «Источники», the «Админ» eyebrow is absent from the DOM, the tab font-size equals the content `h2` scale, the tab gap is wider than the pre-fix `gap-2`, and the space above the tab row is smaller than pre-fix. *Proof:* Playwright text-absence plus computed-style assertions on the shared admin chrome.
 
-**Plans:** 1/4 plans executed
+**Plans:** 2/4 plans executed
 
 - [x] 25-01-PLAN.md
-- [ ] 25-02-PLAN.md
+- [x] 25-02-PLAN.md
 - [ ] 25-03-PLAN.md
 - [ ] 25-04-PLAN.md
 - [ ] `25-01-PLAN.md` — Tracer: собрать `admin-chrome.spec.js` в проекте `web` (`testMatch`), naming-RED на трёх поверхностях, «Настройка» в `AdminLayout.jsx` (PIPEUI-01, wave 1)
