@@ -69,7 +69,7 @@ Full phase detail: [milestones/v1.3-ROADMAP.md](milestones/v1.3-ROADMAP.md)
 ## 🚧 v1.4 UI polish & honest navigation (Phases 25-28)
 
 **Started:** 2026-10-21 · **Requirements:** 10 (`PIPEUI-01…04`, `THEME-01/02`, `NAV-01/02`, `KNOW-05`, `ING-09`) · **Source:** five UI defects reported from live use + the live proof owed for commit `0dddc75`.
-**Phase count:** 4 (Phases 25-28) · **Plans:** 4 · **Status:** Phase 25 planned (4 plans, 4 waves); Phases 26-28 awaiting planning.
+**Phase count:** 4 (Phases 25-28) · **Plans:** 7 · **Status:** Phase 25 gap closure planned (7 plans, 5 waves); Phases 26-28 awaiting planning.
 
 ### Phase 25: Admin «Настройка» — naming, readable surfaces, token repair
 
@@ -93,7 +93,7 @@ Full phase detail: [milestones/v1.3-ROADMAP.md](milestones/v1.3-ROADMAP.md)
 4. In the light theme the labels on the purple `primary` and cyan `accent` fills and on the active nav pill are white, and the yellow `voting` fill keeps its dark label; both combinations hold ≥ 4.5:1. *Proof:* computed-colour assertions in both themes, with the `voting` exception pinned as a positive assertion (not an omission).
 5. The ingest-sources heading reads exactly «Источники», the «Админ» eyebrow is absent from the DOM, the tab font-size equals the content `h2` scale, the tab gap is wider than the pre-fix `gap-2`, and the space above the tab row is smaller than pre-fix. *Proof:* Playwright text-absence plus computed-style assertions on the shared admin chrome.
 
-**Plans:** 4/4 plans executed
+**Plans:** 4/7 plans executed — 25-01…25-04 green; 25-05…25-07 are gap closure for GAP-25-1…GAP-25-4 (+WR-03, WR-04)
 
 - [x] 25-01-PLAN.md
 - [x] 25-02-PLAN.md
@@ -103,6 +103,9 @@ Full phase detail: [milestones/v1.3-ROADMAP.md](milestones/v1.3-ROADMAP.md)
 - [ ] `25-02-PLAN.md` — Хром админки: убрать eyebrow, кегль вкладок = `h2`, `gap-4`, `mt-0`, заголовок блока «Источники» (PIPEUI-03, PIPEUI-04, wave 2)
 - [ ] `25-03-PLAN.md` — WCAG-хелпер + гейт покрытия токенов G-0…G-8, 13 токенов в существующих блоках `index.css`, читаемый «Тип» (THEME-02, PIPEUI-02, wave 3)
 - [ ] `25-04-PLAN.md` — Тема-независимые подписи на заливках и скраймах, гейты G-9/G-10 (THEME-01, wave 4)
+- [ ] `25-05-PLAN.md` — gap closure: `blendOver`, роли `success-ink` / `voting-ink-on-tint` / `accent-text` / `field-border`, гейты G-14 (тинт-композит ≥ 4.5) и G-15 (граница поля ≥ 3:1) (THEME-02, wave 1)
+- [ ] `25-06-PLAN.md` — gap closure: пилюли статуса и панели ошибок на `-ink`, тост на `bg-paper-2`/`border-rule`/`text-ink`, снятие carve-out G-10, G-16 (контракт e2e-тостов), кейс отправки диджеста в обеих темах (PIPEUI-02, THEME-02, wave 2)
+- [ ] `25-07-PLAN.md` — gap closure: `text-accent-text` на ссылке повтора, `border-field-border` на контролах, G-17, единственная заливка `ActionButton`, ожидание `data-theme` в `gotoAdmin` (PIPEUI-01, PIPEUI-03, PIPEUI-04, THEME-01, wave 3)
 
 ### Phase 26: Section context — anchor scrolling and header active state
 
