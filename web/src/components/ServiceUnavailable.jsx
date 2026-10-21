@@ -35,7 +35,7 @@ export default function ServiceUnavailable({ onRetry }) {
       </p>
       <button
         type="button"
-        className="mt-6 inline-flex min-h-11 items-center justify-center rounded-full bg-primary px-5 text-sm font-medium text-text-primary disabled:cursor-wait disabled:opacity-60"
+        className="mt-6 inline-flex min-h-11 items-center justify-center rounded-full bg-primary-solid px-5 text-sm font-medium text-on-solid disabled:cursor-wait disabled:opacity-60"
         disabled={busy}
         aria-busy={busy}
         onClick={handleRetry}

@@ -1,8 +1,8 @@
 const stateClass = {
   idle: '',
   loading: 'cursor-wait opacity-80',
-  error: 'bg-danger text-text-primary',
-  success: 'bg-success text-text-primary',
+  error: 'bg-danger-solid text-on-solid',
+  success: 'bg-success-solid text-on-solid',
 }
 
 export default function ActionButton({
@@ -15,10 +15,10 @@ export default function ActionButton({
 }) {
   const variantClass =
     variant === 'voting'
-      ? 'bg-voting text-bg-app'
+      ? 'bg-voting text-voting-ink'
       : variant === 'secondary'
         ? 'border border-border bg-transparent text-primary'
-        : 'bg-primary text-text-primary'
+        : 'bg-primary-solid text-on-solid'
 
   return (
     <button

@@ -11,7 +11,7 @@ const MOCK_SHELL_IDENTITY = 'Мария Сидорова'
 const linkClass = ({ isActive }) =>
   [
     'inline-flex min-h-11 items-center rounded-full px-2.5 text-sm',
-    isActive ? 'bg-primary text-text-primary' : 'text-text-secondary hover:bg-bg-surface',
+    isActive ? 'bg-primary-solid text-on-solid' : 'text-text-secondary hover:bg-bg-surface',
   ].join(' ')
 
 /** Fallback identity for local mock browsing — never shown when login is required. */
