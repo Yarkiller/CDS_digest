@@ -2,9 +2,13 @@
 gsd_state_version: "1.0"
 milestone: v1.4
 milestone_name: UI polish & honest navigation
+current_phase_name: roadmap ready — Phases 25-28
 status: planning
-last_updated: "2026-10-21T11:05:00.000Z"
+stopped_at: Phase 25 context gathered
+last_updated: "2026-10-21T11:17:42.260Z"
 last_activity: 2026-10-21
+last_activity_desc: Milestone v1.4 roadmap created (UI polish & honest navigation)
+state_head: 38f59c39d83919bb56ff7fdc814a1a59c569512e
 progress:
   total_phases: 4
   completed_phases: 0
@@ -215,9 +219,9 @@ Carried product deferrals beyond v1.3: leaderboard, quiz, Whisper/Foundry ASR, i
 
 ## Session Continuity
 
-Last session: 2026-10-21T11:05:00.000Z
-Stopped at: v1.4 roadmap created — Phases 25-28, 10/10 requirements mapped, 0 plans
-Resume file: None
+Last session: 2026-10-21T11:17:42.233Z
+Stopped at: Phase 25 context gathered
+Resume file: .planning/phases/25-admin-nastroyka-naming-readable-surfaces-token-repair/25-CONTEXT.md
 Next: `/gsd-discuss-phase 25` (or `/gsd-plan-phase 25`)
 
 ## Operator Next Steps
