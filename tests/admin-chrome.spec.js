@@ -718,3 +718,65 @@ test("the vote button paints exactly one fill in every state", async ({ page }) 
     ).toBeGreaterThanOrEqual(4.5);
   }
 });
+
+test("pipeline retry actions are legible in both themes", async ({ page }) => {
+  // GAP-25-5 / WR-07: the pipeline retry links painted `text-primary` (#8B5CF6) — 4.047 on the
+  // light `bg-app` for pipeline-config-retry and 3.566 / 4.186 on the save-retry's `bg-danger/10`
+  // — below the 4.5:1 floor. The fix adds the `--color-primary-text` label role; both links are
+  // asserted by their *computed* colour in both themes.
+  //
+  // The save-retry sits on `bg-danger/10`, which Tailwind compiles to a `color-mix` that Chrome
+  // serializes as `oklab(… / 0.1)` — a form `parseColor` refuses. So the background is assembled
+  // from tokens (`blendOver(--color-danger, --color-bg-app, 0.1)`) exactly as G-14 does, instead
+  // of reading the DOM. The 600ms `UI_LATENCY_MS` window is not a race here: `toBeVisible()`
+  // polls until the button mounts and it never unmounts, so no `data-state` wait is needed.
+  for (const theme of ["dark", "light"]) {
+    // Branch A — the load-error retry on the bare page shell.
+    await gotoAdmin(page, "/admin/pipeline", theme);
+    await page.evaluate(() => window.__DIGEST_PIPELINE_CONFIG_HARNESS__.armFailNextLoad());
+    await page.reload();
+    await waitForTheme(page, theme);
+
+    const retry = page.getByTestId("pipeline-config-retry");
+    await expect(retry).toBeVisible();
+    expect(await classTokens(retry)).toContain("text-primary-text");
+    expect(await classTokens(retry)).not.toContain("text-primary");
+    expect(await cssToken(page, "--color-primary-text")).toBe(
+      theme === "light" ? "#6D28D9" : "#A78BFA",
+    );
+    const pair = await paintedPair(retry);
+    expect(pair.color, `retry (${theme}) colour`).toBe(
+      theme === "light" ? "rgb(109, 40, 217)" : "rgb(167, 139, 250)",
+    );
+    expect(
+      contrastRatio(pair.color, pair.background),
+      `retry (${theme}) contrast on the shell`,
+    ).toBeGreaterThanOrEqual(4.5);
+
+    // Branch B — the save-failure retry on the `bg-danger/10` panel.
+    await gotoAdmin(page, "/admin/pipeline", theme);
+    const editor = page.getByTestId("pipeline-config-editor");
+    await editor.fill("template: lecture\nroles:\n  - employee\nlanguage: ru\nmax_chars: 4000\n");
+    await page.evaluate(() => window.__DIGEST_PIPELINE_CONFIG_HARNESS__.armFailNextSave());
+    await page.getByTestId("pipeline-config-save").click();
+
+    const saveRetry = page.getByTestId("pipeline-config-save-retry");
+    await expect(saveRetry).toBeVisible();
+    expect(await classTokens(saveRetry)).toContain("text-primary-text");
+    expect(await classTokens(saveRetry)).not.toContain("text-primary");
+
+    const savePair = await styleTriple(saveRetry);
+    expect(savePair.color, `save retry (${theme}) colour`).toBe(
+      theme === "light" ? "rgb(109, 40, 217)" : "rgb(167, 139, 250)",
+    );
+    const tintComposite = blendOver(
+      await cssToken(page, "--color-danger"),
+      await cssToken(page, "--color-bg-app"),
+      0.1,
+    );
+    expect(
+      contrastRatio(savePair.color, tintComposite),
+      `save retry (${theme}) contrast on the danger tint`,
+    ).toBeGreaterThanOrEqual(4.5);
+  }
+});

@@ -46,7 +46,10 @@ const dark = parseBlock(css, '@theme(?:\\s+static)?')
 const light = parseBlock(css, '\\[data-theme="light"\\]')
 
 /** Values that depend on the theme: declared in @theme and overridden under light. */
-const THEMED = ['paper', 'paper-2', 'ink', 'ink-2', 'muted', 'rule', 'danger-ink']
+// Роль подписи `primary` темо-зависима (светлое значение отличается), поэтому токен обязан
+// жить в обоих блоках; G-1/G-2 читают этот список, а G-4 находит его через расширенный
+// UTILITY_PATTERN ниже (иначе anti-vacuum навсегда остаётся с `missing: ['primary-text']`).
+const THEMED = ['paper', 'paper-2', 'ink', 'ink-2', 'muted', 'rule', 'danger-ink', 'primary-text']
 
 /** Roles that are identical in both themes: declared once, no light override (D-08). */
 const FLAT = [
@@ -63,13 +66,13 @@ const FLAT = [
 const UTILITY_PREFIXES = ['bg', 'text', 'border', 'ring', 'outline', 'divide', 'fill', 'stroke']
 
 /**
- * `<prefix>-(voting-ink-on-tint|success-ink|accent-text|field-border|danger-ink|paper-2|paper|
+ * `<prefix>-(voting-ink-on-tint|success-ink|accent-text|primary-text|field-border|danger-ink|paper-2|paper|
  * ink-2|ink|muted|rule)`, optionally with an opacity modifier (tolerated here so the hit is
  * attributed to the family, and separately forbidden for `bg-paper*` by G-6). Longest names
  * first so `text-success-ink` is not read as `text-success` and `text-ink-2` not as `text-ink`.
  */
 const UTILITY_PATTERN = new RegExp(
-  `(?<![\\w-])(?:${UTILITY_PREFIXES.join('|')})-(voting-ink-on-tint|success-ink|accent-text|field-border|danger-ink|paper-2|paper|ink-2|ink|muted|rule)(?:/[0-9.]+)?`,
+  `(?<![\\w-])(?:${UTILITY_PREFIXES.join('|')})-(voting-ink-on-tint|success-ink|accent-text|primary-text|field-border|danger-ink|paper-2|paper|ink-2|ink|muted|rule)(?:/[0-9.]+)?`,
   'g',
 )
 
@@ -409,6 +412,38 @@ function accentLabelOffences(relative, source) {
         (label) => token === label || token.startsWith(`${label}/`),
       )
       if (forbidden) offenders.push(`${relative}: ${token}`)
+    }
+  }
+  return offenders
+}
+
+/** G-20: the legal label role for `primary`. `text-primary-text` is its only text form. */
+const PRIMARY_LABEL = 'primary-text'
+
+/** The offender spellings G-20 must catch; pinned so the detector cannot be softened. */
+const PRIMARY_LABEL_OFFENDERS = ['text-primary', 'hover:text-primary', 'text-primary/80']
+
+/**
+ * Every `text-primary` (and `text-primary/<alpha>`) of one source, as `file: token`.
+ *
+ * `--color-primary` (#8B5CF6) is a fill / border / focus-ring / tint, never a label: as text
+ * it reads 3.566…4.529 on the admin surfaces, below the 4.5:1 floor. `tokenSet` already strips
+ * the variant prefix (`hover:text-primary` -> `text-primary`), so the first regex below is
+ * belt-and-suspenders for a raw colon-form and the second is the operative test. The legal
+ * neighbours `text-primary-text`, `text-text-primary`, `bg-primary`, `bg-primary/15`,
+ * `border-primary`, `outline-primary`, `bg-primary-solid` and `text-primary-hover` must not
+ * match — a substring match here would flag the base fill the gate exists to keep legal.
+ */
+function primaryLabelOffences(relative, source) {
+  const offenders = []
+  for (const literal of stringLiterals(source)) {
+    for (const token of tokenSet(literal)) {
+      const isVariantLabel =
+        /(?:^|:)(?:hover|focus|focus-visible|active|group-hover|peer-checked):text-primary$/.test(
+          token,
+        )
+      const isBaseLabel = /(?:^|:)text-primary(?:\/\d{1,3})?$/.test(token)
+      if (isVariantLabel || isBaseLabel) offenders.push(`${relative}: ${token}`)
     }
   }
   return offenders
@@ -1309,5 +1344,53 @@ describe('semantic token coverage (criterion 3)', () => {
       badOffenders[0],
       /Выпуск опубликован \| Рассылка не отправлена|Рассылка не отправлена \| Выпуск опубликован/,
     )
+  })
+
+  // Гейт не вакуумный: до миграции он обязан покраснеть на 36 литералах (35 className-сайтов
+  // в 19 файлах + бэктик-упоминание в JSDoc `ActionButton.jsx:35`), после миграции —
+  // позеленеть. Ссылка на дефект: 25-VERIFICATION.md GAP-25-5 (WR-07).
+  it('G-20: primary is not a label role — use text-primary-text', () => {
+    const offenders = sources().flatMap(({ relative, source }) =>
+      primaryLabelOffences(relative, source),
+    )
+
+    assert.deepEqual(
+      offenders,
+      [],
+      `primary is not a label role — use text-${PRIMARY_LABEL}: ${offenders.join(', ')}`,
+    )
+  })
+
+  it('G-20 proof: text-primary is a label role, text-primary-text is not', () => {
+    assert.equal(
+      primaryLabelOffences('synthetic.jsx', "'font-medium text-primary hover:underline'")
+        .length,
+      1,
+    )
+    assert.equal(primaryLabelOffences('synthetic.jsx', "'hover:text-primary'").length, 1)
+    assert.equal(primaryLabelOffences('synthetic.jsx', "'text-primary/80'").length, 1)
+
+    // The fills, borders, rings and the main-text role stay legal — a substring match would
+    // flag every one of these and turn the gate into a ban on `primary` itself.
+    assert.deepEqual(primaryLabelOffences('synthetic.jsx', "'bg-primary text-on-solid'"), [])
+    assert.deepEqual(
+      primaryLabelOffences('synthetic.jsx', "'rounded-full border border-primary'"),
+      [],
+    )
+    assert.deepEqual(primaryLabelOffences('synthetic.jsx', "'focus-visible:outline-primary'"), [])
+    assert.deepEqual(
+      primaryLabelOffences('synthetic.jsx', "'text-primary-text hover:text-primary-text'"),
+      [],
+    )
+    assert.deepEqual(primaryLabelOffences('synthetic.jsx', "'text-text-primary'"), [])
+
+    // The offender list itself is pinned so the gate cannot be narrowed to the bare form only.
+    for (const offender of PRIMARY_LABEL_OFFENDERS) {
+      assert.equal(
+        primaryLabelOffences('synthetic.jsx', `'${offender}'`).length,
+        1,
+        `${offender} must be an offender`,
+      )
+    }
   })
 })
