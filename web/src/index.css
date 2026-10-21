@@ -49,6 +49,17 @@
      surfaces in both themes (G-7): dark 6.36 / 5.75, light 6.47 / 5.90. */
   --color-danger-ink: #F87171;
 
+  /* Status *label* roles. `--color-success` / `--color-voting` / `--color-danger` are
+     fill/status colours: as text on their own translucent tint they fail 4.5:1 in the light
+     theme (1.925 / 1.62 / 3.17), because a theme-flat tint over a themed surface composites
+     to a themed colour. These are the label roles and are measured against that composite in
+     both themes (G-14). `--color-accent-text` is the same defect one family over: the base
+     `--color-accent` reads 2.43:1 on the light `paper`, this role keeps 5.358 while the dark
+     value stays byte-identical to `--color-accent`. */
+  --color-success-ink: #4ADE80;
+  --color-voting-ink-on-tint: #FDE68A;
+  --color-accent-text: #06B6D4;
+
   /* Theme-independent roles: identical in both themes, so they get no override. A label
      that flips with the theme is the defect this family exists to remove; every pair is
      measured in tests/unit/test_semantic_token_coverage.js (G-7). */
@@ -59,6 +70,16 @@
   --color-on-solid: #FFFFFF;
   --color-voting-ink: #0F172A;
   --color-scrim: rgba(0, 0, 0, 0.6);
+
+  /* Boundary role for form controls, deliberately **not** theme-dependent: #64748B clears
+     WCAG 1.4.11's 3:1 on paper / paper-2 / bg-app in both themes (3.698 / 3.342 / 4.030 dark,
+     4.759 / 4.344 / 4.548 light), while the decorative `rule` stays at 1.425 / 1.485 by
+     design — G-15 proves the same floor rejects it. The pair #4B5563/#64748B would fail its
+     own 3:1 gate in the dark theme (2.328).
+
+     Non-text boundary role only — never paint text with `field-border`; labels ride `ink`,
+     `ink-2` or the `-ink` label roles above and are measured by G-14. */
+  --color-field-border: #64748B;
 
   --font-display: "Manrope", "Segoe UI", system-ui, sans-serif;
   --font-sans: "Manrope", "Segoe UI", system-ui, sans-serif;
@@ -154,6 +175,13 @@
     --color-muted: #475569;
     --color-rule: #CBD5E1;
     --color-danger-ink: #B91C1C;
+
+    /* Label roles: the tint composite flips with the surface even though the tint token does
+       not, so these three cannot stay flat (G-14). The base `--color-accent` stays untouched
+       and keeps painting outlines. */
+    --color-success-ink: #166534;
+    --color-voting-ink-on-tint: #713F12;
+    --color-accent-text: #0E7490;
 
     --color-xp-text: #1A2E05;
     --shadow-md: 0 0 0 1px var(--color-border), 0 4px 24px rgba(15, 23, 42, 0.08);
