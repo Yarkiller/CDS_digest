@@ -1,0 +1,83 @@
+# Requirements: Digest CDS
+
+**Defined:** 2026-10-21
+**Core Value:** Authorized СВА staff can read a trustworthy weekly issue of prepared articles and influence the next разбор through one honest vote — without treating raw video/transcript as published material.
+
+**Milestone:** v1.4 UI polish & honest navigation
+
+## v1.4 Requirements
+
+Requirements for this milestone. Each maps to exactly one roadmap phase.
+These are the five defects reported from live use plus the live proof owed for the
+already-committed streamed DeepSeek fix (`0dddc75`).
+
+### Admin section naming and readable surfaces
+
+- [ ] **PIPEUI-01**: An admin sees the pipeline section named «Настройка» everywhere it is announced — the section tab, the screen-reader heading and the narrow-viewport section select — while the `/admin/pipeline` URL stays unchanged
+- [ ] **PIPEUI-02**: The ingest-source «Тип» select and both «Канал» / «Плейлист» options are legible in the dark and the light theme, with an explicit surface and text colour instead of the user-agent field look
+- [ ] **PIPEUI-03**: The ingest-sources block heading reads «Источники» — the word «ингеста» is gone
+- [ ] **PIPEUI-04**: Backlog 999.2 admin chrome polish — the «Админ» eyebrow is gone, the tab type matches the content `h2` scale, the gap between tabs grows, and the empty space above the tabs shrinks
+
+### Theme contrast
+
+- [ ] **THEME-01**: In the light theme the labels on filled buttons and the active nav pill are white, so no near-black text sits on a purple or accent fill; the yellow voting button keeps its dark label because white on `#EAB308` fails contrast
+- [ ] **THEME-02**: The semantic admin token family the admin components already use (`paper`, `paper-2`, `ink`, `ink-2`, `muted`, `rule`, `accent-ink`) is declared in the Tailwind `@theme` with light-theme overrides, and a test fails when a token used by those components is undeclared
+
+### Section context
+
+- [ ] **NAV-01**: A reader who follows a «Содержание» link lands with the target heading fully visible below the sticky header, with breathing room — no heading hidden under the header and no over-scroll past it
+- [ ] **NAV-02**: The header keeps «Архив» lit while the reader views an archived issue or a material opened from the archive, and «База» lit for a material opened from search; a direct URL visit without origin state lights no false section
+
+### Header search
+
+- [ ] **KNOW-05**: Submitting a non-empty query from the header search navigates to «База знаний» and runs the search immediately — results appear without a second click, exactly one request is issued per submit, and an empty submit never calls the search API
+
+### Ingestion proof
+
+- [ ] **ING-09**: A live `ingest` run on a long (>10 min) YouTube video completes through the streamed DeepSeek path, writes a `status=draft` material plus a pending shortlist row, and reports no `APIConnectionError`; the operator step is recorded
+
+## Deferred Requirements
+
+Acknowledged but not in this milestone's roadmap. IDs are reserved and never reused —
+`PIPE-04` already belongs to the v1.3 YAML merge-key requirement.
+
+### Admin
+
+- **ADUX-11**: Unify Approve + Mark ready — backlog 999.4, parked by product preference
+- **PIPE-06**: PIPE execution — running the pipeline, not only editing its config
+- **ING-10**: Ingest HTTP API in place of the systemd/CLI path
+
+## Out of Scope
+
+| Feature | Reason |
+|---------|--------|
+| New breadcrumb component | Bug 3 was confirmed as anchor scrolling; «Содержание» headings scrolling under the sticky header is the real defect |
+| Changing the `/admin/pipeline` URL or admin authorisation | Renaming is a label change; routes and authz stay byte-identical |
+| Redesign of the shell navigation or new routes | This milestone repairs contrast and state, it does not restructure navigation |
+| LLM retries/backoff beyond streaming | The streaming fix (`0dddc75`) already removes the idle window; ING-09 proves it |
+| White label on the yellow voting button | White on `#EAB308` fails contrast; the dark label stays |
+| Server-side search-on-load analytics change | KNOW-05 reuses the existing search goal, only without the second click |
+
+## Traceability
+
+| Requirement | Phase | Status |
+|-------------|-------|--------|
+| PIPEUI-01 | Phase 25 | Pending |
+| PIPEUI-02 | Phase 25 | Pending |
+| PIPEUI-03 | Phase 25 | Pending |
+| PIPEUI-04 | Phase 25 | Pending |
+| THEME-01 | Phase 25 | Pending |
+| THEME-02 | Phase 25 | Pending |
+| NAV-01 | Phase 26 | Pending |
+| NAV-02 | Phase 26 | Pending |
+| KNOW-05 | Phase 27 | Pending |
+| ING-09 | Phase 28 | Pending |
+
+**Coverage:**
+- v1.4 requirements: 10 total
+- Mapped to phases: 10
+- Unmapped: 0 ✓
+
+---
+*Requirements defined: 2026-10-21*
+*Last updated: 2026-10-21 after roadmap creation (Phases 25-28)*
