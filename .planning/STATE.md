@@ -4,17 +4,17 @@ milestone: v1.4
 milestone_name: UI polish & honest navigation
 current_phase: 25
 current_phase_name: Admin «Настройка» — naming, readable surfaces, token repair
-status: executing
-stopped_at: Completed 25-09-PLAN.md
-last_updated: "2026-10-21T19:45:52.895Z"
+status: verifying
+stopped_at: Completed 25-10-PLAN.md
+last_updated: "2026-10-21T20:03:54.956Z"
 last_activity: 2026-10-21
 last_activity_desc: Phase 25 execution started
-state_head: 80b9c131bd2dcc42bde42f0bcbd58a6171dcea0c
+state_head: dca85b77f3ff08906168d7e8eab6c7896d99fe2c
 progress:
   total_phases: 4
   completed_phases: 0
   total_plans: 10
-  completed_plans: 9
+  completed_plans: 10
   percent: 0
 ---
 
@@ -31,7 +31,7 @@ See: .planning/PROJECT.md (updated 2026-10-21 — v1.4 milestone started)
 
 Phase: 25 (Admin «Настройка» — naming, readable surfaces, token repair) — READY TO EXECUTE
 Plan: 7 of 7
-Status: Ready to execute
+Status: Phase complete — ready for verification
 Last activity: 2026-10-21 — Phase 25 plan 05 executed (status label roles + field boundary)
 
 ## Performance Metrics
@@ -102,6 +102,7 @@ Last activity: 2026-10-21 — Phase 25 plan 05 executed (status label roles + fi
 | Phase 25 P07 | 19 | 2 tasks | 12 files |
 | Phase 25 P08 | 12m | 3 tasks | 22 files |
 | Phase 25 P09 | 17min | 2 tasks | 2 files |
+| Phase 25 P10 | 28 | 2 tasks | 2 files |
 
 ## Accumulated Context
 
@@ -230,6 +231,9 @@ v1.3 roadmap locks:
 - [Phase 25]: 25-09: regexLiterals masks comments (block + whole-line // become spaces) instead of removing them, so file:line stays exact — mutation #5 pinned the phantom at tests/web-app.spec.js:388.
 - [Phase 25]: 25-09: the e2e helper is named pillAlpha (not tintAlpha*) so the Select-String 'tintAlpha' -> 0 acceptance holds literally.
 - [Phase 25]: 25-09: R1 offender keeps the 'one regex matches N status literals' shape so the existing proof filter stays green.
+- [Phase 25]: [25-10]: G-21 asserts exactly two loading entries (one per stateFill/stateChrome block) so a key rename cannot make the gate pass silently.
+- [Phase 25]: [25-10]: the e2e case neutralises CSS transitions before the click — transition-colors (150ms) otherwise lets an instant colour read slip in mid-transition (mutation #2 first passed for this reason).
+- [Phase 25]: [25-10]: 25-04 #7 closed — the in-flight vote label colour is proven in-browser (computed style) and statically (G-21), both mutation-redden; WR-11 (radio border 1.178/1.554) and 12 backstop points stay deferred to a future UI phase / verify-work.
 
 ### Pending Todos
 
@@ -263,8 +267,8 @@ Carried product deferrals beyond v1.3: leaderboard, quiz, Whisper/Foundry ASR, i
 
 ## Session Continuity
 
-Last session: 2026-10-21T19:45:52.845Z
-Stopped at: Completed 25-09-PLAN.md
+Last session: 2026-10-21T20:03:54.901Z
+Stopped at: Completed 25-10-PLAN.md
 Resume file: None
 Next: `/gsd-discuss-phase 25` (or `/gsd-plan-phase 25`)
 
