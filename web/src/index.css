@@ -60,6 +60,11 @@
   --color-voting-ink-on-tint: #FDE68A;
   --color-accent-text: #06B6D4;
 
+  /* Роль подписи для primary. База `--color-primary` остаётся заливкой/бордером/рингом (D-05);
+     `#8B5CF6` как текст даёт 3.566…4.529 против порога 4.5. Тёмное значение — 5.844 на
+     `paper-2`, худшая из шести плоских пар. */
+  --color-primary-text: #A78BFA;
+
   /* Theme-independent roles: identical in both themes, so they get no override. A label
      that flips with the theme is the defect this family exists to remove; every pair is
      measured in tests/unit/test_semantic_token_coverage.js (G-7). */
@@ -182,6 +187,7 @@
     --color-success-ink: #166534;
     --color-voting-ink-on-tint: #713F12;
     --color-accent-text: #0E7490;
+    --color-primary-text: #6D28D9;
 
     --color-xp-text: #1A2E05;
     --shadow-md: 0 0 0 1px var(--color-border), 0 4px 24px rgba(15, 23, 42, 0.08);
