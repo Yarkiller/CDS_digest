@@ -753,7 +753,11 @@ test("pipeline retry actions are legible in both themes", async ({ page }) => {
       `retry (${theme}) contrast on the shell`,
     ).toBeGreaterThanOrEqual(4.5);
 
-    // Branch B — the save-failure retry on the `bg-danger/10` panel.
+    // Branch B — the save-failure retry on the `bg-danger/10` panel. `armFailNextLoad` is
+    // sticky (sessionStorage-backed, never cleared by the fetch), so reset it before the next
+    // `gotoAdmin` or its internal reload lands on the same error state and the editor never
+    // mounts (GAP-25-5 retry is one-shot, but the load arm is not).
+    await page.evaluate(() => window.__DIGEST_PIPELINE_CONFIG_HARNESS__.resetPipelineConfigHarness());
     await gotoAdmin(page, "/admin/pipeline", theme);
     const editor = page.getByTestId("pipeline-config-editor");
     await editor.fill("template: lecture\nroles:\n  - employee\nlanguage: ru\nmax_chars: 4000\n");
