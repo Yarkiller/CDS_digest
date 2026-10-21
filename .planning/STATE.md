@@ -1,37 +1,33 @@
 ---
 gsd_state_version: "1.0"
-milestone: v1.3
-milestone_name: Live mail, scheduled ingestion & backlog debt
-status: Awaiting next milestone
-stopped_at: Phase 24 complete — all phases complete
-last_updated: "2026-10-18T19:25:47.052Z"
-last_activity: 2026-10-18
-last_activity_desc: Milestone v1.3 completed and archived
-state_head: 97e26d22f0e8558f50dde2a50eaed23dc90bfaed
+milestone: v1.4
+milestone_name: UI polish & honest navigation
+status: planning
+last_updated: "2026-10-21T11:01:24.050Z"
+last_activity: 2026-10-21
 progress:
-  total_phases: 8
-  completed_phases: 8
-  total_plans: 28
-  completed_plans: 28
-  percent: 100
-current_phase: 24
+  total_phases: 0
+  completed_phases: 0
+  total_plans: 0
+  completed_plans: 0
+  percent: 0
 ---
 
 # Project State
 
 ## Project Reference
 
-See: .planning/PROJECT.md (updated 2026-10-18 — v1.3 milestone complete)
+See: .planning/PROJECT.md (updated 2026-10-21 — v1.4 milestone started)
 
 **Core value:** Trusted weekly prepared-article issue + one honest vote toward the next разбор
-**Current focus:** v1.3 closed 2026-10-18 (tag `v1.3`) — awaiting next milestone
+**Current focus:** v1.4 UI polish & honest navigation (status: defining requirements)
 
 ## Current Position
 
-Phase: Milestone v1.3 complete
+Phase: Not started (defining requirements)
 Plan: —
-Status: Awaiting next milestone
-Last activity: 2026-10-18 — Milestone v1.3 completed and archived
+Status: Defining requirements
+Last activity: 2026-10-21 — Milestone v1.4 started
 
 ## Performance Metrics
 

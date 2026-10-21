@@ -10,6 +10,8 @@ Authorized СВА staff can read a trustworthy weekly issue of prepared articles
 
 ## Current State
 
+v1.4 UI polish & honest navigation started 2026-10-21 (Phases 25–28). Scope: close the five user-reported UI defects found in live use — honest admin naming and readable form surfaces, theme-independent button labels, section context that survives navigation plus anchor scrolling that clears the sticky header, and a header search that runs on the first Enter — and land one live proof that the streamed DeepSeek ingest completes end-to-end.
+
 v1.3 Live mail, scheduled ingestion & backlog debt started 2026-10-14 (Phases 17+). Scope: backlog tech debt first — 999.1 reader-route honesty, 999.6 unsaved-changes guard, 999.7 YAML merge-key — then MAIL-02 investigation + signup mail, MAIL-01 live SMTP digest delivered to `profiles`, and a cron/systemd scheduled ingestion over the existing `ingest` CLI (YouTube channel/playlist source; drafts only, never auto-send).
 
 v1.3 progress: **all 8 phases complete (Phases 17–24, 28 plans); milestone closed 2026-10-18 (tag `v1.3`).** Phase 18 shipped admin-gated draft preview + CR-01 fix. Phase 19 shipped the pipeline-editor unsaved-changes guard. Phase 20 (MAIL-02) shipped path (B): honest autoconfirm post-register copy (no letter claim), GoTrue owns confirmation. Phase 21 shipped live SMTP digest delivery with the `profiles` audience and honest counts. Phase 22 shipped the single «Админ» entry with in-page tabs. Phase 23 shipped DB-stored admin-managed ingest sources. Phase 24 shipped scheduled ingestion: a systemd timer drives `ingest-collect` against enabled sources, writing drafts + shortlist rows only.
@@ -24,7 +26,27 @@ v1 MVP (Phases 1–5) remains the editorial read/vote/admin publish surface (shi
 
 Stack: FastAPI, React/Vite, self-hosted Supabase + pgvector, `data-collection` + `ingestion-service`, Playwright, pytest.
 
-## Current Milestone: v1.3 Live mail, scheduled ingestion & backlog debt
+## Current Milestone: v1.4 UI polish & honest navigation
+
+**Goal:** Every surface tells the reader the truth about where they are and what they are looking at — the admin section is named honestly, both themes stay legible, section context survives navigation, anchors land below the sticky header, and the header search runs on the first Enter.
+
+**Target features:**
+- Admin «Настройка» (PIPEUI-01…04): the section tab, the hidden heading and the mobile select say «Настройка»; the ingest-source «Тип» select is legible in both themes; the block heading is «Источники»; backlog 999.2 chrome polish lands in the same phase
+- Theme contrast (THEME-01/02): filled buttons and the active nav pill carry a white label in both themes, backed by the missing semantic token family (`paper`, `ink`, `rule`, `accent-ink`) declared in `@theme`
+- Section context (NAV-01/02): «Содержание» anchors stop hiding their heading under the sticky header, and the header keeps «Архив» / «База» lit when the reader opens an issue or a material from that section
+- Header search (KNOW-05): submitting from the header navigates to «База знаний» and runs the search immediately — one API call, no second click
+- Ingestion proof (ING-09): a live run of the streamed DeepSeek path on a long video produces a draft + pending shortlist row with no `APIConnectionError`
+
+**Key context (risks to resolve in-phase):**
+- The admin components already speak the `paper/ink/rule` vocabulary, but `web/src/index.css` never declares it — so every such utility silently no-ops. Declaring the family is the root fix for both the unreadable «Канал | Плейлист» select and the invisible `accent-ink` labels; expect a wide but intended visual change on admin pages.
+- White labels are correct on purple (`primary`) and cyan (`accent`) fills, but the yellow `voting` button must keep its dark label — white on `#EAB308` fails contrast.
+- «Архив» / «База» cannot be derived from the URL alone: the same `/materials/:id` URL is reachable from three sections, so the origin must ride navigation state and degrade honestly on a direct visit.
+- The DeepSeek streaming fix is already committed (`0dddc75`); ING-09 is a live-proof requirement, not new adapter work.
+- Bug 3 was confirmed as anchor scrolling, not a breadcrumb component: headings from «Содержание» scroll under the 64px sticky header and the section title disappears off-screen.
+
+## Shipped Milestone: v1.3 Live mail, scheduled ingestion & backlog debt (SHIPPED 2026-10-18)
+
+**Status:** shipped 2026-10-18 — all eight phases (17–24, 28 plans) complete; tag `v1.3`.
 
 **Goal:** The admin sends the weekly digest through real mail (not a log line), new videos are collected on a schedule without a human running the CLI, and the accumulated backlog debt is closed before any new feature work.
 
@@ -133,8 +155,8 @@ v1 is done only when **all** of the following hold:
 
 ### Active
 
-v1.3 scope is fully shipped; no Active requirements remain. The next milestone's
-requirements are defined in `.planning/REQUIREMENTS.md` at `/gsd-new-milestone` time.
+v1.4 UI polish & honest navigation (Phases 25–28). The full scoped list with REQ-IDs lives in
+`.planning/REQUIREMENTS.md`; entries move to Validated as each phase closes.
 
 ### Out of Scope
 
@@ -154,6 +176,8 @@ requirements are defined in `.planning/REQUIREMENTS.md` at `/gsd-new-milestone` 
 - **Shipped v1.1:** Ingestion path (`data-collection` + `ingestion-service`) writes drafts into the same Supabase DB; backend/SPA unchanged as readers. DeepSeek MVP bends ADR-0002 temporarily. Migrations 007–009 live (`persist_draft_and_enqueue`, provenance, unique `youtube_video_id`, decision gate, sent-batch `already_saved`).
 - **v1.2 focus:** Admin UX honesty, CLI `--debug`, PIPE-01 MVP (config/validation/UI), admin shortlist unit fix. Live SMTP and PIPE execution deferred.
 - **v1.3 focus:** Backlog tech debt (999.1/999.6/999.7), MAIL-02 path (B) shipped in Phase 20, next MAIL-01 live SMTP digest to `profiles`, then cron/systemd scheduled ingestion over the existing `ingest` CLI. No auto-send, no pipeline execution.
+- **v1.4 focus:** UI honesty, not new capability. Five live-use defects (admin naming/readable surfaces, light-theme button labels, anchor scroll under the sticky header, section context in the header, header search that needs a second click) plus backlog 999.2. The DeepSeek streaming fix already landed as `0dddc75`; ING-09 only proves it live.
+- **v1.4 focus:** UI honesty found in live use — admin section naming + readable surfaces (999.2 folded in), theme-independent button labels via a declared token family, anchor scroll offset plus section-aware header state, and header search that executes on submit. The streamed DeepSeek ingest fix (`0dddc75`) gets its live proof here.
 - **Product framing:** Concept 3 Editorial UI («Digest CDS: издание»); personas and journeys J1–J6 in ingest context.
 - **Known debt at v1.1 close:** Nyquist drafts for phases 6–8; Phase 10 deferred admin unit flake; UAT polish items; advisory WR notes in milestone audit; four v1 debug sessions still suppressed (see STATE.md Deferred Items).
 - **Domain language:** `CONTEXT.md` + `docs/adr/` are canonical for agents.
@@ -257,4 +281,4 @@ After each phase transition: move validated/invalidated requirements; log decisi
 After milestone: full review of Core Value, Out of Scope, and Context against shipped reality.
 
 ---
-*Last updated: 2026-10-18 after Phase 24 (v1.3 milestone complete)*
+*Last updated: 2026-10-21 — v1.4 UI polish & honest navigation started*
