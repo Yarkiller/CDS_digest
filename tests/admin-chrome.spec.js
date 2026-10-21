@@ -1,5 +1,7 @@
 const { expect, test } = require("@playwright/test");
 
+const { contrastRatio } = require("./helpers/contrast");
+
 /**
  * Admin chrome acceptance spec (PIPEUI-01…04, THEME-01/02).
  *
@@ -167,4 +169,48 @@ test("chrome: tab scale, gap and top space; no eyebrow; Источники headi
   );
   await expect(page.getByTestId("admin-tab-digest")).toHaveCount(1);
   await expect(page.getByTestId("admin-tab-pipeline")).toHaveCount(1);
+});
+
+test("select legible in both themes", async ({ page }) => {
+  // Criterion 2 (PIPEUI-02): the values are the declaration from the UI-SPEC token
+  // contract, asserted as *equality*. "Not white" would already pass on the pre-fix tree,
+  // where the field is transparent and simply inherits its colour.
+  const expected = {
+    dark: { color: "rgb(203, 213, 225)", background: "rgb(19, 25, 37)" },
+    light: { color: "rgb(51, 65, 85)", background: "rgb(255, 255, 255)" },
+  };
+  const fields = ["ingest-sources-kind", "ingest-sources-id", "ingest-sources-label"];
+
+  for (const theme of ["dark", "light"]) {
+    await gotoAdmin(page, "/admin/pipeline", theme);
+
+    for (const testId of fields) {
+      const pair = await stylePair(page.getByTestId(testId));
+
+      // Asserted first: this is the measured pre-fix state and the clearest RED message.
+      expect(pair.background, `${testId} (${theme}) must paint an opaque surface`).not.toBe(
+        "rgba(0, 0, 0, 0)",
+      );
+      expect(pair.background, `${testId} (${theme}) background`).toBe(expected[theme].background);
+      expect(pair.color, `${testId} (${theme}) color`).toBe(expected[theme].color);
+
+      // All three controls carry the same pair — this is what forbids a select-only patch.
+      expect(
+        contrastRatio(pair.color, pair.background),
+        `${testId} (${theme}) contrast`,
+      ).toBeGreaterThanOrEqual(4.5);
+    }
+
+    // The token must resolve at runtime, not merely exist in the stylesheet text.
+    const paperToken = await page.evaluate(() =>
+      getComputedStyle(document.documentElement).getPropertyValue("--color-paper").trim(),
+    );
+    expect(paperToken, `${theme}: --color-paper must resolve at runtime`).not.toBe("");
+
+    // The option texts are part of criterion 2; the list is not a copy of the control.
+    expect(
+      await page.getByTestId("ingest-sources-kind").locator("option").allTextContents(),
+      `${theme}: option texts`,
+    ).toEqual(["Канал", "Плейлист"]);
+  }
 });
