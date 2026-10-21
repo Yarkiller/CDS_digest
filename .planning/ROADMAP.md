@@ -69,7 +69,7 @@ Full phase detail: [milestones/v1.3-ROADMAP.md](milestones/v1.3-ROADMAP.md)
 ## 🚧 v1.4 UI polish & honest navigation (Phases 25-28)
 
 **Started:** 2026-10-21 · **Requirements:** 10 (`PIPEUI-01…04`, `THEME-01/02`, `NAV-01/02`, `KNOW-05`, `ING-09`) · **Source:** five UI defects reported from live use + the live proof owed for commit `0dddc75`.
-**Phase count:** 4 (Phases 25-28) · **Plans:** 7 · **Status:** Phase 25 gap closure planned (7 plans, 5 waves); Phases 26-28 awaiting planning.
+**Phase count:** 4 (Phases 25-28) · **Plans:** 7 · **Status:** Phase 25 gap closure planned (7 plans, 7 waves — absolute: 25-01…25-04 = waves 1-4, 25-05…25-07 = waves 5-7); Phases 26-28 awaiting planning.
 
 ### Phase 25: Admin «Настройка» — naming, readable surfaces, token repair
 
@@ -103,9 +103,9 @@ Full phase detail: [milestones/v1.3-ROADMAP.md](milestones/v1.3-ROADMAP.md)
 - [ ] `25-02-PLAN.md` — Хром админки: убрать eyebrow, кегль вкладок = `h2`, `gap-4`, `mt-0`, заголовок блока «Источники» (PIPEUI-03, PIPEUI-04, wave 2)
 - [ ] `25-03-PLAN.md` — WCAG-хелпер + гейт покрытия токенов G-0…G-8, 13 токенов в существующих блоках `index.css`, читаемый «Тип» (THEME-02, PIPEUI-02, wave 3)
 - [ ] `25-04-PLAN.md` — Тема-независимые подписи на заливках и скраймах, гейты G-9/G-10 (THEME-01, wave 4)
-- [ ] `25-05-PLAN.md` — gap closure: `blendOver`, роли `success-ink` / `voting-ink-on-tint` / `accent-text` / `field-border`, гейты G-14 (тинт-композит ≥ 4.5) и G-15 (граница поля ≥ 3:1) (THEME-02, wave 1)
-- [ ] `25-06-PLAN.md` — gap closure: пилюли статуса и панели ошибок на `-ink`, тост на `bg-paper-2`/`border-rule`/`text-ink`, снятие carve-out G-10, G-16 (контракт e2e-тостов), кейс отправки диджеста в обеих темах (PIPEUI-02, THEME-02, wave 2)
-- [ ] `25-07-PLAN.md` — gap closure: `text-accent-text` на ссылке повтора, `border-field-border` на контролах, G-17, единственная заливка `ActionButton`, ожидание `data-theme` в `gotoAdmin` (PIPEUI-01, PIPEUI-03, PIPEUI-04, THEME-01, wave 3)
+- [ ] `25-05-PLAN.md` — gap closure: `blendOver`, роли `success-ink` / `voting-ink-on-tint` / `accent-text` / `field-border`, гейты G-14 (тинт-композит ≥ 4.5) и G-15 (граница поля ≥ 3:1) (THEME-02, wave 5)
+- [ ] `25-06-PLAN.md` — gap closure: все 18 статусных подписей на `-ink`, тост на `bg-paper-2`/`border-rule`/`text-ink`, снятие carve-out G-10, G-18 (label-role scan) и G-16 (контракт e2e-ассертов), e2e на пилюли / ошибку поля / баннер отправки / тост в обеих темах (PIPEUI-02, THEME-02, wave 6)
+- [ ] `25-07-PLAN.md` — gap closure: `text-accent-text` на трёх подписях акцента, `border-field-border` на всех 16 контролах, G-17 и G-19, единственная заливка `ActionButton` (без `bg-transparent`), ожидание `data-theme` в `gotoAdmin` (PIPEUI-01, PIPEUI-03, PIPEUI-04, THEME-01, wave 7)
 
 ### Phase 26: Section context — anchor scrolling and header active state
 
