@@ -10,7 +10,7 @@ const PIPELINE_PATH = '/admin/pipeline'
  */
 function tabClass({ isActive }) {
   return [
-    'inline-flex min-h-11 items-end border-b-2 pb-2 text-3xl',
+    'inline-flex min-h-11 items-end border-b-2 pb-2 text-2xl focus-visible:outline-primary',
     isActive
       ? 'border-accent font-semibold text-ink'
       : 'border-transparent font-normal text-muted hover:text-ink',
@@ -39,8 +39,6 @@ export default function AdminLayout() {
 
   return (
     <div>
-      <p className="text-xs font-semibold uppercase tracking-wide text-muted">Админ</p>
-
       {/*
         IN-01: the outline must not start at h2, but D-06 forbids a visible page title —
         so the section name lives in a visually hidden h1. The layout wraps every child
@@ -49,7 +47,7 @@ export default function AdminLayout() {
       <h1 className="sr-only">{section === PIPELINE_PATH ? 'Настройка' : 'Дайджест'}</h1>
 
       <nav
-        className="mt-2 hidden gap-2 border-b border-rule sm:flex"
+        className="mt-0 hidden gap-4 border-b border-rule sm:flex"
         aria-label="Разделы админки"
         data-testid="admin-section-nav"
       >
@@ -74,7 +72,7 @@ export default function AdminLayout() {
       <select
         aria-label="Разделы админки"
         data-testid="admin-section-select"
-        className="mt-2 min-h-11 w-full max-w-sm rounded-xl border border-rule bg-paper px-3 text-base text-ink focus-visible:outline-accent sm:hidden"
+        className="mt-0 min-h-11 w-full max-w-sm rounded-xl border border-rule bg-paper px-3 text-base text-ink focus-visible:outline-primary sm:hidden"
         value={section}
         // navigate() (not a document assignment) so useBlocker still fires on dirty leave (D-19).
         onChange={(event) => navigate(event.target.value)}

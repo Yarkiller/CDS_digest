@@ -170,7 +170,7 @@ export default function IngestSourcesSection({
         data-testid="ingest-sources-heading"
         className="font-sans text-2xl font-semibold text-ink"
       >
-        Источники ингеста
+        Источники
       </h2>
 
       {loadState === 'loading' ? (
