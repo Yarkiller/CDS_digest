@@ -239,7 +239,7 @@ export default function AdminPipelineConfigPage() {
         <button
           type="button"
           data-testid="pipeline-config-retry"
-          className="mt-4 inline-flex min-h-11 items-center font-medium text-primary hover:underline"
+          className="mt-4 inline-flex min-h-11 items-center font-medium text-primary-text hover:underline"
           onClick={reloadConfig}
         >
           Повторить загрузку
@@ -367,7 +367,7 @@ export default function AdminPipelineConfigPage() {
           <button
             type="button"
             data-testid="pipeline-config-save-retry"
-            className="mt-2 inline-flex min-h-11 items-center font-medium text-primary hover:underline"
+            className="mt-2 inline-flex min-h-11 items-center font-medium text-primary-text hover:underline"
             onClick={onSave}
           >
             Повторить сохранение

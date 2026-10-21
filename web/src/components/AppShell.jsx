@@ -67,7 +67,7 @@ export default function AppShell() {
       <header className="sticky top-0 z-40 border-b border-border bg-bg-app">
         <div className="mx-auto flex max-w-6xl flex-wrap items-center gap-1.5 px-4 py-3">
           <div className="mr-auto min-w-0">
-            <p className="font-display text-sm font-semibold text-primary">Digest CDS</p>
+            <p className="font-display text-sm font-semibold text-primary-text">Digest CDS</p>
             <p className="text-xs text-text-disabled">СВА · издание</p>
           </div>
           <nav
@@ -113,7 +113,7 @@ export default function AppShell() {
           {identity ? (
             <Link
               to="/profile"
-              className="max-w-[10rem] shrink-0 truncate text-sm text-text-secondary underline-offset-2 hover:text-primary hover:underline sm:max-w-[8rem]"
+              className="max-w-[10rem] shrink-0 truncate text-sm text-text-secondary underline-offset-2 hover:text-primary-text hover:underline sm:max-w-[8rem]"
               data-testid="shell-identity"
               title={identity}
             >

@@ -85,7 +85,7 @@ export default function RegisterPage() {
     <div className="flex min-h-svh items-center justify-center bg-bg-app px-4 text-text-primary">
       <div className="w-full max-w-md rounded-2xl border border-border bg-bg-surface p-8 shadow-sm">
         <header className="mb-8 text-center">
-          <h1 className="font-display text-3xl font-semibold text-primary">Digest CDS</h1>
+          <h1 className="font-display text-3xl font-semibold text-primary-text">Digest CDS</h1>
           <p className="mt-1 text-xs uppercase tracking-wide text-text-disabled">СВА · внутреннее издание</p>
         </header>
 

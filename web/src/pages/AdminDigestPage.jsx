@@ -538,7 +538,7 @@ export default function AdminDigestPage() {
           <p className="mt-3 text-sm text-text-secondary">Обновите список позже.</p>
           <button
             type="button"
-            className="mt-6 inline-flex min-h-11 items-center font-medium text-primary hover:underline"
+            className="mt-6 inline-flex min-h-11 items-center font-medium text-primary-text hover:underline"
             onClick={reloadShortlist}
           >
             Обновить список
@@ -725,7 +725,7 @@ export default function AdminDigestPage() {
                         <button
                           type="button"
                           data-testid="admin-mark-ready"
-                          className="inline-flex min-h-11 items-center text-sm text-primary hover:underline disabled:opacity-50"
+                          className="inline-flex min-h-11 items-center text-sm text-primary-text hover:underline disabled:opacity-50"
                           disabled={mutating}
                           onClick={() => promoteReady(item)}
                         >
@@ -745,7 +745,7 @@ export default function AdminDigestPage() {
                   </div>
                   <button
                     type="button"
-                    className="col-span-full inline-flex min-h-11 items-center justify-self-start rounded-full px-3 text-sm text-primary hover:underline sm:col-span-1 sm:justify-self-end"
+                    className="col-span-full inline-flex min-h-11 items-center justify-self-start rounded-full px-3 text-sm text-primary-text hover:underline sm:col-span-1 sm:justify-self-end"
                     onClick={() => setPreviewItem(item)}
                   >
                     Превью материала
@@ -773,7 +773,7 @@ export default function AdminDigestPage() {
                   {issueUrl ? (
                     <>
                       {' · '}
-                      <Link to={issueUrl} className="text-primary underline-offset-2 hover:underline">
+                      <Link to={issueUrl} className="text-primary-text underline-offset-2 hover:underline">
                         К выпуску →
                       </Link>
                     </>
@@ -846,7 +846,7 @@ export default function AdminDigestPage() {
                   <p className="text-sm text-text-secondary">Превью недоступно</p>
                   <button
                     type="button"
-                    className="mt-4 inline-flex min-h-11 items-center font-medium text-primary hover:underline"
+                    className="mt-4 inline-flex min-h-11 items-center font-medium text-primary-text hover:underline"
                     onClick={() => {
                       clearFailNextPreview()
                       openEmailPreview()

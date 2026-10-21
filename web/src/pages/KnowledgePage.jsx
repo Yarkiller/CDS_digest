@@ -360,7 +360,7 @@ function KnowledgeResults({
           <button
             type="button"
             onClick={onResetFilter}
-            className="mt-4 inline-flex min-h-11 items-center text-sm text-primary"
+            className="mt-4 inline-flex min-h-11 items-center text-sm text-primary-text"
           >
             Сбросить фильтр
           </button>

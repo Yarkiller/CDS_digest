@@ -60,7 +60,7 @@ export default function RazboryListPage() {
           <p className="mt-6">
             <Link
               to="/voting"
-              className="inline-flex min-h-11 items-center font-medium text-primary no-underline hover:underline"
+              className="inline-flex min-h-11 items-center font-medium text-primary-text no-underline hover:underline"
             >
               К голосованию
             </Link>

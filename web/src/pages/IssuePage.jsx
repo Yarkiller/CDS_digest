@@ -52,7 +52,7 @@ function IssueStatusView({ status, notFound, isEmpty, isCurrent, reload }) {
         <p className="mt-6">
           <Link
             to="/"
-            className="inline-flex min-h-11 items-center font-medium text-primary no-underline hover:underline"
+            className="inline-flex min-h-11 items-center font-medium text-primary-text no-underline hover:underline"
           >
             К текущему выпуску →
           </Link>
@@ -69,7 +69,7 @@ function IssueStatusView({ status, notFound, isEmpty, isCurrent, reload }) {
           Свежий выпуск скоро появится. А пока — загляните в архив прошлых недель.
         </p>
         <p className="mt-6">
-          <Link to="/archive" className="font-medium text-primary no-underline hover:underline">
+          <Link to="/archive" className="font-medium text-primary-text no-underline hover:underline">
             В архив →
           </Link>
         </p>

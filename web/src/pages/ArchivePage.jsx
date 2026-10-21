@@ -35,7 +35,7 @@ export default function ArchivePage() {
   return (
     <section data-testid="archive-page">
       <p className="mb-4">
-        <Link to="/" className="inline-flex min-h-11 items-center text-sm text-primary no-underline hover:underline">
+        <Link to="/" className="inline-flex min-h-11 items-center text-sm text-primary-text no-underline hover:underline">
           ← К текущему выпуску
         </Link>
       </p>
@@ -56,7 +56,7 @@ export default function ArchivePage() {
           <h2 className="font-display text-2xl font-semibold">Архив пуст</h2>
           <p className="mt-3 max-w-prose text-text-secondary">Прошлых выпусков пока нет.</p>
           <p className="mt-6">
-            <Link to="/" className="inline-flex min-h-11 items-center font-medium text-primary no-underline hover:underline">
+            <Link to="/" className="inline-flex min-h-11 items-center font-medium text-primary-text no-underline hover:underline">
               К текущему выпуску →
             </Link>
           </p>

@@ -36,7 +36,7 @@ export default function MaterialListRow({ material }) {
         {tags.length > 0 ? (
           <div className="mt-2 flex flex-wrap gap-2">
             {tags.map((tag) => (
-              <span key={tag} className="rounded-full bg-bg-surface px-2 py-0.5 text-xs text-primary">
+              <span key={tag} className="rounded-full bg-bg-surface px-2 py-0.5 text-xs text-primary-text">
                 #{tag}
               </span>
             ))}

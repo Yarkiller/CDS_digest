@@ -64,7 +64,7 @@ function EmptyVotingCta() {
     <p className="mt-6">
       <Link
         to="/"
-        className="inline-flex min-h-11 items-center font-medium text-primary no-underline hover:underline"
+        className="inline-flex min-h-11 items-center font-medium text-primary-text no-underline hover:underline"
       >
         К выпуску →
       </Link>

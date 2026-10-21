@@ -16,7 +16,7 @@ export default function ForbiddenPage() {
       </p>
       <Link
         to="/"
-        className="mt-8 inline-flex min-h-11 items-center font-medium text-primary no-underline hover:underline"
+        className="mt-8 inline-flex min-h-11 items-center font-medium text-primary-text no-underline hover:underline"
       >
         На выпуск
       </Link>

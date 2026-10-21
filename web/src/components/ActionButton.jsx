@@ -32,7 +32,9 @@ export default function ActionButton({
    * appended after it — two `bg-*` in one class list make the outcome depend on stylesheet
    * order, and white on the yellow `voting` fill measures 1.918. For `secondary` the state
    * fill keeps only `border border-border`: `bg-transparent` would be a second `bg-*` and
-   * `text-primary` would compete with `text-on-solid`.
+   * `text-primary-text` would compete with `text-on-solid`. The base `primary` stays a
+   * fill/border/ring/tint (D-05); the label role is the separate `primary-text` token
+   * (`--color-primary` as text reads 3.566…4.529, below the 4.5:1 floor — G-20).
    */
   const variantClass = hasStateFill
     ? variant === 'secondary'
@@ -41,7 +43,7 @@ export default function ActionButton({
     : variant === 'voting'
       ? 'bg-voting text-voting-ink'
       : variant === 'secondary'
-        ? 'border border-border bg-transparent text-primary'
+        ? 'border border-border bg-transparent text-primary-text'
         : 'bg-primary-solid text-on-solid'
 
   return (

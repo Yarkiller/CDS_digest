@@ -41,7 +41,7 @@ export default function ChronologyItem({ item }) {
       ) : (
         <Link
           to={`/razbory/${item.id}`}
-          className="inline-flex min-h-11 items-center text-sm font-medium text-primary no-underline hover:underline"
+          className="inline-flex min-h-11 items-center text-sm font-medium text-primary-text no-underline hover:underline"
         >
           Читать разбор →
         </Link>

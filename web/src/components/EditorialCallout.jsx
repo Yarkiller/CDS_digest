@@ -17,7 +17,7 @@ export default function EditorialCallout({ children, actionTo, actionLabel, mute
       {actionTo && actionLabel ? (
         <Link
           to={actionTo}
-          className="inline-flex min-h-11 items-center rounded-full px-3 text-sm text-primary hover:bg-bg-surface"
+          className="inline-flex min-h-11 items-center rounded-full px-3 text-sm text-primary-text hover:bg-bg-surface"
         >
           {actionLabel}
         </Link>

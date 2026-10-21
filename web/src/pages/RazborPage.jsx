@@ -35,7 +35,7 @@ function SectionToc({ headings }) {
 
   const links = headings.map((heading) => (
     <li key={heading.id} className={heading.level > 2 ? 'pl-3' : undefined}>
-      <a href={`#${heading.id}`} className="text-sm text-primary no-underline hover:underline">
+      <a href={`#${heading.id}`} className="text-sm text-primary-text no-underline hover:underline">
         {heading.text}
       </a>
     </li>
@@ -189,7 +189,7 @@ export default function RazborPage() {
         <p className="mt-6">
           <Link
             to="/razbory"
-            className="inline-flex min-h-11 items-center text-primary no-underline hover:underline"
+            className="inline-flex min-h-11 items-center text-primary-text no-underline hover:underline"
           >
             К списку разборов
           </Link>
@@ -305,7 +305,7 @@ export default function RazborPage() {
           </div>
 
           <p className="mt-10">
-            <Link to="/razbory" className="text-sm text-primary no-underline hover:underline">
+            <Link to="/razbory" className="text-sm text-primary-text no-underline hover:underline">
               ← К списку разборов
             </Link>
           </p>

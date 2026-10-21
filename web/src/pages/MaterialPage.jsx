@@ -32,7 +32,7 @@ function SectionToc({ headings }) {
     <li key={heading.id} className={heading.level > 2 ? 'pl-3' : undefined}>
       <a
         href={`#${heading.id}`}
-        className="text-sm text-primary no-underline hover:underline"
+        className="text-sm text-primary-text no-underline hover:underline"
       >
         {heading.text}
       </a>
@@ -157,12 +157,12 @@ export default function MaterialPage({ preview = false, loadMaterial }) {
           Возможно, ссылка устарела или материал ещё готовится. Вернитесь к выпуску или в архив.
         </p>
         <p className="mt-6 flex flex-wrap gap-4">
-          <Link to="/" className="inline-flex min-h-11 items-center text-primary no-underline hover:underline">
+          <Link to="/" className="inline-flex min-h-11 items-center text-primary-text no-underline hover:underline">
             ← К выпуску
           </Link>
           <Link
             to="/archive"
-            className="inline-flex min-h-11 items-center text-primary no-underline hover:underline"
+            className="inline-flex min-h-11 items-center text-primary-text no-underline hover:underline"
           >
             В архив
           </Link>
@@ -244,7 +244,7 @@ export default function MaterialPage({ preview = false, loadMaterial }) {
                 <Link
                   key={tag}
                   to="/knowledge"
-                  className="rounded-full bg-bg-surface px-2 py-1 text-xs text-primary no-underline"
+                  className="rounded-full bg-bg-surface px-2 py-1 text-xs text-primary-text no-underline"
                 >
                   #{tag}
                 </Link>
@@ -258,7 +258,7 @@ export default function MaterialPage({ preview = false, loadMaterial }) {
               <ul className="mt-3 space-y-2">
                 {related.map((item) => (
                   <li key={item.slug}>
-                    <Link to={`/materials/${item.slug}`} className="text-primary no-underline hover:underline">
+                    <Link to={`/materials/${item.slug}`} className="text-primary-text no-underline hover:underline">
                       {item.title}
                     </Link>
                   </li>
@@ -268,10 +268,10 @@ export default function MaterialPage({ preview = false, loadMaterial }) {
           ) : null}
 
           <p className="mt-10 flex flex-wrap gap-4">
-            <Link to="/" className="text-sm text-primary no-underline hover:underline">
+            <Link to="/" className="text-sm text-primary-text no-underline hover:underline">
               ← К выпуску
             </Link>
-            <Link to="/archive" className="text-sm text-primary no-underline hover:underline">
+            <Link to="/archive" className="text-sm text-primary-text no-underline hover:underline">
               В архив
             </Link>
           </p>

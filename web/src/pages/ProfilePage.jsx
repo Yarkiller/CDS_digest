@@ -16,7 +16,7 @@ export default function ProfilePage() {
         Полная страница профиля будет разработана в следующих фазах. Пока здесь заглушка.
       </p>
       <p className="mt-8">
-        <Link to="/" className="font-medium text-primary no-underline hover:underline">
+        <Link to="/" className="font-medium text-primary-text no-underline hover:underline">
           ← К текущему выпуску
         </Link>
       </p>
