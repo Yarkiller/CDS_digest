@@ -38,6 +38,24 @@ async function gotoAdmin(page, path, theme) {
   // whatever state the previous case left behind.
   if (path.startsWith("/admin/pipeline")) await resetIngestSourcesMock(page);
   await page.evaluate(() => document.fonts.ready);
+  // WR-04: `ThemeToggle` writes `data-theme` in an effect (`ThemeToggle.jsx:8-18`), so the
+  // attribute lands one commit after the document. Without this wait every light-theme
+  // assertion below can read a dark value and "pass" for the wrong reason. `?? 'dark'` is
+  // load-bearing: the dark theme is the ABSENCE of the attribute, so a bare comparison with
+  // 'dark' would never resolve and the test would hang until timeout.
+  //
+  // A page that mounts no toggle has no attribute to await — the auth shell is the only such
+  // surface, and its cases apply the theme explicitly with `forceTheme`.
+  await page.waitForFunction(() => document.getElementById("root")?.childElementCount > 0);
+  const mountsToggle = await page.evaluate(
+    () => document.querySelector('[data-testid="theme-toggle"]') !== null,
+  );
+  if (mountsToggle) {
+    await page.waitForFunction(
+      (expected) => (document.documentElement.dataset.theme ?? "dark") === expected,
+      theme,
+    );
+  }
 }
 
 /**
@@ -72,6 +90,27 @@ function stylePair(locator) {
  */
 async function classTokens(locator) {
   return (await locator.getAttribute("class")).split(/\s+/).filter(Boolean);
+}
+
+/**
+ * A link's own label colour plus the first opaque surface behind it.
+ *
+ * A text link paints no fill, so `stylePair(link).background` is always `rgba(0, 0, 0, 0)`
+ * and `contrastRatio` refuses it by design. Walking up to the first ancestor with an opaque
+ * `background-color` is the surface the label actually sits on (the `bg-paper` card for the
+ * retry actions, the `bg-bg-app` dialog for the preview link).
+ */
+function paintedPair(locator) {
+  return locator.evaluate((el) => {
+    const color = getComputedStyle(el).color;
+    let node = el;
+    let background = "rgba(0, 0, 0, 0)";
+    while (node && background === "rgba(0, 0, 0, 0)") {
+      background = getComputedStyle(node).backgroundColor;
+      node = node.parentElement;
+    }
+    return { color, background };
+  });
 }
 
 /**
@@ -496,6 +535,186 @@ test("failure toast legible", async ({ page }) => {
     expect(
       contrastRatio(toastPair.color, toastPair.backgroundColor),
       `toast (${theme}) contrast`,
+    ).toBeGreaterThanOrEqual(4.5);
+  }
+});
+
+test("load-error actions and the preview link are legible in both themes", async ({ page }) => {
+  // GAP-25-3 / 25-03 must_have #12: the retry action painted `text-accent` (#06B6D4) =
+  // 2.43:1 on the light `paper`, while the message next to it was already `text-ink-2`
+  // (10.35 light / 11.85 dark). The fix adds the `accent-text` label role and leaves both the
+  // message and the base accent untouched.
+  const accent = { dark: "rgb(6, 182, 212)", light: "rgb(14, 116, 144)" };
+
+  for (const theme of ["dark", "light"]) {
+    await gotoAdmin(page, "/admin/pipeline", theme);
+
+    // Only the injectors already in the tree: both blocks read an in-memory mock, so
+    // `page.route` has nothing to intercept. `arms` are sessionStorage-backed, so they
+    // survive the reload that triggers the load.
+    await page.evaluate(() => window.__DIGEST_INGEST_SOURCES_HARNESS__.armFailNextLoad());
+    await page.evaluate(() => window.__DIGEST_INGESTION_SCHEDULE_HARNESS__.armFailNextLoad());
+    await page.reload();
+    await waitForTheme(page, theme);
+
+    const sourcesRetry = page.getByTestId("ingest-sources-load-retry");
+    await expect(sourcesRetry).toBeVisible();
+    const sourcesPair = await paintedPair(sourcesRetry);
+    expect(sourcesPair.color, `sources retry (${theme}) colour`).toBe(accent[theme]);
+    expect(
+      contrastRatio(sourcesPair.color, sourcesPair.background),
+      `sources retry (${theme}) contrast on its card`,
+    ).toBeGreaterThanOrEqual(4.5);
+
+    // The sibling message was already legible and must not be traded away for the action.
+    const sourcesMessage = sourcesRetry.locator("xpath=..").locator("p").first();
+    const sourcesMessagePair = await paintedPair(sourcesMessage);
+    expect(
+      contrastRatio(sourcesMessagePair.color, sourcesMessagePair.background),
+      `sources load error message (${theme}) contrast`,
+    ).toBeGreaterThanOrEqual(4.5);
+
+    const scheduleRetry = page.getByTestId("ingestion-schedule-retry");
+    await expect(scheduleRetry).toBeVisible();
+    const schedulePair = await paintedPair(scheduleRetry);
+    expect(schedulePair.color, `schedule retry (${theme}) colour`).toBe(accent[theme]);
+    expect(
+      contrastRatio(schedulePair.color, schedulePair.background),
+      `schedule retry (${theme}) contrast on its card`,
+    ).toBeGreaterThanOrEqual(4.5);
+  }
+
+  // Third accent label: the preview panel's «Открыть материал →» (AdminDigestPage.jsx:993),
+  // which sits on the dialog's `bg-bg-app` rather than on a `paper` card.
+  for (const theme of ["dark", "light"]) {
+    await gotoAdmin(page, "/admin/digest", theme);
+
+    const row = page
+      .getByTestId("admin-shortlist-row")
+      .filter({ hasText: "Building Production RAG Systems" });
+    await row.getByRole("button", { name: /Превью материала/ }).click();
+
+    const previewLink = page.getByRole("link", { name: /Открыть материал/ });
+    await expect(previewLink).toBeVisible();
+    const previewPair = await paintedPair(previewLink);
+    expect(previewPair.color, `preview link (${theme}) colour`).toBe(accent[theme]);
+    expect(
+      contrastRatio(previewPair.color, previewPair.background),
+      `preview link (${theme}) contrast in the dialog`,
+    ).toBeGreaterThanOrEqual(4.5);
+  }
+});
+
+test("control boundaries clear 3:1 in both themes while the decorative rule does not", async ({
+  page,
+}) => {
+  // GAP-25-4 / 25-03 must_have #10: the field edge was `border-rule` = 1.485:1 on the light
+  // `paper`, below WCAG 1.4.11's 3:1 for a UI boundary. The boundary role is #64748B; the
+  // decorative rule keeps its own (deliberately lower) contrast and stays on panels.
+  const FIELD_BORDER = "rgb(100, 116, 139)";
+  const rule = { dark: "rgb(42, 53, 72)", light: "rgb(203, 213, 225)" };
+  const fields = ["ingest-sources-kind", "ingest-sources-id", "ingest-sources-label"];
+
+  for (const theme of ["dark", "light"]) {
+    await gotoAdmin(page, "/admin/pipeline", theme);
+
+    for (const testId of fields) {
+      const triplet = await styleTriple(page.getByTestId(testId));
+
+      // Asserted first: a transparent field would make the ratio meaningless.
+      expect(
+        triplet.backgroundColor,
+        `${testId} (${theme}) must paint an opaque field`,
+      ).not.toBe("rgba(0, 0, 0, 0)");
+      expect(triplet.borderTopColor, `${testId} (${theme}) edge`).toBe(FIELD_BORDER);
+      expect(
+        contrastRatio(triplet.borderTopColor, triplet.backgroundColor),
+        `${testId} (${theme}) boundary contrast`,
+      ).toBeGreaterThanOrEqual(3);
+    }
+
+    // Negative control inside the same case: the card is still a divider, not a boundary —
+    // otherwise "every border became field-border" would pass unnoticed.
+    const card = await styleTriple(page.getByTestId("ingest-sources-section"));
+    expect(card.borderTopColor, `card edge (${theme}) stays the decorative rule`).toBe(
+      rule[theme],
+    );
+    expect(card.borderTopColor, `card edge (${theme}) is not the field role`).not.toBe(
+      FIELD_BORDER,
+    );
+    expect(
+      contrastRatio(card.borderTopColor, card.backgroundColor),
+      `card edge (${theme}) must stay below the boundary floor`,
+    ).toBeLessThan(3);
+
+    // `sm:hidden`: the select is not rendered at the default viewport, so the read has to
+    // happen below the breakpoint — a style declaration is not a rendered edge.
+    const viewport = page.viewportSize();
+    await page.setViewportSize({ width: 480, height: 900 });
+    const narrow = await styleTriple(page.getByTestId("admin-section-select"));
+    await page.setViewportSize(viewport);
+
+    expect(narrow.borderTopColor, `mobile section select (${theme}) edge`).toBe(FIELD_BORDER);
+    expect(
+      contrastRatio(narrow.borderTopColor, narrow.backgroundColor),
+      `mobile section select (${theme}) boundary contrast`,
+    ).toBeGreaterThanOrEqual(3);
+  }
+});
+
+test("the vote button paints exactly one fill in every state", async ({ page }) => {
+  // WR-03: `variantClass` and `stateClass[state]` were concatenated, so two `bg-*` shared one
+  // class list and the state fill only "won" because of stylesheet order. A white label on
+  // the yellow `voting` fill measures 1.918, so losing that race is not cosmetic.
+  const fills = [
+    "bg-voting",
+    "bg-primary-solid",
+    "bg-danger-solid",
+    "bg-success-solid",
+    "bg-transparent",
+  ];
+  const voting = "rgb(234, 179, 8)";
+  const danger = "rgb(220, 38, 38)";
+
+  for (const theme of ["dark", "light"]) {
+    await gotoAdmin(page, "/voting", theme);
+
+    const confirm = page.getByTestId("confirm-vote");
+    await page.getByRole("radio", { name: /RAG в корпоративной среде/i }).click();
+    await expect(confirm).toBeEnabled();
+
+    const idleFills = (await classTokens(confirm)).filter((token) => fills.includes(token));
+    expect(idleFills, `idle (${theme}) must paint exactly one fill`).toEqual(["bg-voting"]);
+
+    const idlePair = await styleTriple(confirm);
+    expect(idlePair.backgroundColor, `idle (${theme}) fill`).toBe(voting);
+    expect(
+      contrastRatio(idlePair.color, idlePair.backgroundColor),
+      `idle (${theme}) label on the voting fill`,
+    ).toBeGreaterThanOrEqual(4.5);
+
+    // The existing failure injector (VotingPage.jsx:132-136): the mock arms the next submit
+    // from the query string, so no new mechanism is invented.
+    await page.goto("/voting?simulateError=1");
+    await waitForTheme(page, theme);
+
+    await page.getByRole("radio", { name: /RAG в корпоративной среде/i }).click();
+    const failing = page.getByTestId("confirm-vote");
+    await expect(failing).toBeEnabled();
+    await failing.click();
+    await expect(failing).toHaveAttribute("data-state", "error");
+
+    const errorFills = (await classTokens(failing)).filter((token) => fills.includes(token));
+    expect(errorFills, `error (${theme}) must still paint exactly one fill`).toEqual([
+      "bg-danger-solid",
+    ]);
+
+    const errorPair = await styleTriple(failing);
+    expect(errorPair.backgroundColor, `error (${theme}) fill`).toBe(danger);
+    expect(errorPair.backgroundColor, `error (${theme}) keeps the variant fill`).not.toBe(voting);
+    expect(
+      contrastRatio(errorPair.color, errorPair.backgroundColor),
+      `error (${theme}) label on the danger fill`,
     ).toBeGreaterThanOrEqual(4.5);
   }
 });

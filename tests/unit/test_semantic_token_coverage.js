@@ -248,6 +248,172 @@ function arbitraryLabelMeasurements(relative, source) {
   return measured
 }
 
+/**
+ * G-17: the JSX controls of one source — `input`, `select`, `textarea`, including the ones
+ * with no `className` at all.
+ *
+ * The opening tag is read by a quote- and brace-aware scan, not by `[^>]*`: every one of
+ * these controls carries a handler like `onChange={(e) => …}`, and the `>` of that arrow
+ * would end a naive match in the middle of the tag, hiding the `className` that follows it.
+ */
+const CONTROL_TAG_START = /<(input|select|textarea)(?=[\s/>])/g
+
+/** The opening tag that starts at `startIndex`, braces and quotes aware. */
+function readJsxOpeningTag(source, startIndex) {
+  let quote = null
+  let depth = 0
+  for (let index = startIndex; index < source.length; index += 1) {
+    const char = source[index]
+    if (quote !== null) {
+      if (char === '\\') {
+        index += 1
+        continue
+      }
+      if (char === quote) quote = null
+      continue
+    }
+    if (char === '{') {
+      depth += 1
+      continue
+    }
+    if (char === '}') {
+      depth -= 1
+      continue
+    }
+    if (char === '"' || char === "'" || char === '`') {
+      quote = char
+      continue
+    }
+    if (char === '>' && depth === 0) return source.slice(startIndex, index + 1)
+  }
+  return null
+}
+
+/** A string-valued JSX attribute; `null` for an absent *or* expression-valued one. */
+function readStringAttribute(tagText, name) {
+  const match = new RegExp(`\\b${name}\\s*=\\s*(?:"([^"]*)"|'([^']*)')`).exec(tagText)
+  if (!match) return null
+  return match[1] ?? match[2] ?? ''
+}
+
+/** `{ name, line, className }` for every control tag of one source. */
+function controlTags(source) {
+  const tags = []
+  for (const match of source.matchAll(CONTROL_TAG_START)) {
+    const startIndex = match.index
+    const text = readJsxOpeningTag(source, startIndex)
+    if (text === null) continue
+    tags.push({
+      name: match[1],
+      line: source.slice(0, startIndex).split('\n').length,
+      className: readStringAttribute(text, 'className'),
+    })
+  }
+  return tags
+}
+
+/** The edge roles a control must **not** wear: they belong to panels, rows and dividers. */
+const DECORATIVE_EDGES = ['border-rule', 'border-border']
+
+/**
+ * G-17 core — a control's edge is a boundary, not decoration.
+ *
+ * WCAG 1.4.11 puts a field edge at 3:1 because it is the only affordance that says "this is
+ * an input" inside an unadorned form. The decorative `rule` measures 1.485:1 in the light
+ * theme (G-15 proof), so reusing it is not a style choice — it is a lost affordance. A
+ * control with no `className` is an offender for the same reason: its edge is not painted.
+ */
+function controlBoundaryOffences(relative, source) {
+  const offenders = []
+  for (const tag of controlTags(source)) {
+    const tokens = tag.className === null ? new Set() : tokenSet(tag.className)
+    const decorative = DECORATIVE_EDGES.filter((token) => tokens.has(token))
+    if (decorative.length > 0) {
+      offenders.push(
+        `${relative}:${tag.line} <${tag.name}> paints ${decorative.join(' + ')} — a decorative edge is not a control boundary`,
+      )
+      continue
+    }
+    if (!tokens.has('border-field-border')) {
+      const reason =
+        tag.className === null
+          ? 'has no className at all, so no field boundary is painted'
+          : 'does not paint border-field-border'
+      offenders.push(`${relative}:${tag.line} <${tag.name}> ${reason}`)
+    }
+  }
+  return offenders
+}
+
+/**
+ * G-17 second half — the decorative edges that must stay decorative.
+ *
+ * Positive contract: these four strings are the card, the source row, the toggle button and
+ * the tab strip, and each is pinned by its exact class list so a rewrite that drops
+ * `border-rule` fails even if the element survives. `LoginPage.jsx:109` is deliberately not
+ * here: its card paints `border border-border`, not `rule`, so the honest contract for it is
+ * the negative one below ("not field-border"), never "must be rule".
+ */
+const DECORATIVE_RULE_EDGES = [
+  {
+    relative: 'web/src/components/IngestSourcesSection.jsx',
+    edge: 'mt-6 mb-6 rounded-2xl border border-rule bg-paper p-4 md:p-6',
+  },
+  {
+    relative: 'web/src/components/IngestSourcesSection.jsx',
+    edge: 'rounded-xl border border-rule bg-paper-2 p-3',
+  },
+  {
+    relative: 'web/src/components/IngestSourcesSection.jsx',
+    edge: 'rounded-xl border border-rule px-3 text-sm font-normal text-ink-2',
+  },
+  {
+    relative: 'web/src/components/AdminLayout.jsx',
+    edge: 'mt-0 hidden gap-4 border-b border-rule sm:flex',
+  },
+]
+
+/**
+ * G-17 negative half — `field-border` never paints decoration.
+ *
+ * The role is a boundary role: the only legal consumer is a control's `className`. Any other
+ * literal that mentions it — the auth card, the separators, the outline button — has
+ * reclassified a divider as a boundary, which is the inverse defect of GAP-25-4.
+ */
+function decorativeBoundaryOffences(relative, source, controlClassNames) {
+  const offenders = []
+  for (const literal of stringLiterals(source)) {
+    if (!/(?<![\w-])border-field-border/.test(literal)) continue
+    if (controlClassNames.has(literal)) continue
+    offenders.push(`${relative}: border-field-border on a decorative boundary — "${literal}"`)
+  }
+  return offenders
+}
+
+/**
+ * G-19: the accent *label* role has a usage-level contract.
+ *
+ * `--color-accent` (#06B6D4) is the outline/decoration accent and measures 2.43:1 on the
+ * light `paper`; `--color-accent-text` (#0E7490 light, #06B6D4 dark) is the label. G-4 only
+ * proves the token is *declared*, so a regression `text-accent-text` -> `text-accent` would
+ * pass the entire suite without this scan — exactly the hole G-18 closes for status roles.
+ */
+const FORBIDDEN_ACCENT_LABELS = ['text-accent']
+
+/** Every `text-accent` (and `text-accent/<alpha>`) of one source, as `file: token`. */
+function accentLabelOffences(relative, source) {
+  const offenders = []
+  for (const literal of stringLiterals(source)) {
+    for (const token of tokenSet(literal)) {
+      const forbidden = FORBIDDEN_ACCENT_LABELS.find(
+        (label) => token === label || token.startsWith(`${label}/`),
+      )
+      if (forbidden) offenders.push(`${relative}: ${token}`)
+    }
+  }
+  return offenders
+}
+
 /** Every .js/.jsx source under web/src, as `{ relative, source }` pairs. */
 function sources() {
   return readdirSync(path.join(ROOT, 'web/src'), { recursive: true })
@@ -966,6 +1132,125 @@ describe('semantic token coverage (criterion 3)', () => {
       statusLabelOffences('synthetic.jsx', "'border-danger-ink/60 bg-danger/10 text-danger-ink'"),
       [],
     )
+  })
+
+  it('G-19: the accent label role is the only accent text role', () => {
+    const offenders = sources().flatMap(({ relative, source }) =>
+      accentLabelOffences(relative, source),
+    )
+
+    assert.deepEqual(
+      offenders,
+      [],
+      `text-accent is the 2.43:1 light accent; a label rides text-accent-text (GAP-25-3): ${offenders.join('; ')}`,
+    )
+  })
+
+  it('G-19 proof: the accent scan separates the label role from the base accent', () => {
+    assert.deepEqual(
+      accentLabelOffences('synthetic.jsx', "'font-medium text-accent hover:underline'"),
+      ['synthetic.jsx: text-accent'],
+    )
+
+    assert.deepEqual(
+      accentLabelOffences('synthetic.jsx', "'font-medium text-accent-text hover:underline'"),
+      [],
+    )
+
+    // The outline/border forms are legal — the base accent still paints focus rings.
+    assert.deepEqual(accentLabelOffences('synthetic.jsx', "'outline-accent'"), [])
+    assert.deepEqual(accentLabelOffences('synthetic.jsx', "'border-accent text-accent-text'"), [])
+
+    // The opacity form is a label too; a substring match would miss it.
+    assert.deepEqual(accentLabelOffences('synthetic.jsx', "'text-accent/80'"), [
+      'synthetic.jsx: text-accent/80',
+    ])
+  })
+
+  it('G-17: every control paints the field boundary, and decorative edges stay decorative', () => {
+    const files = sources()
+    const offenders = []
+    const controlClassNames = new Set()
+    let controlCount = 0
+
+    for (const { relative, source } of files) {
+      const tags = controlTags(source)
+      controlCount += tags.length
+      for (const tag of tags) {
+        if (tag.className !== null) controlClassNames.add(tag.className)
+      }
+      offenders.push(...controlBoundaryOffences(relative, source))
+    }
+
+    // Anti-vacuum: a scanner that stops seeing controls would report zero offenders forever.
+    // 16 is the tenant of this gate today (the plan's migration list); a lower count means
+    // the scanner went blind or a control was removed without updating the contract.
+    assert.ok(
+      controlCount >= 16,
+      `the control scan found ${controlCount} tags, fewer than the 16 the tree carries — the scan went blind`,
+    )
+
+    for (const { relative, source } of files) {
+      offenders.push(...decorativeBoundaryOffences(relative, source, controlClassNames))
+    }
+
+    for (const { relative, edge } of DECORATIVE_RULE_EDGES) {
+      if (!read(relative).includes(edge)) {
+        offenders.push(
+          `${relative}: decorative boundary reclassified — the edge "${edge}" no longer carries border-rule`,
+        )
+      }
+    }
+
+    assert.deepEqual(
+      offenders,
+      [],
+      `a control needs the field boundary and a divider must not wear it (WCAG 1.4.11 / GAP-25-4): ${offenders.join('; ')}`,
+    )
+  })
+
+  it('G-17 proof: the scan separates a control from a div and notices a missing className', () => {
+    assert.equal(
+      controlBoundaryOffences('synthetic.jsx', '<input className="rounded-xl border border-rule" />')
+        .length,
+      1,
+      'a control painted with the decorative rule must be exactly one offender',
+    )
+
+    assert.deepEqual(
+      controlBoundaryOffences('synthetic.jsx', '<div className="rounded-xl border border-rule" />'),
+      [],
+      'a decorative div is not a control, so the same class list is legal there',
+    )
+
+    assert.deepEqual(
+      controlBoundaryOffences(
+        'synthetic.jsx',
+        '<input className="rounded-xl border border-field-border" />',
+      ),
+      [],
+      'a control on the boundary role must pass',
+    )
+
+    const missing = controlBoundaryOffences('synthetic.jsx', '<input type="checkbox" />')
+    assert.equal(missing.length, 1, 'a control with no className has no painted edge')
+    assert.match(missing[0], /synthetic\.jsx:1 <input> has no className/)
+
+    // An arrow function inside the tag carries a `>`; the scan must read past it.
+    const withHandler = controlBoundaryOffences(
+      'synthetic.jsx',
+      '<input onChange={(e) => e.target.value} className="border border-field-border" />',
+    )
+    assert.deepEqual(withHandler, [], 'the `>` of an arrow handler must not end the tag')
+
+    // The negative half: a divider may not wear the boundary role.
+    const decorative = decorativeBoundaryOffences(
+      'synthetic.jsx',
+      '<div className="rounded-xl border border-field-border" />',
+      new Set(),
+    )
+    assert.equal(decorative.length, 1, 'field-border on a non-control boundary is one offender')
+    assert.match(decorative[0], /decorative boundary/)
   })
 
   it('G-16: the status contract holds across the e2e specs', () => {
