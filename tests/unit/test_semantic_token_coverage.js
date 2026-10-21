@@ -1346,6 +1346,135 @@ describe('semantic token coverage (criterion 3)', () => {
     )
   })
 
+  it('G-14 proof: the tint alpha is read from the class, so a /60 mutation fails', () => {
+    const sites = tintAlphaSites(
+      'synthetic.jsx',
+      '<span className="rounded bg-success/60 text-success-ink" />',
+    )
+    assert.equal(sites.length, 1, 'one tint site read from the class')
+    assert.equal(sites[0].alpha, 0.6, 'the /60 alpha is parsed from the class token')
+    assert.equal(sites[0].tint, 'success', 'the tint role is success')
+
+    // The /60 composite drops every pair below the 4.5 floor — GAP-25-6: the old gate read a
+    // hard-coded 0.15 and stayed green on this exact drift.
+    const failing = tintLabelMeasurements({ sites, blocks: { dark, light } })
+    const ratio = (base, theme) =>
+      failing.find((entry) => entry.label.includes(`on ${base} (${theme})`)).ratio
+    assert.ok(Math.abs(ratio('bg-app', 'light') - 4.181) < 0.002, `light bg-app ${ratio('bg-app', 'light').toFixed(3)}`)
+    assert.ok(Math.abs(ratio('paper-2', 'light') - 4.094) < 0.002, `light paper-2 ${ratio('paper-2', 'light').toFixed(3)}`)
+    assert.ok(Math.abs(ratio('paper', 'light') - 4.264) < 0.002, `light paper ${ratio('paper', 'light').toFixed(3)}`)
+    assert.ok(Math.abs(ratio('bg-app', 'dark') - 3.011) < 0.002, `dark bg-app ${ratio('bg-app', 'dark').toFixed(3)}`)
+    assert.ok(Math.abs(ratio('paper-2', 'dark') - 2.699) < 0.002, `dark paper-2 ${ratio('paper-2', 'dark').toFixed(3)}`)
+    assert.ok(Math.abs(ratio('paper', 'dark') - 2.850) < 0.002, `dark paper ${ratio('paper', 'dark').toFixed(3)}`)
+    for (const entry of failing) assert.ok(entry.ratio < 4.5, `${entry.label} must fail the floor`)
+
+    // Positive control: /15 keeps all six pairs above the floor, tightest on light paper-2.
+    const passing = tintLabelMeasurements({
+      sites: tintAlphaSites(
+        'synthetic.jsx',
+        '<span className="rounded bg-success/15 text-success-ink" />',
+      ),
+      blocks: { dark, light },
+    })
+    assert.equal(passing.length, 6, 'six pairs measured for the /15 control')
+    for (const entry of passing) assert.ok(entry.ratio >= 4.5, `${entry.label} must pass the floor`)
+    assert.ok(
+      Math.abs(Math.min(...passing.map((entry) => entry.ratio)) - 5.795) < 0.002,
+      'the /15 control floor is 5.795 (light paper-2)',
+    )
+  })
+
+  it('G-16 proof: an alternation inside hasText, name or toHaveAccessibleName is an offender', () => {
+    // R1 must see every way an assertion can carry a regex alternation. The current detector
+    // follows only getByText|toMatch|toContainText|toHaveText, so three of these four forms
+    // slip through (WR-09). Each form is exactly one R1 offender — R2/R3 noise is excluded.
+    const forms = [
+      'page.getByText(/Выпуск опубликован|Уже отправлено/)',
+      'page.locator("tr").filter({ hasText: /Выпуск опубликован|Уже отправлено/ })',
+      'page.getByRole("status", { name: /Выпуск опубликован|Уже отправлено/ })',
+      'expect(x).toHaveAccessibleName(/Выпуск опубликован|Уже отправлено/)',
+    ]
+    for (const form of forms) {
+      const offenders = statusContractOffences([{ relative: 'synthetic.spec.js', source: form }])
+      const r1 = offenders.filter((offender) => /one (regex|assertion) matches/.test(offender))
+      assert.equal(r1.length, 1, `form must be exactly one R1 offender: ${form} — ${offenders.join('; ')}`)
+    }
+
+    // The grouped spelling is the most natural one; split-on-| with per-alternative compile
+    // measured 0 matches on it, so it must be a separate assertion, not "along for the ride".
+    for (const form of [
+      '{ name: /(?:Выпуск опубликован|Уже отправлено)/ }',
+      '{ name: /^(Выпуск опубликован|Уже отправлено)$/ }',
+    ]) {
+      const offenders = statusContractOffences([{ relative: 'synthetic.spec.js', source: form }])
+      const r1 = offenders.filter((offender) => /one (regex|assertion) matches/.test(offender))
+      assert.equal(r1.length, 1, `grouped form must be exactly one R1 offender: ${form} — ${offenders.join('; ')}`)
+    }
+  })
+
+  it('G-16 proof: a text-only toast check fails even though the file reads colours elsewhere', () => {
+    // R3 must read the toast's own colours, not "the file mentions backgroundColor somewhere".
+    // The old detector searched the whole file, so a styleTriple-shaped helper kept it green
+    // while the toast check itself stayed text-only (WR-08). The helper sits >15 lines away.
+    const source = [
+      'function styleTriple(locator) {',
+      '  return locator.evaluate((el) => {',
+      '    const cs = getComputedStyle(el)',
+      '    return { backgroundColor: cs.backgroundColor, borderTopColor: cs.borderTopColor }',
+      '  })',
+      '}',
+      ...Array.from({ length: 20 }, () => ''),
+      "await expect(page.getByText('Уже отправлено')).toBeVisible()",
+      'await expect(page.getByTestId("admin-toast")).toHaveText("Выпуск опубликован")',
+    ].join('\n')
+
+    const offenders = statusContractOffences([{ relative: 'synthetic.spec.js', source }])
+    assert.equal(offenders.length, 1, `exactly one offender, got: ${offenders.join('; ')}`)
+    assert.match(offenders[0], /admin-toast/)
+  })
+
+  it('G-16 proof: a single-alternative regex body is not an alternation', () => {
+    // Anti-false-positive pin. The form rule must be narrow enough that a one-alternative
+    // body (`$`) is not an alternation, a `(dark|light)` body covering no status literal is
+    // not an offender, and the `\/`-anchored scanner does not fabricate one out of the
+    // two-regex line at tests/web-app.spec.js:388. Anchored scan on the live tree: 13 regex
+    // literals with >=2 alternatives (10 unique bodies) and 0 offenders; the unanchored
+    // round-2 form measured 14 / 11 / 1 — a phantom `|traceback|Error:` whose previous match
+    // ate `stack` as flags.
+    const good = `
+      await expect(page.getByText('Выпуск опубликован. Доставка писем: stub (0 из 0)', { exact: true })).toBeVisible()
+      await expect(page.getByRole('status').filter({ hasText: 'Уже отправлено' })).toBeVisible()
+      const toast = await page.getByTestId('admin-toast').evaluate((el) => {
+        const cs = getComputedStyle(el)
+        return { background: cs.backgroundColor, border: cs.borderTopColor }
+      })
+    `
+
+    assert.deepEqual(
+      statusContractOffences([
+        { relative: 'synthetic.spec.js', source: `${good}\n      expect(page).toHaveURL(/$/)` },
+      ]),
+      [],
+      'a single-alternative body ($) is not an alternation',
+    )
+    assert.deepEqual(
+      statusContractOffences([
+        { relative: 'synthetic.spec.js', source: `${good}\n      expect(page).toHaveURL(/(dark|light)/)` },
+      ]),
+      [],
+      '/(dark|light)/ has two alternatives but covers no status literal',
+    )
+
+    const phantom = `${good}
+      await expect(splash).not.toContainText(/\\b(502|503|500|404)\\b/); await expect(splash).not.toContainText(/stack|traceback|Error:/i)
+    `
+    assert.deepEqual(
+      statusContractOffences([{ relative: 'synthetic.spec.js', source: phantom }]),
+      [],
+      'the anchored scanner must not fabricate an offender from the two-regex line (web-app.spec.js:388)',
+    )
+  })
+
   // Гейт не вакуумный: до миграции он обязан покраснеть на 36 литералах (35 className-сайтов
   // в 19 файлах + бэктик-упоминание в JSDoc `ActionButton.jsx:35`), после миграции —
   // позеленеть. Ссылка на дефект: 25-VERIFICATION.md GAP-25-5 (WR-07).
