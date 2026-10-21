@@ -20,7 +20,7 @@ already-committed streamed DeepSeek fix (`0dddc75`).
 
 ### Theme contrast
 
-- [ ] **THEME-01**: In the light theme the labels on filled buttons and the active nav pill are white, so no near-black text sits on a purple or accent fill; the yellow voting button keeps its dark label because white on `#EAB308` fails contrast
+- [x] **THEME-01**: In the light theme the labels on filled buttons and the active nav pill are white, so no near-black text sits on a purple or accent fill; the yellow voting button keeps its dark label because white on `#EAB308` fails contrast
 - [x] **THEME-02**: The semantic admin token family the admin components already use (`paper`, `paper-2`, `ink`, `ink-2`, `muted`, `rule`, `accent-ink`) is declared in the Tailwind `@theme` with light-theme overrides, and a test fails when a token used by those components is undeclared
 
 ### Section context
@@ -66,7 +66,7 @@ Acknowledged but not in this milestone's roadmap. IDs are reserved and never reu
 | PIPEUI-02 | Phase 25 | Complete |
 | PIPEUI-03 | Phase 25 | Complete |
 | PIPEUI-04 | Phase 25 | Complete |
-| THEME-01 | Phase 25 | Pending |
+| THEME-01 | Phase 25 | Complete |
 | THEME-02 | Phase 25 | Complete |
 | NAV-01 | Phase 26 | Pending |
 | NAV-02 | Phase 26 | Pending |

@@ -4,18 +4,18 @@ milestone: v1.4
 milestone_name: UI polish & honest navigation
 current_phase: 25
 current_phase_name: Admin «Настройка» — naming, readable surfaces, token repair
-status: executing
-stopped_at: Completed 25-03-PLAN.md
-last_updated: "2026-10-21T13:08:22.865Z"
+status: verifying
+stopped_at: Completed 25-04-PLAN.md
+last_updated: "2026-10-21T13:30:00.544Z"
 last_activity: 2026-10-21
 last_activity_desc: Phase 25 execution started
-state_head: 0a7abdcf656523199977540a7ba102cb4b6f0592
+state_head: cae43420ef2e201f45db0a386ee5604a134c491c
 progress:
   total_phases: 4
   completed_phases: 0
   total_plans: 4
-  completed_plans: 3
-  percent: 75
+  completed_plans: 4
+  percent: 100
 ---
 
 # Project State
@@ -31,8 +31,8 @@ See: .planning/PROJECT.md (updated 2026-10-21 — v1.4 milestone started)
 
 Phase: 25 (Admin «Настройка» — naming, readable surfaces, token repair) — EXECUTING
 Plan: 4 of 4
-Status: Ready to execute
-Last activity: 2026-10-21 — Phase 25 execution started
+Status: Phase complete — ready for verification
+Last activity: 2026-10-21 — Phase 25 plan 04 executed (theme-independent labels)
 
 ## Performance Metrics
 
@@ -96,6 +96,7 @@ Last activity: 2026-10-21 — Phase 25 execution started
 | Phase 25 P01 | 11min | 2 tasks | 4 files |
 | Phase 25 P02 | 13min | 2 tasks | 4 files |
 | Phase 25 P03 | 15min | 2 tasks | 7 files |
+| Phase 25 P04 | 17min | 3 tasks | 10 files |
 
 ## Accumulated Context
 
@@ -201,6 +202,9 @@ v1.3 roadmap locks:
 - [Phase 25]: 25-03: семейство paper/paper-2/ink/ink-2/muted/rule объявлено в существующих блоках @theme static и [data-theme=light] (6 light-override'ов); семь тема-независимых ролей (-solid, on-solid, voting-ink, scrim) — только в @theme static, отсутствие override пинится G-3
 - [Phase 25]: 25-03: tests/helpers/contrast.js дополнительно бросает исключение при alpha < 1 и на var()/% в каналах — прозрачные/полупрозрачные фоны устраняются конструктивно, а не проверкой
 - [Phase 25]: 25-03: канонический контраст ui-select — --color-paper / #eef1f8 (light, 15.0:1) и канал/плейлист — --color-paper-2 / #f7f8fb (dark, 6.04:1)
+- [Phase 25]: 25-04: G-9/G-10 живут в одном node-гейте и ищут токены, а не подстроки — класс-строка извлекается сканером строковых литералов, поэтому bg-primary-solid никогда не читается как bg-primary
+- [Phase 25]: 25-04: пять пилюльных ассертов admin.spec.js переведены на token-exact пару (split по пробелам) — подстрочный toHaveClass(/bg-primary/) зеленел на bg-primary-solid и не ловил блудный базовый класс
+- [Phase 25]: 25-04: voting пинится ПОЛОЖИТЕЛЬНО (rgb(15,23,42) на rgb(234,179,8), 9.31) в обеих темах — белая подпись на жёлтом даёт 1.92 и обязана провалить тест, поэтому исключение ROADMAP не является пропуском
 
 ### Pending Todos
 
@@ -233,8 +237,8 @@ Carried product deferrals beyond v1.3: leaderboard, quiz, Whisper/Foundry ASR, i
 
 ## Session Continuity
 
-Last session: 2026-10-21T13:08:22.844Z
-Stopped at: Completed 25-03-PLAN.md
+Last session: 2026-10-21T13:30:00.518Z
+Stopped at: Completed 25-04-PLAN.md
 Resume file: None
 Next: `/gsd-discuss-phase 25` (or `/gsd-plan-phase 25`)
 
