@@ -124,7 +124,7 @@ export default function RegisterPage() {
               autoComplete="nickname"
               placeholder="Как вас показывать в шапке"
               aria-invalid={Boolean(fieldErrors.loginNickname) || undefined}
-              className="min-h-11 w-full rounded-xl border border-border bg-bg-app px-3 text-sm"
+              className="min-h-11 w-full rounded-xl border border-field-border bg-bg-app px-3 text-sm"
               value={loginNickname}
               onChange={(e) => {
                 setLoginNickname(e.target.value)
@@ -156,7 +156,7 @@ export default function RegisterPage() {
               placeholder="name@sberbank.ru"
               aria-describedby="register-email-help"
               aria-invalid={Boolean(domainError || fieldErrors.email) || undefined}
-              className="min-h-11 w-full rounded-xl border border-border bg-bg-app px-3 text-sm"
+              className="min-h-11 w-full rounded-xl border border-field-border bg-bg-app px-3 text-sm"
               value={email}
               onChange={(e) => {
                 setEmail(e.target.value)
@@ -190,7 +190,7 @@ export default function RegisterPage() {
               type="password"
               autoComplete="new-password"
               aria-invalid={Boolean(fieldErrors.password) || undefined}
-              className="min-h-11 w-full rounded-xl border border-border bg-bg-app px-3 text-sm"
+              className="min-h-11 w-full rounded-xl border border-field-border bg-bg-app px-3 text-sm"
               value={password}
               onChange={(e) => {
                 setPassword(e.target.value)

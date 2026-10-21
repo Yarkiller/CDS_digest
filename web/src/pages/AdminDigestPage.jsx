@@ -587,7 +587,7 @@ export default function AdminDigestPage() {
               <label className="mt-4 block text-sm">
                 <span className="font-medium text-text-secondary">Вводный текст</span>
                 <textarea
-                  className="mt-2 min-h-28 w-full rounded-xl border border-border bg-bg-app p-3 text-sm"
+                  className="mt-2 min-h-28 w-full rounded-xl border border-field-border bg-bg-app p-3 text-sm"
                   value={contextText}
                   onChange={(e) => setContextText(e.target.value)}
                   rows={5}
@@ -629,7 +629,7 @@ export default function AdminDigestPage() {
                             <label className="block text-sm">
                               <span className="sr-only">Связующий текст</span>
                               <textarea
-                                className="min-h-20 w-full rounded-lg border border-border bg-bg-app p-2 text-sm"
+                                className="min-h-20 w-full rounded-lg border border-field-border bg-bg-app p-2 text-sm"
                                 value={block.text}
                                 onChange={(e) => updateTextBlock(block.id, e.target.value)}
                                 rows={3}
@@ -701,6 +701,7 @@ export default function AdminDigestPage() {
                   <label className="inline-flex min-h-11 min-w-11 items-center justify-center">
                     <input
                       type="checkbox"
+                      className="border border-field-border"
                       checked={checkedIds.has(item.material_id)}
                       onChange={() => toggleCheck(item.material_id)}
                       aria-label={`Выбрать материал ${item.rank}`}
@@ -990,7 +991,7 @@ function AdminItemPreview({ item, onClose }) {
           {slug ? (
             <Link
               to={`/admin/materials/${slug}`}
-              className="mt-6 inline-flex min-h-11 items-center font-medium text-accent hover:underline"
+              className="mt-6 inline-flex min-h-11 items-center font-medium text-accent-text hover:underline"
             >
               Открыть материал →
             </Link>

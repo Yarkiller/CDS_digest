@@ -153,7 +153,7 @@ export default function IngestionScheduleSection({
           <button
             type="button"
             data-testid="ingestion-schedule-retry"
-            className="mt-2 inline-flex min-h-11 items-center font-medium text-accent hover:underline"
+            className="mt-2 inline-flex min-h-11 items-center font-medium text-accent-text hover:underline"
             onClick={() => {
               if (typeof onRetry === 'function') onRetry()
             }}
@@ -187,7 +187,7 @@ export default function IngestionScheduleSection({
               id="ingestion-schedule-time"
               type="time"
               data-testid="ingestion-schedule-time"
-              className="mt-2 block min-h-11 rounded-xl border border-rule bg-paper px-3 text-sm text-ink"
+              className="mt-2 block min-h-11 rounded-xl border border-field-border bg-paper px-3 text-sm text-ink"
               value={timeDraft}
               disabled={busy}
               onChange={(e) => setTimeDraft(e.target.value)}

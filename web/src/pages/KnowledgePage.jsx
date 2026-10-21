@@ -239,7 +239,7 @@ function KnowledgeSearchForm({
             disabled={searching}
             aria-invalid={inlineError ? true : undefined}
             aria-describedby={inlineError ? 'kb-search-inline-error' : undefined}
-            className="min-w-0 flex-1 break-words rounded-xl border border-border bg-bg-surface px-4 py-3 text-sm outline-none focus-visible:outline focus-visible:outline-2 focus-visible:outline-primary"
+            className="min-w-0 flex-1 break-words rounded-xl border border-field-border bg-bg-surface px-4 py-3 text-sm outline-none focus-visible:outline focus-visible:outline-2 focus-visible:outline-primary"
           />
           <ActionButton
             type="submit"

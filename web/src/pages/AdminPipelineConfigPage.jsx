@@ -384,7 +384,7 @@ export default function AdminPipelineConfigPage() {
         autoCorrect="off"
         autoCapitalize="off"
         wrap="off"
-        className="mt-4 min-h-[20rem] max-h-[60vh] w-full overflow-auto rounded-xl border border-border bg-bg-app p-3 font-mono text-base leading-relaxed text-text-secondary focus-visible:outline-primary"
+        className="mt-4 min-h-[20rem] max-h-[60vh] w-full overflow-auto rounded-xl border border-field-border bg-bg-app p-3 font-mono text-base leading-relaxed text-text-secondary focus-visible:outline-primary"
         value={yaml}
         placeholder="# YAML конфига пайплайна"
         onChange={(e) => onEdit(e.target.value)}

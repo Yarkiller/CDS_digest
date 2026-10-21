@@ -144,7 +144,7 @@ export default function LoginPage() {
               placeholder="name@sberbank.ru"
               aria-describedby="email-help"
               aria-invalid={Boolean(domainError || fieldErrors.email) || undefined}
-              className="min-h-11 w-full rounded-xl border border-border bg-bg-app px-3 text-sm"
+              className="min-h-11 w-full rounded-xl border border-field-border bg-bg-app px-3 text-sm"
               value={email}
               onChange={(e) => {
                 setEmail(e.target.value)
@@ -178,7 +178,7 @@ export default function LoginPage() {
               type="password"
               autoComplete="current-password"
               aria-invalid={Boolean(fieldErrors.password) || undefined}
-              className="min-h-11 w-full rounded-xl border border-border bg-bg-app px-3 text-sm"
+              className="min-h-11 w-full rounded-xl border border-field-border bg-bg-app px-3 text-sm"
               value={password}
               onChange={(e) => {
                 setPassword(e.target.value)

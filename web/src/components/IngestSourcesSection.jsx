@@ -183,7 +183,7 @@ export default function IngestSourcesSection({
           <button
             type="button"
             data-testid="ingest-sources-load-retry"
-            className="mt-2 inline-flex min-h-11 items-center font-medium text-accent hover:underline"
+            className="mt-2 inline-flex min-h-11 items-center font-medium text-accent-text hover:underline"
             onClick={() => setLoadKey((k) => k + 1)}
           >
             Повторить загрузку
@@ -267,7 +267,7 @@ export default function IngestSourcesSection({
             Тип
             <select
               data-testid="ingest-sources-kind"
-              className="min-h-11 rounded-xl border border-rule bg-paper px-3 text-base font-normal text-ink-2 focus-visible:outline-accent"
+              className="min-h-11 rounded-xl border border-field-border bg-paper px-3 text-base font-normal text-ink-2 focus-visible:outline-accent"
               value={kind || 'channel'}
               disabled={adding}
               onChange={(e) => onKindChange?.(e.target.value)}
@@ -283,7 +283,7 @@ export default function IngestSourcesSection({
               type="text"
               autoComplete="off"
               spellCheck={false}
-              className="min-h-11 rounded-xl border border-rule bg-paper px-3 font-mono text-base font-normal text-ink-2 focus-visible:outline-accent"
+              className="min-h-11 rounded-xl border border-field-border bg-paper px-3 font-mono text-base font-normal text-ink-2 focus-visible:outline-accent"
               value={sourceId ?? ''}
               disabled={adding}
               onChange={(e) => onSourceIdChange?.(e.target.value)}
@@ -296,7 +296,7 @@ export default function IngestSourcesSection({
               type="text"
               maxLength={120}
               placeholder="Необязательно"
-              className="min-h-11 rounded-xl border border-rule bg-paper px-3 text-base font-normal text-ink-2 focus-visible:outline-accent"
+              className="min-h-11 rounded-xl border border-field-border bg-paper px-3 text-base font-normal text-ink-2 focus-visible:outline-accent"
               value={label ?? ''}
               disabled={adding}
               onChange={(e) => onLabelChange?.(e.target.value)}

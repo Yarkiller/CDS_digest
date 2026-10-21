@@ -72,7 +72,7 @@ export default function AdminLayout() {
       <select
         aria-label="Разделы админки"
         data-testid="admin-section-select"
-        className="mt-0 min-h-11 w-full max-w-sm rounded-xl border border-rule bg-paper px-3 text-base text-ink focus-visible:outline-primary sm:hidden"
+        className="mt-0 min-h-11 w-full max-w-sm rounded-xl border border-field-border bg-paper px-3 text-base text-ink focus-visible:outline-primary sm:hidden"
         value={section}
         // navigate() (not a document assignment) so useBlocker still fires on dirty leave (D-19).
         onChange={(event) => navigate(event.target.value)}
