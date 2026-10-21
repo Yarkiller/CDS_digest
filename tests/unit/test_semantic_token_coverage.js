@@ -11,6 +11,11 @@
  * `tests/admin-chrome.spec.js`, because only a browser can compute a style. Neither
  * half replaces the other; the original defect was exactly the gap between them.
  *
+ * G-11/G-12 close the hole CR-01 walked through: G-9 only compared *named* tokens inside a
+ * single string literal, so `text-[oklch(45%_0.14_25)]` (measured 1.98:1 on the dark
+ * `paper-2` surface) was structurally invisible. Arbitrary-value colour utilities are now
+ * parsed and measured, and then forbidden outright under `web/src`.
+ *
  * Run: npm run test:js
  */
 const assert = require('node:assert/strict')
@@ -41,7 +46,7 @@ const dark = parseBlock(css, '@theme(?:\\s+static)?')
 const light = parseBlock(css, '\\[data-theme="light"\\]')
 
 /** Values that depend on the theme: declared in @theme and overridden under light. */
-const THEMED = ['paper', 'paper-2', 'ink', 'ink-2', 'muted', 'rule']
+const THEMED = ['paper', 'paper-2', 'ink', 'ink-2', 'muted', 'rule', 'danger-ink']
 
 /** Roles that are identical in both themes: declared once, no light override (D-08). */
 const FLAT = [
@@ -57,20 +62,66 @@ const FLAT = [
 const UTILITY_PREFIXES = ['bg', 'text', 'border', 'ring', 'outline', 'divide', 'fill', 'stroke']
 
 /**
- * `<prefix>-(paper-2|paper|ink-2|ink|muted|rule)`, optionally with an opacity modifier
- * (tolerated here so the hit is attributed to the family, and separately forbidden for
- * `bg-paper*` by G-6). Longest names first so `text-ink-2` is not read as `text-ink`.
+ * `<prefix>-(paper-2|paper|ink-2|ink|muted|rule|danger-ink)`, optionally with an opacity
+ * modifier (tolerated here so the hit is attributed to the family, and separately forbidden
+ * for `bg-paper*` by G-6). Longest names first so `text-ink-2` is not read as `text-ink`.
  */
 const UTILITY_PATTERN = new RegExp(
-  `(?<![\\w-])(?:${UTILITY_PREFIXES.join('|')})-(paper-2|paper|ink-2|ink|muted|rule)(?:/[0-9.]+)?`,
+  `(?<![\\w-])(?:${UTILITY_PREFIXES.join('|')})-(paper-2|paper|ink-2|ink|muted|rule|danger-ink)(?:/[0-9.]+)?`,
   'g',
 )
 
-/** Fills: a label painted on one of these must not read a theme-dependent token. */
-const FILL_TOKENS = ['bg-primary', 'bg-accent', 'bg-success', 'bg-danger', 'bg-voting']
+/**
+ * Fills: a label painted on one of these must not read a theme-dependent token.
+ *
+ * The `-solid` family is listed separately from its base token because `tokenSet()` uses
+ * exact token equality — `bg-primary-solid` is *not* a hit for `bg-primary`. Leaving the
+ * suffixes out made `bg-primary-solid text-text-primary` (one suffix away from the defect
+ * this phase fixed) pass silently (WR-01).
+ */
+const FILL_TOKENS = [
+  'bg-primary',
+  'bg-primary-solid',
+  'bg-accent',
+  'bg-accent-solid',
+  'bg-success',
+  'bg-success-solid',
+  'bg-danger',
+  'bg-danger-solid',
+  'bg-voting',
+]
 
 /** Labels that flip with the theme — illegal on top of a fill (THEME-01). */
 const THEME_DEPENDENT_LABELS = ['text-text-primary', 'text-accent-ink', 'text-bg-app']
+
+/**
+ * Arbitrary-value colour utilities: `<prefix>-[<colour>]`, e.g. `text-[oklch(45%_0.14_25)]`.
+ * Tailwind writes spaces inside brackets as `_`, so the captured value is un-slugged before
+ * it reaches `parseColor()`.
+ */
+const ARBITRARY_UTILITY = new RegExp(
+  `(?<![\\w-])(${UTILITY_PREFIXES.join('|')})-\\[([^\\]]+)\\]`,
+  'g',
+)
+
+/** True when a bracketed arbitrary value denotes a colour and not a length/position. */
+function isArbitraryColour(rawValue) {
+  return /^(?:#|oklch\(|oklab\(|rgba?\(|hsla?\(|hwb\(|lab\(|lch\(|color\()/i.test(
+    deslug(rawValue),
+  )
+}
+
+/** `oklch(45%_0.14_25)` -> `oklch(45% 0.14 25)`: the literal form, back to CSS. */
+function deslug(rawValue) {
+  return rawValue.replace(/_/g, ' ').trim()
+}
+
+/** Every arbitrary colour utility of one string literal, as `{ prefix, raw, utility }`. */
+function arbitraryColourUtilities(literal) {
+  return [...literal.matchAll(ARBITRARY_UTILITY)]
+    .filter((match) => isArbitraryColour(match[2]))
+    .map((match) => ({ prefix: match[1], raw: match[2], utility: match[0] }))
+}
 
 /** Theme-dependent veils: `bg-ink` always, `bg-text-primary` only with an alpha modifier. */
 const VEIL_TOKENS = ['bg-ink', 'bg-text-primary']
@@ -120,6 +171,52 @@ function tokenSet(literal) {
   return new Set(literal.split(/\s+/).filter(Boolean).map(baseToken))
 }
 
+/** G-9 core: literals where a theme-dependent label is painted on a fill. */
+function fillLabelOffences(relative, source) {
+  const offenders = []
+  for (const literal of stringLiterals(source)) {
+    const tokens = tokenSet(literal)
+    // Token equality is the whole point: `bg-primary-solid` must not read as
+    // `bg-primary`, or the gate would be green on the very defect it forbids.
+    const fills = FILL_TOKENS.filter((fill) => tokens.has(fill))
+    if (fills.length === 0) continue
+    const labels = THEME_DEPENDENT_LABELS.filter((label) => tokens.has(label))
+    if (labels.length === 0) continue
+    offenders.push(`${relative}: ${fills.join('+')} with ${labels.join('+')} — "${literal}"`)
+  }
+  return offenders
+}
+
+/**
+ * G-11 core. A theme-flat `text-[<colour>]` cannot be followed to the surface it sits on —
+ * the fill usually lives on a parent literal (`bg-paper-2` on the row, the label in the
+ * button) — so the only honest floor is every paper surface in both themes at once. The
+ * pre-fix delete label measures 1.98 on dark `paper-2` and 8.02 on light `paper`, so a
+ * single-theme check would have called it readable.
+ */
+function arbitraryLabelMeasurements(relative, source) {
+  const measured = []
+  for (const literal of stringLiterals(source)) {
+    for (const { prefix, raw, utility } of arbitraryColourUtilities(literal)) {
+      if (prefix !== 'text') continue
+      const colour = deslug(raw)
+      for (const [themeLabel, block] of [
+        ['dark', dark],
+        ['light', light],
+      ]) {
+        for (const surface of ['paper', 'paper-2']) {
+          const background = block.get(`--color-${surface}`)
+          measured.push({
+            label: `${relative}: ${utility} on ${themeLabel} ${surface} (${background})`,
+            ratio: contrastRatio(colour, background),
+          })
+        }
+      }
+    }
+  }
+  return measured
+}
+
 /** Every .js/.jsx source under web/src, as `{ relative, source }` pairs. */
 function sources() {
   return readdirSync(path.join(ROOT, 'web/src'), { recursive: true })
@@ -128,6 +225,11 @@ function sources() {
       const relative = path.join('web/src', entry).split(path.sep).join('/')
       return { relative, source: read(relative) }
     })
+}
+
+/** `label = ratio` lines, so a failure message prints the measurement instead of a guess. */
+function summarise(measured) {
+  return measured.map((entry) => `${entry.label} = ${entry.ratio.toFixed(3)}`).join('; ')
 }
 
 describe('semantic token coverage (criterion 3)', () => {
@@ -246,9 +348,13 @@ describe('semantic token coverage (criterion 3)', () => {
       ['light', light],
     ]) {
       for (const surface of ['paper', 'paper-2']) {
-        for (const text of ['ink', 'ink-2', 'muted']) {
+        for (const text of ['ink', 'ink-2', 'muted', 'danger-ink']) {
           const foreground = block.get(`--color-${text}`)
           const background = block.get(`--color-${surface}`)
+          if (foreground === undefined) {
+            failures.push(`--color-${text} is not declared in the ${themeLabel} block`)
+            continue
+          }
           const ratio = contrastRatio(foreground, background)
           if (ratio < 4.5) {
             failures.push(`${text} on ${surface} (${themeLabel}): ${ratio.toFixed(3)} (${foreground} on ${background})`)
@@ -330,20 +436,7 @@ describe('semantic token coverage (criterion 3)', () => {
   })
 
   it('G-9: no theme-dependent label sits on a filled surface', () => {
-    const offenders = []
-
-    for (const { relative, source } of sources()) {
-      for (const literal of stringLiterals(source)) {
-        const tokens = tokenSet(literal)
-        // Token equality is the whole point: `bg-primary-solid` must not read as
-        // `bg-primary`, or the gate would be green on the very defect it forbids.
-        const fills = FILL_TOKENS.filter((fill) => tokens.has(fill))
-        if (fills.length === 0) continue
-        const labels = THEME_DEPENDENT_LABELS.filter((label) => tokens.has(label))
-        if (labels.length === 0) continue
-        offenders.push(`${relative}: ${fills.join('+')} with ${labels.join('+')} — "${literal}"`)
-      }
-    }
+    const offenders = sources().flatMap(({ relative, source }) => fillLabelOffences(relative, source))
 
     assert.deepEqual(
       offenders,
@@ -351,6 +444,96 @@ describe('semantic token coverage (criterion 3)', () => {
       `a label painted on a fill must not read the theme (THEME-01): ${offenders.join('; ')}`,
     )
   })
+
+  it('G-9b: the fill list reaches the -solid family and keeps the base tokens', () => {
+    // One suffix away from the defect this phase fixed. `bg-primary-solid` is not `bg-primary`
+    // under token equality, so without the extension this literal passed silently (WR-01).
+    const solid = fillLabelOffences(
+      'synthetic.jsx',
+      "<span className='bg-primary-solid text-on-solid text-text-primary' />",
+    )
+    assert.equal(solid.length, 1, `the -solid fill must count as a fill: ${solid.join('; ')}`)
+    assert.match(solid[0], /bg-primary-solid with text-text-primary/)
+
+    // The original family must stay caught — the extension may not replace it.
+    assert.equal(
+      fillLabelOffences('synthetic.jsx', "'bg-primary text-text-primary'").length,
+      1,
+      'the base fill family regressed',
+    )
+
+    // Every fill the migration created is in the list, or the gate is half dead.
+    for (const fill of ['bg-accent-solid', 'bg-success-solid', 'bg-danger-solid', 'bg-voting']) {
+      assert.ok(FILL_TOKENS.includes(fill), `${fill} is missing from FILL_TOKENS`)
+    }
+  })
+
+  it('G-11: an arbitrary colour label clears 4.5:1 on every paper surface, both themes', () => {
+    const measured = sources().flatMap(({ relative, source }) =>
+      arbitraryLabelMeasurements(relative, source),
+    )
+    const failures = measured
+      .filter((entry) => entry.ratio < 4.5)
+      .map((entry) => `${entry.label} = ${entry.ratio.toFixed(3)}`)
+
+    for (const entry of measured) console.log(`  ${entry.label} = ${entry.ratio.toFixed(3)}`)
+
+    assert.deepEqual(
+      failures,
+      [],
+      `a theme-flat arbitrary colour must survive every paper surface: ${failures.join('; ')}`,
+    )
+  })
+
+  it('G-11 proof: the detector reproduces the recorded 1.98:1 offender', () => {
+    // The pre-fix «Удалить» label. Pinned so the floor cannot be softened into vacuity once
+    // G-12 makes the real tree empty of arbitrary colours.
+    const measured = arbitraryLabelMeasurements(
+      'synthetic.jsx',
+      "className='inline-flex border-[oklch(70%_0.12_25)] text-[oklch(45%_0.14_25)]'",
+    )
+    for (const entry of measured) console.log(`  ${entry.label} = ${entry.ratio.toFixed(3)}`)
+
+    assert.equal(measured.length, 4, 'the label must be measured against four surfaces')
+    const dark = measured.filter((entry) => entry.label.includes('on dark '))
+    const light = measured.filter((entry) => entry.label.includes('on light '))
+    assert.equal(dark.filter((entry) => entry.ratio < 4.5).length, 2, summarise(measured))
+    assert.equal(light.filter((entry) => entry.ratio < 4.5).length, 0, summarise(measured))
+
+    const paper2Dark = measured.find((entry) => entry.label.includes('dark paper-2')).ratio
+    assert.ok(
+      paper2Dark > 1.9 && paper2Dark < 2.1,
+      `expected the recorded 1.98 on dark paper-2, got ${paper2Dark.toFixed(3)}`,
+    )
+  })
+
+  it('G-12: no arbitrary-value colour utility survives under web/src', () => {
+    const offenders = []
+    for (const { relative, source } of sources()) {
+      for (const literal of stringLiterals(source)) {
+        for (const { utility } of arbitraryColourUtilities(literal)) {
+          offenders.push(`${relative}: ${utility}`)
+        }
+      }
+    }
+
+    assert.deepEqual(
+      offenders,
+      [],
+      `a hard-coded colour bypasses the token layer; the allow-list is deliberately empty (CR-01): ${offenders.join('; ')}`,
+    )
+  })
+
+  it('G-12 proof: every colour prefix is detected and non-colour brackets are not', () => {
+    const sample =
+      "'border-[oklch(70%_0.12_25)] bg-[#ff0000] text-[rgb(1,2,3)] ring-[oklab(0.5_0_0)] min-w-[12rem] text-[14px]'"
+    assert.deepEqual(
+      arbitraryColourUtilities(sample).map((entry) => entry.utility),
+      ['border-[oklch(70%_0.12_25)]', 'bg-[#ff0000]', 'text-[rgb(1,2,3)]', 'ring-[oklab(0.5_0_0)]'],
+      'the arbitrary colour scanner must see colours and ignore lengths',
+    )
+  })
+
 
   it('G-10: no theme-dependent veil survives under web/src', () => {
     const offenders = []
