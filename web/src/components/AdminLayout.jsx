@@ -46,7 +46,7 @@ export default function AdminLayout() {
         so the section name lives in a visually hidden h1. The layout wraps every child
         branch (ready/loading/error/forbidden), so each one inherits this heading.
       */}
-      <h1 className="sr-only">{section === PIPELINE_PATH ? 'Пайплайн' : 'Дайджест'}</h1>
+      <h1 className="sr-only">{section === PIPELINE_PATH ? 'Настройка' : 'Дайджест'}</h1>
 
       <nav
         className="mt-2 hidden gap-2 border-b border-rule sm:flex"
@@ -67,7 +67,7 @@ export default function AdminLayout() {
           className={tabClass}
           onClick={(event) => handleSectionTabClick(event, PIPELINE_PATH)}
         >
-          Пайплайн
+          Настройка
         </NavLink>
       </nav>
 
@@ -80,7 +80,7 @@ export default function AdminLayout() {
         onChange={(event) => navigate(event.target.value)}
       >
         <option value={DIGEST_PATH}>Дайджест</option>
-        <option value={PIPELINE_PATH}>Пайплайн</option>
+        <option value={PIPELINE_PATH}>Настройка</option>
       </select>
 
       <div className="mt-6">
