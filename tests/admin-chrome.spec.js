@@ -805,3 +805,63 @@ test("pipeline retry actions are legible in both themes", async ({ page }) => {
     ).toBeGreaterThanOrEqual(4.5);
   }
 });
+
+test("in-flight vote label keeps its colour and only dims", async ({ page }) => {
+  // 25-VERIFICATION.md 25-04 #7: while a vote is in flight, the button label keeps its
+  // theme-independent colour and only its opacity changes. ActionButton.jsx:1-7 documents the
+  // contract — `stateFill.loading` is empty (so the variant fill survives) and `stateChrome.loading`
+  // only adds `cursor-wait opacity-80`. The `:disabled` variant (ActionButton.jsx:54) wins over
+  // `opacity-80` / `cursor-wait` by specificity (0-2-0 vs 0-1-0), so the actual opacity is 0.55
+  // and the cursor is `not-allowed`, not 0.8 / `wait`.
+  const voting = { color: "rgb(15, 23, 42)", background: "rgb(234, 179, 8)" };
+
+  for (const theme of ["dark", "light"]) {
+    await gotoAdmin(page, "/voting", theme);
+
+    const confirm = page.getByTestId("confirm-vote");
+    await page.getByRole("radio", { name: /RAG в корпоративной среде/i }).click();
+    await expect(confirm).toBeEnabled();
+
+    // Measure `idle` AFTER choosing a radio — before that the button is `disabled`, so the
+    // `disabled:opacity-55` would read 0.55 in the idle sample too.
+    const idle = await stylePair(confirm);
+    const idleOpacity = await confirm.evaluate((el) => getComputedStyle(el).opacity);
+    expect(idleOpacity, `idle opacity (${theme})`).toBe("1");
+    expect(idle.color, `idle colour (${theme})`).toBe(voting.color);
+    expect(idle.background, `idle background (${theme})`).toBe(voting.background);
+
+    // Neutralize `transition-colors` (150ms) so the measured in-flight colour/fill are the
+    // *settled* values, not a mid-transition sample — a re-painted loading state would
+    // otherwise read as "unchanged" for the first frames and the mutation proof would be
+    // vacuous (25-04 #7).
+    await page.addStyleTag({ content: "*, *::before, *::after { transition: none !important; }" });
+
+    await confirm.click();
+    await expect(confirm).toHaveAttribute("data-state", "loading");
+    await expect(confirm).toHaveText("Сохраняем…");
+
+    const flying = await stylePair(confirm);
+    const flyingOpacity = await confirm.evaluate((el) => getComputedStyle(el).opacity);
+
+    // The must_have (25-04 #7): the label keeps its colour, only opacity dims.
+    expect(flying.color, `loading colour (${theme})`).toBe(idle.color);
+    expect(flying.background, `loading background (${theme})`).toBe(idle.background);
+    expect(flying.fontSize, `loading font-size (${theme})`).toBe(idle.fontSize);
+    expect(
+      contrastRatio(flying.color, flying.background),
+      `loading contrast (${theme})`,
+    ).toBeGreaterThanOrEqual(4.5);
+
+    // Actual opacity is 0.55, not 0.8: `data-state="loading"` sets `disabled`
+    // (ActionButton.jsx:51), so `disabled:opacity-55` (0-2-0) beats `opacity-80` from
+    // `stateChrome.loading` (0-1-0) regardless of stylesheet order.
+    expect(flyingOpacity, `loading opacity (${theme})`).toBe("0.55");
+    expect(
+      await confirm.evaluate((el) => getComputedStyle(el).cursor),
+      `loading cursor (${theme})`,
+    ).toBe("not-allowed");
+
+    await expect(page.getByTestId("vote-toast")).toHaveText("Голос сохранён");
+    await expect(confirm).toHaveText("Изменить голос");
+  }
+});

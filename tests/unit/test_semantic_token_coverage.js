@@ -523,6 +523,62 @@ function primaryLabelOffences(relative, source) {
   return offenders
 }
 
+/**
+ * G-21: the `loading` state must paint no colour of its own.
+ *
+ * The in-flight contract (25-04 #7) is that the label keeps its colour and only dims —
+ * `stateFill.loading` must be empty and `stateChrome.loading` must only add `opacity-*`
+ * chrome. This is not a duplicate of G-9: G-9 measures the *static* fill/label pair the
+ * variant declares, while G-21 forbids the *loading state* from adding its own fill or label.
+ * A painted `loading` would re-tint the button mid-flight and the 9.31:1 `voting-ink` pair
+ * would survive G-9 untouched.
+ */
+const STATE_FILL_BLOCK = /const (stateFill|stateChrome)\s*=\s*\{([\s\S]*?)\n\}/g
+const STATE_ENTRY = /(\w+)\s*:\s*'([^']*)'/g
+const COLOR_UTILITY = /(?<![\w-])(?:bg|text|border|ring|outline|divide|fill|stroke)-/
+const OPACITY_UTILITY = /(?<![\w-])opacity-/
+
+/** The `stateFill` / `stateChrome` object literals of one source, keyed by object name. */
+function stateBlocks(source) {
+  const blocks = {}
+  for (const match of source.matchAll(STATE_FILL_BLOCK)) {
+    const entries = new Map()
+    for (const entry of match[2].matchAll(STATE_ENTRY)) {
+      entries.set(entry[1], entry[2])
+    }
+    blocks[match[1]] = entries
+  }
+  return blocks
+}
+
+/** G-21 core: offenders where a loading state paints a colour or fails to dim. */
+function stateChromeOffences(source) {
+  const offenders = []
+  const blocks = stateBlocks(source)
+  const fill = blocks.stateFill
+  const chrome = blocks.stateChrome
+
+  if (!fill || !fill.has('loading')) {
+    offenders.push('ActionButton.jsx: stateFill.loading is missing')
+  } else if (COLOR_UTILITY.test(fill.get('loading'))) {
+    offenders.push('ActionButton.jsx: stateFill.loading paints a colour — in-flight only dims (…)')
+  }
+
+  if (!chrome || !chrome.has('loading')) {
+    offenders.push('ActionButton.jsx: stateChrome.loading is missing')
+  } else {
+    const value = chrome.get('loading')
+    if (!OPACITY_UTILITY.test(value)) {
+      offenders.push('ActionButton.jsx: stateChrome.loading must dim via opacity-* — in-flight only dims')
+    }
+    if (COLOR_UTILITY.test(value)) {
+      offenders.push('ActionButton.jsx: stateChrome.loading paints a colour — in-flight only dims')
+    }
+  }
+
+  return offenders
+}
+
 /** Every .js/.jsx source under web/src, as `{ relative, source }` pairs. */
 function sources() {
   return readdirSync(path.join(ROOT, 'web/src'), { recursive: true })
@@ -1651,5 +1707,115 @@ describe('semantic token coverage (criterion 3)', () => {
         `${offender} must be an offender`,
       )
     }
+  })
+
+  it('G-21: a loading state paints no colour of its own', () => {
+    const source = read('web/src/components/ActionButton.jsx')
+    const blocks = stateBlocks(source)
+    const loadingEntries = []
+    for (const name of ['stateFill', 'stateChrome']) {
+      const value = blocks[name]?.get('loading')
+      if (value !== undefined) loadingEntries.push({ name, value })
+    }
+    for (const entry of loadingEntries) {
+      console.log(`  ${entry.name}.loading = '${entry.value}'`)
+    }
+
+    // Anti-vacuum: both loading entries must actually be found — one per block. A renamed key
+    // would leave the gate green unless we assert the entries exist, not just the offender list.
+    assert.equal(
+      loadingEntries.length,
+      2,
+      `G-21 must find one loading entry in stateFill and one in stateChrome, found ${loadingEntries.length}`,
+    )
+
+    const offenders = stateChromeOffences(source)
+    assert.deepEqual(
+      offenders,
+      [],
+      `a loading state must not paint its own colour — the label keeps its colour and only dims (25-04 #7): ${offenders.join('; ')}`,
+    )
+  })
+
+  it('G-21 proof: a painted loading state is an offender', () => {
+    // A colour utility in the loading state must be flagged — the in-flight button would
+    // otherwise re-paint the variant fill or label with a theme/state-dependent colour.
+    const paintedFill = stateChromeOffences(
+      [
+        'const stateFill = {',
+        "  idle: '',",
+        "  loading: 'bg-danger text-text-primary',",
+        "  error: '',",
+        "  success: '',",
+        '}',
+        'const stateChrome = {',
+        "  loading: 'cursor-wait opacity-80',",
+        '}',
+      ].join('\n'),
+    )
+    assert.deepEqual(paintedFill, [
+      'ActionButton.jsx: stateFill.loading paints a colour — in-flight only dims (…)',
+    ])
+
+    const paintedChrome = stateChromeOffences(
+      [
+        'const stateFill = {',
+        "  idle: '',",
+        "  loading: '',",
+        "  error: '',",
+        "  success: '',",
+        '}',
+        'const stateChrome = {',
+        "  loading: 'cursor-wait opacity-80 bg-danger',",
+        '}',
+      ].join('\n'),
+    )
+    assert.deepEqual(paintedChrome, [
+      'ActionButton.jsx: stateChrome.loading paints a colour — in-flight only dims',
+    ])
+
+    // The real pair is clean: empty stateFill.loading and opacity-only stateChrome.loading.
+    assert.deepEqual(
+      stateChromeOffences(
+        [
+          'const stateFill = {',
+          "  idle: '',",
+          "  loading: '',",
+          "  error: '',",
+          "  success: '',",
+          '}',
+          'const stateChrome = {',
+          "  loading: 'cursor-wait opacity-80',",
+          '}',
+        ].join('\n'),
+      ),
+      [],
+    )
+
+    // A chrome block with no fill block must report the missing fill loading entry.
+    assert.deepEqual(
+      stateChromeOffences(
+        ["const stateChrome = {", "  loading: 'cursor-wait opacity-80',", '}'].join('\n'),
+      ),
+      ['ActionButton.jsx: stateFill.loading is missing'],
+    )
+
+    // The chrome must dim: a loading chrome without an opacity-* utility is an offender.
+    assert.deepEqual(
+      stateChromeOffences(
+        [
+          'const stateFill = {',
+          "  idle: '',",
+          "  loading: '',",
+          "  error: '',",
+          "  success: '',",
+          '}',
+          'const stateChrome = {',
+          "  loading: 'cursor-wait',",
+          '}',
+        ].join('\n'),
+      ),
+      ['ActionButton.jsx: stateChrome.loading must dim via opacity-* — in-flight only dims'],
+    )
   })
 })
