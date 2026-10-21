@@ -1,20 +1,20 @@
 ---
-gsd_state_version: 1.0
+gsd_state_version: "1.0"
 milestone: v1.4
 milestone_name: UI polish & honest navigation
 current_phase: 25
-current_phase_name: admin-nastroyka-naming-readable-surfaces-token-repair
+current_phase_name: Admin «Настройка» — naming, readable surfaces, token repair
 status: executing
-stopped_at: Completed 25-04-PLAN.md
-last_updated: "2026-10-21T16:39:41.526Z"
+stopped_at: Completed 25-05-PLAN.md
+last_updated: "2026-10-21T16:47:02.474Z"
 last_activity: 2026-10-21
 last_activity_desc: Phase 25 execution started
-state_head: 0d3822eb7f11a7b5891da6df619f45e919583b6a
+state_head: 77a83151d0339649e1ef8bfa9a65705a9580b40b
 progress:
   total_phases: 4
   completed_phases: 0
   total_plans: 7
-  completed_plans: 4
+  completed_plans: 5
   percent: 0
 ---
 
@@ -29,10 +29,10 @@ See: .planning/PROJECT.md (updated 2026-10-21 — v1.4 milestone started)
 
 ## Current Position
 
-Phase: 25 (admin-nastroyka-naming-readable-surfaces-token-repair) — READY TO EXECUTE
-Plan: 4 of 4
-Status: Ready to execute
-Last activity: 2026-10-21 — Phase 25 plan 04 executed (theme-independent labels)
+Phase: 25 (Admin «Настройка» — naming, readable surfaces, token repair) — EXECUTING
+Plan: 5 of 7
+Status: Executing Phase 25
+Last activity: 2026-10-21 — Phase 25 plan 05 executed (status label roles + field boundary)
 
 ## Performance Metrics
 
@@ -97,6 +97,7 @@ Last activity: 2026-10-21 — Phase 25 plan 04 executed (theme-independent label
 | Phase 25 P02 | 13min | 2 tasks | 4 files |
 | Phase 25 P03 | 15min | 2 tasks | 7 files |
 | Phase 25 P04 | 17min | 3 tasks | 10 files |
+| Phase 25 P05 | 8 min | 2 tasks | 3 files |
 
 ## Accumulated Context
 
@@ -209,6 +210,10 @@ v1.3 roadmap locks:
 - [Phase 25 CR-01]: `text-[oklch(45%_0.14_25)]` = rgb(147,43,42) давал 1.98:1 на тёмной `paper-2` (2.20:1 на `paper`) и проходил зелёным, потому что G-9 читал только именованные токены и по одному литералу за раз — закрыто токеном `--color-danger-ink` (#F87171 dark / #B91C1C light; 6.36/5.75 и 6.47/5.91 на paper/paper-2), плюс G-11 (численный пол для arbitrary-цветов), G-12 (arbitrary-цветовые утилиты запрещены целиком) и G-13 (замер danger-ink), каждый со своим proof-тестом, чтобы детектор не мог пройти вхолостую
 - [Phase 25 CR-01]: `parseColor()` в `tests/helpers/contrast.js` выучил CSS Color 4 `oklch()` именно потому, что парсер, бросающий на плохом значении, даёт падающему коэффициенту спрятаться за «unsupported colour» — ровно failure-mode CR-01; поведение для hex/rgb не изменилось
 - [Phase 25 CR-01]: проверено, что Tailwind v4 реально генерирует новые утилиты — `.text-danger-ink`, `.border-danger-ink`, `.bg-danger\/10` и оба значения токена присутствуют в собранном CSS, иначе фикс был бы тем же дефектом «токен, который не генерируется»
+- [Phase 25]: 25-05: `blendOver(colour, base, alpha)` — единственная реализация композита тинта: alpha самого цвета не переносится (иначе `rgba(...)` из `getComputedStyle` дошёл бы до `contrastRatio` и тот бросил бы), полупрозрачная база бросает, alpha 1 нормализуется в `rgb(...)`
+- [Phase 25]: 25-05: `--color-field-border` — плоский `#64748B` без light-override; заявленная в постановке пара `#4B5563`/`#64748B` провалила бы собственный 3:1-гейт в тёмной теме (2.328), поэтому отклонение записано измеряемо, а не вкусово
+- [Phase 25]: 25-05: `success-ink` / `voting-ink-on-tint` / `accent-text` намеренно НЕ добавлены в `THEMED` — иначе G-4 anti-vacuum потребовал бы потребителей, которых до 25-06/25-07 нет; их темо-зависимость пинится внутри G-14 (наличие в блоке + отличающийся light-override)
+- [Phase 25]: 25-05: имя `accent-text` выбрано именно потому, что G-5 запрещает подстроку `accent-ink`; базовый `--color-accent` не изменён, тёмное значение новой роли байт-идентично ему, поэтому тёмная тема визуально не двигается
 
 ### Pending Todos
 
@@ -242,8 +247,8 @@ Carried product deferrals beyond v1.3: leaderboard, quiz, Whisper/Foundry ASR, i
 
 ## Session Continuity
 
-Last session: 2026-10-21T13:30:00.518Z
-Stopped at: Completed 25-04-PLAN.md
+Last session: 2026-10-21T16:47:02.427Z
+Stopped at: Completed 25-05-PLAN.md
 Resume file: None
 Next: `/gsd-discuss-phase 25` (or `/gsd-plan-phase 25`)
 
