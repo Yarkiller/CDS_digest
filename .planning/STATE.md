@@ -1,18 +1,19 @@
 ---
-gsd_state_version: "1.0"
+gsd_state_version: 1.0
 milestone: v1.4
 milestone_name: UI polish & honest navigation
-current_phase_name: roadmap ready — Phases 25-28
+current_phase: 25
+current_phase_name: Admin «Настройка» — naming, readable surfaces, token repair
 status: planning
-stopped_at: Phase 25 context gathered
-last_updated: "2026-10-21T11:17:42.260Z"
+stopped_at: Phase 25 UI-SPEC approved
+last_updated: "2026-10-21T12:18:20.047Z"
 last_activity: 2026-10-21
 last_activity_desc: Milestone v1.4 roadmap created (UI polish & honest navigation)
-state_head: 38f59c39d83919bb56ff7fdc814a1a59c569512e
+state_head: 229d07be034ca72fe13064668cf93587754bdc35
 progress:
   total_phases: 4
   completed_phases: 0
-  total_plans: 0
+  total_plans: 4
   completed_plans: 0
   percent: 0
 ---
@@ -28,7 +29,7 @@ See: .planning/PROJECT.md (updated 2026-10-21 — v1.4 milestone started)
 
 ## Current Position
 
-Phase: Not started (roadmap ready — Phases 25-28)
+Phase: 25 (Admin «Настройка» — naming, readable surfaces, token repair) — READY TO EXECUTE
 Plan: —
 Status: Roadmap ready; 10 requirements mapped, 0 unmapped
 Last activity: 2026-10-21 — Milestone v1.4 roadmap created (UI polish & honest navigation)
@@ -36,6 +37,7 @@ Last activity: 2026-10-21 — Milestone v1.4 roadmap created (UI polish & honest
 ## Performance Metrics
 
 **Velocity:**
+
 - Total plans completed: 28 (40 v1 + 23 v1.1 + 26 v1.2)
 - Prior milestones shipped: v1 (5 phases), v1.1 (6 phases), v1.2 (5 phases)
 - v1.3 plans completed: 3
@@ -219,9 +221,9 @@ Carried product deferrals beyond v1.3: leaderboard, quiz, Whisper/Foundry ASR, i
 
 ## Session Continuity
 
-Last session: 2026-10-21T11:17:42.233Z
-Stopped at: Phase 25 context gathered
-Resume file: .planning/phases/25-admin-nastroyka-naming-readable-surfaces-token-repair/25-CONTEXT.md
+Last session: 2026-10-21T11:38:27.432Z
+Stopped at: Phase 25 UI-SPEC approved
+Resume file: .planning/phases/25-admin-nastroyka-naming-readable-surfaces-token-repair/25-UI-SPEC.md
 Next: `/gsd-discuss-phase 25` (or `/gsd-plan-phase 25`)
 
 ## Operator Next Steps
