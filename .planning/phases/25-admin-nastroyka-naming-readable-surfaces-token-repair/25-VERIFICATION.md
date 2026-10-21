@@ -1,20 +1,22 @@
 ---
 phase: 25-admin-nastroyka-naming-readable-surfaces-token-repair
-verified: 2026-10-21T15:45:00Z
+verified: 2026-10-21T20:56:00Z
 status: gaps_found
-score: 37/51 must-have entries verified (1 partial, 1 not proven, 12 backstop abstentions)
+score: "63/78 must-have entries verified (2 partial, 1 behavior-unverified, 12 backstop)"
 goal: "An admin opening the pipeline section sees it named «Настройка», every field and label legible in both themes, and chrome that matches the rest of the product."
 goal_clauses:
   - id: GC-1
     clause: "sees it named «Настройка»"
     status: met
+    evidence: "Три поверхности (sr-only h1, вкладка, <option>) читают «Настройка»; URL, PIPELINE_PATH и data-testid не изменены; маршрута /admin/settings нет."
   - id: GC-2
     clause: "every field and label legible in both themes"
-    status: not_met
-    evidence: "WR-02 light-theme status labels 1.92:1 / 1.62:1 / 3.17:1 / 3.76:1; WR-05 admin toast 1.00:1 in both themes; 25-03 must_have #12 retry link text-accent 2.43:1 on light paper"
+    status: partial
+    evidence: "Все пары, которые фаза обязалась починить, теперь ≥ 4.5:1 (статусные подписи 5.201…11.007, тост 16.296/14.516, accent-ссылки 5.358/7.248, граница поля 4.759/3.698 при пороге 3:1). Но универсальная формулировка клаузы не выполняется: роль --color-primary как подписи даёт 4.047 (light bg-app), 3.566/4.186 (кнопка повтора сохранения на bg-danger/10) — см. GAP-25-5 / WR-07."
   - id: GC-3
     clause: "chrome that matches the rest of the product"
     status: met
+    evidence: "Eyebrow «Админ» удалён из AdminLayout; кегль вкладки 24px === ingest-sources-heading; column-gap 16px; margin-top 0; nav.top − main.top < 48 (e2e 11/11)."
 requirements:
   PIPEUI-01: satisfied
   PIPEUI-02: satisfied
@@ -26,312 +28,459 @@ requirement_ids_in_plans: [PIPEUI-01, PIPEUI-02, PIPEUI-03, PIPEUI-04, THEME-01,
 requirement_ids_in_requirements_md: [PIPEUI-01, PIPEUI-02, PIPEUI-03, PIPEUI-04, THEME-01, THEME-02]
 orphaned_requirements: []
 unmapped_requirement_ids: []
-review_disposition:
-  closed: [CR-01, WR-01, IN-02]
-  closed_by: [c0e60cc, b4369b7, aa57dd7, 47741f5]
-  open_deferred: [WR-02, WR-03, WR-04, WR-05, WR-06, IN-01, IN-03, IN-04, IN-05]
-  goal_threatening_open: [WR-02, WR-05]
-covered_files:
-  - .planning/phases/25-admin-nastroyka-naming-readable-surfaces-token-repair/25-01-PLAN.md
-  - .planning/phases/25-admin-nastroyka-naming-readable-surfaces-token-repair/25-02-PLAN.md
-  - .planning/phases/25-admin-nastroyka-naming-readable-surfaces-token-repair/25-03-PLAN.md
-  - .planning/phases/25-admin-nastroyka-naming-readable-surfaces-token-repair/25-04-PLAN.md
-  - .planning/phases/25-admin-nastroyka-naming-readable-surfaces-token-repair/25-01-SUMMARY.md
-  - .planning/phases/25-admin-nastroyka-naming-readable-surfaces-token-repair/25-02-SUMMARY.md
-  - .planning/phases/25-admin-nastroyka-naming-readable-surfaces-token-repair/25-03-SUMMARY.md
-  - .planning/phases/25-admin-nastroyka-naming-readable-surfaces-token-repair/25-04-SUMMARY.md
-  - .planning/phases/25-admin-nastroyka-naming-readable-surfaces-token-repair/25-UI-SPEC.md
-  - .planning/phases/25-admin-nastroyka-naming-readable-surfaces-token-repair/25-VALIDATION.md
-  - .planning/phases/25-admin-nastroyka-naming-readable-surfaces-token-repair/25-REVIEW.md
-  - .planning/phases/25-admin-nastroyka-naming-readable-surfaces-token-repair/25-REVIEW-DISPOSITION.md
-  - .planning/REQUIREMENTS.md
-  - .planning/ROADMAP.md
-  - playwright.config.js
-  - tests/admin-chrome.spec.js
-  - tests/admin.spec.js
-  - tests/helpers/contrast.js
-  - tests/unit/test_semantic_token_coverage.js
-  - web/src/index.css
-  - web/src/components/AdminLayout.jsx
-  - web/src/components/IngestSourcesSection.jsx
-  - web/src/components/AppShell.jsx
-  - web/src/components/ActionButton.jsx
-  - web/src/components/ServiceUnavailable.jsx
-  - web/src/components/UnsavedChangesDialog.jsx
-  - web/src/pages/AdminDigestPage.jsx
-  - web/src/pages/AdminPipelineConfigPage.jsx
-  - web/src/pages/KnowledgePage.jsx
-  - web/src/pages/LoginPage.jsx
-  - web/src/pages/RegisterPage.jsx
-behavior_unverified: 12
+behavior_unverified: 1
 overrides_applied: 0
-gaps_found: 4
+re_verification:
+  previous_status: human_needed
+  previous_score: "65/78"
+  gaps_closed:
+    - "GAP-25-1 — WR-02: статусные токены как текст на тинтах (1.92/1.62/3.17/3.76 в светлой теме)"
+    - "GAP-25-2 — WR-05: тост админки 1.00:1 в обеих темах и carve-out в G-10"
+    - "GAP-25-3 — 25-03 must_have #12: ссылка «Повторить загрузку» 2.43:1 на светлой paper"
+    - "GAP-25-4 — 25-03 must_have #10: край поля не измерялся и не держал 3:1"
+  gaps_remaining: []
+  regressions: []
+  gaps_newly_identified:
+    - "GAP-25-5 — GC-2: --color-primary как подпись (3.566…4.529) в разделе «Настройка» (WR-07)"
+    - "GAP-25-6 — 25-05 #3: G-14 измеряет захардкоженную альфу 0.15, а не класс (WR-10)"
+    - "GAP-25-7 — 25-06 #6: G-16 R1/R3 не падают на реальных регрессиях (WR-08/WR-09)"
+gaps:
+  - id: GAP-25-5
+    truth: "GC-2: каждая подпись в разделе «Настройка» читается в обеих темах (≥ 4.5:1)"
+    status: failed
+    reason: "Роль --color-primary (#8B5CF6, без light-переопределения) осталась текстовой ролью. Измерено тем же tests/helpers/contrast.js: 4.047 на светлой bg-app, 4.234 на светлой paper, 4.156 на тёмной paper, 3.756 на тёмной paper-2; кнопка «Повторить сохранение» стоит на bg-danger/10 и даёт 3.566 (light) / 4.186 (dark). Ни один гейт этот класс дефекта не покрывает: G-19 банит только text-accent, G-7 перебирает ink/ink-2/muted/danger-ink."
+    artifacts:
+      - path: "web/src/pages/AdminPipelineConfigPage.jsx"
+        issue: ":242 pipeline-config-retry text-primary — 4.047 (light) / 4.529 (dark)"
+      - path: "web/src/pages/AdminPipelineConfigPage.jsx"
+        issue: ":370 pipeline-config-save-retry text-primary на bg-danger/10 — 3.566 (light) / 4.186 (dark)"
+      - path: "web/src/pages/AdminDigestPage.jsx"
+        issue: ":541, :728, :748, :776, :849 — та же роль подписи (3.756…4.234)"
+      - path: "web/src/components/ActionButton.jsx"
+        issue: ":44 secondary-вариант text-primary — ниже 4.5 хотя бы в одной теме"
+    missing:
+      - "Ввести роль подписи для primary (например --color-primary-text: #A78BFA dark / #6D28D9 light, 5.84…7.11 на трёх базах) и перевести на неё текстовые text-primary; заливки bg-primary остаются легальными"
+      - "Расширить G-7 на text-primary или добавить G-20 по образцу G-19 (FORBIDDEN_LABEL + light-override обязателен)"
+      - "Регрессионный ассерт на pipeline-config-retry и pipeline-config-save-retry в admin-chrome.spec.js"
+  - id: GAP-25-6
+    truth: "25-05 #3 — G-14 измеряет тинт-композиты подписи на paper/paper-2/bg-app и падает при дрейфе альфы"
+    status: partial
+    reason: "Значения в рабочем дереве проходят (success 5.795…8.778, voting 7.057…10.532, danger 5.201…6.407). Но STATUS_LABEL_TINTS фиксирует alpha: 0.15/0.2/0.1 константой, не связанной с классами bg-success/15, bg-voting/20, bg-danger/10; мутация /15 → /60 оставляет npm run test:js зелёным, хотя реальный композит даёт 4.181 (4.094 на paper-2). Гейт зелёный по текущему коду, но доказательство слабее заявленного."
+    artifacts:
+      - path: "tests/unit/test_semantic_token_coverage.js"
+        issue: ":113-117 STATUS_LABEL_TINTS с захардкоженной альфой"
+      - path: "tests/admin-chrome.spec.js"
+        issue: ":379 tintAlpha = { success: 0.15, voting: 0.2 } дублирует константу вместо чтения DOM"
+    missing:
+      - "Выводить альфу из класса (classTokens) или из getComputedStyle(el).backgroundColor, а не из константы"
+      - "Proof-тест: смена /15 на /60 обязана ронять G-14"
+  - id: GAP-25-7
+    truth: "25-06 #6 — G-16 обеспечивает контракт статусных ассертов и обязывает тост читать цвета"
+    status: partial
+    reason: "Рабочий код честен: e2e «failure toast legible» действительно читает backgroundColor и borderTopColor (16.296/14.516). Но два из трёх правил гейта не могут упасть: R3 ищет подстроки backgroundColor/borderTopColor в том же файле, где они уже есть в хелпере styleTriple(), поэтому удаление всех цветовых expect у тоста оставляет гейт зелёным; R1 не видит альтернацию внутри hasText:/name. R2 работает."
+    artifacts:
+      - path: "tests/unit/test_semantic_token_coverage.js"
+        issue: ":485-486 REGEX_ASSERTION не покрывает hasText/name/toHaveAccessibleName"
+      - path: "tests/unit/test_semantic_token_coverage.js"
+        issue: ":555-570 toastReaders проверяет текст файла, а не тост"
+    missing:
+      - "Привязать R3 к блоку admin-toast (окно ±15 строк) или перенести инвариант в спеку"
+      - "Расширить R1 до hasText|name|toHaveAccessibleName или разбирать все regex-литералы файла"
+deferred: []
+behavior_unverified_items:
+  - truth: "25-04 #7 — пока действие в полёте, подпись кнопки сохраняет тот же тема-независимый цвет, меняется только прозрачность"
+    test: "Открыть /voting в обеих темах, выбрать радио и нажать confirm-vote; прочитать вычисленную пару color/background-color в состоянии data-state=loading"
+    expected: "Цвет подписи остаётся #FFFFFF на -solid-заливке (или #0F172A на bg-voting), меняется только opacity"
+    why_human: "ActionButton.jsx рендерит в loading только stateChrome = 'cursor-wait opacity-80' без цветового токена, но e2e измеряет лишь idle и error; состояние loading не отрисовывается ни одним тестом."
+coincidental_reliance_items: []
+human_verification:
+  - test: "25-02 backstop — 320px / строка вкладок: открыть /admin/pipeline, посмотреть «Дайджест» и «Настройка»"
+    expected: "Обе подписи в одну строку внутри 44px (min-h-11) без обрезки; на < 640px строки нет (nav объявлен hidden … sm:flex) — там работает <select>"
+    why_human: "backstop; формулировка «на 320px» не совпадает с контрактом навигации, геометрия 320px не измеряется"
+  - test: "25-02 backstop — 320px: мобильный <select> раздела"
+    expected: "Высота 44px, непрозрачная paper, текст ink, выбранная опция не обрезана"
+    why_human: "e2e читает только цвета и границу на 480px, но не высоту/обрезку на 320px"
+  - test: "25-03 backstop — частично заполненная форма (тип выбран, id и название пусты)"
+    expected: "Все три контрола рисуют непрозрачную paper и текст ink-2 в обеих темах"
+    why_human: "e2e проверяет пустые поля; смешанное состояние не покрыто"
+  - test: "25-03 backstop — 200-символьный id в ingest-sources-id"
+    expected: "Прокручивается внутри поля, не расширяет блок paper, не обрезает CTA «Добавить источник»"
+    why_human: "long-text backstop, автоматического замера переполнения нет"
+  - test: "25-03 backstop — первичная загрузка в полёте"
+    expected: "Строк и скелетона нет, заголовок «Источники» и поверхность paper остаются отрисованными"
+    why_human: "loading-состояние не имеет инжектора в харнессе"
+  - test: "25-03 backstop — строка только с id (без названия)"
+    expected: "Переключатель включения и все действия строки видимы и читаемы"
+    why_human: "partial backstop, нет фикстуры «id без label»"
+  - test: "25-03 backstop — 20 строк на 320px"
+    expected: "Страница удлиняется, ни одна строка не обрезана, горизонтальной прокрутки нет"
+    why_human: "overflow backstop, 320px-кейса нет"
+  - test: "25-03 backstop — 0 / 1 / 20 строк"
+    expected: "Одна и та же поверхность paper-2 на строку и ритм 8px; singular/plural не вводится"
+    why_human: "zero-one-many backstop"
+  - test: "25-03 backstop — длинный id канала/плейлиста в строке"
+    expected: "Переносится или усекается внутри строки, действия строки во вьюпорте, текст ≥ 4.5:1"
+    why_human: "long-text backstop"
+  - test: "25-03 backstop — 320px: диалог несохранённых изменений"
+    expected: "Тело переносится, «Остаться» и «Уйти без сохранения» полностью видимы, горизонтального переполнения нет"
+    why_human: "overflow backstop"
+  - test: "25-04 backstop — 320px: самая длинная подпись CTA «Уйти без сохранения»"
+    expected: "Переносится внутри 44px-цели без обрезки"
+    why_human: "overflow backstop"
+  - test: "25-04 backstop — 320px: подпись активной навигационной пилюли"
+    expected: "Полностью внутри пилюли, #FFFFFF на primary-solid, без обрезки"
+    why_human: "overflow backstop"
+  - test: "25-04 #7 — подпись кнопки в состоянии loading"
+    expected: "Цвет подписи не переворачивается вместе с темой; меняется только прозрачность"
+    why_human: "см. behavior_unverified_items"
+review_disposition:
+  closed: [CR-01, WR-01, IN-02, WR-02, WR-03, WR-04, WR-05, WR-06]
+  open_blocking: [WR-07, WR-08, WR-09, WR-10]
+  open_non_blocking: [IN-01, IN-03, IN-04, IN-05, WR-11, WR-12, WR-13]
 ---
 
 # Phase 25 — Verification Report
 
 **Phase:** `25-admin-nastroyka-naming-readable-surfaces-token-repair`
 **Goal (ROADMAP § Phase 25):** «An admin opening the pipeline section sees it named «Настройка», every field and label legible in both themes, and chrome that matches the rest of the product.»
-**Verdict:** **`gaps_found`** — clause 1 (naming) and clause 3 (chrome) are met and proven; clause 2 (**every field and label legible in both themes**) is **not met**. All four plans are green and every plan-level must_have that has an automated proof is proven, but nine review findings remain open, and two of them are direct counter-examples to the legibility clause, independently re-measured in this pass.
+**Verified:** 2026-10-21T20:56:00Z
+**Re-verification:** да — после gap-closure планов 25-05, 25-06, 25-07 и после ревью `25-REVIEW.md` (c4ec7e4)
+**Verdict:** **`gaps_found`** — четыре прежних гэпа закрыты и переизмерены, пять success criteria ROADMAP выполнены. Но клауза GC-2 в её универсальной формулировке не выполнена: роль `--color-primary` как подписи даёт **3.566…4.529:1**, в том числе на двух кнопках самого раздела «Настройка». Плюс два must_have (25-05 #3, 25-06 #6) опираются на гейты, которые ревью доказало мутациями как неспособные упасть, — они помечены `partial`, а не `met`.
 
-## Verification Method
+## Что изменилось с прошлой проверки
 
-- Read all four PLANs, all four SUMMARYs, `25-UI-SPEC.md`, `25-VALIDATION.md`, `25-REVIEW.md`, `25-REVIEW-DISPOSITION.md`, `REQUIREMENTS.md` and `ROADMAP.md` § Phase 25.
-- Cross-checked every `must_haves` entry against the working tree (not against SUMMARY prose).
-- Re-ran the automated evidence from a clean port: `Get-NetTCPConnection -LocalPort 5174 -State Listen` returned **no listener** before every Playwright invocation (STATE.md § Blockers precondition satisfied).
-- Re-measured the contested contrast pairs with the repository's own WCAG helper (`tests/helpers/contrast.js`), not with external tooling.
+Предыдущий отчёт (`human_needed`, 65/78, 18:05) описывал состояние **после** 25-05…25-07 и был прав в том, что четыре гэпа закрыты. Он не учёл находки свежего ревью, и его frontmatter содержал артефакты нумерации строк. Настоящая проверка переизмеряет то же дерево и добавляет три расхождения.
 
-### Commands run in this pass
+| Гэп | Как закрыт | Доказательство в этом прогоне |
+|---|---|---|
+| **GAP-25-1** (WR-02): статусные токены как подпись на тинтах — 1.92 / 1.62 / 3.17 / 3.76 в светлой теме | `--color-success-ink`, `--color-voting-ink-on-tint`, `--color-danger-ink` + миграция всех 18 сайтов | 18 вхождений `text-*-ink` (0 базовых `text-success`/`text-voting`/`text-danger`); G-14/G-18 зелёные; e2e `status labels legible in both themes` |
+| **GAP-25-2** (WR-05): тост админки 1.00:1 в обеих темах | `border border-rule bg-paper-2 text-ink`; carve-out `bg-text-primary` удалён из G-10 | `AdminDigestPage.jsx:808-809`; e2e читает `backgroundColor`/`borderTopColor`: **16.296** светлая / **14.516** тёмная; `bg-text-primary` под `web/src` — 0 |
+| **GAP-25-3** / 25-03 #12: ссылка повтора 2.43:1 на светлой `paper` | новая роль подписи `--color-accent-text` на трёх сайтах | e2e `load-error actions and the preview link are legible in both themes`: `rgb(14,116,144)` = **5.358**, сообщение `ink-2` = **10.355** |
+| **GAP-25-4** / 25-03 #10: край поля не измерялся и не держал 3:1 | `--color-field-border: #64748B` (плоский) на всех 16 контролах + G-15/G-17 | e2e `control boundaries clear 3:1…`: **4.759** светлая / **3.698** тёмная; карточка остаётся `rule` (**1.485**) — гейт различает роли |
+| **GAP-25-5** (новый): `--color-primary` как подпись | не закрыт ни одним планом | измерено ниже: 3.566 / 4.047 / 4.156 / 4.234 / 4.529 |
+| **GAP-25-6** (новый): G-14 и захардкоженная альфа | не закрыт | мутация `/15 → /60` не роняет `test:js` (ревью), значения в дереве проходят |
+| **GAP-25-7** (новый): G-16 R1/R3 | не закрыт | мутации ревью: удаление цветовых expect у тоста и альтернация в `hasText:` остаются зелёными |
+| **WR-03** | `ActionButton` — одна заливка на состояние | e2e `the vote button paints exactly one fill in every state` (11-й кейс) |
+| **WR-04** | `gotoAdmin` ждёт `(dataset.theme ?? 'dark') === theme` | `admin-chrome.spec.js:44-57`; `waitForTimeout` в спеке — 0 |
 
-| Command | Result |
+## Метод и воспроизведённые команды
+
+- Прочитаны семь PLAN и семь SUMMARY, `25-REVIEW.md`, `ROADMAP.md` § Phase 25, `web/src/index.css`, `AdminLayout.jsx`, `IngestSourcesSection.jsx`, `AdminPipelineConfigPage.jsx`, `ActionButton.jsx`.
+- Каждый `must_haves`-пункт сверен с рабочим деревом и прогонами, а не с текстом SUMMARY.
+- Контрастные пары пересчитаны хелпером репозитория `tests/helpers/contrast.js` (`parseColor` → `relativeLuminance` → `contrastRatio`, тинты — через `blendOver`).
+- Перед прогоном Playwright освобождён порт 5174: висел устаревший Vite (PID 23844), снят `Stop-Process`.
+
+| Команда | Результат |
 |---|---|
-| `npm run test:js` | **76 pass / 0 fail** (23 suites, 370 ms) — G-0…G-13 incl. G-9b, G-11 + proof, G-12 + proof, G-13; canon `51/13` untouched |
-| `npx playwright test --list --project=web` | **152 tests in 6 files**; `admin-chrome.spec.js` named at `:77` (naming), `:119` (chrome), `:174` (select legible), `:218` (theme-independent labels) |
-| `npx playwright test tests/admin-chrome.spec.js --project=web --reporter=line` | **4 passed (16.1s)** |
-| `npm test` | **158 passed (4.3m)** — no regressions, both projects |
-| `npm run build` | exit 0, `✓ built in 385ms` (only pre-existing chunk-size / `INEFFECTIVE_DYNAMIC_IMPORT` warnings) |
-| Node contrast re-measurement (`tests/helpers/contrast.js`) | see § Measured contrast evidence |
-| `rg` / `Read` over `web/src` | see § Static checks |
+| `npm run test:js` | **89 pass / 0 fail** — G-0…G-19 + proof'ы + канон 51/13 |
+| `npx playwright test tests/admin-chrome.spec.js --project=web --reporter=line` | **11 passed** (53.2 s) |
+| `npm run build` | **exit 0**, `✓ built in 425ms` (только прежние chunk-size / `INEFFECTIVE_DYNAMIC_IMPORT` предупреждения) |
 
-### Static checks
+### Статические проверки
 
-| Check | Result |
+| Проверка | Результат |
 |---|---|
-| `@theme` blocks in `web/src/index.css` (after comment stripping) | **1** |
-| `[data-theme="light"]` blocks | **1** |
-| `accent-ink` occurrences under `web/src` | **0** |
-| `bg-ink` occurrences (with or without alpha) | **0** |
-| `bg-paper/…` or `bg-paper-2/…` opacity modifiers | **0** |
-| `bg-text-primary` occurrences | **1** — `AdminDigestPage.jsx:808` (the toast, see GAP-25-2) |
-| Arbitrary-value colour utilities under `web/src` | **0** (G-12 allow-list empty; CR-01 retired the last `oklch()` literals) |
-| «ингеста» under `web/src` | **0** |
-| «Пайплайн» / «пайплайн» in admin chrome | **0** — remaining hits are `AdminPipelineConfigPage` subtitle / `aria-label="YAML конфига пайплайна"` / `placeholder` (out of PIPEUI-01 scope by PLAN 25-01 § «НЕ трогать»: «Конфиг пайплайна» is the page heading, not the section label) and mock article text in `web/src/data/mock.js` |
-| `toHaveClass(/bg-primary/)` in `tests/admin.spec.js` | **0 matches** (`rg` exit 1) |
-| `bg-primary-solid` / `text-on-solid` / `bg-scrim` consumer sites | **19** class-string lines |
-| `test.skip` / `it.skip` / `.todo(` in phase test files | **0**; `tests/admin-chrome.spec.js` declares exactly **4** `test(` |
+| Блоки `@theme` / `[data-theme="light"]` в `web/src/index.css` | **1 / 1** (G-0) |
+| Объявлений `--color-field-border` | **1** (строка 82, в `@theme static`, без light-override — G-3) |
+| `accent-ink` в CSS и под `web/src` | **0 / 0** (G-5) |
+| `bg-ink`, `bg-text-primary`, `bg-paper*` с альфой | **0** (G-6 / G-10 без carve-out) |
+| `text-success` / `text-voting` / `text-danger` как подпись | **0**; `text-*-ink` — ровно **18** сайтов |
+| `text-accent` (без `-text`) | **0**; `text-accent-text` — 3 сайта (G-19) |
+| `border-field-border` | 16 контролов (G-17, anti-vacuum `controlCount >= 16`) |
+| «Настройка» в `AdminLayout.jsx` | **3** литерала: sr-only `h1` (`:47`), вкладка (`:68`), `<option>` (`:81`) |
+| `/admin/settings` | **0**; маршрут `admin/pipeline` — `App.jsx:62` |
+| «Источники ингеста» | **0**; `ingest-sources-heading` = «Источники» (`IngestSourcesSection.jsx:170-173`) |
+| `!important`, произвольные цвета, inline-стили цвета | **0** (G-12 allow-list пуст) |
+| `TBD` / `FIXME` / `XXX` / `TODO` / `HACK` в файлах фазы | **0** (совпадения `placeholder` — атрибуты полей) |
+| `waitForTimeout` в `admin-chrome.spec.js` | **0** |
 
 ## Goal-Backward Analysis
 
-| Clause | Status | Proof | Counter-evidence |
-|---|---|---|---|
-| **GC-1** «sees it named «Настройка»» | **MET** | `naming:` test asserts the tab, the sr-only `h1` (single, `width ≤ 1px`) and the mobile `<option>`; `page.url()` still `/admin/pipeline`; `admin-tab-pipeline` count 1; both `aria-label="Разделы админки"` unchanged. `web/src/App.jsx:62` still mounts the page on `admin/pipeline`. | none |
-| **GC-2** «every field and label legible in both themes» | **NOT MET** | The «Тип» select and both sibling fields are proven at 11.85:1 (dark) / 10.35:1 (light); the `-solid` label family and the pill/CTA/voting pairs are proven at 5.70 / 5.36 / 9.31. | Four light-theme label pairs measure **1.92 / 1.62 / 3.17 / 3.76**; the admin toast measures **1.00** in both themes; the load-error retry link measures **2.43** on light `paper`. See GAP-25-1…GAP-25-3. |
-| **GC-3** «chrome that matches the rest of the product» | **MET** | `chrome:` test: «Админ» node count 1 and identical to the shell pill; tab `font-size === ingest-sources-heading font-size === 24px`; `column-gap 16px` (pre-fix 8); `margin-top 0px`; `nav.top − main.top < 48` (pre-fix 64); heading «Источники»; navigation contract intact. | none |
+| Клауза | Статус | Доказательство |
+|---|---|---|
+| **GC-1** «sees it named «Настройка»» | **MET** | e2e `naming:` — вкладка `admin-tab-pipeline` = «Настройка», sr-only `h1` = «Настройка» (единственный, `width ≤ 1px`), `<option>` = «Настройка», `value` = `/admin/pipeline`, `page.url()` не изменился, `aria-label="Разделы админки"` ×2 целы; `AdminLayout.jsx:47`, `:68`, `:81`; `App.jsx:62`; `/admin/settings` — 0 |
+| **GC-2** «every field and label legible in both themes» | **PARTIAL** | Обязательные пары ≥ 4.5: статусные подписи 5.201…11.007, тост 16.296/14.516, accent-ссылки 5.358/7.248, граница поля 4.759/3.698 (порог 3:1). Не выполнено для `text-primary`: **4.047** (light bg-app), **4.234** (light paper), **4.156** (dark paper), **3.756** (dark paper-2), **4.529** (dark bg-app, единственная проходящая база), а `pipeline-config-save-retry` на `bg-danger/10` — **3.566 / 4.186**. См. GAP-25-5 |
+| **GC-3** «chrome that matches the rest of the product» | **MET** | e2e `chrome:` — «Админ» ровно 1 узел и это shell-пилюля (eyebrow удалён), кегль вкладки === `ingest-sources-heading` === 24px, `column-gap` 16px (> 8), `margin-top` 0, `nav.top − main.top < 48`; `AdminLayout.jsx:13` `text-2xl`, `:50` `mt-0 … gap-4` |
 
-**Why this is not a pass.** The nine deferred findings are an **operator decision recorded in `25-REVIEW-DISPOSITION.md`**, not a proof of correctness. Per the goal-backward test, a deferral does not convert an unmet clause into a satisfied one: a label that measures 1.92:1 in the light theme is not «legible in both themes», irrespective of who accepted the debt. Equally, the six requirement IDs are **not** failed: each requirement's own must_haves are proven, and the unmet clause is scoped below to the specific pairs listed in GAP-25-1…GAP-25-3.
+**Почему не `passed`.** Во-первых, GC-2 не держится в универсальной формулировке (измеримый дефект в самом разделе «Настройка»). Во-вторых, два must_have опираются на гейты, которые по мутациям ревью не падают на реальных регрессиях; рабочий код сегодня верен, но доказательство слабее заявленного, поэтому `partial`, а не `met`. Наконец, двенадцать backstop-пунктов и одно поведенческое утверждение не исполняются ни одним тестом.
 
 ## Must-Have Scorecard
 
-| Plan | must_have entries | ✓ verified | ◐ partial | ✗ not proven | ⊘ backstop → human |
+| План | Записей | ✓ verified | ✗/partial | ⊘ backstop → human | ⚠️ behavior-unverified |
 |---|---|---|---|---|---|
 | 25-01 (PIPEUI-01) | 6 | **6** | 0 | 0 | 0 |
-| 25-02 (PIPEUI-03/04) | 11 | **9** | 0 | 0 | 2 |
-| 25-03 (THEME-02/PIPEUI-02) | 23 | **13** | 1 | 1 | 8 |
-| 25-04 (THEME-01) | 11 | **9** | 0 | 0 | 2 |
-| **Total** | **51** | **37** | **1** | **1** | **12** |
+| 25-02 (PIPEUI-03/04) | 11 | **9** | 0 | 2 | 0 |
+| 25-03 (THEME-02/PIPEUI-02) | 23 | **15** | 0 | 8 | 0 |
+| 25-04 (THEME-01) | 11 | **8** | 0 | 2 | 1 |
+| 25-05 (gap: роли подписи + граница) | 9 | **8** | 1 partial | 0 | 0 |
+| 25-06 (gap: 18 сайтов + тост) | 9 | **8** | 1 partial | 0 | 0 |
+| 25-07 (gap: accent-text + field-border) | 9 | **9** | 0 | 0 | 0 |
+| **Итого** | **78** | **63** | **2** | **12** | **1** |
 
 ### 25-01 — naming tracer (PIPEUI-01)
 
-| # | must_have | Status | Evidence |
+| # | must_have | Статус | Доказательство |
 |---|---|---|---|
-| 1 | tab `admin-tab-pipeline` reads «Настройка», sibling «Дайджест» | ✓ | `admin-chrome.spec.js:84`, `:109`; `AdminLayout.jsx:68`, `:60` |
-| 2 | sr-only `h1` «Настройка», single, `width ≤ 1px` | ✓ | `admin-chrome.spec.js:90-96` |
-| 3 | mobile `<option>` «Настройка», options `['Дайджест','Настройка']`, value `/admin/pipeline` | ✓ | `admin-chrome.spec.js:98-104`; `AdminLayout.jsx:80-81` |
-| 4 | `page.url()` ends `/admin/pipeline`, testid count 1, `aria-label` intact | ✓ | `admin-chrome.spec.js:106-116` |
-| 5 | `admin-chrome.spec.js` collected by the `web` project | ✓ | `--list --project=web` names all four cases; 152 tests / 6 files |
-| 6 | PIPEUI-01 flagged assumption (static literal, no input domain) | ✓ | covered by the three text assertions + unchanged-URL assertion, as the plan's own formulation requires |
+| 1 | вкладка `admin-tab-pipeline` читается «Настройка», соседняя — «Дайджест» | ✓ | `admin-chrome.spec.js:172-186`; `AdminLayout.jsx:60`, `:68` |
+| 2 | sr-only `h1` «Настройка», единственный, `width ≤ 1px` | ✓ | `:187-193`; `AdminLayout.jsx:47` |
+| 3 | мобильный `<option>` «Настройка», тексты опций `['Дайджест','Настройка']`, `value` = `/admin/pipeline` | ✓ | `:194-204`; `AdminLayout.jsx:80-81` |
+| 4 | `page.url()` оканчивается на `/admin/pipeline`, testid один, `aria-label` цел | ✓ | `:205-212`; `App.jsx:62` |
+| 5 | `tests/admin-chrome.spec.js` собирается проектом `web` | ✓ | прогон дал 11 passed; `playwright.config.js` `testMatch` |
+| 6 | PIPEUI-01 flagged assumption (статический литерал, входного домена нет) | ✓ | три текстовых ассерта + ассерт неизменного URL — ровно то покрытие, которое план и объявляет |
 
-### 25-02 — admin chrome + «Источники» (PIPEUI-03, PIPEUI-04)
+### 25-02 — хром админки + «Источники» (PIPEUI-03, PIPEUI-04)
 
-| # | must_have | Status | Evidence |
+| # | must_have | Статус | Доказательство |
 |---|---|---|---|
-| 1 | «Админ» count 1 and that node is the shell pill; eyebrow gone | ✓ | `admin-chrome.spec.js:129-137` (identity check via element handle) |
-| 2 | tab `font-size` === content `h2` === `24px` | ✓ | `admin-chrome.spec.js:142-144`; `AdminLayout.jsx:13` (`text-2xl`) |
-| 3 | `column-gap` === `16px` and `> 8` | ✓ | `admin-chrome.spec.js:151-152`; `AdminLayout.jsx:50` (`gap-4`) |
-| 4 | `margin-top` === `0px`, `nav.top − main.top < 48` | ✓ | `admin-chrome.spec.js:155-160`; `AdminLayout.jsx:50` (`mt-0`) |
-| 5 | `ingest-sources-heading` exactly «Источники» | ✓ | `admin-chrome.spec.js:163`; `IngestSourcesSection.jsx:169-174`; `tests/admin.spec.js` (`toHaveText`) |
-| 6 | `aria-label`s, four `data-testid`s and `mt-6` unchanged | ✓ | `admin-chrome.spec.js:166-171`; `AdminLayout.jsx:48-49`, `:72-74`, `:84` |
-| 7 | **320px: both tab labels on one line in the 44px target** | ⊘ backstop | never measured by an automated run → § Human verification #1 |
-| 8 | **320px: mobile select keeps 44px with `paper` fill / `ink` text** | ⊘ backstop | never measured by an automated run → § Human verification #2 |
-| 9-11 | PIPEUI-03 / PIPEUI-04 flagged assumptions (`unclassified`, `boundary`, `precision`) | ✓ | resolved by exact-string equality and relative measured comparisons, as the plan states |
+| 1 | «Админ» ровно 1 узел и это shell-пилюля; eyebrow нет в DOM | ✓ | `admin-chrome.spec.js:214-240`; в `AdminLayout.jsx` слова «Админ» нет; `AppShell.jsx:102` |
+| 2 | кегль вкладки === кегль контентного `h2` === 24px | ✓ | `:242-247`; `AdminLayout.jsx:13` `text-2xl`; `IngestSourcesSection.jsx:171` |
+| 3 | `column-gap` === 16px и > 8 | ✓ | `:249-252`; `AdminLayout.jsx:50` `gap-4` |
+| 4 | `margin-top` === 0 и `nav.top − main.top < 48` | ✓ | `:254-263`; `AdminLayout.jsx:50` `mt-0` |
+| 5 | `ingest-sources-heading` ровно «Источники» | ✓ | `:265-268`; `IngestSourcesSection.jsx:170-173` |
+| 6 | `aria-label`, четыре `data-testid`, `mt-6` без изменений | ✓ | `:265-268`; `AdminLayout.jsx:48-50`, `:72-74`, `:84` |
+| 7 | 320px: обе подписи вкладок в одну строку в 44px-цели | ⊘ backstop | Human #1 (на < 640px строка скрыта контрактом `sm:flex`) |
+| 8 | 320px: мобильный селектор 44px, `paper`, `ink`, без обрезки | ⊘ backstop | Human #2 |
+| 9-11 | flagged assumptions PIPEUI-03 (`unclassified`), PIPEUI-04 (`boundary`, `precision`) | ✓ | точное равенство строки и относительные замеры — как план и формулирует |
 
-### 25-03 — token family + readable «Тип» (THEME-02, PIPEUI-02)
+### 25-03 — семейство токенов и читаемый «Тип» (THEME-02, PIPEUI-02)
 
-| # | must_have | Status | Evidence |
+| # | must_have | Статус | Доказательство |
 |---|---|---|---|
-| 1 | coverage gate green (every used utility resolves, themed have overrides, flat do not) | ✓ | `npm run test:js` 76/0; G-0…G-13 |
-| 2 | exactly one `@theme` and one `[data-theme="light"]` | ✓ | G-0; independently re-counted: 1 / 1 |
-| 3 | `#ingest-sources-kind` pair `rgb(203,213,225)`/`rgb(19,25,37)` dark, `rgb(51,65,85)`/`rgb(255,255,255)` light, opaque, ≥ 4.5 | ✓ | `select legible in both themes`; ratios 11.85 / 10.35 |
-| 4 | sibling `-id` / `-label` yield the identical pair | ✓ | same test, loop over three locators |
-| 5 | options exactly `Канал` / `Плейлист` | ✓ | same test |
-| 6 | `--color-paper` resolves at runtime | ✓ | same test + built CSS |
-| 7 | zero `accent-ink`, zero `bg-ink`, no alpha on `bg-paper*` | ✓ | G-5 / G-6 + grep (0 / 0 / 0) |
-| 8 | family contrast incl. `on-solid`/`danger-solid` floor ≥ 4.829 | ✓ | G-7; G-13 for `danger-ink` |
-| 9 | aliases `paper`/`paper-2`/`ink` both themes, `rule`/`muted` dark only | ✓ | G-8 |
-| 10 | Empty fields: opaque `paper` fill, `ink-2` value, **`rule` edge** | ◐ **partial** | fill + value proven by the spec; **`border-color` is never asserted at runtime** — the edge is proven only statically through G-4. Recorded rather than rounded up. See GAP-25-4. |
-| 11 | Zero sources: heading + «Пока нет источников» on `paper`, `ink`/`muted` | ✓ | `IngestSourcesSection.jsx:169-200`; texts pinned by `tests/admin.spec.js` (158 passed) |
-| 12 | Load error: «Не удалось загрузить источники» **and** «Повторить загрузку», **both ≥ 4.5:1 on `paper` in both themes** | ✗ **not proven** | The message is `text-ink-2` (11.85 / 10.35 ✓), but the action is `text-accent` = **2.43:1** on light `paper` (`#06B6D4` on `#FFFFFF`). The plan itself forbids touching `text-accent` (§ Known adjacent defects 3) — an internal contradiction, flagged by 25-03-SUMMARY. See GAP-25-3. |
-| 13-20 | 8 backstops (partial form, 200-char id, initial load, id-only row, 20 rows @320, 0/1/20 rhythm, long id, 320px dialog) | ⊘ backstop | never measured → § Human verification #3…#10 |
-| 21-23 | PIPEUI-02 (`empty`, `encoding`) and THEME-02 (`unclassified`) flagged assumptions | ✓ | `background != rgba(0,0,0,0)` before arithmetic + exact `rgb(...)` string equality; CSS-contract gate G-0…G-13 |
+| 1 | гейт покрытия токенов зелёный | ✓ | `npm run test:js` 89/0; G-0…G-13 |
+| 2 | ровно один `@theme` и один `[data-theme="light"]` | ✓ | G-0; независимый пересчёт 1 / 1 |
+| 3 | `#ingest-sources-kind`: тёмная `rgb(203,213,225)`/`rgb(19,25,37)`, светлая `rgb(51,65,85)`/`rgb(255,255,255)`, непрозрачно, ≥ 4.5 | ✓ | e2e `select legible in both themes`; 11.852 / 10.355 |
+| 4 | соседние `-id` / `-label` дают ту же пару | ✓ | тот же кейс, цикл по трём локаторам |
+| 5 | опции ровно `Канал` / `Плейлист` | ✓ | тот же кейс |
+| 6 | `--color-paper` резолвится в рантайме | ✓ | тот же кейс + собранный CSS |
+| 7 | ноль `accent-ink`, `bg-ink`, альфы на `bg-paper*` | ✓ | G-5 / G-6; grep 0 / 0 / 0 |
+| 8 | контраст семейства, включая `on-solid`/`danger-solid` пол 4.829 | ✓ | G-7; пересчёт: 5.699 / 5.358 / 5.016 / 4.829; `voting-ink` на `voting` 9.309 |
+| 9 | алиасы `paper`/`paper-2`/`ink` в обеих темах, `rule`/`muted` — только в тёмной | ✓ | G-8 |
+| 10 | пустые поля: непрозрачная `paper`, значение `ink-2`, **край поля** | ✓ (с замещением) | Значение и заливка — e2e; край теперь `border-field-border` (**4.759 / 3.698 ≥ 3:1**), осознанное замещение пункта 25-07 (см. § Замещённые must_have) |
+| 11 | ноль источников: заголовок + «Пока нет источников» на `paper`, `ink`/`muted` | ✓ | `IngestSourcesSection.jsx:169-200`; тексты запинены `tests/admin.spec.js` |
+| 12 | ошибка загрузки: сообщение **и** действие ≥ 4.5:1 на `paper` в обеих темах | ✓ | e2e `load-error actions…`: сообщение `ink-2` 10.355 / 11.852, действие `accent-text` **5.358 / 7.248** |
+| 13-20 | восемь backstop'ов (частичная форма, 200-символьный id, загрузка, строка без label, 20 строк @320, 0/1/20, длинный id, диалог @320) | ⊘ backstop | Human #3…#10 |
+| 21-23 | flagged assumptions PIPEUI-02 (`empty`, `encoding`) и THEME-02 (`unclassified`) | ✓ | непрозрачность проверяется до арифметики + точное равенство `rgb(...)`; CSS-контракт закрыт G-0…G-19 |
 
-### 25-04 — theme-independent labels (THEME-01)
+### 25-04 — тема-независимые подписи (THEME-01)
 
-| # | must_have | Status | Evidence |
+| # | must_have | Статус | Доказательство |
 |---|---|---|---|
-| 1 | pill `rgb(255,255,255)` on `rgb(124,58,237)`, ≥ 4.5 both themes | ✓ | `theme-independent labels in both themes`; 5.70 |
-| 2 | `ingest-sources-add` white on `rgb(14,116,144)`, ≥ 4.5 | ✓ | same test; 5.36 |
-| 3 | `voting` `rgb(15,23,42)` on `rgb(234,179,8)`, ≥ 4.5 — positive assertion | ✓ | same test (both themes) + G-7; 9.31 |
-| 4 | no fill carries a theme-dependent label (G-9) | ✓ | G-9 empty offender list; G-9b reaches the `-solid` family |
-| 5 | no full-screen veil uses a theme-dependent token (G-10); four overlays on `bg-scrim` | ✓ | G-10 empty; `UnsavedChangesDialog.jsx:26`, `AdminDigestPage.jsx` ×3 |
-| 6 | no pill assertion rides on a substring | ✓ | five token-exact sites; `rg` for `toHaveClass(/bg-primary/)` empty |
-| 7 | in-flight label keeps its colour, only opacity changes | ✓ (static) | `ActionButton.jsx` `stateClass.loading = 'cursor-wait opacity-80'` — no colour token; no e2e colour measurement exists, so this is a reading, as the SUMMARY states |
-| 8-9 | **320px: longest CTA label wraps inside 44px**, **pill label renders fully inside the pill** | ⊘ backstop | never measured → § Human verification #11…#12 |
-| 10-11 | THEME-01 flagged assumptions (`empty`, `encoding`) | ✓ | `background != rgba(0,0,0,0)` + exact `rgb(...)` equality; no length semantics in the domain |
+| 1 | пилюля shell: `rgb(255,255,255)` на `rgb(124,58,237)`, ≥ 4.5 в обеих темах | ✓ | e2e `theme-independent labels in both themes`; 5.699 |
+| 2 | `ingest-sources-add`: белая подпись на `rgb(14,116,144)`, ≥ 4.5 | ✓ | там же; 5.358 |
+| 3 | `voting`: `rgb(15,23,42)` на `rgb(234,179,8)`, ≥ 4.5 — положительный ассерт | ✓ | там же, обе темы; 9.309; e2e падает, если подпись станет белой (1.918); `ActionButton.jsx:42` `bg-voting text-voting-ink` |
+| 4 | ни одна заливка не несёт темо-зависимую подпись (G-9) | ✓ | G-9 / G-9b зелёные; `ActionButton.jsx:11-12`, `:45` только `text-on-solid` |
+| 5 | ни один скрайм не использует темо-зависимый токен (G-10) | ✓ | G-10 без carve-out; четыре оверлея на `bg-scrim` |
+| 6 | ни один ассерт пилюли не держится на подстроке | ✓ | пять token-exact сайтов; `toHaveClass(/bg-primary/)` — 0 |
+| 7 | в полёте подпись сохраняет цвет, меняется только прозрачность | ⚠️ PRESENT_BEHAVIOR_UNVERIFIED | `ActionButton.jsx` `stateChrome.loading = 'cursor-wait opacity-80'`; e2e измеряет только `idle` и `error` → Human #13 |
+| 8-9 | 320px: длинная подпись CTA и подпись пилюли без обрезки | ⊘ backstop | Human #11…#12 |
+| 10-11 | flagged assumptions THEME-01 (`empty`, `encoding`) | ✓ | непрозрачность проверяется до `contrastRatio`; сравнение точных `rgb(...)` |
+
+### 25-05 — роли подписи и граница поля
+
+| # | must_have | Статус | Доказательство |
+|---|---|---|---|
+| 1 | `--color-success-ink`, `--color-voting-ink-on-tint`, `--color-accent-text` в `@theme static` + отличающиеся light-override | ✓ | `index.css:59-61`, `:182-184`; G-14 |
+| 2 | `--color-field-border: #64748B` без light-override | ✓ | `index.css:82`; одна декларация; G-3 (`FLAT`) |
+| 3 | G-14 измеряет тинт-композиты ≥ 4.5 на `paper`/`paper-2`/`bg-app` | **partial** | Значения проходят: success 7.801/7.044/8.778 и 6.262/5.795/6.024; voting 9.419/8.473/10.532 и 7.621/7.057/7.326; danger 5.837/5.283/6.407 и 5.665/5.201/5.449. **Но** альфа захардкожена (`STATUS_LABEL_TINTS` `:113-117`), мутация `/15 → /60` гейт не роняет → GAP-25-6 |
+| 4 | G-14 измеряет роли на непрозрачных поверхностях | ✓ | accent 7.248/6.550/7.900 и 5.358/4.891/5.121; success-ink 10.098/9.126/11.007 и 7.130/6.509/6.815; danger-ink 6.361/5.749/6.934 и 6.470/5.906/6.184 |
+| 5 | G-15: граница поля ≥ 3:1, а `rule` порог не держит | ✓ | 4.759 / 4.344 / 4.548 и 3.698 / 3.342 / 4.030; `rule` 1.485 / 1.425 |
+| 6 | `blendOver(colour, base, alpha)` — нормализованный непрозрачный `rgb()` | ✓ | `blendOver('#22C55E','#F8FAFC',0.15)` = `rgb(216, 242, 228)`; alpha 1 → `rgb(34, 197, 94)`; alpha 0 → база; proof-тест G-14 |
+| 7 | G-18 появляется в 25-06, G-19 — в 25-07 | ✓ | обе проверки существуют и зелёные |
+| 8 | G-14 proof воспроизводит 1.925 и 1.918 | ✓ | пересчёт: 1.925 и 1.918 |
+| 9 | гейт односторонний по дереву, `test:js` зелёный | ✓ | `git show 77a8315` — только `index.css`; 89/0 |
+
+### 25-06 — 18 статусных подписей и тост
+
+| # | must_have | Статус | Доказательство |
+|---|---|---|---|
+| 1 | GAP-25-1 закрыт на всех 18 сайтах, каждый сайт принадлежит одному плану | ✓ | 18 вхождений `text-success-ink`/`text-voting-ink-on-tint`/`text-danger-ink` в семи файлах; базовых подписей — 0 |
+| 2 | измеренные после правки пары ≥ 4.5 | ✓ | 11.007 / 10.098 / 10.532 / 6.361 / 6.407 / 6.934 (тёмная); 6.815 / 7.130 / 7.326 / 6.470 / 5.449 / 6.184 (светлая) |
+| 3 | GAP-25-2: баннер на `text-success-ink`, тост на `border border-rule bg-paper-2 text-ink`, carve-out снят, тост только для ошибок | ✓ | `AdminDigestPage.jsx:770`, `:809`; `setToast` только на `:316`, `:366`; e2e: фон `rgb(241,245,249)`/`rgb(26,34,51)`, текст `rgb(15,23,42)`/`rgb(241,245,249)`, граница `rgb(203,213,225)`/`rgb(42,53,72)` |
+| 4 | `test:js` падал до правки и проходит после на G-10 / G-18 / G-16 | ✓ (текущее состояние) | offender-списки пусты, proof'ы воспроизводят нарушителей; исторический RED — коммиты `2f699c3`, `e3fe0e2` |
+| 5 | G-18: базовые статус-токены запрещены как текст, `-ink` разрешены; proof | ✓ | proof ловит `'bg-success/15 text-success'` и не ловит `text-success-ink` |
+| 6 | G-16: контракт статусных ассертов, тост обязан читать цвета; proof | **partial** | R2 и e2e `failure toast legible` честны (16.296/14.516), но R3 ищет подстроки `backgroundColor`/`borderTopColor` в файле спеки (они уже есть в `styleTriple()`), а R1 не видит `hasText:`/`name` — мутации ревью зелёные → GAP-25-7 |
+| 7 | поведенческое доказательство в обеих темах: пилюли, auth-ошибки, баннер, тост | ✓ | четыре e2e-кейса (`:371`, `:419`, `:452`, `:496`); значения совпали |
+| 8 | `tests/admin.spec.js` не редактируется и не регрессирует | ✓ | файл не входит в diff 25-05…25-07 |
+| 9 | все прогоны зелёные | ✓ | `test:js` 89/0; `admin-chrome` 11/11; `build` exit 0 |
+
+### 25-07 — accent-text и field-border
+
+| # | must_have | Статус | Доказательство |
+|---|---|---|---|
+| 1 | GAP-25-3: три сайта на `text-accent-text`, сообщение не тронуто | ✓ | `IngestSourcesSection.jsx:186`, `IngestionScheduleSection.jsx:156`, `AdminDigestPage.jsx:993`; e2e читает все три: 5.358 / 7.248 и сообщение 10.355 / 11.852 |
+| 2 | GAP-25-4: каждый контрол `border-top-color === rgb(100,116,139)`, ≥ 3.0 | ✓ | G-17 статически на всех 16 (`controlCount >= 16`), e2e — на четырёх реальных; плоский токен делает вычисленное значение тем же у всех |
+| 3 | декоративная граница остаётся декоративной (4 точных class-строки) | ✓ | `DECORATIVE_RULE_EDGES` в G-17; e2e: карточка `border-rule`, контраст < 3 |
+| 4 | G-17 существует, падает до правки, proof разделяет `<input>` / `<div>` / `field-border` | ✓ | proof'ы зелёные |
+| 5 | G-19 существует, `text-accent` — offender, `text-accent-text` — нет; proof | ✓ | `text-accent/80` тоже ловится |
+| 6 | WR-03: ровно одна заливка, `secondary` без `bg-transparent` | ✓ | `ActionButton.jsx:30-48`; e2e 11-й кейс: idle `['bg-voting']`, error `['bg-danger-solid']` |
+| 7 | WR-04: `gotoAdmin` ждёт `data-theme`, `?? 'dark'` | ✓ | `admin-chrome.spec.js:44-57`; `waitForTimeout` — 0 |
+| 8 | залоченный объём байт-идентичен | ✓ | «Источники», «Повторить загрузку», все `data-testid`, оба `aria-label`, `PIPELINE_PATH`/`DIGEST_PATH`/`handleSectionTabClick`, три литерала «Настройка» |
+| 9 | три прогона зелёные | ✓ | см. § Метод |
+
+## Замещённые must_have (осознанные, не гэпы)
+
+| Пункт | Исходная формулировка | Действующее состояние | Почему это не гэп |
+|---|---|---|---|
+| 25-03 #10 | «край `rule`» у пустых контролов | `border-field-border` (`#64748B`) | 25-07 явно закрывает GAP-25-4 и переводит все контролы на boundary-роль; `rule` остаётся декоративной (**1.485**), G-17 запрещает путать роли. Порог ужесточён с 1.485:1 до 4.759:1 |
+| 25-03 #12 | «не трогать `text-accent`» (внутреннее противоречие плана) | добавлена роль `--color-accent-text`; `--color-accent` не менялся | 25-05 § Резолюция: подпись получила свою роль, фокус-обводка осталась на базовом акценте |
+| THEME-02 | семейство перечисляет `accent-ink` | `--color-accent-ink` не существует; потребители на `text-on-solid` | D-10: токен выведен; G-5 запрещает имя. Оперативная клауза («тест падает на необъявленном используемом токене») выполняется — G-0…G-4 |
 
 ## Requirement Coverage
 
-Frontmatter cross-reference: PLAN frontmatter declares `PIPEUI-01` (25-01), `PIPEUI-03` + `PIPEUI-04` (25-02), `THEME-02` + `PIPEUI-02` (25-03), `THEME-01` (25-04). Union = **six** IDs, byte-identical to `REQUIREMENTS.md` § «Admin section naming and readable surfaces» / «Theme contrast» and to `ROADMAP.md` § Phase 25 **Requirements**. No orphaned requirement, no ID declared in a PLAN but absent from `REQUIREMENTS.md`, and none in `REQUIREMENTS.md` unmapped to a plan.
+Frontmatter планов объявляет `PIPEUI-01` (25-01), `PIPEUI-03` + `PIPEUI-04` (25-02), `THEME-02` + `PIPEUI-02` (25-03), `THEME-01` (25-04). Объединение — **шесть** ID, байт-идентично `REQUIREMENTS.md` и `ROADMAP.md` § Phase 25. Сирот и необъявленных ID нет.
 
-| Requirement | Source plan(s) | Status | Evidence |
+| Requirement | Источник | Статус | Доказательство |
 |---|---|---|---|
-| **PIPEUI-01** — pipeline section named «Настройка» on tab, sr-only heading and mobile select, URL unchanged | 25-01 | ✓ **SATISFIED** | `naming:` test (8 assertions) — tab/h1/option texts, single h1 at `≤ 1px`, options array, value `/admin/pipeline`, `page.url()`, `aria-label` ×2; `App.jsx:62` route intact; `playwright.config.js` `testMatch` collects `admin(-chrome)?.spec.js` |
-| **PIPEUI-02** — «Тип» select + «Канал»/«Плейлист» legible in both themes with explicit surface/text | 25-03 | ✓ **SATISFIED** | `select legible in both themes`: dark `rgb(203,213,225)` on `rgb(19,25,37)` (11.85), light `rgb(51,65,85)` on `rgb(255,255,255)` (10.35), opaque, sibling fields identical, options exact |
-| **PIPEUI-03** — ingest block heading reads «Источники» | 25-02 | ✓ **SATISFIED** | `IngestSourcesSection.jsx:173`; `chrome:` test + `tests/admin.spec.js` `toHaveText('Источники')`; `rg 'ингеста' web/src` → 0 |
-| **PIPEUI-04** — eyebrow gone, tab type = content `h2`, wider gap, less empty space | 25-02 | ✓ **SATISFIED** | `chrome:` test: count 1 (`Админ`), `24px === 24px`, `column-gap 16px > 8`, `margin-top 0px`, `nav.top − main.top < 48`; `tests/admin.spec.js` `text-2xl` ×2 |
-| **THEME-01** — white labels on `primary`/`accent` fills and the active pill; `voting` keeps its dark label; ≥ 4.5 | 25-04 | ✓ **SATISFIED** | `theme-independent labels in both themes` (3 pairs × 2 themes): 5.70 / 5.36 / 9.31; G-9 / G-10 empty; five token-exact pill assertions |
-| **THEME-02** — semantic admin token family declared in `@theme` with light overrides + a test that fails on an undeclared used token | 25-03 (gates extended in 25-04) | ✓ **SATISFIED** (one recorded deviation) | `index.css:39-44` + light overrides `:150-155`; seven theme-independent roles `:55-61` with no override (G-3); gate G-0…G-13. **Deviation:** the requirement text lists `accent-ink` among the family; the phase deliberately **retired** it (D-10) after migrating all three consumers to `bg-accent-solid`/`text-on-solid`, and G-5 now forbids it. Every token actually *used* under `web/src` resolves, and the gate fails on any new undeclared one — the requirement's operative clause («a test fails when a token used by those components is undeclared») holds. |
+| **PIPEUI-01** — раздел «Настройка» на вкладке, sr-only заголовке и мобильном селекте; URL не меняется | 25-01 | ✓ **SATISFIED** | e2e `naming:` — тексты трёх поверхностей + ассерты неизменного URL/testid/`aria-label`; `AdminLayout.jsx:47`, `:68`, `:81`; `App.jsx:62`; `/admin/settings` — 0 |
+| **PIPEUI-02** — «Тип» и опции «Канал»/«Плейлист» читаемы в обеих темах, явная поверхность и текст | 25-03 | ✓ **SATISFIED** | e2e `select legible…`: 11.852 / 10.355, непрозрачно, соседние поля идентичны, опции точные |
+| **PIPEUI-03** — заголовок блока «Источники», слова «ингеста» нет | 25-02 | ✓ **SATISFIED** | `IngestSourcesSection.jsx:170-173`; e2e `chrome:`; «Источники ингеста» под `web/src` — 0 |
+| **PIPEUI-04** — eyebrow удалён, кегль вкладок = `h2`, шире gap, меньше пустоты сверху | 25-02 | ✓ **SATISFIED** | e2e `chrome:`: 1 узел «Админ» (shell), 24px === 24px, gap 16 > 8, `mt-0`, `nav.top − main.top < 48` |
+| **THEME-01** — белые подписи на `primary`/`accent`-заливках и активной пилюле; `voting` сохраняет тёмную подпись; ≥ 4.5 | 25-04 | ✓ **SATISFIED** | e2e (3 пары × 2 темы): 5.699 / 5.358 / 9.309; G-9/G-10 пусты; пять token-exact ассертов; `ActionButton.jsx:42` |
+| **THEME-02** — семейство объявлено в `@theme` с light-override и тест падает на необъявленном токене | 25-03 (+ гейты 25-04…25-07) | ✓ **SATISFIED** (одно зафиксированное отклонение) | `index.css:39-44` + `:171-176`; плоские роли `:59-82`; G-0…G-19. Отклонение: `accent-ink` выведен (D-10), G-5 его запрещает |
 
-**Orphaned requirements:** none.
-**Unmapped requirement IDs:** none.
+**Сироты:** нет. **Необъявленные ID:** нет.
 
-**Status semantics.** `REQUIREMENTS.md` already marks all six IDs `Complete`, and this report does not overturn that: each requirement's own must_haves are proven. The `gaps_found` verdict is about the **phase goal**, which is broader than the sum of the six requirement statements — its middle clause quantifies over *every* field and label, including the status pills, error panels, auth field errors, toast and the load-error action that no requirement ID owns. Requirement-level `Complete` and goal-level `not met` are therefore both true at once, and the gap is recorded rather than resolved by either document.
+## Измеренный контраст
 
-## Measured contrast evidence
+Пересчитано `tests/helpers/contrast.js`; тинты — `blendOver(colour, base, alpha)`.
 
-Recomputed in this pass with `tests/helpers/contrast.js` (`parseColor` → `relativeLuminance` → `contrastRatio`), compositing tints with the standard source-over formula.
+### G-14: подпись на тинте (порог 4.5)
 
-### Pairs the phase fixed (≥ 4.5:1 required)
-
-| Pair | Theme | Ratio | Verdict |
+| База | success-ink на `success/15` | voting-ink-on-tint на `voting/20` | danger-ink на `danger/10` |
 |---|---|---|---|
-| `ink-2` on `paper` (select value / field surface) | dark `#CBD5E1` on `#131925` | **11.85** | ✓ |
-| `ink-2` on `paper` | light `#334155` on `#FFFFFF` | **10.35** | ✓ |
-| `on-solid` on `primary-solid` (pill, primary CTA) | both `#FFFFFF` on `#7C3AED` | **5.70** | ✓ |
-| `on-solid` on `accent-solid` | both `#FFFFFF` on `#0E7490` | **5.36** | ✓ |
-| `on-solid` on `success-solid` | both `#FFFFFF` on `#15803D` | **5.02** | ✓ |
-| `on-solid` on `danger-solid` (floor) | both `#FFFFFF` on `#DC2626` | **4.829** | ✓ |
-| `voting-ink` on `voting` | both `#0F172A` on `#EAB308` | **9.31** | ✓ |
-| `danger-ink` on `paper` / `paper-2` | dark `#F87171` | **6.36 / 5.75** | ✓ (CR-01 fix) |
-| `danger-ink` on `paper` / `paper-2` | light `#B91C1C` | **6.47 / 5.90** | ✓ (CR-01 fix) |
+| тёмная `paper` | **7.801** | **9.419** | **5.837** |
+| тёмная `paper-2` | **7.044** | **8.473** | **5.283** |
+| тёмная `bg-app` | **8.778** | **10.532** | **6.407** |
+| светлая `paper` | **6.262** | **7.621** | **5.665** |
+| светлая `paper-2` | **5.795** | **7.057** | **5.201** |
+| светлая `bg-app` | **6.024** | **7.326** | **5.449** |
 
-### Pairs that still fail (open findings — light theme unless stated)
+### G-14: подпись на непрозрачной поверхности (порог 4.5)
 
-| Pair | Measured composite | Ratio | Threshold | Finding |
+| Роль | тёмная `paper` / `paper-2` / `bg-app` | светлая `paper` / `paper-2` / `bg-app` |
+|---|---|---|
+| `accent-text` | 7.248 / 6.550 / 7.900 | 5.358 / 4.891 / 5.121 |
+| `success-ink` | 10.098 / 9.126 / 11.007 | 7.130 / 6.509 / 6.815 |
+| `danger-ink` | 6.361 / 5.749 / 6.934 | 6.470 / 5.906 / 6.184 |
+
+### G-15: граница контрола (порог 3.0) против декоративного `rule`
+
+| Роль | тёмная `paper` / `paper-2` / `bg-app` | светлая `paper` / `paper-2` / `bg-app` |
+|---|---|---|
+| `field-border` `#64748B` | **3.698 / 3.342 / 4.030** | **4.759 / 4.344 / 4.548** |
+| `rule` (декор) | 1.425 | 1.485 |
+
+### GAP-25-5: `--color-primary` `#8B5CF6` как подпись — не покрыт ни одной матрицей
+
+| Поверхность | Тема | Ratio |
+|---|---|---|
+| `bg-app` `#F8FAFC` | светлая | **4.047** |
+| `paper` `#FFFFFF` | светлая | **4.234** |
+| `bg-surface`/`paper` `#131925` | тёмная | **4.156** |
+| `paper-2` `#1A2233` | тёмная | **3.756** |
+| `bg-app` `#0B0F17` | тёмная | 4.529 |
+| `bg-danger/10` над `bg-app` (`pipeline-config-save-retry`) | светлая | **3.566** |
+| `bg-danger/10` над `bg-app` (`pipeline-config-save-retry`) | тёмная | **4.186** |
+
+### Ранее падавшие пары — теперь проходят
+
+| Пара | Было | Стало |
+|---|---|---|
+| `success`-пилюля как текст на `bg-success/15` | 1.92 | **6.262** (светлая) / **7.801** (тёмная) |
+| `voting`-пилюля на `bg-voting/20` | 1.62 | **7.621** / **9.419** |
+| панель ошибок конфига на `bg-danger/10` | 3.17 | **5.665** / **5.837** |
+| ошибки auth-полей на белой карточке | 3.76 | **6.470** / **6.361** |
+| тост `bg-text-primary` + `text-text-primary` | 1.00 | **16.296** / **14.516** |
+| ссылка повтора `text-accent` на светлой `paper` | 2.43 | **5.358** |
+| край поля `border-rule` на светлой `paper` | 1.485 | **4.759** |
+
+## Data-Flow Trace (Level 4)
+
+| Артефакт | Переменная/токен | Источник | Реальные данные | Статус |
 |---|---|---|---|---|
-| `text-success` `#22C55E` on `bg-success/15` over `bg-app` (digest status pill) | `#D8F2E4` | **1.92** ✗ | 4.5 | **WR-02** (`AdminDigestPage.jsx:717`) |
-| `text-voting` `#EAB308` on `bg-voting/20` over `bg-app` (digest status pill) | `#F5ECCB` | **1.62** ✗ | 4.5 | **WR-02** (`AdminDigestPage.jsx:718`) |
-| `text-danger` `#EF4444` on `bg-danger/10` over `bg-app` (config error panel) | `#F7E8EA` | **3.17** ✗ | 4.5 | **WR-02** (`AdminPipelineConfigPage.jsx:333-364`) |
-| `text-danger` `#EF4444` on `bg-bg-surface` `#FFFFFF` (Login/Register field errors) | `#FFFFFF` | **3.76** ✗ | 4.5 | **WR-02** (`LoginPage.jsx:160/165/190`, `RegisterPage.jsx:141/172/177/202`) |
-| `text-text-primary` on `bg-text-primary` (admin toast) | same token both sides | **1.00** ✗ (both themes) | 4.5 | **WR-05** (`AdminDigestPage.jsx:808`; G-10 exemption at `test_semantic_token_coverage.js:566`) |
-| `text-accent` `#06B6D4` on light `paper` (load-error «Повторить загрузку») | `#FFFFFF` | **2.43** ✗ | 4.5 | 25-03 **must_have #12** (`IngestSourcesSection.jsx:186`; dark side is 7.25 ✓) |
+| `web/src/index.css` → компоненты | `--color-paper` … `--color-field-border` | единственный `@theme static` + единственный light-блок | да — e2e читает `getComputedStyle` на живой странице (11.852, 4.759, `rgb(100,116,139)`) | ✓ FLOWING |
+| `AdminLayout.jsx` → DOM | «Настройка» | статический JSX-литерал | да — тексты вкладки, `h1`, `<option>` | ✓ FLOWING (статический по природе) |
+| `IngestSourcesSection.jsx` → DOM | `loadError`, `data-testid` | `IngestSourcesError` из сервиса, e2e армит `armFailNextLoad` | да — реальный текст ошибки и действие | ✓ FLOWING |
+| `AdminDigestPage.jsx` тост | `toast` | `setToast` на путях отказа `:316`, `:366` | да — e2e армит `armFailNextDecision` | ✓ FLOWING |
+| `ActionButton.jsx` | `stateFill[state]`, `variantClass` | props `variant`/`state` | да — e2e читает вычисленный фон в idle и error | ✓ FLOWING |
 
-The same status pairs pass in the dark theme (6.71 / 6.84 / 4.71 / 5.10 respectively), which is exactly why the phase's own gates are green: G-7 iterates `paper`/`paper-2` × `ink`/`ink-2`/`muted`, and G-9/G-10 are structural token scanners. Neither family of checks covers a *status token used as text on a tint*.
+## Key Link Verification
 
-## Gaps Found
+| From | To | Via | Статус |
+|---|---|---|---|
+| `tests/unit/test_semantic_token_coverage.js` | `web/src/index.css` | `parseBlock('@theme…')` / `parseBlock('[data-theme="light"]')` | ✓ WIRED (89/0) |
+| `tests/unit/test_semantic_token_coverage.js` | `tests/helpers/contrast.js` | `require('../helpers/contrast')` — `blendOver` + `contrastRatio` | ✓ WIRED (G-14 proof) |
+| `tests/unit/test_semantic_token_coverage.js` | все `.jsx` под `web/src` | G-17 / G-18 / G-19 сканируют `sources()` | ✓ WIRED (anti-vacuum 16) |
+| `tests/admin-chrome.spec.js` | `web/src/components/AdminLayout.jsx` | `data-testid` трёх поверхностей + computed style | ✓ WIRED (11/11) |
+| `tests/admin-chrome.spec.js` | `web/src/index.css` | `getComputedStyle` + `contrastRatio` | ✓ WIRED |
+| `gotoAdmin` | `ThemeToggle.jsx` | `waitForFunction((dataset.theme ?? 'dark') === theme)` | ✓ WIRED (WR-04) |
+| `ActionButton.jsx` | `tests/admin-chrome.spec.js` | `bg-voting` / `bg-danger-solid` против вычисленного фона | ✓ WIRED |
 
-### GAP-25-1 — WR-02: status tokens as text on tints fail 4.5:1 in the light theme (goal clause GC-2)
+## Behavioral Spot-Checks
 
-**Severity:** goal-blocking (contrast of user-facing labels in the light theme)
-**Where:** `web/src/pages/AdminDigestPage.jsx:717-718`; `web/src/pages/AdminPipelineConfigPage.jsx:333-335`, `:344`, `:354`, `:362-364`; `web/src/pages/LoginPage.jsx:160`, `:165`, `:190`; `web/src/pages/RegisterPage.jsx:141`, `:172`, `:177`, `:202`
-**Measured:** 1.92:1, 1.62:1, 3.17:1, 3.76:1 (table above) — all below the 4.5:1 the phase itself adopts as its threshold.
-**Why it blocks the goal:** these are visible labels («ready»/«draft» pills, the config validation panel, auth field errors) in the light theme. The goal says *every field and label* is legible *in both themes*; four of them are not.
-**Deferred because (operator, `25-REVIEW-DISPOSITION.md`):** it needs its own `-ink` variant family plus an extension of G-7 to tint composites — a separate behavioural layer, «первый кандидат следующей фазы».
-**Fix direction (from `25-REVIEW.md`):** add themed `-ink` variants (`success-ink`, `voting-ink-on-tint`, reuse `danger-ink`) and make G-7 iterate the `-ink` on `/10`–`/20` composite over `paper` pairs.
+| Поведение | Команда | Результат | Статус |
+|---|---|---|---|
+| Все статические гейты и канон | `npm run test:js` | 89 pass / 0 fail | ✓ PASS |
+| Наименование, хром, читаемость в обеих темах | `npx playwright test tests/admin-chrome.spec.js --project=web` | 11 passed (53.2 s) | ✓ PASS |
+| Сборка | `npm run build` | exit 0 | ✓ PASS |
+| Матрица G-14/G-15 | node + `tests/helpers/contrast.js` | совпала с must_have 25-05 до третьего знака | ✓ PASS |
+| Пробы | `scripts/**/tests/probe-*.sh` | не найдено ни одного | SKIPPED (проб нет) |
 
-### GAP-25-2 — WR-05: the admin toast is 1.00:1 in both themes (goal clause GC-2)
+## Probe Execution
 
-**Severity:** goal-blocking
-**Where:** `web/src/pages/AdminDigestPage.jsx:808` — `rounded-full bg-text-primary … text-sm text-text-primary`
-**Measured:** `#F1F5F9` on `#F1F5F9` (dark) and `#0F172A` on `#0F172A` (light) = **1.00:1** in both themes. The digest-send confirmation is invisible.
-**Gate status:** deliberately exempted — `test_semantic_token_coverage.js:566` `if (token === 'bg-text-primary') continue`, so the suite stays green whether or not it is ever fixed.
-**Deferred because (operator):** «отдельный компонент», not a label-on-fill from THEME-01 and not a scrim; the exemption was kept to avoid widening the review-closure scope.
-
-### GAP-25-3 — 25-03 must_have #12 is unproven and provably failing (load-error action)
-
-**Severity:** must-have not proven; contributes to GC-2
-**Where:** `web/src/components/IngestSourcesSection.jsx:186` — `font-medium text-accent hover:underline`
-**Measured:** `#06B6D4` on light `paper` `#FFFFFF` = **2.43:1** (dark `paper` = 7.25 ✓). The must_have demands *both* the message and the action reach 4.5:1 on `paper` in both themes.
-**Root cause:** the must_have contradicts the same plan's prohibition («не трогать `text-accent` … known adjacent defect 3»). 25-03-SUMMARY recorded it as `NOT PROVEN — противоречие внутри плана/UI-SPEC` and asked the planner to resolve it; that resolution has not landed.
-**Note:** this finding is *not* attributable to a plan task failure — the executor could not satisfy both clauses at once without a new decision (`--color-accent-ink`-class token). It is recorded so the unproven must_have is not silently scored as proven.
-
-### GAP-25-4 — 25-03 must_have #10 is only partially proven (field `rule` edge)
-
-**Severity:** partial (no requirement failure, but the must_have is not fully measured)
-**Where:** `tests/admin-chrome.spec.js` never reads `border-color`; the `rule` edge is proven only statically by G-4 (`border-rule` resolving to a declared `--color-rule`).
-**Related open finding WR-06:** the declared light `rule` `#CBD5E1` is **1.48:1** against `paper` — below WCAG 1.4.11's 3:1 for UI component boundaries. This is a **non-text** criterion, so it does not by itself break the goal's «label legible» clause, but the deviation is recorded in `25-REVIEW.md` and is intentionally not claimed as conformant.
-
-### Open findings that are not goal-blocking (recorded, not scored)
-
-| ID | Finding | Why it does not change the verdict |
-|---|---|---|
-| WR-03 | `ActionButton` appends both `variantClass` and `stateClass`, so two fills coexist; today the state fill is dead, and a stylesheet-order flip would produce white-on-yellow 1.92:1 | Latent: the current cascade order makes the state unreachable; no shipped surface renders the failing pair. Verified `ActionButton.jsx:1-34` unchanged in this respect. |
-| WR-04 | `gotoAdmin` never awaits `data-theme`, so light-theme assertions race the `useEffect` | Test reliability only; 158 runs green, no flake observed in this pass. |
-| WR-06 | Light field edge 1.48:1 vs WCAG 1.4.11 3:1 | Non-text criterion, recorded deviation (see GAP-25-4). |
-| IN-01 | `THEME_DEPENDENT_LABELS` is half dead (`text-accent-ink`, `text-bg-app` have no consumers) | Cosmetic gate hygiene. |
-| IN-03 | G-7's `worst >= 4.829` floor is a change-detector, not an independent contrast gate | 4.5:1 is enforced by the main loop. |
-| IN-04 | `issue_url` rendered as a `Link` without scheme/origin validation | Backend-controlled data, outside THEME/PIPEUI scope. |
-| IN-05 | `.sr-only` re-declared although Tailwind v4 ships it | Harmless duplication; `naming:` still measures `width ≤ 1`. |
-
-### Closed findings (verified in this pass, not merely asserted)
-
-| ID | Closure commit | Verified state |
-|---|---|---|
-| CR-01 | `aa57dd7` (RED `c0e60cc`) | `rg 'oklch|\[#' web/src --glob '*.jsx'` → **0**; `danger-ink` on 7 lines (237, 253, 336, 338, 346, 356, 362); `--color-danger-ink` declared `index.css:50` + light `:156`; measured 6.36 / 5.75 / 6.47 / 5.90; G-11/G-12/G-13 green |
-| WR-01 | `b4369b7` | G-9b (fill list reaches `-solid`), G-11 (+ proof reproducing the 1.98:1 offender), G-12 (+ prefix proof), G-13; 76/0 |
-| IN-02 | `c0e60cc` | `parseColor` accepts `oklch()` (CSS Color 4 → oklab → linear sRGB) — this is what made CR-01 measurable |
+Не применимо: план и SUMMARY фазы не объявляют проб, `scripts/**/tests/probe-*.sh` в дереве отсутствует.
 
 ## Anti-Patterns Found
 
-| File | Pattern | Severity | Impact |
+| Файл | Паттерн | Severity | Влияние |
 |---|---|---|---|
-| — | `TBD` / `FIXME` / `XXX` in phase implementation files | none | `rg` clean |
-| — | Skipped or `.todo` tests in phase test files | none | 0; 4 specs + 76 unit assertions all execute |
-| — | Second `@theme` / second `[data-theme="light"]` block | none | 1 / 1 (G-0 green) |
-| — | Arbitrary-value colour utilities under `web/src` | none | 0 after CR-01 (G-12 green) |
-| `web/src/pages/AdminDigestPage.jsx:808` | Theme-dependent token used as both fill and label | **goal-blocking** | GAP-25-2 (WR-05) |
-| status-tint call sites | Theme-flat status token used as text on a themed tint | **goal-blocking** | GAP-25-1 (WR-02) |
+| — | `TBD` / `FIXME` / `XXX` | — | 0 |
+| — | `TODO` / `HACK` / «coming soon» / «not implemented» | — | 0 |
+| — | Пропущенные/`.todo` тесты в файлах фазы | — | 0; 11 e2e-кейсов и 89 unit-ассертов исполняются |
+| — | Пустые реализации (`return null`, `=> {}`) в изменённых компонентах | — | 0 |
+| — | Второй `@theme` / второй `[data-theme="light"]` | — | 1 / 1 |
+| — | Произвольные цвета (`text-[#…]`, `oklch(`), `!important`, inline-стили цвета | — | 0 (G-12 allow-list пуст) |
+| `web/src/pages/AdminPipelineConfigPage.jsx` | `text-primary` как роль подписи на `bg-app` и `bg-danger/10` | ⚠️ Warning → **GAP-25-5** | 3.566…4.529 — ниже 4.5 хотя бы в одной теме |
+| `tests/unit/test_semantic_token_coverage.js` | `STATUS_LABEL_TINTS` с захардкоженной альфой | ⚠️ Warning → **GAP-25-6** | Гейт не видит дрейф `/15 → /60` |
+| `tests/unit/test_semantic_token_coverage.js` | G-16 R1/R3 проверяют текст файла, а не поведение | ⚠️ Warning → **GAP-25-7** | Гейт не падает на удалении цветовых expect тоста и на альтернации в `hasText:` |
+| `web/src/components/TopicBallot.jsx` | `border-border` у `role="radio"` — 1.178 / 1.554 (WR-11) | ℹ️ Info | Единственный визуальный индикатор выбора ниже 3:1; вне must_have фазы (G-17 видит только `input\|select\|textarea`) |
+| `web/src/pages/AdminDigestPage.jsx:771` | провал отправки печатается `text-success-ink` (WR-12) | ℹ️ Info | Читаемо, но семантически неверный цвет исходу не противоречит контрастной клаузе |
+| `playwright.config.js` / `gotoAdmin` | условный страж темы, `reuseExistingServer` (WR-13) | ℹ️ Info | Риск флейка, не дефект фазы |
+| `tests/unit/test_semantic_token_coverage.js` | `console.log` в proof-замерах | ℹ️ Info | Отчёт о коэффициентах при падении; не production |
 
 ## Human Verification Required
 
-The twelve `verification: backstop` must_haves were never measured by an automated run. Per the UI-SPEC (§ Planner lift) a backstop the verifier cannot confirm abstains → `human_needed`, never a silent pass. The two 320px assertions from 25-02 and 25-04 are #1-#2 and #11-#12 below.
+Ниже — 12 backstop-пунктов и одно поведенческое утверждение. Viewport задавать явно; темы — обе (`data-theme="light"` и отсутствие атрибута = тёмная), моки `VITE_USE_MOCKS=true`.
 
-Set the viewport explicitly (`320 × 568`) on `/admin/pipeline` with mocks (`VITE_USE_MOCKS=true`), dark **and** light theme.
-
-| # | Plan | Test | Expected | Why human |
+| # | План | Что сделать | Ожидаемо | Почему человек |
 |---|---|---|---|---|
-| 1 | 25-02 | **320px: tab row** — inspect «Дайджест» and «Настройка» | Both labels on **one line**, inside the 44px (`min-h-11`) target, no clipping, no wrapping, no horizontal scroll; `sm:flex` hides the row below 640px, so verify the layout at the `sm` boundary too if the row is visible | `overflow` backstop; no automated 320px case exists |
-| 2 | 25-02 | **320px: mobile section select** | 44px height, painted `paper` fill, `ink` text, selected option text not clipped | `overflow` backstop; only computed colours are asserted, not geometry at 320px |
-| 3 | 25-03 | Partially filled form (kind chosen, id + label empty) | All three controls still paint opaque `paper`, `ink-2` value text, both themes | `partial` backstop |
-| 4 | 25-03 | 200-character id typed into `ingest-sources-id` | Scrolls inside the field; does not widen the `paper` block; does not clip «Добавить источник» | `long-text` backstop |
-| 5 | 25-03 | Initial load in flight | No rows, no skeleton; heading «Источники» and `paper` surface stay painted, both themes | `loading` backstop |
-| 6 | 25-03 | Row with id only (no label) | Enable/disable toggle and all row actions visible and legible | `partial` backstop |
-| 7 | 25-03 | 20 rows at 320px | Page extends vertically, no row clipped, no horizontal scrollbar | `overflow` backstop |
-| 8 | 25-03 | 0 / 1 / 20 rows | Same per-row `paper-2` surface and 8px rhythm; no singular/plural copy | `zero-one-many` backstop |
-| 9 | 25-03 | Long channel/playlist id in a row | Wraps or truncates inside the row; row actions stay in the viewport; text stays ≥ 4.5:1 | `long-text` backstop |
-| 10 | 25-03 | 320px: unsaved-changes dialog | Body wraps, both actions «Остаться» / «Уйти без сохранения» fully visible, no horizontal overflow | `overflow` backstop |
-| 11 | 25-04 | **320px: longest CTA label** («Уйти без сохранения») | Wraps inside the 44px min-height target without clipping | `overflow` backstop |
-| 12 | 25-04 | **320px: active nav pill label** | Renders fully inside the pill, `#FFFFFF` on `primary-solid`, no clipping | `overflow` backstop |
+| 1 | 25-02 | `/admin/pipeline`, строка вкладок на ≥ 640px и мобильный селектор на 320px | Подписи вкладок в одну строку в 44px без обрезки; на < 640px строка скрыта и работает `<select>` | backstop; формулировка «на 320px» противоречит `hidden … sm:flex`, автотеста нет |
+| 2 | 25-02 | 320px: мобильный `<select>` | 44px, `paper`, `ink`, опция не обрезана | backstop; e2e мерит только цвета/границу на 480px |
+| 3 | 25-03 | Частично заполненная форма (тип выбран, id и название пусты) | Все три контрола — непрозрачная `paper`, текст `ink-2`, обе темы | partial backstop |
+| 4 | 25-03 | 200-символьный id в `ingest-sources-id` | Скроллится внутри поля, блок не расширяется, CTA не обрезан | long-text backstop |
+| 5 | 25-03 | Первичная загрузка в полёте | Нет строк и скелетона; «Источники» и `paper` на месте | loading backstop, инжектора нет |
+| 6 | 25-03 | Строка только с id | Переключатель и действия строки видимы и читаемы | partial backstop |
+| 7 | 25-03 | 20 строк на 320px | Вертикальное удлинение, без обрезки и горизонтальной прокрутки | overflow backstop |
+| 8 | 25-03 | 0 / 1 / 20 строк | Одинаковая `paper-2` и ритм 8px; без singular/plural | zero-one-many backstop |
+| 9 | 25-03 | Длинный id канала/плейлиста | Перенос/усечение внутри строки, действия во вьюпорте, ≥ 4.5:1 | long-text backstop |
+| 10 | 25-03 | 320px: диалог несохранённых изменений | Оба действия полностью видны, без горизонтального переполнения | overflow backstop |
+| 11 | 25-04 | 320px: «Уйти без сохранения» | Переносится в 44px-цели без обрезки | overflow backstop |
+| 12 | 25-04 | 320px: активная пилюля навигации | Полностью внутри пилюли, белая на `primary-solid` | overflow backstop |
+| 13 | 25-04 | `/voting`, выбрать радио, нажать `confirm-vote`, прочитать пару в `loading` | Цвет подписи не меняется, только `opacity` | поведение в полёте не исполняется ни одним тестом |
 
-Additionally, two behaviours are proven by **reading** rather than by measurement (both flagged `human_judgment: true` in their SUMMARYs):
+## Gaps Summary
 
-| # | Plan | Behaviour | Why human |
-|---|---|---|---|
-| 13 | 25-04 | In-flight button label keeps its colour (only opacity changes) | `stateClass.loading = 'cursor-wait opacity-80'` contains no colour token; no e2e measures colour mid-flight |
-| 14 | 25-03 | Empty-control `rule` edge is actually painted | only static through G-4; `border-color` never read at runtime (GAP-25-4) |
+Goal-backward картина: нaming, хром, семейство токенов, 18 статусных подписей, тост, accent-ссылки и граница поля — **в дереве, измерены и закреплены тестами**. Пять success criteria ROADMAP выполнены; все шесть требований `SATISFIED`; блокирующих anti-pattern нет.
 
-## Assessment
+Открыты три пункта, каждый — про доказанность, а не про сломанную функцию:
 
-- **All four plans delivered what they promised.** Every must_have with an automated proof is verified; the tracing slice, chrome geometry, token family, readable «Тип» and the `-solid`/scrim migrations are real in the tree and reproducible from a clean port. `npm test` = 158 passed, `npm run test:js` = 76 passed, `--list` = 152 tests in 6 files, build green.
-- **The phase goal is nevertheless not fully achieved.** Its middle clause — «every field and label legible in both themes» — has measurable counter-examples in the light theme (1.92, 1.62, 3.17, 3.76), an invisible admin toast (1.00 in both themes), and one plan must_have (#12, 2.43) that cannot be proven without resolving an internal plan contradiction. `status: gaps_found`.
-- **What is *not* at fault:** the naming clause, the chrome clause, all six requirement IDs, and the token-coverage root-cause repair. Scoring those as failed would be as dishonest as scoring the legibility clause as passed.
-- **Recommended next action:** open the follow-up phase that WR-02/WR-05/25-03-#12 already point at — a themed status-ink family (`success-ink`, `voting-ink-on-tint`, reuse `danger-ink`) plus a G-7 extension to tint composites and removal of the `bg-text-primary` carve-out in G-10. That single change closes GAP-25-1, GAP-25-2 and GAP-25-3 together, because all three are the same defect: a theme-flat token used as a label on a theme-dependent surface.
+1. **GAP-25-5 (GC-2, измеримый дефект).** `--color-primary` как подпись не проходит 4.5:1 в большинстве баз (3.566…4.529), включая две кнопки раздела «Настройка». Ни один план фазы этого не касался, поэтому это гэп *цели*, а не проваленная задача плана.
+2. **GAP-25-6 (25-05 #3, `partial`).** Рабочие пары `-ink`/тинт проходят (5.201…10.532), но G-14 измеряет захардкоженную альфу 0.15 вместо реального класса — мутация `/60` не роняет гейт.
+3. **GAP-25-7 (25-06 #6, `partial`).** Тост сегодня действительно читается по цвету в e2e (16.296/14.516), но R3 и R1 гейта G-16 не могут упасть на реальных регрессиях.
+
+Остаточные замечания ревью `WR-11` (граница радиокнопки 1.178/1.554), `WR-12` (провал отправки зелёным), `WR-13` (стабильность харнесса) и `IN-01…IN-05` не относятся к must_have фазы и на вердикт не влияют; `WR-11` стоит взять в ближайшую UI-фазу — это тот же класс дефекта, что закрывал 25-07.
+
+---
+
+_Verified: 2026-10-21T20:56:00Z_
+_Verifier: Claude (gsd-verifier)_
