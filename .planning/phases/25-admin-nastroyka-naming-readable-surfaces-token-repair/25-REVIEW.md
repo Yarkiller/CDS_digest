@@ -1,275 +1,237 @@
 ---
 phase: 25-admin-nastroyka-naming-readable-surfaces-token-repair
-reviewed: 2026-10-21T13:45:00Z
+reviewed: 2026-10-21T17:35:00Z
 depth: standard
-scope: "PIPEUI-01…04, THEME-01/02; tree at working copy, diff base 38f59c39d83919bb56ff7fdc814a1a59c569512e^"
-files_reviewed: 17
+scope: "phase 25 end-to-end (25-01…25-07); diff base 0121d7a..HEAD; 21 source files"
+files_reviewed: 21
 files_reviewed_list:
-  - playwright.config.js
-  - tests/admin-chrome.spec.js
-  - tests/admin.spec.js
+  - web/src/index.css
   - tests/helpers/contrast.js
   - tests/unit/test_semantic_token_coverage.js
+  - tests/admin-chrome.spec.js
+  - tests/admin.spec.js
+  - playwright.config.js
   - web/src/components/ActionButton.jsx
   - web/src/components/AdminLayout.jsx
   - web/src/components/AppShell.jsx
+  - web/src/components/ErrorPanel.jsx
   - web/src/components/IngestSourcesSection.jsx
+  - web/src/components/IngestionScheduleSection.jsx
+  - web/src/components/SearchPill.jsx
   - web/src/components/ServiceUnavailable.jsx
   - web/src/components/UnsavedChangesDialog.jsx
-  - web/src/index.css
   - web/src/pages/AdminDigestPage.jsx
   - web/src/pages/AdminPipelineConfigPage.jsx
   - web/src/pages/KnowledgePage.jsx
   - web/src/pages/LoginPage.jsx
   - web/src/pages/RegisterPage.jsx
+  - web/src/pages/VotingPage.jsx
 findings:
-  critical: 1
-  warning: 6
-  info: 5
-  total: 12
+  critical: 0
+  warning: 7
+  info: 6
+  total: 13
 status: issues_found
 ---
 
 # Phase 25: Code Review Report (Настройка / readable surfaces / token repair)
 
-**Reviewed:** 2026-10-21T13:45:00Z
+**Reviewed:** 2026-10-21T17:35:00Z
 **Depth:** standard
-**Files Reviewed:** 17
+**Files Reviewed:** 21
 **Status:** issues_found
-**Scope:** `38f59c39…^..worktree` — PIPEUI-01…04 (rename, chrome geometry, «Источники» heading) and THEME-01/02 (semantic token family, theme-independent fill labels, `--color-scrim`).
+**Scope:** сквозное ревью фазы 25 (25-01…25-07), `0121d7a..HEAD`, с усиленным вниманием к трём gap-closure планам (25-05, 25-06, 25-07) и к вопросу «гейт способен упасть?».
 
 ## Summary
 
-The core of the phase is genuinely implemented, and I verified it against the artefact rather than the diff prose:
+Основная работа фазы сделана и проверена не по описанию, а по артефактам:
 
-- `npm run test:js` → **61 passed, 0 failed**, including the eleven new `G-0…G-10` gates.
-- `npm run build --prefix web` → built, and the emitted stylesheet really contains `.bg-paper{background-color:var(--color-paper)}`, `.bg-paper-2`, `.text-ink-2`, `.text-muted`, `.border-rule`, `.bg-scrim`, `.text-on-solid`, `.text-voting-ink`. The «tokens Tailwind will not generate» class of defect is closed for the new family — no finding there.
-- Cascade check in `web/dist/assets/index-*.css`: `[data-theme=light]` is emitted inside `@layer base` (index 8468) *after* the `@layer theme` token block (index 3757), so the light overrides do win over `:root`, and the six themed tokens are all overridden with non-identical values.
+- `npm run test:js` → **89 passed, 0 failed** (включая все гейты G-0…G-19).
+- `web/src/index.css` действительно объявляет четыре новых роли (`--color-success-ink`, `--color-voting-ink-on-tint`, `--color-accent-text`, `--color-field-border`); три первые переопределены под `[data-theme="light"]`, `field-border` — плоская по замыслу, и `G-3`/`G-15` это удерживают.
+- Миграции семантически верны там, где их видно: статусные подписи (`text-success-ink`, `text-voting-ink-on-tint`, `text-danger-ink`), accent-подписи (`text-accent-text`) и границы полей (`border-field-border`) применены к своим ролям; разделители (`border-rule`) остались декоративными; `admin-toast` переехал на `bg-paper-2`/`text-ink`/`border-rule` (1.00:1 → 9.13/6.51:1); `ActionButton` теперь эмитит ровно один fill.
+- `blendOver()` арифметически корректен для всех заявленных входов: alpha 0/1 нормализуется в `rgb(...)`, собственная альфа тинта игнорируется (как и задокументировано), полупрозрачная база отвергается, `NaN`/вне-диапазона альфа бросает, округление по каналам совпадает с sRGB-композитингом браузера (проверено на закреплённых 216/242/228 и на 1.925).
+- Порядок альтернаций в `UTILITY_PATTERN` **корректен**: `paper-2` до `paper`, `ink-2` до `ink`, `voting-ink-on-tint`/`success-ink`/`accent-text` до `ink`, поэтому `text-success-ink` не читается как `text-success`, а `border-field-border` разрешается в `field-border`. Претензий нет.
 
-The rename is honest too: the three surfaces (tab, sr-only h1, mobile `<option>`) are «Настройка», the route and every `data-testid` are untouched, and `tests/admin.spec.js` was updated rather than bypassed.
+Чего фаза не закрыла — это **доказуемость** части гейтов и один системный пробел в ролях подписей:
 
-What the phase did **not** close is the second half of «readable surfaces». `IngestSourcesSection.jsx` still paints its destructive action and every add-error message with hard-coded `oklch()` values that the new token gate cannot see — measured **1.98:1** on the row surface in the default dark theme (CR-01). Around it, the legacy status tokens (`--color-danger`, `--color-success`, `--color-voting`) are still used as *text* on tints and on white, which fails 4.5:1 in light theme (WR-02, WR-05), and the new lint gates have blind spots that would let the exact regressions this phase fixed walk back in (WR-01).
+1. Три гейта (G-16 R1, G-16 R3, G-14) остаются зелёными на регрессиях, которые они обязаны ловить. Это проверено мутациями в песочнице-копии (репозиторий не менялся): удаление всех цветовых проверок тоста, альтернация внутри `hasText:`/`getByRole({name:})` и смена `bg-success/15` на `/60` не роняют `npm run test:js`.
+2. `--color-primary` используется как роль подписи в 100+ местах (включая шесть сайтов этой фазы), но не входит ни в одну матрицу контраста: 3.756…4.234:1 — ниже 4.5 в обеих темах.
+3. Единственный визуальный индикатор радио — декоративная `border-border` (1.18 светлая / 1.55 тёмная): G-17 определяет «control» как `input|select|textarea` и слепа к `role="radio"`.
 
-## Critical Issues
+Критических находок (уязвимость, потеря данных, падение) нет. Ниже — предупреждения и информационные пункты.
 
-### CR-01: The «Удалить» label and the add-error copy are hard-coded `oklch()` and measure ≈2:1 in the default dark theme
+Нумерация продолжает предыдущий раунд (`WR-07…`, `IN-06…`), чтобы не конфликтовать с `25-REVIEW-DISPOSITION.md`, где уже зафиксированы `CR-01`, `WR-01…WR-06`, `IN-01…IN-05`.
 
-**File:** `web/src/components/IngestSourcesSection.jsx:237`, `:253`, `:336`, `:338`, `:346`, `:356`, `:362`
-**Issue:** Every destructive/error colour in this file bypasses the token layer with arbitrary values:
+## Narrative Findings (AI reviewer)
 
-- `text-[oklch(45%_0.14_25)]` resolves to `rgb(147, 43, 42)`. Against the row surface the phase just made opaque (`bg-paper-2` → `#1A2233`) that is **1.98:1**; against the section surface (`bg-paper` → `#131925`) it is **2.20:1**. The label of the delete button and the `role="alert"` row error are therefore effectively unreadable in dark, which is the default theme (`--color-bg-app: #0B0F17`).
-- The diff made this slightly worse: `bg-paper-2/40 → bg-paper-2` (`:219`, `:263`) moved the row background from an over-`paper` blend toward the lighter elevated value, so the contrast of the hard-coded dark red dropped.
-- The validation panel is a *light* surface in a dark theme: `bg-[oklch(96%_0.03_25)]` = `rgb(255, 235, 232)` with `border-[oklch(70%_0.12_25)]` = `rgb(223, 127, 120)`. It is legible (6.99:1) but it is exactly the "hard-coded colour that ignores the theme" pattern this phase exists to remove, and it is invisible to `G-4`/`G-6`/`G-9` because those gates only look for the six family names.
-- `G-4` claims "every semantic utility used under web/src resolves to a declared token" — arbitrary-value utilities such as `text-[oklch(…)` and `bg-[oklch(…)` are not matched at all, so the suite stays green on all of this.
+### Critical Issues
 
-**Fix:** Add the missing themed ink/line roles and use them; also make the gate able to see arbitrary colour values.
+Не найдено. Ни одна находка не даёт уязвимости, потери данных или падения; контрастные дефекты ниже классифицированы как warning (см. обоснование в WR-07).
 
-```css
-/* web/src/index.css — @theme (dark defaults) */
---color-danger-ink: #FCA5A5;   /* 8.38:1 on --color-paper-2 */
---color-danger-line: #7F1D1D;
---color-success-ink: #4ADE80;  /* 9.13:1 on --color-paper-2 */
---color-voting-ink-on-tint: #FDE68A;
+### Warnings
 
-/* [data-theme="light"] */
---color-danger-ink: #B91C1C;   /* 6.47:1 on #FFFFFF */
---color-danger-line: #FCA5A5;
---color-success-ink: #166534;  /* 6.02:1 on the success/15 tint */
---color-voting-ink-on-tint: #713F12; /* 7.33:1 on the voting/20 tint */
-```
+#### WR-07: `text-primary` — самая частая роль подписи — не проходит 4.5:1 и не покрыта ни одним гейтом
 
-```jsx
-// web/src/components/IngestSourcesSection.jsx
-<button
-  type="button"
-  className="inline-flex min-h-11 items-center rounded-xl border border-danger-line px-3 text-sm font-normal text-danger-ink disabled:cursor-not-allowed disabled:opacity-45"
-  disabled={rowBusy}
-  onClick={() => onDelete(row)}
->
-  Удалить
-</button>
-...
-<p role="alert" className="mt-2 text-sm text-danger-ink">{rowErrors[id]}</p>
-...
-<div className="mt-4 rounded-2xl border border-danger-line bg-paper-2 p-4">
-  <h3 className="font-sans text-2xl font-semibold text-danger-ink">Проверьте данные источника</h3>
-```
+**File:** `web/src/components/ActionButton.jsx:44`; `web/src/pages/AdminDigestPage.jsx:541`, `:728`, `:748`, `:776`, `:849`; `web/src/pages/AdminPipelineConfigPage.jsx:242`, `:370`; `web/src/pages/KnowledgePage.jsx:363`; `web/src/pages/VotingPage.jsx:67`
+**Issue:** `--color-primary` (`#8B5CF6`, без light-переопределения) используется как **текстовая** роль на прозрачном фоне и на карточках:
 
-Add the new names to `THEMED` in `tests/unit/test_semantic_token_coverage.js` so `G-1/G-2/G-7` cover them, and add a `G-11` that forbids colour-valued arbitrary utilities:
-
-```js
-const ARBITRARY_COLOR = /(?<![\w-])(?:bg|text|border|ring|outline|divide|fill|stroke)-\[[^\]]*(?:oklch|oklab|rgba?\(|color-mix|#[0-9a-f]{3,8})[^\]]*\]/gi
-```
-
-**Note:** this code predates the phase (the diff left these lines untouched), so it is not a regression *introduced* here — but it is in a file the phase rewrote, it is the surface the phase is named after, and the phase's own 4.5:1 gate is advertised as covering it while it structurally cannot.
-
-## Warnings
-
-### WR-01: `G-9` compares one string literal at a time, and its fill list omits every `-solid` token — the exact regression this phase fixed can return green
-
-**File:** `tests/unit/test_semantic_token_coverage.js:70`, `:86-111`, `:332-352`
-**Issue:** Two independent holes in the gate that is supposed to prevent `bg-primary text-text-primary` from coming back:
-
-1. `FILL_TOKENS = ['bg-primary', 'bg-accent', 'bg-success', 'bg-danger', 'bg-voting']`. `tokenSet()` uses exact token equality, so `bg-primary-solid` is *not* a fill for this gate. A future `bg-primary-solid text-text-primary` (the most likely shape of the same mistake, one suffix away) passes silently.
-2. The scan iterates `for (const literal of stringLiterals(source))` — one literal at a time. The dominant pattern in this codebase is a class list assembled from several literals (`ActionButton` joins `variantClass` + `stateClass`; `AdminDigestPage.jsx:696-699` and `:714-719` join arrays). A fill in one literal and a theme-dependent label in another are never compared, though the file comment asserts "a class list can only live in a string".
-
-**Fix:** Close hole 1 immediately (five tokens, no false positives):
-
-```js
-const FILL_TOKENS = [
-  'bg-primary', 'bg-primary-solid',
-  'bg-accent', 'bg-accent-solid',
-  'bg-success', 'bg-success-solid',
-  'bg-danger', 'bg-danger-solid',
-  'bg-voting',
-]
-```
-
-For hole 2, either scan the statically joined list (`className={\[...\].join(' ')}` arrays can be reduced by concatenating their literal elements inside the bracket expression), or state the limitation in the docstring and cover the composed components in Playwright (`classTokens()` already exists in `admin-chrome.spec.js`). Do not leave the comment claiming completeness that the code does not have.
-
-### WR-02: Status tokens used as *text* on tints/white still fail 4.5:1 in light theme, and the new gate cannot see them
-
-**File:** `web/src/pages/AdminDigestPage.jsx:717-718`; `web/src/pages/AdminPipelineConfigPage.jsx:333-335`, `:344`, `:354`, `:362-364`; `web/src/pages/LoginPage.jsx:160`, `:165`, `:190`; `web/src/pages/RegisterPage.jsx:141`, `:172`, `:177`, `:202`
-**Issue:** The phase created a correct themed family for `paper/ink/muted/rule` but left the *semantic status* colours untouched and theme-blind. Measured with the phase's own helper:
-
-| pair | light | dark |
+| поверхность | тема | ratio |
 |---|---|---|
-| `text-success` on `bg-success/15` (`#22C55E` on `#D8F2E4`) | **1.92:1** | 6.71:1 |
-| `text-voting` on `bg-voting/20` (`#EAB308` on `#F5ECCB`) | **1.62:1** | 6.84:1 |
-| `text-danger` on `bg-danger/10` (`#EF4444` on `#F7E8EA`) | **3.17:1** | 4.71:1 |
-| `text-danger` on `bg-bg-surface` (`#EF4444` on `#FFFFFF`, Login/Register field errors) | **3.76:1** | n/a |
+| `bg-app` `#F8FAFC` | light | **4.047** |
+| `paper` `#FFFFFF` | light | **4.234** |
+| `bg-surface` `#131925` | dark | **4.156** |
+| `paper-2` `#1A2233` | dark | **3.756** |
+| `bg-app` `#0B0F17` | dark | 4.529 |
 
-The general rule the family encodes is missing for status colours: **a tint of a theme-flat token over a theme-dependent background produces a theme-dependent surface**, so the label on it must be themed as well. `G-7` only loops over `paper/paper-2 × ink/ink-2/muted`, so none of these pairs is gated.
-
-**Fix:** Introduce themed `-ink` variants (see CR-01's snippet) and use them wherever a status token is a *label* rather than a fill. For the digest pills:
-
-```jsx
-item.material_status === 'ready'
-  ? 'bg-success/15 text-success-ink'
-  : 'bg-voting/20 text-voting-ink-on-tint'
-```
-
-and for the error panels `text-danger-ink` with `border-danger-line`. Then extend `G-7` to iterate the tint pairs (`-ink` on the matching `/10`–`/20` composite over `paper`), not just the six-family matrix.
-
-### WR-03: `ActionButton` emits two competing fills; the state fill is dead code today and a 1.92:1 hazard if the emission order ever changes
-
-**File:** `web/src/components/ActionButton.jsx:1-5`, `:18-22`, `:28-34` (consumer: `web/src/pages/VotingPage.jsx:517-521`)
-**Issue:** `variantClass` and `stateClass[state]` are both appended to the same `className`, so for `variant="voting"` + `state="success"|"error"` the element carries `bg-voting text-voting-ink` **and** `bg-success-solid text-on-solid` / `bg-danger-solid text-on-solid`. Which pair paints is decided by stylesheet order, not by class order. In the built stylesheet the order is:
-
-```
-.bg-danger-solid (16719) < .bg-paper (16958) < .bg-primary-solid (17104) < .bg-success-solid (17394) < .bg-voting (17737)
-.text-on-solid  (21156) < .text-voting-ink (21479)
-```
-
-So today the variant wins and the success/error state paints nothing — voting feedback silently loses its green/red affordance (the copy still changes). If Tailwind's sort ever flips, the same markup becomes white-on-yellow (**1.92:1**), which `admin-chrome.spec.js` itself says "must fail here".
-
-**Fix:** Make the state override the variant explicitly so exactly one fill is emitted:
-
-```js
-const stateFill = {
-  error: 'bg-danger-solid text-on-solid',
-  success: 'bg-success-solid text-on-solid',
-}[state]
-const stateExtra = state === 'loading' ? 'cursor-wait opacity-80' : ''
-const fill = stateFill ?? variantClass
-
-className={[base, 'disabled:cursor-not-allowed disabled:opacity-55', fill, stateExtra, className].join(' ')}
-```
-
-### WR-04: The light-theme assertions never wait for `data-theme` to land, so they can read the dark sheet
-
-**File:** `tests/admin-chrome.spec.js:26-41`, `:176-235`, `:238-300`
-**Issue:** `gotoAdmin()` sets the storage key before load, which is correct, but `ThemeToggle.jsx:6-18` applies `document.documentElement.setAttribute('data-theme', 'light')` in a `useEffect`, i.e. after mount, not before first paint. The helper then only awaits `document.fonts.ready` — it never asserts the attribute is present. The equality assertions (`rgb(51, 65, 85)` / `rgb(255, 255, 255)`) and the `--color-paper` probe are therefore racing the effect; on a slow first paint the spec reads the dark sheet and fails (or, worse, the `not.toBe('rgba(0, 0, 0, 0)')` guard gives a misleading "must paint an opaque surface" message for what is actually a theme race).
-
-**Fix:** Await the attribute as part of `gotoAdmin`:
-
-```js
-if (theme === "light") {
-  await expect(page.locator("html")).toHaveAttribute("data-theme", "light");
-} else {
-  await expect(page.locator("html")).not.toHaveAttribute("data-theme", "light");
-}
-```
-
-### WR-05: The admin toast paints `text-text-primary` on `bg-text-primary` — 1.00:1 in both themes
-
-**File:** `web/src/pages/AdminDigestPage.jsx:808`
-**Issue:** `className="… rounded-full bg-text-primary px-4 py-2 text-sm text-text-primary"`. Fill and label are the same token in both themes (dark `#F1F5F9` on `#F1F5F9`; light `#0F172A` on `#0F172A`) → **1.00:1**. The digest send confirmation ("Выпуск опубликован", "Не сохранено") is invisible.
-
-`G-10` deliberately exempts this exact token (`if (token === 'bg-text-primary') continue`, `test_semantic_token_coverage.js:362-364`) as a "known adjacent defect", so the suite will stay green whether or not it is ever fixed. That exemption is also what makes it invisible to review tooling, so it is recorded here as a warning rather than silently accepted.
-
-**Fix:** Use the alias family, which inverts correctly in both themes and passes `G-6` (no `bg-ink`) and `G-9` (no theme-dependent label on a fill):
-
-```jsx
-className="fixed bottom-24 left-1/2 z-50 -translate-x-1/2 rounded-full border border-rule bg-paper-2 px-4 py-2 text-sm text-ink"
-```
-
-and drop the `bg-text-primary` carve-out from `G-10` once this lands.
-
-### WR-06: The light-theme field edge is 1.48:1 — the deviation is pinned as "by design" but still misses WCAG 1.4.11's 3:1
-
-**File:** `web/src/index.css:149` (`--color-rule: #CBD5E1`), `tests/unit/test_semantic_token_coverage.js:318-329`
-**Issue:** `G-8` pins the light `rule ≠ border` deviation as deliberate because `border` on paper would be **1.23:1**, but the chosen value only reaches **1.48:1** against `--color-paper` (`#CBD5E1` on `#FFFFFF`), and the fill difference is **1.06:1**. The `<select>`/`<input>`/`<textarea>` fields in light theme (e.g. `IngestSourcesSection` form, `AdminLayout` select) are therefore identified only by a boundary below the 3:1 required by WCAG 1.4.11 for user-interface components, while the test message reads as if the boundary question were settled.
-
-**Fix:** Give fields their own boundary token instead of overloading the decorative rule:
+`text-sm` (14px, вес 500) не является «large text», поэтому порог — 4.5:1. Все перечисленные сайты (ссылки «Сделать ready», «Превью материала», «Повторить превью», «К выпуску →», «Обновить список», secondary-вариант `ActionButton`, «Сбросить фильтр») ниже порога минимум в одной из тем. Это ровно тот дефект, который фаза закрыла для `text-accent` (2.43:1) — та же семья, тот же базовый токен в роли подписи, — но `G-19` банит только `accent`, а `G-7` перебирает лишь `ink`/`ink-2`/`muted`/`danger-ink`. Более того, комментарий в `index.css:80-82` декларирует: «labels ride `ink`, `ink-2` or the `-ink` label roles» — `text-primary` этому контракту не соответствует, и ничто этого не проверяет.
+**Fix:** ввести отдельную роль подписи и перевести на неё текстовые употребления; значения проверены на всех трёх базах:
 
 ```css
-/* @theme */        --color-field-border: #4B5563;  /* dark */
-/* [data-theme="light"] */ --color-field-border: #64748B; /* 4.76:1 on paper */
+/* @theme */                 --color-primary-text: #A78BFA; /* 7.05 / 6.47 / 5.84 на bg-app / paper / paper-2 */
+/* [data-theme="light"] */   --color-primary-text: #6D28D9; /* 6.79 / 7.11 / 6.49 там же */
 ```
 
-Use `border-field-border` on form controls only, keep `--color-rule` for card/divider decoration, and add the pair to `G-7` with a ≥3:1 floor for non-text contrast. At minimum, make `G-8`'s message state the achieved ratio (1.48) rather than implying conformance.
+Добавить пару в `THEMED` и в матрицу `G-7`, а `text-primary` внести в `FORBIDDEN_*`-скан по аналогии с `G-19` (заливки `bg-primary` остаются легальными). Минимум — расширить `G-7` на `text-primary`, чтобы текущее значение хотя бы перестало быть невидимым.
 
-## Info
+#### WR-08: `G-16` R3 («тост проверяется цветом») не может упасть — проверка идёт по тексту файла, а не по тосту
 
-### IN-01: `THEME_DEPENDENT_LABELS` is half dead
-
-**File:** `tests/unit/test_semantic_token_coverage.js:73`
-**Issue:** `['text-text-primary', 'text-accent-ink', 'text-bg-app']` — `accent-ink` no longer exists anywhere (`G-5` forbids it) and `text-bg-app` has no consumers after the voting migration. Only `text-text-primary` is actually enforced, so the list advertises three bans and delivers one.
-**Fix:** Prune the dead entries, or add a positive assertion that each forbidden label token exists somewhere in `web/src` (which would fail loudly when the token is retired).
-
-### IN-02: `contrastRatio()` cannot measure the colours CR-01/WR-02 need
-
-**File:** `tests/helpers/contrast.js:19-62`
-**Issue:** `parseColor()` accepts only hex and `rgb()/rgba()` with numeric channels. The values these findings need are outside that grammar: the computed `color` of `text-[oklch(45%_0.14_25)]` is serialised in the `oklch()` colour space, and `bg-success/15` computes to an alpha-bearing `color-mix()` result — both throw `unsupported colour`. So the natural next test ("the delete label clears 4.5:1") throws instead of asserting, and an author may be tempted to skip it.
-**Fix:** Resolve the colour through the browser instead of re-implementing colour science in Node:
+**File:** `tests/unit/test_semantic_token_coverage.js:555-570` (в паре с `tests/admin-chrome.spec.js:148-156`)
+**Issue:** `toastReaders` отбирает спеки, где встречается строка `admin-toast`, после чего требует, чтобы **в этом же файле** встречались подстроки `backgroundColor` и `borderTopColor`:
 
 ```js
-// in a Playwright helper
-const resolved = await locator.evaluate((el) => {
-  const c = document.createElement("canvas").getContext("2d")
-  c.fillStyle = getComputedStyle(el).color
-  return c.fillStyle // normalised to #rrggbb / rgba()
-})
+const missing = ['backgroundColor', 'borderTopColor'].filter(
+  (property) => !source.includes(property),
+)
 ```
 
-or extend `parseColor` with `oklch()/oklab()/color()` plus percentage channels.
+В `admin-chrome.spec.js` обе подстроки уже есть в хелпере `styleTriple()` (`:148-156`, `backgroundColor: cs.backgroundColor`) и в тестах pill/CTA. Поэтому условие выполняется независимо от того, читает ли кто-нибудь цвета тоста.
 
-### IN-03: `G-7`'s `worst >= 4.829` floor is a change-detector, not a contrast gate
+Проверено мутацией: в копии спеки блок `const toastPair = await styleTriple(toast)` … `toBeGreaterThanOrEqual(4.5)` (525 символов, включая все три цветовых `expect`) заменён на `await expect(toast).toHaveText("Не сохранено")` — `npm run test:js` остался **зелёным**, `G-16` не упал. То есть заявленный в комментарии контракт «R3: `admin-toast` is checked at least once, by its computed colours» кодом не обеспечен.
+**Fix:** привязать проверку к самому тосту, а не к файлу — например, искать `getByTestId("admin-toast")` и требовать, чтобы `backgroundColor`/`borderTopColor` встречались в пределах ±15 строк от него, либо (надёжнее) перенести инвариант в спеку: `assert` внутри `expect(toast).toHaveJSProperty`/отдельный `test` в `admin-chrome.spec.js`, который читает оба свойства, — а гейт пусть проверяет наличие именно такой композиции (`admin-toast` + `borderTopColor` в одном `evaluate`-блоке).
 
-**File:** `tests/unit/test_semantic_token_coverage.js:274-280`
-**Issue:** The value is recomputed from the same declarations it is guarding, so it only trips on a token edit larger than the 0.001 margin; the loop above already enforces 4.5. It reads as an independent safety margin but cannot catch a drift to e.g. `#DC2625`.
-**Fix:** Either drop it, or pin the fact it actually means — `assert.equal(dark.get('--color-danger-solid'), '#DC2626')` — so the intent ("this hex must not move") is explicit.
+#### WR-09: `G-16` R1 не видит альтернацию внутри `hasText:` и `getByRole({ name: … })` — самый вероятный способ схлопнуть два исхода
 
-### IN-04: `issue_url` is rendered as a link without validating its scheme or origin
-
-**File:** `web/src/pages/AdminDigestPage.jsx:444`, `:775`
-**Issue:** `setIssueUrl(typeof result.issue_url === 'string' ? result.issue_url : '')` and `<Link to={issueUrl}>` accept any string the API returns. React Router prevents the default action for plain left clicks, but `ctrl`/middle-click would follow a `javascript:` URL (or an off-site URL presented as an internal «К выпуску →» link) if the response is ever attacker-influenced.
-**Fix:** Reject anything that is not a same-origin path, like `sanitizeReturnUrl` already does for `returnUrl`:
+**File:** `tests/unit/test_semantic_token_coverage.js:485-486`
+**Issue:** `REGEX_ASSERTION` распознаёт регулярку только сразу после `toMatch|toContainText|toHaveText|getByText`:
 
 ```js
-const nextUrl = result.issue_url
-setIssueUrl(typeof nextUrl === 'string' && nextUrl.startsWith('/') ? nextUrl : '')
+const REGEX_ASSERTION =
+  /\b(toMatch|toContainText|toHaveText|getByText)\s*\(\s*\/((?:\\\/|[^/\n\\]|\\.)+)\/([a-z]*)/g
 ```
 
-### IN-05: `.sr-only` is re-declared although Tailwind v4 already ships it
+`hasText`, `name`, `toHaveAccessibleName`, `filter({ hasText })` в списке нет — а именно `filter({ hasText: … })` является идиомой этого набора спек (см. `tests/admin.spec.js:946`, `:982`). Проверено мутациями:
 
-**File:** `web/src/index.css:93-105`
-**Issue:** `@layer utilities .sr-only {…}` duplicates Tailwind's built-in `sr-only` with identical declarations. It is dead weight in the single-source token layer this phase is consolidating, and it makes the one behaviour the new `admin-chrome.spec.js:91-95` assertion depends on (a 1px-wide accessible h1) depend on a hand-written copy rather than the framework default.
-**Fix:** Remove the local copy and re-run `-g "naming:"` to confirm `boundingBox().width <= 1` still holds; if it must stay, say in the comment why the framework utility is overridden.
+| мутация | `G-16` |
+|---|---|
+| `toHaveText(/Уже отправлено\|Выпуск опубликован/)` | **падает** ✅ |
+| `getByText(/Выпуск опубликован\|Уже отправлено/)` | **падает** ✅ (по правилу «одна строка — два исхода») |
+| `getByRole("status").filter({ hasText: /Выпуск опубликован\|Рассылка не отправлена/ })` | **зелёный** ❌ |
+| `getByRole("heading", { name: /Уже отправлено\|Не сохранено/ })` | **зелёный** ❌ |
+
+То есть ровно тот дефект, который описывает `T-25-16` («one assertion, one outcome»), воспроизводится в естественной для Playwright форме и остаётся незамеченным.
+**Fix:** либо расширить альтернацию до `(toMatch|toContainText|toHaveText|getByText|hasText|name|toHaveAccessibleName)`, либо отказаться от регэксп-эвристики и разбирать все regex-литералы файла (`/….…/`) независимо от вызываемой функции, оставив особый случай только для комментариев. Первое — минимальная правка, второе — устойчивее.
+
+#### WR-10: `G-14` (и спека пилюль) измеряют захардкоженную альфу, а не ту, что стоит в классах
+
+**File:** `tests/unit/test_semantic_token_coverage.js:113-117`, `:924-958`; `tests/admin-chrome.spec.js:379`, `:409`, `:413`
+**Issue:** `STATUS_LABEL_TINTS` фиксирует `alpha: 0.15 / 0.2 / 0.1`, а спека дублирует это в `const tintAlpha = { success: 0.15, voting: 0.2 }`. Ничто не связывает эти числа с фактическими `bg-success/15`, `bg-voting/20`, `bg-danger/10` в компонентах. Проверено мутацией: замена в `AdminDigestPage.jsx` `bg-success/15` → `bg-success/60` оставляет `npm run test:js` **зелёным**, хотя реальный композит становится `rgb(120, 218, 157)` и `success-ink` на нём даёт **4.181** (на `paper-2` — **4.094**), то есть ниже 4.5. Комментарий в спеке «the ratio is taken on the composite — the same arithmetic G-14 uses statically» создаёт ложное впечатление, что измеряется реальный фон элемента.
+**Fix:** читать альфу из класса/из DOM, а не из константы. Минимальный вариант в спеке:
+
+```js
+expect(await classTokens(readyPill)).toContain("bg-success/15")
+```
+
+Вариант лучше: вытащить альфу из `getComputedStyle(el).backgroundColor` (Chrome отдаёт `oklab(… / 0.15)`) либо измерять контраст по реальному скриншоту/`color-mix`-резолву. В юнит-гейте — производный словарь `{ ink, tint, alpha }`, собираемый из классов `web/src`, чтобы `G-14` падал при дрейфе альфы.
+
+#### WR-11: у радио нет границы 3:1 — G-17 определяет «control» только как `input|select|textarea`
+
+**File:** `tests/unit/test_semantic_token_coverage.js:259`; evidence: `web/src/components/TopicBallot.jsx:23-28`
+**Issue:** `CONTROL_TAG_START = /<(input|select|textarea)(?=[\s/>])/g` покрывает 16 элементов — и ровно их перекрасил 25-07. Но единственный визуальный индикатор выбора темы — кружок внутри `<button role="radio">`:
+
+```jsx
+<span className={['mt-1 inline-block size-5 rounded-full border-2',
+  checked ? 'border-primary bg-primary' : 'border-border bg-bg-app'].join(' ')} aria-hidden="true" />
+```
+
+Невыбранное состояние — это `border-border` 2px на `bg-bg-app`: **1.178:1** в светлой теме (`#E2E8F0` на `#F8FAFC`) и **1.554:1** в тёмной (`#2A3548` на `#0B0F17`). Для сравнения: текст рядом даёт 4.5+, поэтому дефект не в читаемости подписи, а именно в границе компонента — WCAG 1.4.11 требует 3:1 для визуальной информации, необходимой для идентификации контрола, и здесь это единственная такая информация (у кружка нет текста внутри). Это обратная сторона той же ошибки, которую закрывал 25-07: декоративный `rule` остался границей контрола. Кнопки с текстовыми подписями (`border-rule` в `IngestionScheduleSection`) сюда не относятся — их идентифицирует текст; кружок радио — относится.
+**Fix:** `... checked ? 'border-primary bg-primary' : 'border-field-border bg-bg-app'` (3.698/3.342/4.030 dark и 4.759/4.344/4.548 light — уже доказано `G-15`). Дополнительно расширить определение контрола в `G-17`: `input|select|textarea` **или** элемент с `role="radio"|"checkbox"|"switch"` + `aria-hidden`-индикатор внутри, иначе следующая правка вернёт `border-rule` безнаказанно.
+
+#### WR-12: провал отправки красится success-ролью
+
+**File:** `web/src/pages/AdminDigestPage.jsx:462` (значение) и `:771` (класс)
+**Issue:** один и тот же `<p role="status">` печатает и успех (`'Выпуск опубликован'`, `'Уже отправлено'`), и отказ (`setBanner('Рассылка не отправлена')`), а класс у него — `text-success-ink`. То есть сообщение об ошибке рендерится зелёным (в light `#166534`, dark `#4ADE80`). Миграция 25-06 перевела элемент с `text-success` на `text-success-ink` и сохранила семантическую ошибку: статус-токен выбран по «ветке успеха», а не по фактическому исходу. `G-16` этот литерал явно исключает из R2 («no harness arm»), поэтому ни статический гейт, ни `admin-chrome.spec.js` (там проверяется только успешный баннер) этого не видят.
+**Fix:** разделить роль по исходу, например:
+
+```jsx
+<p className={`mt-1 text-sm font-medium ${bannerKind === 'error' ? 'text-danger-ink' : 'text-success-ink'}`} role="status">
+```
+
+с `setBanner({ kind: 'error', text: 'Рассылка не отправлена' })`; и добавить в `admin-chrome.spec.js` кейс на отказ (`armFailNextSend` уже есть в харнессе — `main.jsx:82`), проверяющий `color` баннера. Литерал при этом перестанет быть «непроверяемым исключением».
+
+#### WR-13: в `gotoAdmin` остался условный страж темы, а `webServer` переиспользует чужой dev-сервер
+
+**File:** `tests/admin-chrome.spec.js:40-58`; `playwright.config.js:30-53`
+**Issue:** Два независимых риска стабильности:
+
+1. Ожидание темы выполняется только если в момент сэмпла найден `theme-toggle` (`:50-58`). Один `page.evaluate` — это гонка: если разметка на первом коммите ещё не содержит тоггл (например, `RequireAuth` с `VITE_REQUIRE_LOGIN`, lazy-route, будущий рефакторинг оболочки), `mountsToggle === false`, ожидание молча пропускается, и `expect(...).toBe("rgb(255, 255, 255)")` в light-ветке читает тёмную тему. Сейчас `AppShell` монтируется синхронно (`web/src/App.jsx:40-44` + мок-режим `RequireAuth`), поэтому зелено, но инвариант держится на свойстве, которое тест не проверяет. Дополнительно `await page.evaluate(() => document.fonts.ready)` (`:40`) ждёт сетевую загрузку Google Fonts; офлайн-прогон зависит от таймаута фетча, а не от теста.
+2. `reuseExistingServer: !process.env.CI` (`playwright.config.js:38`, `:49`) означает, что локально Playwright может подключиться к уже запущенному `npm run dev` **без** `VITE_USE_MOCKS=true` (env задаётся только для собственного процесса, `:46-49`). Тогда «offline proof» из комментария не действует, а падение будет выглядеть как продуктовое.
+
+**Fix:** сделать ожидание темы безусловным для страниц, где `ThemeToggle` гарантированно есть (параметр `expectsToggle` в `gotoAdmin` для `/admin/*`, `/voting`, `/knowledge`), а для auth-страниц — явный `forceTheme` (он уже есть, но применяется после `gotoAdmin`): тогда условие «смонтирован ли тоггл» вообще не нужно. Для шрифтов — заменить на `document.fonts.status === 'loaded'` c коротким таймаутом либо убрать ожидание (проверяются `font-size`, а не метрики шрифта). Для сервера — `reuseExistingServer: false` на порту 5174 либо отдельный порт для proof-прогона.
+
+### Info
+
+#### IN-06: комментарий «the seven theme-independent roles» устарел — их восемь
+
+**File:** `web/src/index.css:167-170`
+**Issue:** «*The seven theme-independent roles are deliberately absent*» — после 25-05 плоских ролей восемь: `primary-solid`, `accent-solid`, `success-solid`, `danger-solid`, `on-solid`, `voting-ink`, `scrim`, **`field-border`** (последний сам объявлен как «deliberately **not** theme-dependent» строкой выше, `:76-80`). `FLAT` в гейте содержит ровно 8 элементов, то есть комментарий противоречит коду и собственной декларации.
+**Fix:** «the eight theme-independent roles» (или перечислить их поимённо, чтобы список нельзя было промахнуться при следующем добавлении).
+
+#### IN-07: `--color-xp-text` объявлен дважды с одинаковым значением
+
+**File:** `web/src/index.css:24` и `:186`
+**Issue:** `--color-xp-text: #1A2E05` есть и в `@theme`, и в `[data-theme="light"]` с тем же значением. Это ровно тот шаблон, который `G-2` считает дефектом («light value equals the dark value»), просто токен не входит ни в `THEMED`, ни в `FLAT`, поэтому гейт молчит. Плюс токен нигде не потребляется (gamification отложена ADR-0007/0009), то есть это ещё и мёртвая декларация.
+**Fix:** удалить строку `:186`; если токен нужен как контракт — добавить в `FLAT`, чтобы `G-3` запрещал переопределение.
+
+#### IN-08: контракт «never paint text with `field-border`» ничем не проверяется
+
+**File:** `web/src/index.css:80-82`; `tests/unit/test_semantic_token_coverage.js:66-73`
+**Issue:** Комментарий объявляет жёсткое правило («Non-text boundary role only — never paint text with `field-border`»), но `UTILITY_PATTERN` включает `text-` как префикс и `field-border` как имя, поэтому `G-4` спокойно пропустит `text-field-border` (токен объявлен), а `G-17` проверяет только `border-field-border`. Правило держится на дисциплине, а не на гейте — при этом сама фаза строилась на тезисе «контракт без гейта = контракта нет».
+**Fix:** добавить запрет по аналогии с `G-19`: `FORBIDDEN_LABELS = ['field-border']` для префикса `text` (+ proof-тест), либо убрать декларацию из CSS, если правило не является обязательным.
+
+#### IN-09: `readJsxOpeningTag` молча выбрасывает контрол, а анти-вакуумный порог ровно равен текущему числу
+
+**File:** `tests/unit/test_semantic_token_coverage.js:259-290`, `:1185-1192`
+**Issue:** если сканер не находит `>` на нулевой глубине, `controlTags()` делает `continue` — тег исчезает из проверки без единого сообщения. `assert.ok(controlCount >= 16)` защищает только от массовой слепоты: сегодня в дереве ровно 16 контролов, поэтому один «ослепший» тег маскируется одним добавленным. Плюс `controlClassNames` (используется как allow-list для `decorativeBoundaryOffences`) собирается глобально: любой литерал, встретившийся как `className` контрола **где угодно**, освобождает такой же литерал на декоративном элементе.
+**Fix:** сделать `return null` фатальным (`offenders.push('unparsed control tag at …')`), поднять порог до фактического числа с запасом (`>= 16` → точное равенство по файлам-владельцам или `>= 16` + отдельный assert «нет unparsed»), а allow-list сузить до `(файл, литерал)` вместо глобального множества.
+
+#### IN-10: мёртвый проп `_onLoadError` и разнобой focus-ring токенов
+
+**File:** `web/src/components/IngestionScheduleSection.jsx:35`; `web/src/components/IngestSourcesSection.jsx:270`, `:282`, `:296`; `web/src/components/AdminLayout.jsx:74`
+**Issue:** `onLoadError: _onLoadError` деструктурируется и нигде не вызывается, хотя `AdminPipelineConfigPage.jsx:284` его передаёт (`onLoadError={setScheduleError}`) — мёртвый контракт между компонентом и страницей. Отдельно: 25-07 перевёл focus-ring мобильного селекта на `focus-visible:outline-primary`, а три поля «Источников» остались на `focus-visible:outline-accent` — один и тот же контроль-тип мигает разными кольцами в одном экране (оба варианта легальны для `G-19`, поэтому гейт разнобой не заметит).
+**Fix:** удалить проп из сигнатуры и из вызывающей стороны (или начать его использовать — например, для сообщения о падении PATCH); выбрать один токен кольца (по UI-SPEC это, судя по `AdminLayout`, `outline-primary`) и применить его во всех 16 контролах.
+
+#### IN-11: открытые пункты прошлого раунда, которые остаются в силе
+
+**File:** `web/src/pages/AdminDigestPage.jsx:444`, `:776`; `web/src/index.css:121-132`; `tests/unit/test_semantic_token_coverage.js:97`, `:163-165`, `:722-728`
+**Issue:** Ревью прошлого раунда закрыло `CR-01`, `WR-01`(hole 1), `WR-02`, `WR-03`, `WR-05`, `WR-06`; перечисленное ниже было отложено и по-прежнему не исправлено (проверено по текущему коду):
+
+- `issue_url` по-прежнему принимается любой строкой (`setIssueUrl(typeof result.issue_url === 'string' ? result.issue_url : '')`) и уходит в `<Link to={issueUrl}>`; middle-click/`ctrl`-click последует за `javascript:`- или внешним URL, если ответ API окажется подконтрольным. Санитайзер того же вида уже есть: `sanitizeReturnUrl` (`services/authEnv.js`).
+- `.sr-only` в `@layer utilities` дублирует встроенную утилиту Tailwind v4; утверждение `boundingBox().width <= 1` в `admin-chrome.spec.js:189-191` держится на локальной копии, а не на фреймворке.
+- `assert.ok(worst >= 4.829)` остаётся change-detector’ом: значение пересчитывается из тех же деклараций, которые охраняет, и не поймает, например, `#DC2625`.
+- `THEME_DEPENDENT_LABELS` (`:97`) по-прежнему содержит `text-accent-ink` (запрещён `G-5`, в дереве отсутствует) и `text-bg-app` (после миграции на `text-voting-ink` потребителей нет): список рекламирует три запрета, реально работает один.
+- Докстринг `stringLiterals` (`:163-165`) утверждает «scanning literals is both complete»; для склеенных списков (`[...].join(' ')`, `variantClass` + `stateFill`) fill и label лежат в разных литералах и не сравниваются — та самая вторая дыра `WR-01` прошлого раунда. Сегодня она не стреляет (25-07 сделал fill взаимоисключающим), но заявление в комментарии ложное.
+**Fix:** либо закрыть каждый пункт профильной правкой (санитайзер URL, удаление `.sr-only`, `assert.equal(dark.get('--color-danger-solid'), '#DC2626')`, чистка `THEME_DEPENDENT_LABELS`, склейка литералов одного `join` перед `tokenSet`), либо переписать комментарии так, чтобы они описывали фактическую силу проверки. Второе дешевле, но оставляет четыре известные слепые зоны.
 
 ---
 
-_Reviewed: 2026-10-21T13:45:00Z_
+## Как проверялось
+
+- `npm run test:js` на рабочем дереве → 89 passed / 0 failed.
+- Мутационное тестирование гейтов выполнялось на копии (`web/src` + `tests`) вне репозитория; исходники не изменялись. Результаты: `G-14` и `G-18` падают при удалении light-override и при `text-success-ink → text-success`; `G-17` падает при возврате `border-field-border → border-border` на `<input>`; `G-19` падает при `text-accent-text → text-accent`; `G-16` падает на альтернации в `getByText`/`toHaveText`, но **не** падает на альтернации в `hasText`/`name` (WR-09) и **не** падает при удалении цветовых проверок тоста (WR-08); `G-14` **не** падает при смене альфы тинта `/15 → /60` (WR-10).
+- Контрастные значения получены тем же `tests/helpers/contrast.js`, которым пользуются гейты (включая `blendOver` для композитов).
+
+---
+
+_Reviewed: 2026-10-21T17:35:00Z_
 _Reviewer: Claude (gsd-code-reviewer)_
 _Depth: standard_
