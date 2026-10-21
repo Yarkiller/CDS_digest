@@ -4,18 +4,18 @@ milestone: v1.4
 milestone_name: UI polish & honest navigation
 current_phase: 25
 current_phase_name: Admin «Настройка» — naming, readable surfaces, token repair
-status: planning
-stopped_at: Phase 25 UI-SPEC approved
-last_updated: "2026-10-21T12:18:20.047Z"
+status: executing
+stopped_at: Completed 25-01-PLAN.md
+last_updated: "2026-10-21T12:29:52.180Z"
 last_activity: 2026-10-21
-last_activity_desc: Milestone v1.4 roadmap created (UI polish & honest navigation)
-state_head: 229d07be034ca72fe13064668cf93587754bdc35
+last_activity_desc: Phase 25 execution started
+state_head: 456e3e902ec7b8869baf146581fd9acce12153cc
 progress:
   total_phases: 4
   completed_phases: 0
   total_plans: 4
-  completed_plans: 0
-  percent: 0
+  completed_plans: 1
+  percent: 25
 ---
 
 # Project State
@@ -25,14 +25,14 @@ progress:
 See: .planning/PROJECT.md (updated 2026-10-21 — v1.4 milestone started)
 
 **Core value:** Trusted weekly prepared-article issue + one honest vote toward the next разбор
-**Current focus:** v1.4 UI polish & honest navigation (roadmap ready — Phase 25 next)
+**Current focus:** Phase 25 — Admin «Настройка» — naming, readable surfaces, token repair
 
 ## Current Position
 
-Phase: 25 (Admin «Настройка» — naming, readable surfaces, token repair) — READY TO EXECUTE
-Plan: —
-Status: Roadmap ready; 10 requirements mapped, 0 unmapped
-Last activity: 2026-10-21 — Milestone v1.4 roadmap created (UI polish & honest navigation)
+Phase: 25 (Admin «Настройка» — naming, readable surfaces, token repair) — EXECUTING
+Plan: 2 of 4
+Status: Ready to execute
+Last activity: 2026-10-21 — Phase 25 execution started
 
 ## Performance Metrics
 
@@ -93,6 +93,7 @@ Last activity: 2026-10-21 — Milestone v1.4 roadmap created (UI polish & honest
 | Phase 24 P06 | 11min | 2 tasks | 5 files |
 | Phase 24 P07 | 35min | 3 tasks | 10 files |
 | Phase 24 P08 | 20min | 3 tasks | 6 files |
+| Phase 25 P01 | 11min | 2 tasks | 4 files |
 
 ## Accumulated Context
 
@@ -189,6 +190,9 @@ v1.3 roadmap locks:
 - [Phase 24-08]: text contracts invert rather than extend — the positive assertion pins the whole nested substitution and a negative gate forbids the old token, because a bare `EXIT_STATUS:-` is a substring of `MONITOR_EXIT_STATUS:-` and would pass vacuously
 - [Phase 24-08]: no `killed)` arm is added (D-12 scope) — a SIGTERM from the run limit correctly falls to `*)` with the numeric code, e.g. `unexpected failure (exit 15)`
 - [Phase 24 verification]: record-drift gates run inside pytest, never as a shell `!` negation, because the execution host is PowerShell where a leading `!` is a parse error
+- [Phase 25]: 25-01: three admin section labels read «Настройка» — sr-only h1, tab and mobile option renamed as literals; PIPELINE_PATH/DIGEST_PATH, handleSectionTabClick, every data-testid and both aria-labels stayed byte-identical
+- [Phase 25]: 25-01: the web project's testMatch widened to /(web-app|auth|knowledge|razbory|admin(-chrome)?)\.spec\.js/ — admin-chrome.spec.js is the single home for criteria 1/2/4/5, so a new file never silently drops out of the runner
+- [Phase 25]: 25-01: the tracer gate ran as a TDD pair (RED commit then GREEN commit) instead of a blocking human-verify stop — the tracer's own verify demands a failing result, so there is nothing sane for a human to approve until the component edit lands
 
 ### Pending Todos
 
@@ -221,9 +225,9 @@ Carried product deferrals beyond v1.3: leaderboard, quiz, Whisper/Foundry ASR, i
 
 ## Session Continuity
 
-Last session: 2026-10-21T11:38:27.432Z
-Stopped at: Phase 25 UI-SPEC approved
-Resume file: .planning/phases/25-admin-nastroyka-naming-readable-surfaces-token-repair/25-UI-SPEC.md
+Last session: 2026-10-21T12:29:52.162Z
+Stopped at: Completed 25-01-PLAN.md
+Resume file: None
 Next: `/gsd-discuss-phase 25` (or `/gsd-plan-phase 25`)
 
 ## Operator Next Steps

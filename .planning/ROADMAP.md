@@ -77,6 +77,7 @@ Full phase detail: [milestones/v1.3-ROADMAP.md](milestones/v1.3-ROADMAP.md)
 **Requirements:** PIPEUI-01, PIPEUI-02, PIPEUI-03, PIPEUI-04, THEME-01, THEME-02
 
 **Locked scope facts (do not re-litigate):**
+
 - **Naming (PIPEUI-01).** `web/src/components/AdminLayout.jsx` says «Пайплайн» in three places: the sr-only `h1` (line 49), the nav tab (line 70) and the mobile `<option>` (line 82). All three become «Настройка». The route `/admin/pipeline`, `PIPELINE_PATH`, `data-testid="admin-tab-pipeline"` and the guard/leave-blocker wiring stay byte-identical — the label changes, not the URL. No `/admin/settings` route.
 - **Block heading (PIPEUI-03).** `web/src/components/IngestSourcesSection.jsx:171` «Источники ингеста» becomes «Источники».
 - **Root cause of the unreadable «Канал | Плейлист» select (PIPEUI-02 / THEME-02).** The admin components already use the semantic tokens `paper`, `paper-2`, `ink`, `ink-2`, `muted`, `rule`, `accent-ink`, but `web/src/index.css` `@theme` declares none of them. Tailwind v4 silently emits no utility for an unknown token, so the `<select>` falls back to the native white field while inheriting white text in dark theme. **Declaring the token family** (dark values inside `@theme static`, light overrides under `[data-theme="light"]`) is the fix — it also repairs the currently inert `accent-ink` labels. No per-component colour hardcoding, no `!important`, no inline styles.
@@ -85,13 +86,19 @@ Full phase detail: [milestones/v1.3-ROADMAP.md](milestones/v1.3-ROADMAP.md)
 - **Range note.** Declaring the family is a wide but *intended* visual change on admin pages only; the reader surface keeps `bg-app/text-primary`.
 
 **Success criteria:**
+
 1. On `/admin/pipeline` the tab row, the sr-only heading and the mobile section select all read «Настройка», while `page.url()` is still `/admin/pipeline` and the sibling tab still reads «Дайджест». *Proof:* Playwright assertions on all three surfaces plus the unchanged URL and `data-testid`.
 2. The ingest-source «Тип» select is legible in **both** themes: its computed `background-color` is opaque (not the transparent/UA fallback) and the colour/background pair reaches a 4.5:1 ratio, with «Канал» / «Плейлист» present as options. *Proof:* Playwright computed-style assertion run once in dark and once under `[data-theme="light"]` — it fails on the pre-fix tree because the `bg-paper` / `text-ink` utilities never reach the DOM, so the field keeps the browser-default surface while the inherited text stays white in dark theme.
 3. **Token-coverage gate (the RED for the root cause):** an automated test asserts that every `paper`, `paper-2`, `ink`, `ink-2`, `muted`, `rule`, `accent-ink` utility used under `web/src` resolves to a `--color-*` declaration in `web/src/index.css`, and that tokens whose value differs per theme also have a `[data-theme="light"]` override. This test fails before the `@theme` declaration lands and is the reason the phase cannot be closed as "works in dark".
 4. In the light theme the labels on the purple `primary` and cyan `accent` fills and on the active nav pill are white, and the yellow `voting` fill keeps its dark label; both combinations hold ≥ 4.5:1. *Proof:* computed-colour assertions in both themes, with the `voting` exception pinned as a positive assertion (not an omission).
 5. The ingest-sources heading reads exactly «Источники», the «Админ» eyebrow is absent from the DOM, the tab font-size equals the content `h2` scale, the tab gap is wider than the pre-fix `gap-2`, and the space above the tab row is smaller than pre-fix. *Proof:* Playwright text-absence plus computed-style assertions on the shared admin chrome.
 
-**Plans:** 4 plans
+**Plans:** 1/4 plans executed
+
+- [x] 25-01-PLAN.md
+- [ ] 25-02-PLAN.md
+- [ ] 25-03-PLAN.md
+- [ ] 25-04-PLAN.md
 - [ ] `25-01-PLAN.md` — Tracer: собрать `admin-chrome.spec.js` в проекте `web` (`testMatch`), naming-RED на трёх поверхностях, «Настройка» в `AdminLayout.jsx` (PIPEUI-01, wave 1)
 - [ ] `25-02-PLAN.md` — Хром админки: убрать eyebrow, кегль вкладок = `h2`, `gap-4`, `mt-0`, заголовок блока «Источники» (PIPEUI-03, PIPEUI-04, wave 2)
 - [ ] `25-03-PLAN.md` — WCAG-хелпер + гейт покрытия токенов G-0…G-8, 13 токенов в существующих блоках `index.css`, читаемый «Тип» (THEME-02, PIPEUI-02, wave 3)
@@ -103,6 +110,7 @@ Full phase detail: [milestones/v1.3-ROADMAP.md](milestones/v1.3-ROADMAP.md)
 **Requirements:** NAV-01, NAV-02
 
 **Locked scope facts (do not re-litigate):**
+
 - **Bug 3 is anchor scrolling, not breadcrumbs.** The user explicitly confirmed this. Do **not** plan a breadcrumb component, a route-hierarchy change or a new navigation surface.
 - Today `<header>` is `sticky top-0` (`AppShell.jsx:67`) with `--header-height: 64px` declared in `web/src/index.css`, and «Содержание» links are plain `#heading` anchors into `[data-testid="material-prose"]`. Nothing in `web/src` sets `scroll-margin-top` or `scroll-padding-top` (verified: no matches), so the target heading lands *under* the header.
 - The fix is a scroll offset — `scroll-margin-top` on prose headings (`[&_h1]:scroll-mt-…` on the `prose-column` rule, or an equivalent `scroll-padding-top` on the scroll container) — sized to the 64px header plus breathing room. One mechanism, applied once, so every TOC link inherits it. Proven on a **short** section and a **long** section.
@@ -110,6 +118,7 @@ Full phase detail: [milestones/v1.3-ROADMAP.md](milestones/v1.3-ROADMAP.md)
 - Reuse the prefix-active pattern that already exists for «Админ»: `adminActive = pathname.startsWith('/admin/')` (`AppShell.jsx:39`) with an explicit `aria-current` and `linkClass({ isActive })` (lines 99-100). Do not derive origin from the URL, and do not persist it in `localStorage` — a remembered section would make a later direct visit claim a section falsely.
 
 **Success criteria:**
+
 1. **Short section:** following a «Содержание» link to a short section leaves the target heading fully visible, with `heading.getBoundingClientRect().top >= header.getBoundingClientRect().height` (64px) plus visible breathing room, and the heading is inside the viewport. *Proof:* Playwright scroll assertion comparing the heading rect against the measured header height — not a hardcoded 64.
 2. **Long section:** the same assertion holds for a TOC link deep in a long article (target initially below the fold), proving the offset is not an artifact of short pages. *Proof:* same spec, second fixture.
 3. **Archive origin:** from `/archive`, opening an archived issue keeps «Архив» lit on `/issues/:number`, and opening a material from there keeps it lit on `/materials/:slug`. *Proof:* Playwright `aria-current` + active-class assertions on the header link.
@@ -122,11 +131,13 @@ Full phase detail: [milestones/v1.3-ROADMAP.md](milestones/v1.3-ROADMAP.md)
 **Requirements:** KNOW-05
 
 **Locked scope facts (do not re-litigate):**
+
 - Today `SearchPill.onSubmit` (`web/src/components/SearchPill.jsx:21-24`) navigates to `/knowledge?q=…`, and `KnowledgePage` only seeds `query` from `?q` (`KnowledgePage.jsx:49`) while `activeQuery` stays `null` (`:53`, documented as "pre-search landing"). The reader therefore lands on the pre-search screen and must click «Найти» a second time.
 - Submitting must **run the search immediately**: exactly one API call per submission, no second click, no double-fire on re-render. An empty/whitespace query navigates to «База знаний» and **must not** call the API.
 - Keep the existing query validation (blank/overlong guards) and the existing request shape (`q`, `role`, `limit`, `offset`). No new endpoint, no change to `knowledgeApi.searchKnowledge`, no change to the backend.
 
 **Success criteria:**
+
 1. Typing a query in the header and pressing Enter lands on «База знаний» with results already rendered — the pre-search landing is gone and «Найти» is never clicked. *Proof:* Playwright journey from the header input to a rendered hit row.
 2. Exactly **one** `/knowledge/search` request is issued per submission. *Proof:* Playwright request interception counting calls to the search endpoint; pinned at `=== 1`, so a duplicate-fire (including a StrictMode double-invoke) fails the test.
 3. A re-render after results are shown (role chip change, theme toggle, focus change) issues **no** additional request, and browser back/forward does not re-issue. *Proof:* the same counter asserted again after each interaction, plus a re-navigation assertion.
@@ -138,12 +149,14 @@ Full phase detail: [milestones/v1.3-ROADMAP.md](milestones/v1.3-ROADMAP.md)
 **Requirements:** ING-09
 
 **Locked scope facts (do not re-litigate):**
+
 - **This phase is proof only.** The streaming fix is already committed as `0dddc75` ("fix(data-collection): stream DeepSeek responses to prevent TCP idle resets", `stream=True` + delta assembly). Do **not** plan adapter rewrites, new retry layers, timeout retuning or a new client.
 - The run is `uv run --env-file ./ingestion-service/.env ingest <url>` against a video **longer than 10 minutes**, on the real DeepSeek path.
 - A pass means: exit 0, material id/slug/batch id on stdout, `materials.status='draft'`, a `pending` shortlist row, and no `network_error` at stage `llm` / no `APIConnectionError`.
 - If the run still fails, the phase records the observed failure and stops — the fix is re-opened as a *new* decision, not silently rewritten under a proof phase.
 
 **Success criteria:**
+
 1. `uv run --env-file ./ingestion-service/.env ingest <url>` on a video longer than 10 minutes exits 0 and prints material id, slug and batch id. *Proof:* captured command transcript attached to the phase summary.
 2. A `status=draft` material **plus** a pending shortlist row exist in Supabase for that video, tied by `youtube_video_id`. *Proof:* a read-only query against `materials` + the shortlist row, recorded with the actual ids.
 3. No `network_error` at stage `llm` and no `APIConnectionError` anywhere in the run; the streamed elapsed time is recorded so the improvement over the pre-fix TCP-idle failure is measurable. *Proof:* the run transcript plus the elapsed value in the summary.
@@ -182,6 +195,7 @@ Full phase detail: [milestones/v1.3-ROADMAP.md](milestones/v1.3-ROADMAP.md)
 **Deferred at:** 2026-10-17 during /gsd-verify-work 23 session completion
 **Status:** **PROMOTED → Phase 25 (v1.4) as requirement PIPEUI-04** (2026-10-21). Do not plan it here; the work is owned by Phase 25. Closed as a backlog item.
 **Follow-ups:**
+
 - [x] Test 1: AdminLayout chrome: убрать надпись «АДМИН» над вкладками Дайджест|Пайплайн; уменьшить пустоту сверху; уменьшить кегль вкладок до уровня остальных заголовков; чуть увеличить расстояние между вкладками (promoted → Phase 25 / PIPEUI-04)
 
 ### Backlog 999.4: Follow-up — Phase 14 deferred UAT follow-up: Test 1 (Deferred — stays parked)
@@ -192,4 +206,5 @@ Full phase detail: [milestones/v1.3-ROADMAP.md](milestones/v1.3-ROADMAP.md)
 **Status:** parked — **not** in v1.4; do not pull into Phase 25 (it is a different editorial-workflow decision, not UI polish)
 **Deferred at:** 2026-10-04 during /gsd-verify-work 14 session completion
 **Follow-ups:**
+
 - [ ] Test 1: UX (для Phase 15+): две операции на одно editorial-решение избыточны для single-operator workflow — объединить Approve (decision) + Mark ready (material_status) в одну кнопку «Одобрить и подготовить → ready»; переименовать «Сделать ready» → «Отобрать», ready → «Отобран». (deferred 2026-10-03)

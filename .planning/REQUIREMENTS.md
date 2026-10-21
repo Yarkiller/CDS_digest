@@ -13,7 +13,7 @@ already-committed streamed DeepSeek fix (`0dddc75`).
 
 ### Admin section naming and readable surfaces
 
-- [ ] **PIPEUI-01**: An admin sees the pipeline section named «Настройка» everywhere it is announced — the section tab, the screen-reader heading and the narrow-viewport section select — while the `/admin/pipeline` URL stays unchanged
+- [x] **PIPEUI-01**: An admin sees the pipeline section named «Настройка» everywhere it is announced — the section tab, the screen-reader heading and the narrow-viewport section select — while the `/admin/pipeline` URL stays unchanged
 - [ ] **PIPEUI-02**: The ingest-source «Тип» select and both «Канал» / «Плейлист» options are legible in the dark and the light theme, with an explicit surface and text colour instead of the user-agent field look
 - [ ] **PIPEUI-03**: The ingest-sources block heading reads «Источники» — the word «ингеста» is gone
 - [ ] **PIPEUI-04**: Backlog 999.2 admin chrome polish — the «Админ» eyebrow is gone, the tab type matches the content `h2` scale, the gap between tabs grows, and the empty space above the tabs shrinks
@@ -62,7 +62,7 @@ Acknowledged but not in this milestone's roadmap. IDs are reserved and never reu
 
 | Requirement | Phase | Status |
 |-------------|-------|--------|
-| PIPEUI-01 | Phase 25 | Pending |
+| PIPEUI-01 | Phase 25 | Complete |
 | PIPEUI-02 | Phase 25 | Pending |
 | PIPEUI-03 | Phase 25 | Pending |
 | PIPEUI-04 | Phase 25 | Pending |
@@ -74,6 +74,7 @@ Acknowledged but not in this milestone's roadmap. IDs are reserved and never reu
 | ING-09 | Phase 28 | Pending |
 
 **Coverage:**
+
 - v1.4 requirements: 10 total
 - Mapped to phases: 10
 - Unmapped: 0 ✓
