@@ -5,16 +5,16 @@ milestone_name: UI polish & honest navigation
 current_phase: 27
 current_phase_name: Header search runs on submit
 status: executing
-stopped_at: Phase 27 UI-SPEC approved
-last_updated: "2026-10-22T09:15:15.502Z"
+stopped_at: Completed 27-01-PLAN.md
+last_updated: "2026-10-22T10:13:02.520Z"
 last_activity: 2026-10-22
-last_activity_desc: Phase 26 complete, transitioned to Phase 27
-state_head: 30881b31d4807e759c8311892ddc7843384cc23e
+last_activity_desc: Phase 27 execution resumed (wave continue)
+state_head: e741d1a85d8e096d1032b5adb15a01443f94075a
 progress:
   total_phases: 4
   completed_phases: 2
   total_plans: 18
-  completed_plans: 13
+  completed_plans: 14
   percent: 50
 ---
 
@@ -25,14 +25,14 @@ progress:
 See: .planning/PROJECT.md (updated 2026-10-22 — Phase 25 complete)
 
 **Core value:** Trusted weekly prepared-article issue + one honest vote toward the next разбор
-**Current focus:** Phase 26 — Section context — anchor scrolling and header active state
+**Current focus:** Phase 27 — Header search runs on submit
 
 ## Current Position
 
-Phase: 27 (Header search runs on submit) — READY TO EXECUTE
-Plan: Not started
-Status: Ready to execute
-Last activity: 2026-10-22 — Phase 26 complete, transitioned to Phase 27
+Phase: 27 (Header search runs on submit) — EXECUTING
+Plan: 2 of 5
+Status: Executing Phase 27 — plan 27-01 complete, plan 27-02 next
+Last activity: 2026-10-22 — Phase 27 execution resumed (wave continue)
 
 ## Performance Metrics
 
@@ -108,6 +108,7 @@ Last activity: 2026-10-22 — Phase 26 complete, transitioned to Phase 27
 | Phase 26 P01 | 15min | 3 tasks | 4 files |
 | Phase 26 P02 | 30min | 3 tasks | 9 files |
 | Phase 26 P03 | 12min | 3 tasks | 3 files |
+| Phase 27 P01 | 10min | 2 tasks | 2 files |
 
 ## Accumulated Context
 
@@ -251,6 +252,9 @@ v1.3 roadmap locks:
 - [Phase 26]: 26-03: C-13 asserts all five shell entries with a visible-first negative; the zero-heading pin also demands scrollPaddingTop >= measured header height + 1
 - [Phase 26]: 26-03: the C-17 gate asserts the set of values reaching a === in AppShell, not literal presence — under mutation the presence loop passed on the explanatory comment alone
 - [Phase 26]: 26-03: C-17 was proven non-vacuous by a real mutation (comparisons stripped, gates 2-3 reddened, AppShell restored byte-identically), not by reasoning
+- [Phase 27]: 27-01: the adapter digest is pinned over LF-normalised text (6283 bytes, 0 CRLF) — bce5c54e… measured on the clean pre-edit file, so a CRLF checkout cannot redden C-24 for the wrong reason while any real edit still fails
+- [Phase 27]: 27-01: the single-call-site gate excludes the adapter declaration by SHAPE (never by whitelisting a file) and pins that exclusion with its own assertion, so an empty scan cannot pass
+- [Phase 27]: 27-01: DEFAULT_SEARCH_LIMIT is matched by its declaration regex and asserted as a per-file set, because the page imports the bare name (a bare-token count reads 5 across 2 files on a clean tree)
 
 ### Pending Todos
 
@@ -284,9 +288,9 @@ Carried product deferrals beyond v1.3: leaderboard, quiz, Whisper/Foundry ASR, i
 
 ## Session Continuity
 
-Last session: 2026-10-22T07:58:19.286Z
-Stopped at: Phase 27 UI-SPEC approved
-Resume file: C:/Users/Yarkiller/PycharmPET-Projects/Digital_CDS/.planning/phases/27-header-search-runs-on-submit/27-UI-SPEC.md
+Last session: 2026-10-22T10:12:53.313Z
+Stopped at: Completed 27-01-PLAN.md
+Resume file: None
 Next: `/gsd-discuss-phase 26` (or `/gsd-plan-phase 26`)
 
 ## Operator Next Steps

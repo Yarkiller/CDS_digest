@@ -30,7 +30,7 @@ already-committed streamed DeepSeek fix (`0dddc75`).
 
 ### Header search
 
-- [ ] **KNOW-05**: Submitting a non-empty query from the header search navigates to «База знаний» and runs the search immediately — results appear without a second click, exactly one request is issued per submit, and an empty submit never calls the search API
+- [x] **KNOW-05**: Submitting a non-empty query from the header search navigates to «База знаний» and runs the search immediately — results appear without a second click, exactly one request is issued per submit, and an empty submit never calls the search API
 
 ### Ingestion proof
 
@@ -70,7 +70,7 @@ Acknowledged but not in this milestone's roadmap. IDs are reserved and never reu
 | THEME-02 | Phase 25 | Complete |
 | NAV-01 | Phase 26 | Complete |
 | NAV-02 | Phase 26 | Complete |
-| KNOW-05 | Phase 27 | Pending |
+| KNOW-05 | Phase 27 | Complete |
 | ING-09 | Phase 28 | Pending |
 
 **Coverage:**
