@@ -12,6 +12,8 @@ Authorized СВА staff can read a trustworthy weekly issue of prepared articles
 
 v1.4 UI polish & honest navigation started 2026-10-21 (Phases 25–28). Scope: close the five user-reported UI defects found in live use — honest admin naming and readable form surfaces, theme-independent button labels, section context that survives navigation plus anchor scrolling that clears the sticky header, and a header search that runs on the first Enter — and land one live proof that the streamed DeepSeek ingest completes end-to-end.
 
+Phase 25 (v1.4 phase 1) shipped 2026-10-22: the pipeline section is named «Настройка» on all three surfaces with the URL unchanged, the semantic token family (`paper` / `paper-2` / `ink` / `ink-2` / `muted` / `rule` plus the theme-independent `-solid` / `on-solid` / `voting-ink` / `scrim` roles) is declared and gated by 22 automated checks (`G-0`…`G-21`), the «Админ» eyebrow is gone and the ingest block is «Источники». UAT closed 12/12 (320px geometry, partially filled forms, long ids, zero-one-many rows); security re-check found 37 threats, 0 open. Two findings still need a semantic decision rather than a patch — the radio border (WR-11) and the send-failure colour (WR-12) — and are recorded as deferred.
+
 v1.3 Live mail, scheduled ingestion & backlog debt started 2026-10-14 (Phases 17+). Scope: backlog tech debt first — 999.1 reader-route honesty, 999.6 unsaved-changes guard, 999.7 YAML merge-key — then MAIL-02 investigation + signup mail, MAIL-01 live SMTP digest delivered to `profiles`, and a cron/systemd scheduled ingestion over the existing `ingest` CLI (YouTube channel/playlist source; drafts only, never auto-send).
 
 v1.3 progress: **all 8 phases complete (Phases 17–24, 28 plans); milestone closed 2026-10-18 (tag `v1.3`).** Phase 18 shipped admin-gated draft preview + CR-01 fix. Phase 19 shipped the pipeline-editor unsaved-changes guard. Phase 20 (MAIL-02) shipped path (B): honest autoconfirm post-register copy (no letter claim), GoTrue owns confirmation. Phase 21 shipped live SMTP digest delivery with the `profiles` audience and honest counts. Phase 22 shipped the single «Админ» entry with in-page tabs. Phase 23 shipped DB-stored admin-managed ingest sources. Phase 24 shipped scheduled ingestion: a systemd timer drives `ingest-collect` against enabled sources, writing drafts + shortlist rows only.
@@ -152,6 +154,7 @@ v1 is done only when **all** of the following hold:
 - ✓ SRC-01 — an admin manages the DB-stored YouTube channel/playlist source list on `/admin/pipeline`, with server-side canonical-id validation and structured 400s (`pipeline_ingest_sources`, migration 012, RLS on with zero policies) — Phase 23
 - ✓ MAIL-01 — weekly digest delivered by a real SMTP mailer to the `profiles` audience with an honest `recipient_count`/`delivered_count` and contained failures — Phase 21
 - ✓ ING-05/06/07 — scheduled ingestion: a systemd timer drives `ingest-collect` against enabled sources with a due gate in `Europe/Moscow`, a monotonic cursor, `flock` single-flight, a bounded run (`TimeoutStartSec=1800`), a numeric-code `OnFailure=` alert, and drafts + shortlist rows only (migration 013) — Phase 24
+- ✓ PIPEUI-01…04 + THEME-01/02 — admin «Настройка» naming on all three surfaces with `/admin/pipeline` byte-identical, the semantic token family (`paper`/`paper-2`/`ink`/`ink-2`/`muted`/`rule` + theme-independent `-solid`/`on-solid`/`voting-ink`/`scrim`/`field-border`/`primary-text`/`accent-text`/`danger-ink`) declared and gated by `G-0`…`G-21`, eyebrow removed, ingest block «Источники», theme-independent labels on every fill — Phase 25
 
 ### Active
 
@@ -240,6 +243,9 @@ v1.4 UI polish & honest navigation (Phases 25–28). The full scoped list with R
 | Phase 18: `no-store` set on the preview route only via the declared `Response` param (D-07) | An unpublished body must not be cached, but the mitigation must not widen onto the reader route; both directions are pinned | ✓ Phase 18 |
 | Phase 18: only the shortlist modal link is repointed to `/admin/materials/{slug}`; the shared email href builder is untouched (D-10/D-11) | Repointing the shared builder would put admin URLs into the real digest mail ordinary readers receive (T-18-06); `render_email_html` stays shared so preview≡send parity remains provable | ✓ Phase 18 |
 | Phase 18: the email-preview iframe grants `allow-popups allow-popups-to-escape-sandbox` while withholding script and same-origin powers (T-18-05) | The CTA must escape the frame to reach the app, but the frame must not gain script or origin powers; the frame body is backend-rendered with stdlib `html.escape` only | ✓ Phase 18 |
+| Phase 25: the base `--color-primary` stays byte-identical (#8B5CF6) as fill/border/ring/tint; only the *label* role moves to the theme-dependent `--color-primary-text` (#A78BFA dark / #6D28D9 light) | A single token cannot be both a 4.5:1 label in both themes and an unchanged brand fill (D-05 forbids darkening the base); splitting the role was the only honest fix for GAP-25-5 | ✓ Phase 25 |
+| Phase 25: readability is enforced by static node gates (`G-0`…`G-21`) that read the tree, not the runtime, and each gate carries a proof test | A gate that cannot fail is worse than no gate: CR-01 passed a green suite because `G-9` read only named tokens. Every new gate is mutation-proven, and `G-12` forbids arbitrary-value colours outright | ✓ Phase 25 |
+| Phase 25: backstops the verifier cannot prove automatically are human UAT, never a silent pass | 12 geometry/overflow/state backstops (320px, partially filled forms, long ids, zero-one-many) closed through `/gsd-verify-work` instead of being asserted away | ✓ Phase 25 (12/12)
 | MaterialPage resets `redirectToReader`/`forbidden` on every load (CR-01/WR-01) | The instance is reused across the preview→reader handoff the flag itself triggers, so a stale `true` re-rendered `<Navigate>` to the current URL (a blank page) and wedged later navigation; the D-12 URL-only assertion could not see it (WR-02) | ✓ Phase 18 |
 
 <decisions>
@@ -281,4 +287,4 @@ After each phase transition: move validated/invalidated requirements; log decisi
 After milestone: full review of Core Value, Out of Scope, and Context against shipped reality.
 
 ---
-*Last updated: 2026-10-21 — v1.4 UI polish & honest navigation started*
+*Last updated: 2026-10-22 — Phase 25 complete (UAT 12/12, threats_open 0); Phase 26 ready to plan*

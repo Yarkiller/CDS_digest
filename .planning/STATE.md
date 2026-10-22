@@ -2,43 +2,43 @@
 gsd_state_version: "1.0"
 milestone: v1.4
 milestone_name: UI polish & honest navigation
-current_phase: 25
-current_phase_name: Admin «Настройка» — naming, readable surfaces, token repair
-status: verifying
-stopped_at: Completed 25-10-PLAN.md
-last_updated: "2026-10-21T20:03:54.956Z"
-last_activity: 2026-10-21
-last_activity_desc: Phase 25 execution started
-state_head: dca85b77f3ff08906168d7e8eab6c7896d99fe2c
+current_phase: 26
+current_phase_name: Section context — anchor scrolling and header active state
+status: planning
+stopped_at: Phase 25 complete, ready to plan Phase 26
+last_updated: "2026-10-22T02:46:42.047Z"
+last_activity: 2026-10-22
+last_activity_desc: Phase 25 complete, transitioned to Phase 26
+state_head: 784c8a399142d76732c968ed613adb6e69f71b5e
 progress:
   total_phases: 4
-  completed_phases: 0
+  completed_phases: 1
   total_plans: 10
   completed_plans: 10
-  percent: 0
+  percent: 25
 ---
 
 # Project State
 
 ## Project Reference
 
-See: .planning/PROJECT.md (updated 2026-10-21 — v1.4 milestone started)
+See: .planning/PROJECT.md (updated 2026-10-22 — Phase 25 complete)
 
 **Core value:** Trusted weekly prepared-article issue + one honest vote toward the next разбор
-**Current focus:** Phase 25 — Admin «Настройка» — naming, readable surfaces, token repair
+**Current focus:** Phase 26 — Section context — anchor scrolling and header active state
 
 ## Current Position
 
-Phase: 25 (Admin «Настройка» — naming, readable surfaces, token repair) — READY TO EXECUTE
-Plan: 7 of 7
-Status: Phase complete — ready for verification
-Last activity: 2026-10-21 — Phase 25 plan 05 executed (status label roles + field boundary)
+Phase: 26 — Section context — anchor scrolling and header active state
+Plan: Not started
+Status: Ready to plan
+Last activity: 2026-10-22 — Phase 25 complete, transitioned to Phase 26
 
 ## Performance Metrics
 
 **Velocity:**
 
-- Total plans completed: 28 (40 v1 + 23 v1.1 + 26 v1.2)
+- Total plans completed: 38 (40 v1 + 23 v1.1 + 26 v1.2)
 - Prior milestones shipped: v1 (5 phases), v1.1 (6 phases), v1.2 (5 phases)
 - v1.3 plans completed: 3
 
@@ -62,6 +62,7 @@ Last activity: 2026-10-21 — Phase 25 plan 05 executed (status label roles + fi
 | 22 | 3 | - | - |
 | 21 | 3 | - | - |
 | 24 | 8 | - | - |
+| 25 | 10 | Complete (UAT 12/12, threats_open 0) | - |
 **Per-Plan Metrics:**
 
 | Plan | Duration | Tasks | Files |
@@ -246,7 +247,7 @@ None.
 - **Scheduled ingestion has no live-run proof yet (deferred UAT checkpoint).** `pipeline_ingest_sources` is empty, so `24-UAT.md` test 6 — a real YouTube Atom feed producing `materials.status='draft'` + `pending` shortlist rows, with the cursor not advancing on a re-run — is recorded as a deferred follow-up rather than a pass. Everything else in Phase 24 (timer ticks, flock exit 75, bounded run, numeric alert codes, `0600` env file, migration 013, admin UI block) is proven on the live WSL2/systemd 255 host. Add one enabled source and re-run the tick to close it.
 - **SMTP relay (Phase 20/21)** — the corporate relay **choice and configuration shape** are recorded (Phase 20 CONTEXT: `GOTRUE_SMTP_*` for the GoTrue lane, `SMTP_*` for MAIL-01; one-command rollback = `GOTRUE_MAILER_AUTOCONFIRM=true` + container config reload). Relay **values** are still operator-supplied, so criterion 4's smoke-test *proof* remains an acknowledged ops gap.
 - Signup confirmation mail (`g-01-3b-signup-mailer`) — **root cause diagnosed** (GoTrue fails while sending the confirmation email; `{code:500, error_code:"unexpected_failure"}`), autoconfirm on since 2026-09-20, delivery path (B) shipped in Phase 20; the SPA error-mapping honesty in `authApi.js` stays deferred.
-- **Phase 25 code review left 9 findings deferred (readability debt, deferred by operator decision on 2026-10-21).** CR-01 and WR-01 are closed, but the *rest of the «readable surfaces» goal is not met yet*: status tokens used as **text on tints** still fail 4.5:1 in the light theme (success pill **1.92:1**, voting pill **1.62:1**, error panel **3.17:1**, Login/Register field errors **3.76:1** — WR-02); the admin toast is `bg-text-primary` on `text-text-primary`, i.e. **1.00:1** and explicitly carved out of `G-10` (WR-05); the light field edge is **1.48:1** against WCAG 1.4.11's 3:1 (WR-06). WR-03 (ActionButton appends variant *and* state fills; the state fill is dead today only because of stylesheet order) and WR-04 (the light-theme spec races `data-theme`, never awaiting the attribute) are test/robustness concerns. Full reasons and per-item rationale: `.planning/phases/25-admin-nastroyka-naming-readable-surfaces-token-repair/25-REVIEW-DISPOSITION.md`. **WR-02 and WR-05 are the strongest candidates for the next phase** — they are the same defect class CR-01 was, just one family over.
+- **Phase 25 closed with 9 review findings deferred — the readability debt is now mostly PAID (updated 2026-10-22).** Plans 25-05…25-10 closed WR-02 (status labels on tints → `-ink` roles, G-14/G-18), WR-03 (`ActionButton` single fill), WR-04 (`gotoAdmin` awaits `data-theme`), WR-05 (admin toast on `bg-paper-2`/`text-ink`, 16.30/14.52), WR-06 (`--color-field-border` + G-15/G-17) and WR-07…WR-10. Only three review items remain deferred and each needs a NEW decision, not a patch: **WR-11** the radio border (`border-border` 1.178/1.554 vs the 3:1 floor, `TopicBallot.jsx role="radio"`), **WR-12** a send failure printed in `text-success-ink` (`AdminDigestPage.jsx:771` — wrong colour semantics, needs semantic colour-by-outcome), **WR-13** the conditional theme guard / `reuseExistingServer` harness risk. Full reasons: `.planning/phases/25-admin-nastroyka-naming-readable-surfaces-token-repair/25-VERIFICATION.md` § Deferred. **WR-11 is the strongest candidate for the next UI phase** — same defect class the phase existed to close, one component over.
 - Nyquist VALIDATION.md drafts for phases 6–8 remain historical audit debt (not a product requirement). Phase 24's `24-VALIDATION.md` is now `status: validated`, `nyquist_compliant: true` (0 gaps; 227 unit + 17 Playwright green).
 
 ## Deferred Items
@@ -267,14 +268,14 @@ Carried product deferrals beyond v1.3: leaderboard, quiz, Whisper/Foundry ASR, i
 
 ## Session Continuity
 
-Last session: 2026-10-21T20:03:54.901Z
-Stopped at: Completed 25-10-PLAN.md
+Last session: 2026-10-22T05:47:00.000Z
+Stopped at: Phase 25 complete, ready to plan Phase 26
 Resume file: None
-Next: `/gsd-discuss-phase 25` (or `/gsd-plan-phase 25`)
+Next: `/gsd-discuss-phase 26` (or `/gsd-plan-phase 26`)
 
 ## Operator Next Steps
 
-- Start Phase 25 with `/gsd-discuss-phase 25` (or `/gsd-plan-phase 25` to skip discussion)
+- Start Phase 26 with `/gsd-discuss-phase 26` (or `/gsd-plan-phase 26` to skip discussion)
 
 ## v1.4 roadmap (Phases 25-28)
 
