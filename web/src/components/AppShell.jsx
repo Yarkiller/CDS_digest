@@ -1,5 +1,5 @@
 import { useEffect, useState } from 'react'
-import { Link, NavLink, Outlet, useLocation } from 'react-router-dom'
+import { Link, matchPath, NavLink, Outlet, useLocation } from 'react-router-dom'
 import SearchPill from './SearchPill.jsx'
 import ThemeToggle from './ThemeToggle.jsx'
 import { getAccessToken } from '../services/authApi.js'
@@ -46,10 +46,13 @@ export default function AppShell() {
 
   // D-10: '/issues/:number' exists only inside the archive, so that prefix is the one
   // honest inference from the address; a material URL never is (it serves three origins).
-  const homeRoute = pathname === '/'
-  const archiveRoute = pathname === '/archive'
-  const issuesBranch = pathname.startsWith('/issues/')
-  const baseRoute = pathname === '/knowledge'
+  // CR-01: ask the router instead of comparing strings by hand — `matchPath` keeps the
+  // trailing-slash and case normalisation `NavLink` had, so `/archive/` or `/Archive`
+  // (both of which the router still matches) cannot leave every pill dark.
+  const homeRoute = Boolean(matchPath({ path: '/', end: true }, pathname))
+  const archiveRoute = Boolean(matchPath({ path: '/archive', end: true }, pathname))
+  const issuesBranch = Boolean(matchPath({ path: '/issues/:number' }, pathname))
+  const baseRoute = Boolean(matchPath({ path: '/knowledge', end: true }, pathname))
 
   const homeLit = homeRoute || section === 'issue'
   const archiveLit = archiveRoute || issuesBranch || section === 'archive'
