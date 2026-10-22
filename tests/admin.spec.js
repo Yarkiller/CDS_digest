@@ -415,6 +415,43 @@ test.describe("Admin nav grouping — in-page section switch (ADUX-12, D-01…D-
     await expect(page.getByTestId("admin-section-nav")).toBeHidden();
     await expect(page.getByTestId("admin-section-select")).toBeVisible();
   });
+
+  test("section pills stay dark on every admin path (C-16)", async ({ page }) => {
+    // Pin, not RED: `/admin/*` mounts the same `MaterialPage` (with `preview`) and the same
+    // shell, so a marker leaking out of the admin route — or a section inferred from the
+    // preview URL — would light one of these three pills. The shell «Админ» pill is the
+    // positive half: it must stay lit on both paths, or this test could pass on a dead nav.
+    for (const target of [
+      "/admin/digest",
+      "/admin/materials/sql-dashboards-for-audit-reporting",
+    ]) {
+      await gotoAsRole(page, "admin", target);
+
+      const adminLink = shellAdminLink(page);
+      await expect(adminLink).toBeVisible();
+      await expect(adminLink).toHaveAttribute("aria-current", "true");
+      expect((await adminLink.getAttribute("class")).split(/\s+/)).toContain("bg-primary-solid");
+
+      // Visibility first: a missing pill would make every negative assertion vacuous.
+      for (const name of [/^Выпуск$/, /^Архив$/, /^База$/]) {
+        const pill = shellNav(page).getByRole("link", { name });
+        await expect(pill, `C-16: ${name} must render on ${target}`).toBeVisible();
+        expect(
+          await pill.getAttribute("aria-current"),
+          `C-16: ${name} must carry no aria-current on ${target}`,
+        ).toBeNull();
+        const tokens = (await pill.getAttribute("class")).split(/\s+/);
+        // Token-exact on purpose: `bg-primary` is a substring of `bg-primary-solid`, so a
+        // substring match would pass on a lit pill and hide the leak this pin exists for.
+        expect(tokens, `C-16: ${name} must carry no active fill on ${target}`).not.toContain(
+          "bg-primary-solid",
+        );
+        expect(tokens, `C-16: ${name} must carry no stray base fill on ${target}`).not.toContain(
+          "bg-primary",
+        );
+      }
+    }
+  });
 });
 
 test.describe("Admin Digest — shortlist triage (ADMIN-01…03, ADMIN-05, D-79, D-80)", () => {
