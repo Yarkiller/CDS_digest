@@ -139,6 +139,22 @@ export default function KnowledgePage() {
     // Cannot loop — this effect is keyed on the URL, never on `query`.
     setQuery(qUrl)
 
+    // C-16: removing ?q is a view reset, not a data reset — the rows must go, the role chip
+    // and the snapshot cache must stay. A bare `return` would leave the previous rows on the
+    // landing, which is what the RED case pinned (mutation: removing this branch left 2 rows).
+    if (qUrl === '') {
+      lastHandledQueryRef.current = null
+      setActiveQuery(null)
+      setItems([])
+      setHasMore(false)
+      setNextOffset(0)
+      setError(null)
+      setInlineError(null)
+      setSearching(false)
+      setLoadingMore(false)
+      return
+    }
+
     const validation = validateKnowledgeQuery(qUrl)
     // Blank and overlong submissions stay inline-only, with zero requests (27-04).
     if (!validation.ok) return

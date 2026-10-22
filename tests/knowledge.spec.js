@@ -369,8 +369,7 @@ test.describe("KNOW-05 header submit runs the search", () => {
     await expectCount(page, 1, "after reload");
   });
 
-  test("a header submit resets the role filter", async ({ page }) => {
-    await page.goto("/knowledge?q=SQL");
+  test("a header submit resets the role filter", async ({ page }) => {    await page.goto("/knowledge?q=SQL");
     await expectKnowledgeSettled(page, "Показано 5");
     await page.getByRole("button", { name: "DS", exact: true }).click();
     await expect(hitLinks(page)).toHaveCount(1);
@@ -393,5 +392,47 @@ test.describe("KNOW-05 header submit runs the search", () => {
       "false",
     );
     await expectCount(page, 3, "header resets role");
+  });
+
+  test("removing ?q clears the rows", async ({ page }) => {
+    await page.goto("/knowledge?q=RAG");
+    await expectKnowledgeSettled(page, "Показано 2");
+    await expect(hitLinks(page)).toHaveCount(2);
+    await expectCount(page, 1, "loaded");
+
+    // An empty header submit is a landing navigation, not an error (C-16).
+    const header = page.getByRole("searchbox", { name: /поиск digest cds/i });
+    await header.fill("");
+    await header.press("Enter");
+
+    await expect(page).toHaveURL(/\/knowledge$/);
+    // A bare `return` on the empty branch would leave the two RAG rows on the landing.
+    await expect(hitLinks(page)).toHaveCount(0);
+    await expect(page.getByTestId("kb-hint-chips")).toBeVisible();
+    await expect(page.getByRole("searchbox", { name: /поиск по базе знаний/i })).toHaveValue("");
+    await expectCount(page, 1, "no extra request");
+  });
+
+  test("a blank page-form submit shows the inline error and issues no request", async ({ page }) => {
+    await page.goto("/knowledge");
+    await expect(knowledgeSurface(page)).toBeVisible();
+
+    await page.getByRole("button", { name: "Найти", exact: true }).click();
+
+    const inline = page.getByTestId("kb-inline-error");
+    await expect(inline).toHaveText("Введите запрос");
+    await expect(inline).toHaveAttribute("role", "alert");
+    await expect(inline).toHaveId("kb-search-inline-error");
+    await expect(page.getByRole("searchbox", { name: /поиск по базе знаний/i })).toHaveAttribute(
+      "aria-invalid",
+      "true",
+    );
+    await expect(page.getByRole("searchbox", { name: /поиск по базе знаний/i })).toHaveAttribute(
+      "aria-describedby",
+      "kb-search-inline-error",
+    );
+    // C-17: the page form owns no URL write yet — the blank submit stays put.
+    await expect(page).toHaveURL(/\/knowledge$/);
+    await expectCount(page, 0, "blank submit");
   });
 });
