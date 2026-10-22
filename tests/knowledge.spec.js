@@ -61,3 +61,67 @@ test.describe("knowledge honesty (KNOW-01…04)", () => {
     await expect(page.getByRole("heading", { name: /ничего не нашли/i })).toHaveCount(0);
   });
 });
+
+/** X-1: the request counter installed at the `searchKnowledge` boundary (UI-SPEC X-1). */
+const SEARCH_COUNT_KEY = "__DIGEST_KNOWLEDGE_SEARCH_COUNT__";
+
+/**
+ * Reset the counter on every new document, so «reload ⇒ 1 request» stays
+ * distinguishable from «a cache survived F5» (27-03).
+ */
+async function installKnowledgeCounter(page) {
+  await page.addInitScript((key) => {
+    window[key] = 0;
+  }, SEARCH_COUNT_KEY);
+}
+
+/** Anti-vacuum read: a missing instrument throws instead of reading 0 (T-27-05). */
+async function readCount(page) {
+  return page.evaluate((key) => {
+    if (typeof window[key] !== "number") {
+      throw new Error("knowledge search counter not installed");
+    }
+    return window[key];
+  }, SEARCH_COUNT_KEY);
+}
+
+async function expectCount(page, n, label) {
+  await expect.poll(() => readCount(page), { timeout: 4000, message: label }).toBe(n);
+}
+
+/** Hits are anchors rendered by MaterialListRow — there is no result-row testid. */
+const hitLinks = (page) => page.locator('a[href^="/materials/"]');
+
+test.describe("KNOW-05 header submit runs the search", () => {
+  test.beforeEach(async ({ page }) => {
+    await installKnowledgeCounter(page);
+  });
+
+  test("header submit renders results from ?q", async ({ page }) => {
+    await page.goto("/");
+
+    const header = page.getByRole("searchbox", { name: /поиск digest cds/i });
+    await header.fill("RAG");
+    await header.press("Enter");
+
+    await expect(page).toHaveURL(/\/knowledge\?q=RAG$/);
+    await expect(page.getByRole("link", { name: /building production rag systems/i })).toBeVisible();
+    await expect(page.getByTestId("kb-hint-chips")).toHaveCount(0);
+    await expect(page.getByRole("searchbox", { name: /поиск по базе знаний/i })).toHaveValue("RAG");
+    await expectCount(page, 1, "header submit");
+  });
+
+  test("changing ?q while mounted replaces the rows", async ({ page }) => {
+    await page.goto("/knowledge?q=RAG");
+    await expect(page.getByRole("link", { name: /building production rag systems/i })).toBeVisible();
+
+    const header = page.getByRole("searchbox", { name: /поиск digest cds/i });
+    await header.fill("SQL");
+    await header.press("Enter");
+
+    await expect(page).toHaveURL(/\/knowledge\?q=SQL$/);
+    await expect(page.getByRole("link", { name: /anomaly detection in audit pipelines/i })).toBeVisible();
+    await expect(page.getByRole("link", { name: /building production rag systems/i })).toHaveCount(0);
+    await expectCount(page, 2, "q change");
+  });
+});
