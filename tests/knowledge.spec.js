@@ -504,4 +504,73 @@ test.describe("KNOW-05 header submit runs the search", () => {
     const live = page.locator('p[aria-live="polite"]');
     expect(await live.textContent()).not.toMatch(/RAG/);
   });
+
+  test("a header submit replaces the history entry", async ({ page }) => {
+    await page.goto("/");
+    const before = await page.evaluate(() => history.length);
+
+    const header = page.getByRole("searchbox", { name: /поиск digest cds/i });
+    await header.fill("RAG");
+    await header.press("Enter");
+    await expect(page).toHaveURL(/\/knowledge\?q=RAG$/);
+    // C-07: a push would grow the stack by one entry (plus the marker strip's replace).
+    await expect
+      .poll(() => page.evaluate(() => history.length), { message: "no new history entry" })
+      .toBe(before);
+
+    await page.goBack();
+    // The destination itself is browser-dependent; only "not /knowledge" is contractual.
+    await expect(page).not.toHaveURL(/\/knowledge/);
+  });
+
+  test("a page-form submit writes ?q and executes once", async ({ page }) => {
+    await page.goto("/knowledge");
+    await expect(knowledgeSurface(page)).toBeVisible();
+
+    const field = page.getByRole("searchbox", { name: /поиск по базе знаний/i });
+    await field.fill("RAG");
+    await page.getByRole("button", { name: "Найти", exact: true }).click();
+
+    await expect(page).toHaveURL(/\/knowledge\?q=RAG$/);
+    await expect(page.getByRole("link", { name: /building production rag systems/i })).toBeVisible();
+    await expectCount(page, 1, "form submit");
+
+    // The URL is the source of truth, so a second click must be a second deliberate search.
+    await page.getByRole("button", { name: "Найти", exact: true }).click();
+    await expect(page).toHaveURL(/\/knowledge\?q=RAG$/);
+    await expectCount(page, 2, "second click");
+  });
+
+  test("a chip change keeps the URL and adds no history entry", async ({ page }) => {
+    await page.goto("/knowledge?q=SQL");
+    await expectKnowledgeSettled(page, "Показано 5");
+    const before = page.url();
+    const beforeLen = await page.evaluate(() => history.length);
+
+    await page.getByRole("button", { name: "DS", exact: true }).click();
+    await expect(hitLinks(page)).toHaveCount(1);
+    // C-21/C-06: the executed q is already in the URL, so the write is byte-identical and
+    // replaces — a push here would let Back re-enter a stale filter variant.
+    expect(page.url()).toBe(before);
+    expect(await page.evaluate(() => history.length)).toBe(beforeLen);
+    await expectCount(page, 2, "chip");
+
+    await page.goBack();
+    await expect(page).not.toHaveURL(/\/knowledge/);
+  });
+
+  test("a chip change on a landing with typed text writes ?q", async ({ page }) => {
+    await page.goto("/knowledge");
+    await expect(page.getByTestId("kb-hint-chips")).toBeVisible();
+
+    // Typed but not submitted: the landing rule alone would leave the hints above a result
+    // surface. The URL write is what closes it (C-21, E4 · populated).
+    await page.getByRole("searchbox", { name: /поиск по базе знаний/i }).fill("RAG");
+    await page.getByRole("button", { name: "DS", exact: true }).click();
+
+    await expect(page).toHaveURL(/\/knowledge\?q=RAG$/);
+    await expect(page.getByTestId("kb-hint-chips")).toHaveCount(0);
+    // No hit-count assertion: DS + RAG may legitimately be zero-hit.
+    await expectCount(page, 1, "chip from landing");
+  });
 });
