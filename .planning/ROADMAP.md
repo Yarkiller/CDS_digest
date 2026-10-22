@@ -173,6 +173,15 @@ Full phase detail: [milestones/v1.3-ROADMAP.md](milestones/v1.3-ROADMAP.md)
 3. A re-render after results are shown (role chip change, theme toggle, focus change) issues **no** additional request, and browser back/forward does not re-issue. *Proof:* the same counter asserted again after each interaction, plus a re-navigation assertion.
 4. A whitespace-only submit navigates to «База знаний» and issues **zero** search requests, keeping the existing blank-query guard visible. *Proof:* Playwright counter at `=== 0` plus the inline guard assertion.
 
+**Plans:** 5 plans
+
+Plans:
+- [ ] 27-01-PLAN.md — Freeze the adapter (sha256 pin) and the single `searchKnowledge` call-site gate
+- [ ] 27-02-PLAN.md — Tracer: header Enter renders results from `?q`; X-1 counter + X-2 harness; R-1 status gate; re-render Δ=0
+- [ ] 27-03-PLAN.md — Module-scope snapshot cache (Back/remount Δ=0) and the one-shot `submitId` re-submit protocol
+- [ ] 27-04-PLAN.md — Input boundary: blank reset, overlong inline rejection, landing rule keyed on `qUrl`
+- [ ] 27-05-PLAN.md — History `replace` discipline, error/retry path, XSS injection probe
+
 ### Phase 28: Live proof — streamed DeepSeek ingest
 
 **Goal:** Prove the committed streaming fix (`0dddc75`) on a real long video end to end.
