@@ -286,4 +286,49 @@ test.describe("KNOW-05 header submit runs the search", () => {
     await expect(hitLinks(page)).toHaveCount(0);
     await expectCount(page, 0, "hint chip");
   });
+
+  test("returning from a material restores the rows with no request", async ({ page }) => {
+    await page.goto("/knowledge?q=RAG");
+    await expectKnowledgeSettled(page, "Показано 2");
+    await expect(hitLinks(page)).toHaveCount(2);
+    await expectCount(page, 1, "first load");
+
+    // Installed before the click so the restore's own window is observed.
+    await resetAffordanceLog(page);
+    await hitLinks(page).first().click();
+    await expect(page).toHaveURL(/\/materials\//);
+
+    await page.goBack();
+    await expect(page).toHaveURL(/\/knowledge\?q=RAG$/);
+    await expect(hitLinks(page)).toHaveCount(2);
+    // KNOW-05 criterion 4: the same rows, and no second trip to the adapter. The counter
+    // lives inside runSearch, so a cache restore is structurally unable to bump it.
+    await expectCount(page, 1, "restore");
+    // No label at all: no live-searching, no field-disabled, no loading-state. The restored
+    // view must not pretend to be searching.
+    expect(await affordanceLog(page)).toEqual([]);
+
+    // E3 · loading, pinned structurally: a role chip that gains a spinner, a data-state or an
+    // aria-busy is the only way this invariant can break (a settled toBeEnabled() is a tautology).
+    await expect(page.getByTestId("kb-role-chips").locator("[data-state], [aria-busy]")).toHaveCount(0);
+  });
+
+  test("a reloaded URL re-queries because the cache is memory-only", async ({ page }) => {
+    await page.goto("/knowledge?q=RAG");
+    await expectKnowledgeSettled(page, "Показано 2");
+    await expectCount(page, 1, "pre-reload");
+
+    await page.reload();
+    await expect(hitLinks(page)).toHaveCount(2);
+    // installKnowledgeCounter re-installs 0 on the new document: a cache persisted to storage
+    // would read 0 here, a memory-only cache reads 1.
+    await expectCount(page, 1, "post-reload");
+  });
+
+  test("a first search renders no skeleton", async ({ page }) => {
+    await page.goto("/knowledge?q=RAG");
+    await expectKnowledgeSettled(page, "Показано 2");
+    // E5 · loading: the skeleton belongs to the append path (loadingMore) only.
+    await expect(page.locator('[data-testid="kb-skeleton"]')).toHaveCount(0);
+  });
 });
