@@ -177,7 +177,7 @@ Full phase detail: [milestones/v1.3-ROADMAP.md](milestones/v1.3-ROADMAP.md)
 3. A re-render after results are shown (role chip change, theme toggle, focus change) issues **no** additional request, and browser back/forward does not re-issue. *Proof:* the same counter asserted again after each interaction, plus a re-navigation assertion.
 4. A whitespace-only submit navigates to «База знаний» and issues **zero** search requests, keeping the existing blank-query guard visible. *Proof:* Playwright counter at `=== 0` plus the inline guard assertion.
 
-**Plans:** 5/5 plans executed
+**Plans:** 5/5 plans complete
 
 Plans:
 **Wave 1**

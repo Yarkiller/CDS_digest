@@ -1,44 +1,44 @@
 ---
-gsd_state_version: 1.0
+gsd_state_version: "1.0"
 milestone: v1.4
 milestone_name: UI polish & honest navigation
-current_phase: 27
-current_phase_name: Header search runs on submit
-status: verifying
-stopped_at: Completed 27-05-PLAN.md
-last_updated: "2026-10-22T11:57:28.507Z"
+current_phase: 28
+current_phase_name: Live proof — streamed DeepSeek ingest
+status: planning
+stopped_at: Phase 27 complete, ready to plan Phase 28
+last_updated: "2026-10-22T16:46:03.100Z"
 last_activity: 2026-10-22
-last_activity_desc: Phase 27 execution resumed (wave continue)
-state_head: c1c4a15eecfd5e88f2a70f05542cedf710768938
+last_activity_desc: Phase 27 complete, transitioned to Phase 28
+state_head: a3abe37e68acc922cf10d9fa0af3756ed3a84242
 progress:
   total_phases: 4
-  completed_phases: 2
+  completed_phases: 3
   total_plans: 18
   completed_plans: 18
-  percent: 50
+  percent: 75
 ---
 
 # Project State
 
 ## Project Reference
 
-See: .planning/PROJECT.md (updated 2026-10-22 — Phase 25 complete)
+See: .planning/PROJECT.md (updated 2026-10-22 — Phase 27 complete)
 
 **Core value:** Trusted weekly prepared-article issue + one honest vote toward the next разбор
-**Current focus:** Phase 27 — Header search runs on submit
+**Current focus:** Phase 28 — Live proof — streamed DeepSeek ingest
 
 ## Current Position
 
-Phase: 27 (Header search runs on submit) — EXECUTING
-Plan: 5 of 5
-Status: Phase complete — ready for verification
-Last activity: 2026-10-22 — Phase 27 execution resumed (wave continue)
+Phase: 28 — Live proof — streamed DeepSeek ingest
+Plan: Not started
+Status: Ready to plan
+Last activity: 2026-10-22 — Phase 27 complete, transitioned to Phase 28
 
 ## Performance Metrics
 
 **Velocity:**
 
-- Total plans completed: 41 (40 v1 + 23 v1.1 + 26 v1.2)
+- Total plans completed: 46 (40 v1 + 23 v1.1 + 26 v1.2)
 - Prior milestones shipped: v1 (5 phases), v1.1 (6 phases), v1.2 (5 phases)
 - v1.3 plans completed: 3
 
@@ -63,7 +63,8 @@ Last activity: 2026-10-22 — Phase 27 execution resumed (wave continue)
 | 21 | 3 | - | - |
 | 24 | 8 | - | - |
 | 25 | 10 | Complete (UAT 12/12, threats_open 0) | - |
-| 26 | 3 | - | - |
+| 26 | 3 | Complete (UAT 3/3, threats_open 0) | - |
+| 27 | 5 | Complete (UAT 2 pass + 1 deferred, threats_open 0) | - |
 **Per-Plan Metrics:**
 
 | Plan | Duration | Tasks | Files |
@@ -263,12 +264,20 @@ v1.3 roadmap locks:
 - [Phase 27]: 27-03: the restore branch sits above runSearch, whose first statement is the counter — Δ=0 is enforced by placement; the cache is a module-scope Map (cap 20, LRU) with error eviction under the same (role, q) key
 - [Phase 27]: Header navigate takes { replace: true, state: { submitId } }; the page form and chip write only q with replace and no state — A page-form state marker would be mistaken for a header submission and reset the role (D-07).
 - [Phase 27]: lastHandledQueryRef is assigned before writeQueryToUrl so one click is one request — If the ref is armed after the URL write, the effect fires a second search for the same q.
+- [Phase 27]: runSearch carries a `searchGenerationRef` guard, so a slower older response is discarded instead of overwriting a newer settled result (WR-01) — The generation is bumped on every entry and validated after `await`; cache writes and all `setState` calls happen only for the current generation.
+- [Phase 27]: an overlong submit on an already-settled surface resets items/hasMore/nextOffset/activeQuery, not just the error (WR-03) — Leaving the previous rows under «Сократите запрос» claimed results for a query that was never run.
+- [Phase 27]: in-flight CTA chrome is single-sourced in ActionButton (opacity 0.80 while loading, 0.55 only when disabled), and role chips stay clickable during a search — A `disabled={searching}` chip was both a lie (the chip did not start the search) and a double-source of the dimmed state.
+- [Phase 27]: C-12 paging resume is proven by 21 test-only `pagingFixtures` (unique `paging` token, `inIssue: false`) instead of a live catalogue — 21 matches are the minimum that keeps `has_more` true after the first append, so the third page must resume at offset 20; `inIssue: false` keeps the issue, archive and voting counts untouched.
+- [Phase 27]: `INVALID_ROLE` toast (T-27-16 / 27-UAT test 3) is deferred to the Phase 28 live stand — The mock adapter cannot produce the code and re-pinning the frozen `knowledgeApi.js` to fake it would trade a real gate for a simulated pass; the owner chose live verification.
+- [Phase 27 security]: T-27-16 accepted below the `high` threshold as AR-27-03 with follow-up FU-27-01 — 27-SECURITY.md records 19 evaluated, 0 open threats.
 
 ### Pending Todos
 
 None.
 
 ### Blockers/Concerns
+
+- **Phase 27 left exactly one deferred verification for Phase 28.** `27-UAT.md` test 3 / `27-VERIFICATION.md` row 32: the `INVALID_ROLE` chip toast («Фильтр недоступен» ~4 s, error stays on `kb-search-error`) is unexercised under mocks. Phase 28 runs against the live API — trigger it there and then mark the item resolved. Accepted risk AR-27-03 / follow-up FU-27-01 ride the same live session.
 
 - **Vite dev-server flakiness in this workspace (operational, recurring).** Across Phases 18-02, 18-03, the Phase 18 gates and the Phase 24 UAT/validation runs, the Playwright `web` project produced mass failures on `127.0.0.1:5174` — a reuse fight between a stale long-lived Vite server and a new run, or the server dying mid-run. **Phase 24 closing added a second signature:** a stale server left running with `VITE_USE_MOCKS=false` from `web/.env.local` makes every admin spec land on the login screen (17 failures, all on `getByTestId("admin-pipeline-page")`). Always check for a listener on 5174 (`Get-NetTCPConnection -LocalPort 5174 -State Listen`) and kill stale servers before a full-suite run; a clean re-run has produced green every time (17/17 for the Phase 24 slice).
 
@@ -296,14 +305,16 @@ Carried product deferrals beyond v1.3: leaderboard, quiz, Whisper/Foundry ASR, i
 
 ## Session Continuity
 
-Last session: 2026-10-22T11:56:54.938Z
-Stopped at: Completed 27-05-PLAN.md
+Last session: 2026-10-22T19:52:00.000Z
+Stopped at: Phase 27 complete, ready to plan Phase 28
 Resume file: None
-Next: verify phase 27 (all 5 plans executed)
+Next: plan Phase 28 (ING-09 live proof; also close deferred INVALID_ROLE + FU-27-01 against the live API)
 
 ## Operator Next Steps
 
-- Verify phase 27 — all 5 plans executed; ready for /gsd-verify-work
+- **Phase 28 is proof-only** — `0dddc75` (`stream=True` + delta assembly) is already committed; run a >10 min live video and record the result. Do not rewrite the adapter. If it still fails, record the failure and stop.
+- While the live stand is up, close the carried items in the same session: `INVALID_ROLE` chip toast (27-UAT test 3), AR-27-03 / FU-27-01 from `27-SECURITY.md`.
+- Before any full Playwright run, check port 5174 for a stale server (`Get-NetTCPConnection -LocalPort 5174 -State Listen`).
 
 ## v1.4 roadmap (Phases 25-28)
 

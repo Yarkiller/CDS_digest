@@ -78,7 +78,9 @@ Notes on ownership: the five plans map one-to-one onto waves 1–5, and every sl
 
 | Behavior | Requirement | Why Manual | Test Instructions |
 |----------|-------------|------------|-------------------|
-| C-12 «Показать ещё» offset resume | KNOW-05 | Structural in mocks: the 8-row mock catalogue with `DEFAULT_SEARCH_LIMIT = 10` never sets `has_more`, so the paging half of C-12 cannot be exercised. Recorded as an explicit deviation from the UI-SPEC assertion. | After execution, manually verify against a live/large dataset that restored snapshots resume at `nextOffset` = shown-rows count. Every other C-12 claim (identical row set/order restored, zero requests) is automated. |
+| INVALID_ROLE chip toast | KNOW-05 (E3 · error) | The mock adapter never returns `INVALID_ROLE` — the code exists only in the live HTTP 400 `detail=invalid_role` branch, and re-pinning the frozen `knowledgeApi.js` to fake it would trade a real gate for a simulated pass. | On the live stand (Phase 28): click a role chip with a token that provokes `INVALID_ROLE` and confirm `kb-filter-toast` «Фильтр недоступен» for ~4 s while the search error stays on `kb-search-error`. Deferred follow-up: `27-UAT.md` test 3. |
+
+*C-12 «Показать ещё» offset resume is no longer manual-only — it is automated by `web/src/data/mock.js` `pagingFixtures` (21 rows under a unique `paging` token) plus `a paginated delivery is restored as one snapshot and resumes from nextOffset`.*
 
 *All other phase behaviors have automated verification.*
 

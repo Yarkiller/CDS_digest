@@ -12,6 +12,12 @@ Authorized СВА staff can read a trustworthy weekly issue of prepared articles
 
 v1.4 UI polish & honest navigation started 2026-10-21 (Phases 25–28). Scope: close the five user-reported UI defects found in live use — honest admin naming and readable form surfaces, theme-independent button labels, section context that survives navigation plus anchor scrolling that clears the sticky header, and a header search that runs on the first Enter — and land one live proof that the streamed DeepSeek ingest completes end-to-end.
 
+v1.4 progress: **Phases 25–27 complete (18/18 plans), Phase 28 pending (ING-09 live proof).**
+
+Phase 26 shipped 2026-10-22: «Содержание» anchors land clear of the sticky header via one `scroll-padding-top: calc(var(--header-height) + 1rem)` declaration plus a measured 200px mobile token (`NAV-01`), and the header keeps «Архив»/«База» lit from a single closed `history.state.usr.section` marker that degrades honestly on a direct visit (`NAV-02`). UAT 3/3, threats_open 0; two review items carried (desktop gap ~7px in the 640–999px band).
+
+Phase 27 shipped 2026-10-22: one Enter in the header runs the search immediately — the pill only produces a URL plus an opaque `submitId`, the page effect issues exactly one request per submission and zero for an empty query, and Back restores the settled rows at Δ=0 from a memory-only cache (`KNOW-05`). Closed after security (`27-SECURITY.md`, 0 open threats; T-27-16 accepted below threshold as AR-27-03) and a retroactive UI audit; four review findings were fixed under TDD — overlong submit on a mounted surface now clears the rows (WR-03), in-flight CTA chrome is single-sourced and role chips stay live, placeholder contrast clears 4.5:1 in both themes, and `searchGenerationRef` discards a slower older response (WR-01). UAT closed 2 pass + 1 deferred: C-12 paging resume is now automated (21 `pagingFixtures` + a resume case), and the `INVALID_ROLE` toast is deferred to the Phase 28 live stand because the mock adapter cannot produce that code.
+
 Phase 25 (v1.4 phase 1) shipped 2026-10-22: the pipeline section is named «Настройка» on all three surfaces with the URL unchanged, the semantic token family (`paper` / `paper-2` / `ink` / `ink-2` / `muted` / `rule` plus the theme-independent `-solid` / `on-solid` / `voting-ink` / `scrim` roles) is declared and gated by 22 automated checks (`G-0`…`G-21`), the «Админ» eyebrow is gone and the ingest block is «Источники». UAT closed 12/12 (320px geometry, partially filled forms, long ids, zero-one-many rows); security re-check found 37 threats, 0 open. Two findings still need a semantic decision rather than a patch — the radio border (WR-11) and the send-failure colour (WR-12) — and are recorded as deferred.
 
 v1.3 Live mail, scheduled ingestion & backlog debt started 2026-10-14 (Phases 17+). Scope: backlog tech debt first — 999.1 reader-route honesty, 999.6 unsaved-changes guard, 999.7 YAML merge-key — then MAIL-02 investigation + signup mail, MAIL-01 live SMTP digest delivered to `profiles`, and a cron/systemd scheduled ingestion over the existing `ingest` CLI (YouTube channel/playlist source; drafts only, never auto-send).
@@ -155,11 +161,13 @@ v1 is done only when **all** of the following hold:
 - ✓ MAIL-01 — weekly digest delivered by a real SMTP mailer to the `profiles` audience with an honest `recipient_count`/`delivered_count` and contained failures — Phase 21
 - ✓ ING-05/06/07 — scheduled ingestion: a systemd timer drives `ingest-collect` against enabled sources with a due gate in `Europe/Moscow`, a monotonic cursor, `flock` single-flight, a bounded run (`TimeoutStartSec=1800`), a numeric-code `OnFailure=` alert, and drafts + shortlist rows only (migration 013) — Phase 24
 - ✓ PIPEUI-01…04 + THEME-01/02 — admin «Настройка» naming on all three surfaces with `/admin/pipeline` byte-identical, the semantic token family (`paper`/`paper-2`/`ink`/`ink-2`/`muted`/`rule` + theme-independent `-solid`/`on-solid`/`voting-ink`/`scrim`/`field-border`/`primary-text`/`accent-text`/`danger-ink`) declared and gated by `G-0`…`G-21`, eyebrow removed, ingest block «Источники», theme-independent labels on every fill — Phase 25
+- ✓ NAV-01 — «Содержание» links land with the heading fully visible below the sticky header: one `scroll-padding-top: calc(var(--header-height) + 1rem)` in the base layer, plus a measured 200px mobile token, proven on short and long sections and with a zero-heading page — Phase 26
+- ✓ NAV-02 — the header keeps «Архив»/«База» lit for an issue or material opened from that section via a single closed `history.state.usr.section` marker; a direct URL visit lights no false section — Phase 26
+- ✓ KNOW-05 — a header submit runs the search immediately: one request per submission (the pill only produces a URL + opaque `submitId`), zero for an empty query, no double-fire on re-render, and Back restores the settled rows at Δ=0 from a memory-only cache; `knowledgeApi.js` byte-identical — Phase 27
 
 ### Active
 
-v1.4 UI polish & honest navigation (Phases 25–28). The full scoped list with REQ-IDs lives in
-`.planning/REQUIREMENTS.md`; entries move to Validated as each phase closes.
+v1.4 UI polish & honest navigation (Phases 25–28). Phases 25–27 are shipped; only ING-09 (Phase 28, live proof) remains. The full scoped list with REQ-IDs lives in `.planning/REQUIREMENTS.md`.
 
 ### Out of Scope
 
@@ -246,6 +254,12 @@ v1.4 UI polish & honest navigation (Phases 25–28). The full scoped list with R
 | Phase 25: the base `--color-primary` stays byte-identical (#8B5CF6) as fill/border/ring/tint; only the *label* role moves to the theme-dependent `--color-primary-text` (#A78BFA dark / #6D28D9 light) | A single token cannot be both a 4.5:1 label in both themes and an unchanged brand fill (D-05 forbids darkening the base); splitting the role was the only honest fix for GAP-25-5 | ✓ Phase 25 |
 | Phase 25: readability is enforced by static node gates (`G-0`…`G-21`) that read the tree, not the runtime, and each gate carries a proof test | A gate that cannot fail is worse than no gate: CR-01 passed a green suite because `G-9` read only named tokens. Every new gate is mutation-proven, and `G-12` forbids arbitrary-value colours outright | ✓ Phase 25 |
 | Phase 25: backstops the verifier cannot prove automatically are human UAT, never a silent pass | 12 geometry/overflow/state backstops (320px, partially filled forms, long ids, zero-one-many) closed through `/gsd-verify-work` instead of being asserted away | ✓ Phase 25 (12/12)
+| Phase 26: anchor offset is one base-layer `scroll-padding-top` declaration plus a measured 200px mobile token, not per-heading `scroll-margin` | `scroll-padding-top` on the scrolling root covers every heading the reader can reach, including ones added later; the mobile height is measured (196.6 @390 / 122.6 @639, rounded to 200) rather than guessed, and 640px keeps the locked 64px header | ✓ Phase 26
+| Phase 26: section origin is one closed literal in `history.state.usr.section`, never the URL and never storage | The same `/materials/:id` URL is reachable from three sections, so the URL cannot name the origin; state degrades honestly to "no section lit" on a direct visit, and `NavLink` would erase an explicit `aria-current` on an inactive route | ✓ Phase 26
+| Phase 27: the header pill stays navigation-only (URL + opaque `submitId`); the search itself runs in the page effect | Keeps exactly one `searchKnowledge` import and one call site; the effect already owns role reset, error state and the cache, so a second caller would be a second contract | ✓ Phase 27
+| Phase 27: byte-identical adapter digest is pinned over LF-normalised text, and the single-call-site gate excludes the declaration by SHAPE | A CRLF checkout must not redden C-24 for the wrong reason while any real edit still fails; whitelisting a filename would let the gate pass on an empty scan | ✓ Phase 27
+| Phase 27: response ordering is protected by a generation counter inside `runSearch`, not by disabling inputs | The user can legitimately fire a second query while the first is in flight; a slower older response must be discarded rather than allowed to overwrite the newer settled result (WR-01) | ✓ Phase 27
+| Phase 27: `INVALID_ROLE` toast is deferred to the Phase 28 live stand instead of re-pinning the frozen adapter | The mock adapter cannot produce that code, and faking it would trade a real gate for a simulated pass; the owner chose live verification in Phase 28 | ⏭️ Deferred → Phase 28 |
 | MaterialPage resets `redirectToReader`/`forbidden` on every load (CR-01/WR-01) | The instance is reused across the preview→reader handoff the flag itself triggers, so a stale `true` re-rendered `<Navigate>` to the current URL (a blank page) and wedged later navigation; the D-12 URL-only assertion could not see it (WR-02) | ✓ Phase 18 |
 
 <decisions>
@@ -287,4 +301,4 @@ After each phase transition: move validated/invalidated requirements; log decisi
 After milestone: full review of Core Value, Out of Scope, and Context against shipped reality.
 
 ---
-*Last updated: 2026-10-22 — Phase 25 complete (UAT 12/12, threats_open 0); Phase 26 ready to plan*
+*Last updated: 2026-10-22 — Phase 27 complete (UAT 2 pass + 1 deferred, threats_open 0); Phase 28 ready to plan*
