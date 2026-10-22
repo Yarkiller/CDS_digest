@@ -156,8 +156,12 @@ export default function KnowledgePage() {
     }
 
     const validation = validateKnowledgeQuery(qUrl)
-    // Blank, whitespace-only and overlong submissions stay inline-only, with zero requests.
-    if (!validation.ok) return
+    // Blank and whitespace-only queries were handled above; ONLY an overlong ?q reaches here.
+    // The copy comes from the validator (T-27-12): this file must not hold a second literal.
+    if (!validation.ok) {
+      setInlineError(validation.message)
+      return
+    }
 
     const q = validation.q
 
