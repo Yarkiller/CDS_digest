@@ -313,6 +313,43 @@ test.describe("KNOW-05 header submit runs the search", () => {
     await expect(page.getByTestId("kb-role-chips").locator("[data-state], [aria-busy]")).toHaveCount(0);
   });
 
+  test("a paginated delivery is restored as one snapshot and resumes from nextOffset", async ({
+    page,
+  }) => {
+    // C-12 / E5 · partial: the appended page is part of ONE snapshot, and the next
+    // «Показать ещё» continues from the shown-rows count instead of restarting at 0.
+    await page.goto("/knowledge?q=paging");
+    await expectKnowledgeSettled(page, "Показано 10+");
+    await expect(hitLinks(page)).toHaveCount(10);
+    await expectCount(page, 1, "first page");
+
+    await page.getByRole("button", { name: "Показать ещё", exact: true }).click();
+    await expectKnowledgeSettled(page, "Показано 20+");
+    await expect(hitLinks(page)).toHaveCount(20);
+    await expectCount(page, 2, "appended page");
+
+    // Open a hit that only exists on the appended page, then come back.
+    await hitLinks(page).nth(15).click();
+    await expect(page).toHaveURL(/\/materials\//);
+
+    await page.goBack();
+    await expect(page).toHaveURL(/\/knowledge\?q=paging$/);
+    // The restore carries the MERGED items, the live count and the load-more affordance.
+    await expectKnowledgeSettled(page, "Показано 20+");
+    await expect(hitLinks(page)).toHaveCount(20);
+    await expectCount(page, 2, "restore");
+    await expect(page.getByRole("button", { name: "Показать ещё", exact: true })).toBeVisible();
+
+    // The resumed fetch continues at offset 20 — a restart at 0 would duplicate rows.
+    await page.getByRole("button", { name: "Показать ещё", exact: true }).click();
+    await expectKnowledgeSettled(page, "Показано 21");
+    await expect(hitLinks(page)).toHaveCount(21);
+    expect(new Set(await hitLinks(page).evaluateAll((links) => links.map((a) => a.href))).size).toBe(
+      21,
+    );
+    await expectCount(page, 3, "resumed page");
+  });
+
   test("a reloaded URL re-queries because the cache is memory-only", async ({ page }) => {
     await page.goto("/knowledge?q=RAG");
     await expectKnowledgeSettled(page, "Показано 2");

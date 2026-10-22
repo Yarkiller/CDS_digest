@@ -34,6 +34,35 @@ export const pastIssue = {
   ],
 }
 
+/**
+ * C-12 paging fixture (test-only): 21 hits under one token that no real material shares, so
+ * `has_more` survives the first «Показать ещё» (21 > 20) and the resume path can be exercised
+ * end to end. `inIssue: false` keeps the issue list, the archive cards and the voting counts
+ * untouched, and the token is unique, so no existing search count in the specs changes.
+ */
+const pagingFixtures = Array.from({ length: 21 }, (_, index) => {
+  const number = index + 1
+  return {
+    id: `paging-fixture-${number}`,
+    title: `Paging Fixture ${number}`,
+    dek: `Строка ${number} длинной выдачи для проверки подгрузки страниц.`,
+    format: 'Статья',
+    readingMinutes: 3,
+    date: '12 марта 2026',
+    provenance: 'внешний текстовый источник',
+    cover: null,
+    roles: ['ds'],
+    tags: ['paging'],
+    topic: 'ml-search',
+    keywords: 'paging fixture пагинация',
+    snippet: `Фрагмент ${number} для проверки продолжения выдачи…`,
+    inIssue: false,
+    issuePosition: null,
+    summary: 'Fixture for C-12 paging resume.',
+    body: ['Fixture body.'],
+  }
+})
+
 export const materials = [
   {
     id: 'rag-systems',
@@ -282,6 +311,7 @@ export const materials = [
     summary: 'Fixture: membership role analyst, not ds (KNOW-02).',
     body: ['Только роль analyst.'],
   },
+  ...pagingFixtures,
 ]
 
 export const votingCycle = {
