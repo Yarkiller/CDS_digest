@@ -176,10 +176,19 @@ Full phase detail: [milestones/v1.3-ROADMAP.md](milestones/v1.3-ROADMAP.md)
 **Plans:** 5 plans
 
 Plans:
+**Wave 1**
 - [ ] 27-01-PLAN.md — Freeze the adapter (sha256 pin) and the single `searchKnowledge` call-site gate
+
+**Wave 2** *(blocked on Wave 1 completion)*
 - [ ] 27-02-PLAN.md — Tracer: header Enter renders results from `?q`; X-1 counter + X-2 harness; R-1 status gate; re-render Δ=0
+
+**Wave 3** *(blocked on Wave 2 completion)*
 - [ ] 27-03-PLAN.md — Module-scope snapshot cache (Back/remount Δ=0) and the one-shot `submitId` re-submit protocol
+
+**Wave 4** *(blocked on Wave 3 completion)*
 - [ ] 27-04-PLAN.md — Input boundary: blank reset, overlong inline rejection, landing rule keyed on `qUrl`
+
+**Wave 5** *(blocked on Wave 4 completion)*
 - [ ] 27-05-PLAN.md — History `replace` discipline, error/retry path, XSS injection probe
 
 ### Phase 28: Live proof — streamed DeepSeek ingest
