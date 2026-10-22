@@ -334,6 +334,10 @@ export default function KnowledgePage() {
   }
 
   function handleRoleChange(nextRole) {
+    // § E3·loading: the chips carry no `disabled`, so the re-entry guard lives here instead.
+    // A click during an in-flight search stays a no-op — exactly what `disabled` used to do —
+    // and it keeps an overlapping request out of a surface with no generation guard (WR-01).
+    if (searching) return
     setRole(nextRole)
     // Keeps the remount seed in agreement with the chip the user just chose (C-09).
     lastRoleForQuery = nextRole
@@ -451,7 +455,7 @@ function KnowledgeSearchForm({
             disabled={searching}
             aria-invalid={inlineError ? true : undefined}
             aria-describedby={inlineError ? 'kb-search-inline-error' : undefined}
-            className="min-w-0 flex-1 break-words rounded-xl border border-field-border bg-bg-surface px-4 py-3 text-sm outline-none focus-visible:outline focus-visible:outline-2 focus-visible:outline-primary"
+            className="min-w-0 flex-1 break-words rounded-xl border border-field-border bg-bg-surface px-4 py-3 text-sm outline-none placeholder:text-text-secondary focus-visible:outline focus-visible:outline-2 focus-visible:outline-primary"
           />
           <ActionButton
             type="submit"
@@ -483,7 +487,6 @@ function KnowledgeSearchForm({
               key={chip.value}
               type="button"
               aria-pressed={selected}
-              disabled={searching}
               onClick={() => onRoleChange(chip.value)}
               className={
                 selected

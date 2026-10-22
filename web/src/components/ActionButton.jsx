@@ -46,6 +46,17 @@ export default function ActionButton({
         ? 'border border-border bg-transparent text-primary-text'
         : 'bg-primary-solid text-on-solid'
 
+  /**
+   * One opacity/cursor source per render (27-UI-REVIEW Priority 2).
+   *
+   * `loading` is a state, not a generic disabled variant: it owns `opacity-80` / `cursor-wait`
+   * in `stateChrome`. Emitting `disabled:opacity-55 disabled:cursor-not-allowed` next to it put
+   * two competing `opacity` utilities in one class list, so the outcome depended on stylesheet
+   * order and measured 0.55 / `not-allowed` instead of the contract's 0.80 / `wait`.
+   */
+  const disabledChrome =
+    state === 'loading' ? '' : 'disabled:cursor-not-allowed disabled:opacity-55'
+
   return (
     <button
       type="button"
@@ -53,7 +64,7 @@ export default function ActionButton({
       disabled={disabled || state === 'loading'}
       className={[
         'inline-flex min-h-11 items-center justify-center rounded-full px-4 text-sm font-medium transition-colors',
-        'disabled:cursor-not-allowed disabled:opacity-55',
+        disabledChrome,
         variantClass,
         stateFill[state] ?? '',
         stateChrome[state] ?? '',

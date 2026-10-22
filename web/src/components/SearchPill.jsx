@@ -64,7 +64,7 @@ export default function SearchPill() {
         value={query}
         onChange={(event) => setQuery(event.target.value)}
         placeholder="Поиск по базе"
-        className="box-border min-h-12 w-full min-w-0 rounded-full border border-field-border bg-bg-surface px-4 py-3 text-sm text-text-primary outline-none placeholder:text-text-disabled focus-visible:outline focus-visible:outline-2 focus-visible:outline-primary sm:min-w-[240px]"
+        className="box-border min-h-12 w-full min-w-0 rounded-full border border-field-border bg-bg-surface px-4 py-3 text-sm text-text-primary outline-none placeholder:text-text-secondary focus-visible:outline focus-visible:outline-2 focus-visible:outline-primary sm:min-w-[240px]"
       />
     </form>
   )

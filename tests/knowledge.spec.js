@@ -484,6 +484,131 @@ test.describe("KNOW-05 header submit runs the search", () => {
     await expectCount(page, 1, "overlong after a settled RAG search");
   });
 
+  test("the in-flight chrome keeps one opacity source and live role chips", async ({ page }) => {
+    // 27-UI-SPEC § State model `in-flight`: «Найти» `data-state="loading"` + `opacity-80`;
+    // § E3·loading: «У чипов нет спиннера/`disabled` во время поиска».
+    await page.goto("/knowledge");
+
+    await page.evaluate(() => {
+      window.__KB_CHROME_SAMPLES__ = [];
+      window.__KB_CHROME_STOP__ = false;
+      const sample = () => {
+        if (window.__KB_CHROME_STOP__) return;
+        const button = document.querySelector('button[data-state="loading"]');
+        if (button) {
+          const style = getComputedStyle(button);
+          window.__KB_CHROME_SAMPLES__.push({
+            opacity: style.opacity,
+            cursor: style.cursor,
+            chips: [...document.querySelectorAll('[data-testid="kb-role-chips"] button')].map(
+              (chip) => chip.disabled,
+            ),
+          });
+        }
+        requestAnimationFrame(sample);
+      };
+      requestAnimationFrame(sample);
+    });
+
+    await page.getByRole("searchbox", { name: /поиск по базе знаний/i }).fill("RAG");
+    await page.getByRole("button", { name: "Найти", exact: true }).click();
+    await expectKnowledgeSettled(page, "Показано 2");
+
+    const samples = await page.evaluate(() => {
+      window.__KB_CHROME_STOP__ = true;
+      return [...window.__KB_CHROME_SAMPLES__];
+    });
+
+    // Anti-vacuum: a sampler that never observes the window would make every check below empty.
+    expect(samples.length, "the in-flight window must be sampled at least once").toBeGreaterThan(0);
+    const opacities = [...new Set(samples.map((sample) => sample.opacity))];
+    const cursors = [...new Set(samples.map((sample) => sample.cursor))];
+    expect(opacities, "exactly one opacity source during in-flight").toEqual(["0.8"]);
+    expect(cursors, "the contract's cursor-wait, not not-allowed").toEqual(["wait"]);
+    const chipStates = samples.flatMap((sample) => sample.chips);
+    expect(
+      chipStates.every((disabled) => disabled === false),
+      "role chips stay live during in-flight",
+    ).toBe(true);
+  });
+
+  test("both search inputs keep their placeholder above 4.5:1 in both themes", async ({ page }) => {
+    // 27-UI-SPEC § Color — placeholder copy is the only text on the phase's primary input.
+    const srgb = (value) => {
+      const match = /^rgba?\((\d+),\s*(\d+),\s*(\d+)(?:,\s*([\d.]+))?\)$/.exec(value);
+      if (!match) return null;
+      return [
+        Number(match[1]),
+        Number(match[2]),
+        Number(match[3]),
+        match[4] === undefined ? 1 : Number(match[4]),
+      ];
+    };
+    const luminance = ([r, g, b]) => {
+      const channel = (raw) => {
+        const c = raw / 255;
+        return c <= 0.03928 ? c / 12.92 : ((c + 0.055) / 1.055) ** 2.4;
+      };
+      return 0.2126 * channel(r) + 0.7152 * channel(g) + 0.0722 * channel(b);
+    };
+    const ratio = (fg, bg) => {
+      const [light, dark] = [luminance(fg), luminance(bg)].sort((a, b) => b - a);
+      return (light + 0.05) / (dark + 0.05);
+    };
+
+    const read = async () =>
+      page.evaluate(() => {
+        const probe = (element) => {
+          const placeholder = getComputedStyle(element, "::placeholder").color;
+          let node = element;
+          let background = getComputedStyle(node).backgroundColor;
+          while (node && (background === "rgba(0, 0, 0, 0)" || background === "transparent")) {
+            node = node.parentElement;
+            if (!node) break;
+            background = getComputedStyle(node).backgroundColor;
+          }
+          return { placeholder, background };
+        };
+        return {
+          pill: probe(document.querySelector('header input[type="search"]')),
+          field: probe(document.querySelector("#kb-search")),
+        };
+      });
+
+    const check = async (theme) => {
+      const { pill, field } = await read();
+      for (const [name, probe] of [
+        ["header pill", pill],
+        ["page field", field],
+      ]) {
+        const foreground = srgb(probe.placeholder);
+        const background = srgb(probe.background);
+        expect(
+          foreground,
+          `${theme}/${name}: no explicit placeholder colour token (computed "${probe.placeholder}")`,
+        ).not.toBeNull();
+        expect(background, `${theme}/${name}: surface must be an opaque rgb colour`).not.toBeNull();
+        const measured = ratio(foreground, background);
+        expect(
+          measured,
+          `${theme}/${name}: placeholder contrast ${measured.toFixed(2)}:1 (${probe.placeholder} on ${probe.background})`,
+        ).toBeGreaterThanOrEqual(4.5);
+      }
+      return { pill: pill.placeholder, field: field.placeholder };
+    };
+
+    await page.goto("/knowledge?q=RAG");
+    const dark = await check("dark");
+
+    await page.getByTestId("theme-toggle").click();
+    await expect(page.locator("html")).toHaveAttribute("data-theme", "light");
+    const light = await check("light");
+
+    // One placeholder role for the page's two search inputs, not two different greys.
+    expect(dark.pill, "dark: the two inputs must share one placeholder colour").toBe(dark.field);
+    expect(light.pill, "light: the two inputs must share one placeholder colour").toBe(light.field);
+  });
+
   test("the landing never coexists with a query", async ({ page }) => {
     // Overlong: no request, so `activeQuery` stays null — the frame that used to leak hints.
     await page.goto(`/knowledge?q=${"a".repeat(501)}`);
