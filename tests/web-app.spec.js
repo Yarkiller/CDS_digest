@@ -967,3 +967,159 @@ test.describe("section context — anchor offset (NAV-01)", () => {
     );
   });
 });
+
+/*
+ * NAV-02 — the header keeps the section the reader came from (26-UI-SPEC C-08…C-20).
+ *
+ * The marker rides `history.state` as one of three literals (`'archive' | 'base' | 'issue'`)
+ * and is compared at exactly one read point (`AppShell`). `aria-current` carries `page` for
+ * the pill's own route and `true` for a section claimed by state or by the `/issues/` prefix.
+ * Class comparisons are token-exact: `bg-primary` is a substring of `bg-primary-solid`, so
+ * `toHaveClass(/bg-primary/)` would silently pass on every pill.
+ */
+test.describe("section context — header pills (NAV-02)", () => {
+  function shellNav(page) {
+    return page.getByRole("navigation", { name: /основная навигация/i });
+  }
+
+  function sectionPill(page, name) {
+    return shellNav(page).getByRole("link", { name });
+  }
+
+  async function classTokens(locator) {
+    return (await locator.getAttribute("class")).split(/\s+/).filter(Boolean);
+  }
+
+  function isLit(tokens) {
+    return tokens.includes("bg-primary-solid") && tokens.includes("text-on-solid");
+  }
+
+  async function litCount(page) {
+    let count = 0;
+    for (const name of [/^Выпуск$/, /^Архив$/, /^База$/]) {
+      if (isLit(await classTokens(sectionPill(page, name)))) count += 1;
+    }
+    return count;
+  }
+
+  test("section pills: own routes keep aria-current=page (C-15)", async ({ page }) => {
+    // Pin, not RED: the three sections move from NavLink to Link in this phase, so the
+    // own-route announcement must be proven before the element changes.
+    for (const [path, name] of [
+      ["/", /^Выпуск$/],
+      ["/archive", /^Архив$/],
+      ["/knowledge", /^База$/],
+      ["/voting", /^Голосование$/],
+      ["/razbory", /^Разборы$/],
+    ]) {
+      await page.goto(path);
+      await expect(sectionPill(page, name)).toHaveAttribute("aria-current", "page");
+    }
+  });
+
+  test("section pills: archive -> issue lights Архив (C-08)", async ({ page }) => {
+    await page.goto("/archive");
+    await page.getByRole("link", { name: /выпуск №13/i }).click();
+    // Render barrier, never waitForURL: the URL changes before React commits.
+    await expect(page.getByTestId("issue-ready")).toBeVisible();
+
+    const archive = sectionPill(page, /^Архив$/);
+    await expect(archive).toHaveAttribute("aria-current", "true");
+    const archiveTokens = await classTokens(archive);
+    expect(archiveTokens).toContain("bg-primary-solid");
+    expect(archiveTokens).toContain("text-on-solid");
+
+    for (const name of [/^Выпуск$/, /^База$/]) {
+      const other = sectionPill(page, name);
+      expect(await other.getAttribute("aria-current")).toBeNull();
+      expect(isLit(await classTokens(other))).toBe(false);
+    }
+  });
+
+  test("section pills: a direct /issues/13 lights Архив (C-14)", async ({ page }) => {
+    // First action of a fresh test() = fresh history.state (no origin marker anywhere).
+    await page.goto("/issues/13");
+    await expect(page.getByTestId("issue-ready")).toBeVisible();
+
+    const archive = sectionPill(page, /^Архив$/);
+    await expect(archive).toHaveAttribute("aria-current", "true");
+    const archiveTokens = await classTokens(archive);
+    expect(archiveTokens).toContain("bg-primary-solid");
+    expect(archiveTokens).toContain("text-on-solid");
+
+    for (const name of [/^Выпуск$/, /^База$/]) {
+      const other = sectionPill(page, name);
+      expect(await other.getAttribute("aria-current")).toBeNull();
+      expect(isLit(await classTokens(other))).toBe(false);
+    }
+  });
+
+  test("section pills: at most one lit pill (C-20)", async ({ page }) => {
+    for (const path of ["/", "/issues/13"]) {
+      await page.goto(path);
+      if (path === "/issues/13") {
+        await expect(page.getByTestId("issue-ready")).toBeVisible();
+      }
+
+      expect(await litCount(page), `${path}: exactly one section is claimed`).toBe(1);
+
+      let marked = 0;
+      for (const name of [/^Выпуск$/, /^Архив$/, /^База$/]) {
+        const value = await sectionPill(page, name).getAttribute("aria-current");
+        if (value === "page" || value === "true") marked += 1;
+      }
+      expect(marked, `${path}: exactly one pill carries aria-current`).toBe(1);
+    }
+  });
+
+  test("section pills: the pill changes paint only, token-exact (C-18)", async ({ page }) => {
+    const shared = ["min-h-11", "rounded-full", "px-2.5", "text-sm"];
+    const readColors = (locator) =>
+      locator.evaluate((el) => {
+        const style = getComputedStyle(el);
+        return { background: style.backgroundColor, color: style.color };
+      });
+
+    await page.goto("/archive");
+    const activePill = sectionPill(page, /^Архив$/);
+    // Attribute first: a colour read during a transition measures the interpolation.
+    await expect(activePill).toHaveAttribute("aria-current", "page");
+    const activeTokens = await classTokens(activePill);
+    expect(activeTokens).toContain("bg-primary-solid");
+    expect(activeTokens).toContain("text-on-solid");
+    expect(activeTokens).not.toContain("bg-primary");
+    expect(activeTokens).not.toContain("text-text-secondary");
+    for (const token of shared) {
+      expect(activeTokens, `active pill keeps ${token}`).toContain(token);
+    }
+    const activeColors = await readColors(activePill);
+    expect(activeColors.background).toBe("rgb(124, 58, 237)");
+    expect(activeColors.color).toBe("rgb(255, 255, 255)");
+
+    await page.goto("/");
+    const idlePill = sectionPill(page, /^Архив$/);
+    const idleTokens = await classTokens(idlePill);
+    expect(idleTokens).toContain("text-text-secondary");
+    expect(idleTokens).toContain("hover:bg-bg-surface");
+    expect(idleTokens).not.toContain("bg-primary-solid");
+    expect(idleTokens).not.toContain("bg-primary");
+    for (const token of shared) {
+      expect(idleTokens, `inactive pill keeps ${token}`).toContain(token);
+    }
+    const idleColors = await readColors(idlePill);
+    expect(idleColors.background).toBe("rgba(0, 0, 0, 0)");
+    expect(idleColors.color).toBe("rgb(148, 163, 184)");
+
+    // The active fill is theme-independent; the inactive label is not.
+    await page.getByTestId("theme-toggle").click();
+    await expect(page.locator("html")).toHaveAttribute("data-theme", "light");
+    await page.goto("/archive");
+    await expect(page.locator("html")).toHaveAttribute("data-theme", "light");
+    const lightActive = sectionPill(page, /^Архив$/);
+    await expect(lightActive).toHaveAttribute("aria-current", "page");
+    const lightActiveColors = await readColors(lightActive);
+    expect(lightActiveColors.background).toBe("rgb(124, 58, 237)");
+    expect(lightActiveColors.color).toBe("rgb(255, 255, 255)");
+    expect((await readColors(sectionPill(page, /^Выпуск$/))).color).toBe("rgb(100, 116, 139)");
+  });
+});
