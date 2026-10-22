@@ -1,9 +1,10 @@
 ---
 phase: 27-header-search-runs-on-submit
-verified: 2026-10-22T12:22:00Z
-status: human_needed
-score: 29/32 must-haves verified
-behavior_unverified: 2
+verified: 2026-10-22T19:47:00Z
+status: passed
+score: 30/32 must-haves verified
+behavior_unverified: 1
+deferred_items: 1
 overrides_applied: 0
 goal: "One Enter from the header produces results."
 requirements:
@@ -18,34 +19,22 @@ decision_coverage:
   not_honored: []
 gaps: []
 behavior_unverified_items:
-  - truth: "E5 · partial / C-12 — a paginated delivery is stored and restored as one snapshot; «Показать ещё» resumes at nextOffset"
-    test: "On a live catalogue where has_more is true, search, click «Показать ещё», open a hit, then Back."
-    expected: "The restored snapshot keeps the merged items, hasMore and nextOffset; the next «Показать ещё» continues from the shown-rows count, with Δ=0 on restore."
-    why_human: "Mock catalogue is 8 rows with DEFAULT_SEARCH_LIMIT=10, so has_more is never true. Presence of hasMore/nextOffset on the Map entry cannot prove resume."
   - truth: "E3 · error — a failed role change shows kb-filter-toast «Фильтр недоступен» for 4 s while kb-search-error renders separately"
-    test: "Force an INVALID_ROLE response (live adapter or a dedicated fail-next-role harness), then click a role chip on a settled search."
+    test: "Force an INVALID_ROLE response (live adapter), then click a role chip on a settled search."
     expected: "Toast «Фильтр недоступен» for ~4 s; search error, if any, is kb-search-error, not the header."
-    why_human: "The mock adapter never returns INVALID_ROLE. searchFailureState + setToast exist, but no test can redden this path."
-human_verification:
-  - test: "At 320/390/1280, submit a long query and inspect hint chips, MaterialListRow titles/snippets, the zero-hit card, the live region, and kb-search-error."
-    expected: "Text wraps inside the existing flex-wrap / grid-cols-[4rem_minmax(0,1fr)] / p-8 / panel layout. No new truncate, line-clamp, or scroll container on these surfaces."
-    why_human: "Six PLAN truths are tagged verification: backstop (E3/E4/E5/E6/E7/E8 overflow). Presence of flex-wrap and absence of truncate is wiring, not wrap proof."
-  - test: "On a live catalogue where has_more is true, search, paginate with «Показать ещё», open a material, then Back."
-    expected: "Restored rows include the appended page; the next «Показать ещё» continues from nextOffset. Restore itself issues 0 requests."
-    why_human: "C-12 resume is listed as Manual-Only in 27-VALIDATION.md; the mock never sets has_more."
-  - test: "Trigger INVALID_ROLE on a role-chip change (live API or a role-fail harness)."
-    expected: "kb-filter-toast «Фильтр недоступен» for 4 s; the header stays free of the search error."
-    why_human: "Mock never produces INVALID_ROLE; this PLAN-03 must-have is present in code and unexercised."
+    why_unverified: "The mock adapter never returns INVALID_ROLE — the code exists only in the live HTTP 400 detail=invalid_role branch, and re-pinning the frozen adapter to fake it would trade a real gate for a simulated pass."
+    disposition: "DEFERRED by the project owner on 2026-10-22 to Phase 28 «Live proof — streamed DeepSeek ingest», which runs against the live API. Recorded as 27-UAT.md test 3 (result: skipped, `deferred: true`) and in its `## Deferred Follow-Ups`."
+human_verification: []
 ---
 
 # Phase 27: Header search runs on submit — Verification Report
 
 **Phase Goal:** One Enter from the header produces results.
-**Verified:** 2026-10-22T12:22:00Z
-**Status:** human_needed
-**Re-verification:** No — initial verification (no previous `27-VERIFICATION.md` existed)
+**Verified:** 2026-10-22T19:47:00Z (initial 2026-10-22T12:22:00Z, re-verified after UAT)
+**Status:** passed
+**Re-verification:** Yes — C-12 moved from PRESENT_BEHAVIOR_UNVERIFIED to VERIFIED by a new automated test; INVALID_ROLE deferred to Phase 28 by the project owner.
 
-Goal is observably true in the tree: one Enter in the header searchbox navigates to `/knowledge?q=…`, the page effect runs `searchKnowledge` once, and a hit row is on screen without clicking «Найти». KNOW-05 is satisfied. Status is `human_needed` only because two PLAN truths have no runtime exercise and six overflow truths are tagged `verification: backstop`.
+Goal is observably true in the tree: one Enter in the header searchbox navigates to `/knowledge?q=…`, the page effect runs `searchKnowledge` once, and a hit row is on screen without clicking «Найти». KNOW-05 is satisfied. The single remaining unexercised truth (INVALID_ROLE toast) cannot be reached under mocks and is deferred, with the owner's decision recorded in `27-UAT.md`.
 
 SUMMARY.md claims were not treated as evidence. Production files, tests, greps, the two `node:test` gates, and `git diff --exit-code -- web/src/services/knowledgeApi.js` were.
 
@@ -76,7 +65,7 @@ Roadmap success criteria are 1–5 (criterion 3 split into re-render/history vs 
 | 17 | One-shot `submitId` is compared with `===`, then stripped; it does not survive reload | ✓ VERIFIED | `createSubmitId()` in `SearchPill`; consume + `setSearchParams(searchParams, { replace: true, state: null })`. Test polls `history.state` until `submitId` is null; reload counter 1. |
 | 18 | Header submit resets the role filter to «Все» (D-07) | ✓ VERIFIED | `a header submit resets the role filter`: DS-narrowed SQL → header RAG → 2 hits, «Все» pressed, DS not pressed, counter 3. Effect sets `roleRef` / `setRole` / `lastRoleForQuery` to `'all'` before `runSearch`. |
 | 19 | Removing `?q` while mounted returns to the landing and clears rows (C-16) | ✓ VERIFIED | `if (qUrl === '')` clears items/activeQuery/error/searching and returns without `runSearch`. Test: 2 hits → empty Enter → 0 hits, chips visible, counter unchanged. Does not clear `role` or the Map (prohibition). |
-| 20 | Overlong header submit is an inline rejection, 0 requests, full text, no `maxlength` (C-18) | ✓ VERIFIED | From `/`, 501 `a`s: URL `?q=a{501}`, «Сократите запрос» via `validation.message`, 0 hits, 0 chips, 0 `kb-search-error`, counter 0, both inputs length 501, `maxlength` null. `rg maxlength web/src` empty. Literals «Сократите запрос» remain two (`handleSubmit` / `handleRoleChange`); the effect uses `validation.message`. See WR-03 for the untested mounted transition. |
+| 20 | Overlong header submit is an inline rejection, 0 requests, full text, no `maxlength` (C-18) | ✓ VERIFIED | From `/`, 501 `a`s: URL `?q=a{501}`, «Сократите запрос» via `validation.message`, 0 hits, 0 chips, 0 `kb-search-error`, counter 0, both inputs length 501, `maxlength` null. `rg maxlength web/src` empty. Literals «Сократите запрос» remain two (`handleSubmit` / `handleRoleChange`); the effect uses `validation.message`. The mounted transition is now covered too — `an overlong submit on a mounted result surface clears the rows` (WR-03, fixed in `4eba79e`). |
 | 21 | Landing rule: `kb-hint-chips` ⟺ `qUrl === '' && error === null` | ✓ VERIFIED | `preSearch = qUrl === '' && error === null` is the only condition wrapping the hint block. `the landing never coexists with a query` covers overlong / zzzz / RAG. Four fixed labels test: RAG, SQL, качество данных, pgvector. |
 | 22 | Live region carries only status copy, never the query (E6) | ✓ VERIFIED | One `aria-live="polite"` node. RAG search: text `Показано 2`, does not match `/RAG/`. |
 | 23 | Non-empty header submit uses `replace`; Back leaves `/knowledge` (C-07) | ✓ VERIFIED | `navigate(..., { replace: true, state: { submitId } })`. Test pins `history.length` unchanged then `not.toHaveURL(/\/knowledge/)`. See WR-02 for the empty path, which still `push`es. |
@@ -86,11 +75,11 @@ Roadmap success criteria are 1–5 (criterion 3 split into re-render/history vs 
 | 27 | Markup in `?q` is inert text; no HTML sinks in `web/src` (C-13) | ✓ VERIFIED | XSS test: `__KB_XSS__` undefined, 0 `img[src=x]`, 0 `[onerror]`, title has no `<img`, field holds the payload, counter 1; script payload likewise, live region has no `script`. `rg dangerouslySetInnerHTML\|\.innerHTML\|document\.write\|document\.title\s*=` over `web/src` empty. |
 | 28 | SearchPill stays navigation-only | ✓ VERIFIED | No `knowledgeApi` / `searchKnowledge` / counter import. Single-call-site gate would redden a second caller. Pill only produces URL + opaque `submitId`. |
 | 29 | Static gates are auto-discovered and non-vacuous by construction | ✓ VERIFIED | `scripts/run-unit-js.cjs` still flat `readdirSync` + `.endsWith('.js')` — no allowlist. Digest `assert.equal` fails on any content edit; call-site gate names the offending path and pins the declaration it skips. This session: 4/4 unit tests pass. |
-| 30 | Overflow wrap on chips / rows / zero-hit card / live region / error panel (E3–E8 overflow) | ⚠️ insufficient_spec | `verification: backstop`. No `truncate`/`line-clamp` in `KnowledgePage.jsx` or `MaterialListRow.jsx`; hint/role chips use `flex-wrap`; zero-hit card is `p-8`. That is wiring, not wrap proof. See Human Verification. |
-| 31 | C-12 «Показать ещё» resumes at stored `nextOffset` | ⚠️ PRESENT_BEHAVIOR_UNVERIFIED | `rememberSearchSnapshot` stores `{ items, hasMore, nextOffset, limit }`; restore copies those fields. Resume cannot run: mock 8 rows, limit 10. 27-VALIDATION.md Manual-Only. |
-| 32 | E3 · error — INVALID_ROLE chip change shows «Фильтр недоступен» toast | ⚠️ PRESENT_BEHAVIOR_UNVERIFIED | `searchFailureState` + `setToast('Фильтр недоступен')` exist. Mock never returns `INVALID_ROLE`. PLAN 02 already recorded the 4 s timer as unexercised. |
+| 30 | Overflow wrap on chips / rows / zero-hit card / live region / error panel (E3–E8 overflow) | ✓ VERIFIED | `verification: backstop`, closed by UAT test 1 (automated, Playwright MCP, 320/390/1280, both themes): `documentElement.scrollWidth == clientWidth` at every width, no element under `main` with `text-overflow: ellipsis`, `-webkit-line-clamp != none`, or `overflow-x/y: auto\|scroll`; only the `sr-only` label and the single-line `<input>` report internal scroll. Evidence: `.playwright-mcp/uat27-320-hits.png`, `.playwright-mcp/uat27-1280-error.png`. Still no `truncate`/`line-clamp` in `KnowledgePage.jsx` or `MaterialListRow.jsx`. |
+| 31 | C-12 «Показать ещё» resumes at stored `nextOffset` | ✓ VERIFIED | Closed by a test-only fixture and an automated case. `web/src/data/mock.js` appends 21 `pagingFixtures` (unique `paging` token, `inIssue: false`, so the issue list, archive cards and voting counts are untouched). `a paginated delivery is restored as one snapshot and resumes from nextOffset`: 10 rows / «Показано 10+» / counter 1 → «Показать ещё» → 20 rows / «Показано 20+» / counter 2 → open an appended-page hit → Back → 20 rows, counter **2** (restore is free) and «Показать ещё» still visible → «Показать ещё» → «Показано 21», 21 rows, counter 3, 21 distinct hrefs (a restart at offset 0 would duplicate). Red first: «Найдено 0 материалов» before the fixtures. |
+| 32 | E3 · error — INVALID_ROLE chip change shows «Фильтр недоступен» toast | ⏭️ DEFERRED | `searchFailureState` + `setToast('Фильтр недоступен')` exist and are reachable only through the live HTTP 400 `detail=invalid_role` branch; the mock adapter cannot produce it, and re-pinning the frozen adapter to fake it would trade a real gate for a simulated pass. Deferred by the project owner to **Phase 28 «Live proof — streamed DeepSeek ingest»**. Recorded in `27-UAT.md` test 3 (`result: skipped`, `deferred: true`) and `## Deferred Follow-Ups`. |
 
-**Score:** 29/32 truths verified (2 present, behavior-unverified; 1 backstop abstention)
+**Score:** 30/32 truths verified · 1 deferred with the owner's decision · 0 unverified-and-open · 0 backstop abstentions
 
 ### ROADMAP wording vs locked decisions (not gaps)
 
@@ -230,31 +219,33 @@ All 10 trackable CONTEXT.md `<decisions>` entries are honored by shipped artifac
 
 ### Human Verification Required
 
-### 1. Overflow wrap (backstop)
+None open. All three original items were closed on 2026-10-22:
+
+### 1. Overflow wrap (backstop) — ✓ CLOSED (UAT test 1, automated)
 
 **Test:** At 320, 390 and 1280, submit a long query and inspect hint chips, hit titles/snippets, the zero-hit card, the live region, and `kb-search-error`.
 **Expected:** Copy wraps in the existing layout. No new truncation or inner scroll on those surfaces.
-**Why human:** PLAN truths tagged `verification: backstop`. Grep cannot see wrap.
+**Result:** Playwright MCP against `127.0.0.1:5174` (`VITE_USE_MOCKS=true`) at 320/390/1280, both themes: `documentElement.scrollWidth == clientWidth` at every width, no `text-overflow: ellipsis`, no non-`none` `-webkit-line-clamp`, no `overflow-x/y: auto|scroll` under `main`. Screenshots `uat27-320-hits.png`, `uat27-1280-error.png`, plus `uat27-overlong-320-{dark,light}-fixed.png` after the WR-03 fix.
 
-### 2. C-12 paging resume
+### 2. C-12 paging resume — ✓ CLOSED (UAT test 2, automated fixture)
 
-**Test:** Against a live/large catalogue (`has_more` true), search, click «Показать ещё», open a hit, Back, then «Показать ещё» again.
+**Test:** Search a catalogue where `has_more` is true, click «Показать ещё», open a hit, Back, then «Показать ещё» again.
 **Expected:** Restored snapshot includes the appended page; next fetch continues from `nextOffset`; restore Δ=0.
-**Why human:** Mock catalogue never sets `has_more`. Listed in 27-VALIDATION.md Manual-Only Verifications.
+**Result:** Closed by 21 `pagingFixtures` in `web/src/data/mock.js` and the case `a paginated delivery is restored as one snapshot and resumes from nextOffset` — 10 → 20 rows, Back restores 20 with counter unchanged, the third page continues to 21 with 21 distinct hrefs.
 
-### 3. INVALID_ROLE filter toast
+### 3. INVALID_ROLE filter toast — ⏭️ DEFERRED → Phase 28
 
 **Test:** Produce `INVALID_ROLE` on a chip change.
 **Expected:** `kb-filter-toast` «Фильтр недоступен» ~4 s; search error stays on the page panel, not the header.
-**Why human:** Mock never returns that code; the branch is unexercised.
+**Disposition:** The mock cannot produce the code and the frozen adapter must not be re-pinned to fake it. Deferred by the project owner to Phase 28 «Live proof — streamed DeepSeek ingest», which runs against the live API. See `27-UAT.md` test 3 and `## Deferred Follow-Ups`.
 
 Do **not** re-walk the header-Enter happy path by hand — it is already pinned by Playwright (`header submit renders results from ?q` and siblings).
 
 ### Gaps Summary
 
-No blocking gaps. Phase goal «One Enter from the header produces results» holds in code and in the KNOW-05 spec. KNOW-05 is satisfied. Remaining items are human/visual (overflow), mock-structural (C-12 resume, INVALID_ROLE toast), and review warnings that do not falsify ROADMAP success criteria.
+No blocking gaps. Phase goal «One Enter from the header produces results» holds in code and in the KNOW-05 spec. KNOW-05 is satisfied. The one unexercised truth (INVALID_ROLE toast) is deferred to the live stand in Phase 28 by the owner's decision; C-12 and the overflow backstop are now automated.
 
-Secure-phase has not run (`27-SECURITY.md` absent) — out of verify-work scope.
+Secure-phase has run — `27-SECURITY.md` exists with `threats_open: 0` (18 closed, 1 accepted below the `high` threshold).
 
 ---
 
