@@ -293,6 +293,17 @@ export default function KnowledgePage() {
     }
   }
 
+  /**
+   * Writes the executed `q` into the URL, always with `replace` (D-02, C-06/C-07).
+   *
+   * Only `q` is written and no `state` is attached: the one-shot `submitId` marker is the
+   * header's alone (D-05), so a form or chip submission can never be mistaken for a header
+   * one (which would wrongly reset the role per D-07).
+   */
+  function writeQueryToUrl(q) {
+    setSearchParams(q ? { q } : {}, { replace: true })
+  }
+
   function handleSubmit(event) {
     event.preventDefault()
     const validation = validateKnowledgeQuery(query)
@@ -306,6 +317,11 @@ export default function KnowledgePage() {
       return
     }
     setInlineError(null)
+    // D-02 + D-05: the form still executes the search itself, but the URL becomes the
+    // record. Arming the ref BEFORE the write is what keeps the URL-change effect from
+    // firing a second request for the same q.
+    lastHandledQueryRef.current = validation.q
+    writeQueryToUrl(validation.q)
     void runSearch(validation.q, { offset: 0, append: false, role })
   }
 
@@ -323,6 +339,11 @@ export default function KnowledgePage() {
       return
     }
     setInlineError(null)
+    // C-21: write the executed q before executing. On a landing with typed text this is what
+    // moves the page off the landing, so hints can never sit above a result surface. When the
+    // URL already carries this q the write is byte-identical and replaces (no history entry).
+    lastHandledQueryRef.current = validation.q
+    writeQueryToUrl(validation.q)
     void runSearch(validation.q, { offset: 0, append: false, role: nextRole })
   }
 
@@ -349,7 +370,14 @@ export default function KnowledgePage() {
     void runSearch(validation.q, { offset: 0, append: false, role: 'all' })
   }
 
-  const preSearch = activeQuery === null && !error
+  /**
+   * The landing rule, exactly as approved (`qUrl === '' && error === null`). Derived from the
+   * URL synchronously, never from `activeQuery`: an overlong `?q` issues no request, so a
+   * state-derived flag would leave `activeQuery` null and leak the hints onto a query frame
+   * (T-27-13). Also hides the hints while a search is in flight, on zero-hit and on error.
+   */
+  const preSearch = qUrl === '' && error === null
+
   const showZeroHit =
     activeQuery !== null && !searching && !error && items.length === 0
 
