@@ -43,12 +43,6 @@ re_verification:
   gaps_newly_identified: []
 gaps: []
 deferred:
-  - truth: "WR-11 — граница радиокружка (border-border 1.178/1.554 против пола 3:1, TopicBallot.jsx role=radio)"
-    addressed_in: "future UI phase"
-    evidence: "25-10-SUMMARY.md § Отложено: «отложена верификатором в будущую UI-фазу»; вне must_have фазы (G-17 видит только input|select|textarea)"
-  - truth: "WR-12 — провал отправки печатается text-success-ink (AdminDigestPage.jsx:771)"
-    addressed_in: "future phase (semantic colour-by-outcome)"
-    evidence: "вне трёх заявленных гэпов; вердикт gaps, не fail"
   - truth: "WR-13 — условный страж темы / reuseExistingServer (риск флейка)"
     addressed_in: "future harness-hardening"
     evidence: "вне трёх заявленных гэпов"
@@ -90,8 +84,8 @@ human_verification:
     expected: "Полностью внутри пилюли, #FFFFFF на primary-solid, без обрезки"
     why_human: "overflow backstop"
 review_disposition:
-  closed: [CR-01, WR-01, IN-02, WR-02, WR-03, WR-04, WR-05, WR-06, WR-07, WR-08, WR-09, WR-10]
-  open_non_blocking: [IN-01, IN-03, IN-04, IN-05, IN-06, IN-07, IN-08, IN-09, IN-10, IN-11, WR-11, WR-12, WR-13]
+  closed: [CR-01, WR-01, IN-02, WR-02, WR-03, WR-04, WR-05, WR-06, WR-07, WR-08, WR-09, WR-10, WR-11, WR-12]
+  open_non_blocking: [IN-01, IN-03, IN-04, IN-05, IN-06, IN-07, IN-08, IN-09, IN-10, IN-11, WR-13]
 ---
 
 # Phase 25 — Verification Report (Re-verification after gap-closure wave 25-08…25-10)
@@ -252,8 +246,8 @@ review_disposition:
 | — | `return null` / `=> {}` / пустые реализации | — | 0 |
 | — | произвольные цвета / `!important` / inline-стили цвета | — | 0 (G-12 allow-list пуст) |
 | — | `console.log` в proof-замерах | ℹ️ Info | отчёт о коэффициентах при падении; не production |
-| `TopicBallot.jsx` | `border-border` у `role="radio"` 1.178/1.554 (WR-11) | ℹ️ Info → deferred | вне must_have; отложено в UI-фазу |
-| `AdminDigestPage.jsx:771` | провал отправки `text-success-ink` (WR-12) | ℹ️ Info → deferred | семантически неверный цвет исхода; вне гэпов |
+| `TopicBallot.jsx` | `border-border` у `role="radio"` 1.178/1.554 (WR-11) | ✅ Closed 2026-10-22 | `border-field-border` (≥ 3:1 в обеих темах), e2e `an unchecked ballot choice shows a 3:1 border`, G-17 санкционирует индикатор литералом |
+| `AdminDigestPage.jsx` | провал отправки `text-success-ink` (WR-12) | ✅ Closed 2026-10-22 | тон баннера (`data-banner-tone`), провал на `text-danger-ink`, e2e «a refused send reports in the danger colour» |
 | `playwright.config.js` / `gotoAdmin` | условный страж темы (WR-13) | ℹ️ Info → deferred | риск флейка, не дефект фазы |
 
 ## Human Verification Required (12 backstop-пунктов)
@@ -266,7 +260,7 @@ Goal-backward картина: naming, хром, семейство токено�
 
 Остаются **12 человеко-проверочных backstop-пунктов** — это не дефекты, а явно объявленные в планах человеческие проверки (геометрия 320px, реальный мобильный браузер). Они не блокируют цель, но по процессу верификации исключают `passed` и дают `human_needed`.
 
-Отложенные ревью-замечания `WR-11` (граница радио 1.178/1.554), `WR-12` (провал отправки зелёным), `WR-13` (стабильность харнесса) и `IN-01…IN-11` не входят в must_have фазы и на вердикт не влияют; `WR-11` — тот же класс дефекта, что закрывал 25-07, стоит взять в ближайшую UI-фазу.
+Отложенным остаётся только `WR-13` (стабильность харнесса) и `IN-01…IN-11`; `WR-11` (граница радио) и `WR-12` (провал отправки зелёным) закрыты 2026-10-22 в рамках подготовки к закрытию `v1.4` — оба получили падающий e2e до правки и зелёный прогон после.
 
 ---
 
