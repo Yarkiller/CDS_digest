@@ -1,6 +1,6 @@
 import { useCallback, useEffect, useState } from 'react'
 import Markdown from 'react-markdown'
-import { Link, Navigate, useParams } from 'react-router-dom'
+import { Link, Navigate, useLocation, useParams } from 'react-router-dom'
 import remarkGfm from 'remark-gfm'
 import rehypeSanitize from 'rehype-sanitize'
 import rehypeSlug from 'rehype-slug'
@@ -59,6 +59,10 @@ function SectionToc({ headings }) {
 
 export default function MaterialPage({ preview = false, loadMaterial }) {
   const { id: slug } = useParams()
+  // C-17: this page forwards the marker verbatim and never compares the three literals —
+  // the single read point stays in AppShell. /admin/materials/:id mounts this same page
+  // with no router state, so no marker is produced there (the admin pill keeps its prefix).
+  const { state: originState } = useLocation()
   const [material, setMaterial] = useState(null)
   const [status, setStatus] = useState('loading')
   const [notFound, setNotFound] = useState(false)
@@ -174,6 +178,9 @@ export default function MaterialPage({ preview = false, loadMaterial }) {
   const headings = extractMarkdownHeadings(material.body_markdown ?? '')
   const tags = material.tags ?? []
   const related = material.related ?? []
+  // D-08: the marker received from the previous hop is re-emitted untouched — a related
+  // material belongs to the same section as the one the reader is already in.
+  const originSection = originState?.section
   const dek = (material.dek ?? '').trim()
   const provenance = (material.provenance ?? '').trim()
   const dateLabel = formatPublishedLabel(material)
@@ -258,7 +265,11 @@ export default function MaterialPage({ preview = false, loadMaterial }) {
               <ul className="mt-3 space-y-2">
                 {related.map((item) => (
                   <li key={item.slug}>
-                    <Link to={`/materials/${item.slug}`} className="text-primary-text no-underline hover:underline">
+                    <Link
+                      to={`/materials/${item.slug}`}
+                      state={originSection ? { section: originSection } : undefined}
+                      className="text-primary-text no-underline hover:underline"
+                    >
                       {item.title}
                     </Link>
                   </li>

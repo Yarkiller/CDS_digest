@@ -384,7 +384,7 @@ function KnowledgeHitList({ items, loadingMore, hasMore, searching, onLoadMore }
     <div>
       {items.map((hit) => (
         // KNOW-03: every hit, including DS, opens /materials/{slug}.
-        <MaterialListRow key={hit.slug} material={hit} />
+        <MaterialListRow key={hit.slug} material={hit} section="base" />
       ))}
       {loadingMore ? (
         <div data-testid="kb-skeleton" className="mt-4 space-y-3" aria-busy="true">

@@ -3,8 +3,11 @@ import { Link } from 'react-router-dom'
 /**
  * Knowledge / issue hit row. Links by slug (KNOW-01 / D-59).
  * cover_url/cover may be null — degrade without thumbnail (Q2).
+ * @param {{ material: object, section: 'archive' | 'base' | 'issue' }} props
+ * `section` is required: the row is reused across sections, so a literal here would
+ * bind every future list to one of them (D-08). There is no default on purpose.
  */
-export default function MaterialListRow({ material }) {
+export default function MaterialListRow({ material, section }) {
   const slug = material.slug ?? material.id
   const cover = material.cover_url ?? material.cover ?? null
   const tags = material.tags ?? []
@@ -12,6 +15,7 @@ export default function MaterialListRow({ material }) {
   return (
     <Link
       to={`/materials/${slug}`}
+      state={{ section }}
       className="grid grid-cols-[4rem_minmax(0,1fr)] gap-4 border-b border-border py-5 text-inherit no-underline hover:bg-bg-surface sm:grid-cols-[5rem_minmax(0,1fr)]"
     >
       {cover ? (
