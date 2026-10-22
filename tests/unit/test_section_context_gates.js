@@ -106,4 +106,26 @@ describe('NAV-01 offset is one mechanism', () => {
       )
     }
   })
+
+  it('scopes the mobile override to one media block', () => {
+    const css = read('web/src/index.css')
+    const block =
+      /@media\s*\(max-width:\s*639\.98px\)\s*\{\s*:root\s*\{\s*--header-height:\s*200px;?\s*\}\s*\}/g
+    const matches = css.match(block) ?? []
+
+    assert.equal(
+      matches.length,
+      1,
+      `NAV-01: expected exactly one @media (max-width: 639.98px) :root block, found ${matches.length}`,
+    )
+    assert.equal(
+      count(css, '--header-height: 200px'),
+      1,
+      'NAV-01: the mobile value must be declared once, inside the media block',
+    )
+    assert.ok(
+      css.indexOf('@media') > css.indexOf('@layer base {'),
+      'NAV-01: the media override must live inside @layer base, above nothing that re-declares it',
+    )
+  })
 })

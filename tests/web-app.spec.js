@@ -858,4 +858,112 @@ test.describe("section context — anchor offset (NAV-01)", () => {
       after.innerHeight,
     );
   });
+
+  test("anchor offset: phone 390 keeps the target below the header (C-04)", async ({ page }) => {
+    await page.setViewportSize({ width: 390, height: 844 });
+    await page.goto("/materials/rag-systems");
+    await expect(page.getByTestId("material-prose")).toBeVisible();
+    await page.evaluate(() => document.fonts.ready);
+
+    const token = () =>
+      page.evaluate(() =>
+        getComputedStyle(document.documentElement).getPropertyValue("--header-height").trim(),
+      );
+
+    // Claim 1 and claim 2 are independent reasons the phone is broken today; soft
+    // assertions keep both visible in one RED run (25-02 precedent).
+    expect
+      .soft(await token(), "C-04: the mobile token must not stay at the desktop 64px")
+      .not.toBe("64px");
+
+    const disclosure = page.locator("details", { hasText: "Содержание" }).first();
+    await expect(disclosure).toBeVisible();
+    await disclosure.locator("summary").click();
+    const link = disclosure.getByRole("link").first();
+    const anchorId = await anchorIdOf(link);
+    const gate = await anchorGate(page, anchorId);
+
+    expect
+      .soft(gate.pad, "C-04: the offset must clear the live mobile header")
+      .toBeGreaterThanOrEqual(gate.headerHeight + 1);
+
+    // Claim 3: the target ends up below the header and inside the viewport. The
+    // [1, 32] band is deliberately NOT asserted here — one mobile token cannot
+    // produce it at both 390 and 639.
+    await link.click();
+    await expect
+      .poll(async () => (await gapAfterScroll(page, anchorId)).gap)
+      .toBeGreaterThanOrEqual(1);
+    const after = await gapAfterScroll(page, anchorId);
+    expect(after.bottom, "C-04: the target must be inside the viewport").toBeLessThanOrEqual(
+      after.innerHeight,
+    );
+  });
+
+  test("anchor offset: 639 breakpoint edge keeps the mobile token (C-05)", async ({ page }) => {
+    await page.setViewportSize({ width: 639, height: 844 });
+    await page.goto("/materials/rag-systems");
+    await expect(page.getByTestId("material-prose")).toBeVisible();
+    await page.evaluate(() => document.fonts.ready);
+
+    const token = () =>
+      page.evaluate(() =>
+        getComputedStyle(document.documentElement).getPropertyValue("--header-height").trim(),
+      );
+
+    expect
+      .soft(await token(), "C-05: the mobile token must not stay at the desktop 64px")
+      .not.toBe("64px");
+
+    const disclosure = page.locator("details", { hasText: "Содержание" }).first();
+    await expect(disclosure).toBeVisible();
+    await disclosure.locator("summary").click();
+    const link = disclosure.getByRole("link").first();
+    const anchorId = await anchorIdOf(link);
+    const gate = await anchorGate(page, anchorId);
+
+    expect
+      .soft(gate.pad, "C-05: the offset must clear the live header at 639")
+      .toBeGreaterThanOrEqual(gate.headerHeight + 1);
+
+    await link.click();
+    await expect
+      .poll(async () => (await gapAfterScroll(page, anchorId)).gap)
+      .toBeGreaterThanOrEqual(1);
+    const after = await gapAfterScroll(page, anchorId);
+    expect(after.bottom, "C-05: the target must be inside the viewport").toBeLessThanOrEqual(
+      after.innerHeight,
+    );
+
+    // The edge itself: `sm` is 640px, where the nav stops owning its own row. A
+    // min-width query or a wrong boundary keeps 64px at 639 and fails here.
+    await page.setViewportSize({ width: 640, height: 844 });
+    await expect.poll(token, "C-05: at 640 the desktop token applies").toBe("64px");
+    await page.setViewportSize({ width: 639, height: 844 });
+    await expect.poll(token, "C-05: at 639 the mobile token applies").toBe("200px");
+  });
+
+  test("anchor offset: a razbor anchor uses the same global rule (C-06)", async ({ page }) => {
+    await page.goto("/razbory/3");
+    await expect(page.getByTestId("razbor-toc")).toBeVisible();
+    await page.evaluate(() => document.fonts.ready);
+
+    const link = page.getByTestId("razbor-toc").getByRole("link").first();
+    const anchorId = await anchorIdOf(link);
+    const gate = await anchorGate(page, anchorId);
+    // D-05: the razbor must be covered by the same global rule, with zero edits
+    // to RazborPage — otherwise the anchor work would only be true by the letter.
+    assertReachable(gate, "C-06");
+
+    await link.click();
+    await expect
+      .poll(async () => (await gapAfterScroll(page, anchorId)).gap)
+      .toBeGreaterThanOrEqual(1);
+
+    const after = await gapAfterScroll(page, anchorId);
+    expect(after.gap, "C-06: the target must land inside the [1, 32] band").toBeLessThanOrEqual(32);
+    expect(after.bottom, "C-06: the whole heading must be in view").toBeLessThanOrEqual(
+      after.innerHeight,
+    );
+  });
 });
