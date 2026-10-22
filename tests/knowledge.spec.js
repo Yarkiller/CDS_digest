@@ -609,6 +609,57 @@ test.describe("KNOW-05 header submit runs the search", () => {
     expect(light.pill, "light: the two inputs must share one placeholder colour").toBe(light.field);
   });
 
+  test("a slower older search cannot overwrite a newer settled one", async ({ page }) => {
+    // WR-01: `runSearch` applied every settled response unconditionally, so on a variable
+    // network the older query could land last and leave rows that disagree with the URL.
+    // The mock's latency is a fixed `delay(80)`, so the harness holds exactly those timers and
+    // releases them out of order — the only way to reach this path without touching the frozen
+    // adapter and without stubbing a request that mock mode never makes.
+    await page.addInitScript(() => {
+      window.__KB_HELD__ = [];
+      window.__KB_HOLD_SEARCH_LATENCY__ = false;
+      const schedule = window.setTimeout.bind(window);
+      window.setTimeout = (callback, ms, ...args) => {
+        if (ms === 80 && window.__KB_HOLD_SEARCH_LATENCY__) {
+          window.__KB_HELD__.push(() => callback(...args));
+          return -1;
+        }
+        return schedule(callback, ms, ...args);
+      };
+    });
+
+    await page.goto("/knowledge");
+    await page.evaluate(() => {
+      window.__KB_HOLD_SEARCH_LATENCY__ = true;
+    });
+
+    const header = page.getByRole("searchbox", { name: /поиск digest cds/i });
+    await header.fill("RAG");
+    await header.press("Enter");
+    await header.fill("SQL");
+    await header.press("Enter");
+
+    // Both latency timers are held, so the two searches are genuinely concurrent.
+    await expect.poll(() => page.evaluate(() => window.__KB_HELD__.length)).toBe(2);
+
+    // The NEWER query settles first…
+    await page.evaluate(() => window.__KB_HELD__[1]());
+    await expectKnowledgeSettled(page, "Показано 5");
+
+    // …then the older one arrives. It must be discarded, not committed over the newer rows.
+    await page.evaluate(() => window.__KB_HELD__[0]());
+    await page.waitForTimeout(100);
+
+    await expect(page).toHaveURL(/\/knowledge\?q=SQL$/);
+    await expectKnowledgeSettled(page, "Показано 5");
+    await expect(
+      page.getByRole("link", { name: /anomaly detection in audit pipelines/i }),
+    ).toBeVisible();
+    await expect(page.getByRole("link", { name: /building production rag systems/i })).toHaveCount(
+      0,
+    );
+  });
+
   test("the landing never coexists with a query", async ({ page }) => {
     // Overlong: no request, so `activeQuery` stays null — the frame that used to leak hints.
     await page.goto(`/knowledge?q=${"a".repeat(501)}`);

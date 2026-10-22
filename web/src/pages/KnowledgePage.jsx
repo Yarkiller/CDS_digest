@@ -130,6 +130,12 @@ export default function KnowledgePage() {
   roleRef.current = role
   /** Last *executed* normalised q, written synchronously before the first await (D-03). */
   const lastHandledQueryRef = useRef(null)
+  /**
+   * WR-01: the identity of the search that currently owns the view. Every `runSearch` bumps it
+   * and every resumed continuation re-checks it, so a slow older response can never commit its
+   * rows over a newer one that has already settled.
+   */
+  const searchGenerationRef = useRef(0)
 
   // `runSearch`, `searchParams` and `role` are deliberately omitted: they are new
   // identities on every render, and including them reproduces the duplicate fire
@@ -223,6 +229,11 @@ export default function KnowledgePage() {
   }, [qUrl, submitId])
 
   async function runSearch(q, { offset = 0, append = false, role: roleValue = role } = {}) {
+    // WR-01: claim the view before the first await. Every later commit below has to prove it is
+    // still the owner; a stale response is dropped instead of being rendered (or cached).
+    const generation = (searchGenerationRef.current += 1)
+    const isCurrentSearch = () => searchGenerationRef.current === generation
+
     if (append) {
       setLoadingMore(true)
     } else {
@@ -242,6 +253,9 @@ export default function KnowledgePage() {
         limit: DEFAULT_SEARCH_LIMIT,
         offset,
       })
+      // A newer search owns the view now — this response describes a query the URL no longer
+      // carries, so it must not reach the rows, the counter or the snapshot cache (WR-01).
+      if (!isCurrentSearch()) return
       setActiveQuery(q)
       setItems((prev) => (append ? [...prev, ...dto.items] : dto.items))
       setHasMore(Boolean(dto.has_more))
@@ -272,6 +286,9 @@ export default function KnowledgePage() {
         trackGoal(ANALYTICS_GOALS.search, { role: roleValue })
       }
     } catch (err) {
+      // A superseded attempt must not evict a snapshot, raise a panel or move the role: the
+      // newer search owns all three (WR-01).
+      if (!isCurrentSearch()) return
       // An error is never cached: evict the key so a cache-eligible revisit re-queries.
       // `roleValue`/`q` are the same pair the success branch would have stored under, so a
       // failure under a different role cannot evict another role's snapshot.
@@ -290,8 +307,12 @@ export default function KnowledgePage() {
         }
       }
     } finally {
-      setSearching(false)
-      setLoadingMore(false)
+      // Only the owner may close the in-flight affordances; a stale settle must not clear a
+      // spinner that still belongs to the newer request.
+      if (isCurrentSearch()) {
+        setSearching(false)
+        setLoadingMore(false)
+      }
     }
 
     if (resetInvalidRole) {
