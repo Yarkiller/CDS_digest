@@ -1162,4 +1162,52 @@ test.describe("section context — header pills (NAV-02)", () => {
       expect(isLit(await classTokens(other))).toBe(false);
     }
   });
+
+  test("section state: knowledge -> material lights База (C-11)", async ({ page }) => {
+    await page.goto("/knowledge");
+    const search = page.getByRole("searchbox", { name: /поиск по базе знаний/i });
+    await search.fill("RAG");
+    await page.getByRole("button", { name: "Найти", exact: true }).click();
+
+    const hit = page.getByRole("link", { name: /building production rag systems/i });
+    await expect(hit).toBeVisible();
+    await hit.click();
+    await expect(page.getByTestId("material-prose")).toBeVisible();
+    expect(page.url()).toContain("/materials/rag-systems");
+
+    const base = sectionPill(page, /^База$/);
+    await expect(base).toHaveAttribute("aria-current", "true");
+    expect(isLit(await classTokens(base))).toBe(true);
+
+    for (const name of [/^Выпуск$/, /^Архив$/]) {
+      const other = sectionPill(page, name);
+      expect(await other.getAttribute("aria-current")).toBeNull();
+      expect(isLit(await classTokens(other))).toBe(false);
+    }
+  });
+
+  test("section state: related materials keep the marker (C-12)", async ({ page }) => {
+    await page.goto("/archive");
+    await page.getByRole("link", { name: /выпуск №13/i }).click();
+    await expect(page.getByTestId("issue-ready")).toBeVisible();
+    await page.getByTestId("issue-ready").locator('a[href^="/materials/"]').first().click();
+    await expect(page.getByTestId("material-prose")).toBeVisible();
+    expect(page.url()).toContain("/materials/sql-dashboards");
+
+    const related = page.getByTestId("material-related");
+    await expect(related).toBeVisible();
+    await related.getByRole("link", { name: /building production rag systems/i }).click();
+    await expect(page.getByTestId("material-prose")).toBeVisible();
+    expect(page.url()).toContain("/materials/rag-systems");
+
+    const archive = sectionPill(page, /^Архив$/);
+    await expect(archive).toHaveAttribute("aria-current", "true");
+    expect(isLit(await classTokens(archive))).toBe(true);
+
+    for (const name of [/^Выпуск$/, /^База$/]) {
+      const other = sectionPill(page, name);
+      expect(await other.getAttribute("aria-current")).toBeNull();
+      expect(isLit(await classTokens(other))).toBe(false);
+    }
+  });
 });
