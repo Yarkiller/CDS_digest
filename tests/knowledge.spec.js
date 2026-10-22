@@ -504,4 +504,70 @@ test.describe("KNOW-05 header submit runs the search", () => {
     const live = page.locator('p[aria-live="polite"]');
     expect(await live.textContent()).not.toMatch(/RAG/);
   });
+
+  test("a header submit replaces the history entry", async ({ page }) => {
+    await page.goto("/");
+    const before = await page.evaluate(() => history.length);
+
+    const header = page.getByRole("searchbox", { name: /поиск digest cds/i });
+    await header.fill("RAG");
+    await header.press("Enter");
+    await expect(page).toHaveURL(/\/knowledge\?q=RAG$/);
+    // C-07: a push grows the stack (plus the marker strip's replace of that
+    // pushed entry). `goBack` from `/` returns to `/` either way, so the length
+    // pin is the non-vacuous half; the destination after Back is
+    // browser-dependent — only "not /knowledge" is contractual.
+    await expect
+      .poll(() => page.evaluate(() => history.length), { message: "no new history entry" })
+      .toBe(before);
+
+    await page.goBack();
+    await expect(page).not.toHaveURL(/\/knowledge/);
+  });
+
+  test("a page-form submit writes ?q and executes once", async ({ page }) => {
+    await page.goto("/knowledge");
+    await expect(knowledgeSurface(page)).toBeVisible();
+
+    await page.getByRole("searchbox", { name: /поиск по базе знаний/i }).fill("RAG");
+    await page.getByRole("button", { name: "Найти" }).click();
+
+    await expect(page).toHaveURL(/\/knowledge\?q=RAG$/);
+    await expect(hitLinks(page)).toHaveCount(2);
+    await expectCount(page, 1, "form submit");
+
+    await page.getByRole("button", { name: "Найти" }).click();
+    await expect(page).toHaveURL(/\/knowledge\?q=RAG$/);
+    await expectCount(page, 2, "second click");
+  });
+
+  test("a chip change keeps the URL and adds no history entry", async ({ page }) => {
+    await page.goto("/knowledge?q=SQL");
+    await expectKnowledgeSettled(page, "Показано 5");
+    const before = page.url();
+
+    await page.getByRole("button", { name: "DS", exact: true }).click();
+    await expect(hitLinks(page)).toHaveCount(1);
+    expect(page.url()).toBe(before);
+    await expectCount(page, 2, "chip");
+
+    await page.goBack();
+    await expect(page).not.toHaveURL(/\/knowledge/);
+  });
+
+  test("a chip change on a landing with typed text writes ?q", async ({ page }) => {
+    await page.goto("/knowledge");
+    await expect(page.getByTestId("kb-hint-chips")).toBeVisible();
+
+    // Typed, not submitted: without a URL write the landing rule
+    // (`preSearch = qUrl === '' && error === null`) would keep the hints above
+    // the new result surface. C-21 closes that frame.
+    await page.getByRole("searchbox", { name: /поиск по базе знаний/i }).fill("RAG");
+    await page.getByRole("button", { name: "DS", exact: true }).click();
+
+    await expect(page).toHaveURL(/\/knowledge\?q=RAG$/);
+    await expect(page.getByTestId("kb-hint-chips")).toHaveCount(0);
+    await expectCount(page, 1, "chip from landing");
+  });
 });
+
