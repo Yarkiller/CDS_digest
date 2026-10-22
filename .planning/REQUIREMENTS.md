@@ -34,7 +34,7 @@ already-committed streamed DeepSeek fix (`0dddc75`).
 
 ### Ingestion proof
 
-- [ ] **ING-09**: A live `ingest` run on a long (>10 min) YouTube video completes through the streamed DeepSeek path, writes a `status=draft` material plus a pending shortlist row, and reports no `APIConnectionError`; the operator step is recorded
+- [x] **ING-09**: A live `ingest` run on a long (>10 min) YouTube video completes through the streamed DeepSeek path, writes a `status=draft` material plus a pending shortlist row, and reports no `APIConnectionError`; the operator step is recorded
 
 ## Deferred Requirements
 
@@ -71,7 +71,7 @@ Acknowledged but not in this milestone's roadmap. IDs are reserved and never reu
 | NAV-01 | Phase 26 | Complete |
 | NAV-02 | Phase 26 | Complete |
 | KNOW-05 | Phase 27 | Complete |
-| ING-09 | Phase 28 | Pending |
+| ING-09 | Phase 28 | Complete |
 
 **Coverage:**
 

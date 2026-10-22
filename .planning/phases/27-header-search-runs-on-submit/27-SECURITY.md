@@ -49,7 +49,7 @@ created: 2026-10-22
 | T-27-13 | Spoofing (UI confusion) | `preSearch` reading state instead of `qUrl` | medium | mitigate | `preSearch = qUrl === '' && error === null` derived synchronously from the URL (`KnowledgePage.jsx:379`); asserted for overlong, zero-hit and in-flight | closed |
 | T-27-14 | Information disclosure | live region echoing the query | low | mitigate | `knowledgeResultSummary` renders only `«Ищем…»` / `«Найдено 0 материалов»` / `«Показано N»`; `/RAG/` negative assertion on the node's text | closed |
 | T-27-15 | Tampering / XSS | `?q` in field, live region, hint block, row titles | critical | mitigate | Text-node / controlled-`value` rendering only. S11 payloads: `<img src=x onerror=window.__KB_XSS__=1>` → `xss: undefined`, `onerror: 0`, no `<img` in the title, no markup in the live region (`tests/knowledge.spec.js:662-675`); source gate forbids all four sinks | closed |
-| T-27-16 | Tampering (history poisoning) | `setSearchParams` / `navigate` | medium | accept | **Partial.** The non-empty header path replaces (`SearchPill.jsx:45-48`) and the chip path leaves the URL untouched, but the **empty** submit calls `navigate('/knowledge')` with no options and therefore **pushes** (`SearchPill.jsx:36`). From `/knowledge?q=X` an empty Enter stacks a landing and Back returns to `?q=X`. No privilege or data boundary is crossed — the replayed state is the user's own already-executed query — so the residual risk is accepted rather than mitigated, and the register's original "both submit paths replace" wording is corrected here. See AR-27-03 and FU-27-01 | open — below high threshold (non-blocking) |
+| T-27-16 | Tampering (history poisoning) | `setSearchParams` / `navigate` | medium | mitigate | **Closed 2026-10-22 in Phase 28.** The non-empty header path replaces (`SearchPill.jsx:45-48`), the chip path leaves the URL untouched, and after FU-27-01 the **empty** submit also replaces (`SearchPill.jsx:36` → `navigate('/knowledge', { replace: true })`). Pinned by `an empty header submit replaces the history entry`: from a settled `?q=RAG`, an empty Enter keeps `history.length` unchanged and Back leaves `/knowledge`. Red first: the pre-fix run measured 2 → 3. AR-27-03 stands as the record of why this was accepted rather than mitigated at audit time | closed |
 | T-27-17 | Repudiation / availability | error path replaying a cached failure | medium | mitigate | `forgetSearchSnapshot(roleValue, q)` runs in `catch` before `setError` (`KnowledgePage.jsx:270`); the seed-then-fail case proves eviction of an existing snapshot (counter 1 → 2 → 3) | closed |
 | T-27-18 | Information disclosure | error `message` rendered in the panel | low | accept | Message is `KnowledgeApiError`'s fixed copy, never the raw server payload or the user's query; the header stays free of it. See AR-27-04 | closed |
 | T-27-SC | Tampering | npm installs | high | mitigate | No package install in this phase — `package.json` / `web/package.json` last changed in `b94cbfd` (CI restore), unrelated to phase 27. Package-legitimacy gate still blocks any that appear | closed |
@@ -58,7 +58,7 @@ created: 2026-10-22
 *Severity: critical > high > medium > low — only open threats at or above workflow.security_block_on count toward threats_open*
 *Disposition: mitigate (implementation required) · accept (documented risk) · transfer (third-party)*
 
-**Counts:** 19 threats total · 18 closed · 1 open below the `high` threshold (T-27-16, medium) · **`threats_open: 0`** (no open threat at or above `workflow.security_block_on = high`).
+**Counts:** 19 threats total · 19 closed · 0 open · **`threats_open: 0`** (closed-out on 2026-10-22 when FU-27-01 landed the `replace: true` on the empty submit; the register no longer carries an accepted-below-threshold item).
 
 ---
 
@@ -73,7 +73,7 @@ created: 2026-10-22
 
 **Follow-ups opened by this audit:**
 
-- **FU-27-01** — `SearchPill.jsx:36`: add `{ replace: true }` to the empty submit so no history entry is stacked, and cover it with a failing-first Playwright test (`from /knowledge?q=RAG`, empty Enter, Back must leave `/knowledge`). TDD per `.cursor/rules/tdd.mdc`. Owner: next phase touching `/knowledge` navigation, or a dedicated gap-closure plan.
+- **FU-27-01 — RESOLVED 2026-10-22 (Phase 28 rider).** `SearchPill.jsx:36` now calls `navigate('/knowledge', { replace: true })` on the empty submit, so no history entry is stacked. Covered failing-first by `an empty header submit replaces the history entry` in `tests/knowledge.spec.js` (RED: `history.length` 2 → 3; GREEN: unchanged, and Back leaves `/knowledge`). Commit `d77412f`. T-27-16 is closed.
 
 *Accepted risks do not resurface in future audit runs.*
 
