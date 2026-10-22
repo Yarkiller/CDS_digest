@@ -569,5 +569,95 @@ test.describe("KNOW-05 header submit runs the search", () => {
     await expect(page.getByTestId("kb-hint-chips")).toHaveCount(0);
     await expectCount(page, 1, "chip from landing");
   });
+
+  test("a failed search shows the error panel and retry recovers", async ({ page }) => {
+    await page.goto("/");
+    // Arm after goto: the flag lives on `window` and survives same-document SPA
+    // navigation, but not a reload. Prefer the in-SPA path (header Enter).
+    await page.evaluate(() => {
+      window.__DIGEST_FAIL_NEXT_KNOWLEDGE__ = true;
+    });
+
+    const header = page.getByRole("searchbox", { name: /поиск digest cds/i });
+    await header.fill("RAG");
+    await header.press("Enter");
+
+    const panel = page.getByTestId("kb-search-error");
+    await expect(panel).toBeVisible();
+    await expect(panel).toContainText("Не удалось найти материалы");
+    await expect(page.getByRole("button", { name: "Повторить" })).toBeVisible();
+    await expect(page.getByTestId("kb-hint-chips")).toHaveCount(0);
+    await expect(page.locator('p[aria-live="polite"]')).toHaveCount(0);
+    await expect(hitLinks(page)).toHaveCount(0);
+    await expectCount(page, 1, "failed");
+
+    // E8 · loading: the panel carries no loading affordance and retry is an ordinary action.
+    await expect(panel.locator('[data-state="loading"], [aria-busy="true"]')).toHaveCount(0);
+    await expect(page.getByRole("button", { name: "Повторить" })).toBeEnabled();
+
+    await page.getByRole("button", { name: "Повторить" }).click();
+    await expect(hitLinks(page)).toHaveCount(2);
+    await expect(page.getByTestId("kb-search-error")).toHaveCount(0);
+    await expectCount(page, 2, "retry");
+  });
+
+  test("an error is not cached", async ({ page }) => {
+    // Seed-then-fail: the store is success-only, so a case that starts from a
+    // failure has nothing to evict. Seed snapshotKey('all','RAG') first.
+    await page.goto("/knowledge?q=RAG");
+    await expect(hitLinks(page)).toHaveCount(2);
+    await expectCount(page, 1, "seeded");
+
+    await page.evaluate(() => {
+      window.__DIGEST_FAIL_NEXT_KNOWLEDGE__ = true;
+    });
+
+    // Marker path (D-06): a deliberate header re-submit of the same q.
+    const header = page.getByRole("searchbox", { name: /поиск digest cds/i });
+    await header.fill("RAG");
+    await header.press("Enter");
+    await expect(page).toHaveURL(/\/knowledge\?q=RAG$/);
+    await expect(page.getByTestId("kb-search-error")).toBeVisible();
+    await expect(hitLinks(page)).toHaveCount(0);
+    await expectCount(page, 2, "seeded snapshot failed");
+
+    // Leave via a push so Back restores an entry whose location.state is null
+    // (the marker was stripped). Do not goto() the same URL — that would reset X-1.
+    await page.getByRole("link", { name: "Голосование" }).click();
+    await expect(page).toHaveURL(/\/voting/);
+    // Settle on the voting surface so KnowledgePage actually unmounts. A URL-only
+    // wait can fire before the outlet swaps, and goBack would then reuse the
+    // still-mounted error state (ref guard, Δ=0) instead of the cache lookup.
+    await expect(page.getByRole("heading", { name: /голосование/i })).toBeVisible();
+    await page.goBack();
+    await expect(page).toHaveURL(/\/knowledge\?q=RAG$/);
+
+    await expect(page.getByTestId("kb-search-error")).toBeVisible();
+    await expect(hitLinks(page)).toHaveCount(0);
+    await expectCount(page, 3, "cache-eligible revisit after error");
+  });
+
+  test("the header never shows a search error", async ({ page }) => {
+    await page.goto("/");
+    await page.evaluate(() => {
+      window.__DIGEST_FAIL_NEXT_KNOWLEDGE__ = true;
+    });
+
+    const headerSearch = page.getByRole("searchbox", { name: /поиск digest cds/i });
+    await headerSearch.fill("RAG");
+    await headerSearch.press("Enter");
+    await expect(page.getByTestId("kb-search-error")).toBeVisible();
+
+    // role="search" exists twice on this route (SearchPill and the page form);
+    // every locator here is header-scoped so strict mode cannot fire.
+    const header = page.locator("header");
+    await expect(header.getByRole("alert")).toHaveCount(0);
+    await expect(header.getByRole("searchbox", { name: /поиск digest cds/i })).not.toHaveAttribute(
+      "aria-invalid",
+      "true",
+    );
+    expect(await header.innerText()).not.toMatch(/Не удалось|Повторить/);
+  });
 });
+
 
