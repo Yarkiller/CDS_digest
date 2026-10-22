@@ -331,4 +331,67 @@ test.describe("KNOW-05 header submit runs the search", () => {
     // E5 · loading: the skeleton belongs to the append path (loadingMore) only.
     await expect(page.locator('[data-testid="kb-skeleton"]')).toHaveCount(0);
   });
+
+  test("re-submitting the same q issues exactly one new request", async ({ page }) => {
+    await page.goto("/knowledge?q=RAG");
+    await expectKnowledgeSettled(page, "Показано 2");
+    await expectCount(page, 1, "first");
+
+    // A deliberate act, not a re-render: the marker has to beat the cache (D-06).
+    const header = page.getByRole("searchbox", { name: /поиск digest cds/i });
+    await header.fill("RAG");
+    await header.press("Enter");
+
+    await expect(page).toHaveURL(/\/knowledge\?q=RAG$/);
+    await expect(hitLinks(page)).toHaveCount(2);
+    await expectCount(page, 2, "re-submit");
+    await expect(page.getByRole("searchbox", { name: /поиск по базе знаний/i })).toHaveValue("RAG");
+  });
+
+  test("the submitId marker is stripped after it is consumed", async ({ page }) => {
+    await page.goto("/knowledge");
+    const header = page.getByRole("searchbox", { name: /поиск digest cds/i });
+    await header.fill("RAG");
+    await header.press("Enter");
+    await expectKnowledgeSettled(page, "Показано 2");
+
+    // C-24: the opaque marker must not survive the navigation that consumed it.
+    const readSubmitId = () =>
+      page.evaluate(
+        () => window.history.state?.usr?.submitId ?? window.history.state?.submitId ?? null,
+      );
+    await expect.poll(readSubmitId, { timeout: 4000, message: "submitId stripped" }).toBeNull();
+    await expect(page).toHaveURL(/\/knowledge\?q=RAG$/);
+
+    // A strip that left a consumable marker would double-fire on the next load.
+    await page.reload();
+    await expect(hitLinks(page)).toHaveCount(2);
+    await expectCount(page, 1, "after reload");
+  });
+
+  test("a header submit resets the role filter", async ({ page }) => {
+    await page.goto("/knowledge?q=SQL");
+    await expectKnowledgeSettled(page, "Показано 5");
+    await page.getByRole("button", { name: "DS", exact: true }).click();
+    await expect(hitLinks(page)).toHaveCount(1);
+    await expectCount(page, 2, "chip narrows");
+
+    const header = page.getByRole("searchbox", { name: /поиск digest cds/i });
+    await header.fill("RAG");
+    await header.press("Enter");
+
+    await expect(page).toHaveURL(/\/knowledge\?q=RAG$/);
+    // D-07: a header submission searches from a clean slate, so a previously narrowed chip
+    // cannot silently hide hits. RAG + DS would be one row, RAG + Все is two.
+    await expect(hitLinks(page)).toHaveCount(2);
+    await expect(page.getByRole("button", { name: "Все", exact: true })).toHaveAttribute(
+      "aria-pressed",
+      "true",
+    );
+    await expect(page.getByRole("button", { name: "DS", exact: true })).toHaveAttribute(
+      "aria-pressed",
+      "false",
+    );
+    await expectCount(page, 3, "header resets role");
+  });
 });
