@@ -152,6 +152,16 @@
     scroll-padding-top: calc(var(--header-height) + 1rem);
   }
 
+  /* D-02/D-C1 — measured, not derived: the header renders 196.6px tall at 390x844 and
+     122.6px at 639x844 on the mock build, because the nav owns its own row below `sm`.
+     One value for the whole sub-`sm` range: max rounded up to a multiple of 4 = 200px.
+     `sm` is 640px, where the nav stops owning a row, so the token stays 64px there. */
+  @media (max-width: 639.98px) {
+    :root {
+      --header-height: 200px;
+    }
+  }
+
   body {
     margin: 0;
     min-height: 100svh;
