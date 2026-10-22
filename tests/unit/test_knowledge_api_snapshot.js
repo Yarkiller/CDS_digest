@@ -24,7 +24,7 @@ const API_PATH = path.join(ROOT, 'web', 'src', 'services', 'knowledgeApi.js')
 const API_RELATIVE = 'web/src/services/knowledgeApi.js'
 
 /** Measured on the clean, pre-edit adapter in Wave 0 (27-PATTERNS.md § 4). */
-const FROZEN_SHA256 = 'TODO'
+const FROZEN_SHA256 = 'bce5c54e08f588e4ebf816466411b74bbe8d1896f6ab6942afb2469298d2f29f'
 
 const normalisedSource = () => readFileSync(API_PATH, 'utf8').replace(/\r\n/g, '\n')
 
