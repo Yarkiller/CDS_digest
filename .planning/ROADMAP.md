@@ -94,6 +94,7 @@ Full phase detail: [milestones/v1.3-ROADMAP.md](milestones/v1.3-ROADMAP.md)
 5. The ingest-sources heading reads exactly «Источники», the «Админ» eyebrow is absent from the DOM, the tab font-size equals the content `h2` scale, the tab gap is wider than the pre-fix `gap-2`, and the space above the tab row is smaller than pre-fix. *Proof:* Playwright text-absence plus computed-style assertions on the shared admin chrome.
 
 **Plans:** 10/10 plans complete — 25-01…25-05 green; 25-06…25-07 are gap closure for GAP-25-1…GAP-25-4 (+WR-03, WR-04)
+
 - [x] 25-08-PLAN.md
 - [x] 25-09-PLAN.md
 - [x] 25-10-PLAN.md
@@ -131,12 +132,15 @@ Full phase detail: [milestones/v1.3-ROADMAP.md](milestones/v1.3-ROADMAP.md)
 
 **Plans:** 3/3 plans complete
 **Wave 1**
+
 - [x] 26-01-PLAN.md — NAV-01: one global `scroll-padding-top` in `@layer base :root` + `200px` mobile token; tracer slice proves CSS → computed style → heading rect on a short and a long section, plus 390/639 and razbory
 
 **Wave 2** *(blocked on Wave 1 completion)*
+
 - [x] 26-02-PLAN.md — NAV-02: three header pills move to `<Link>` with computed `aria-current`; `section` prop threaded through `IssueToc`/`MaterialListRow` and four producers; archive/base/issue origins
 
 **Wave 3** *(blocked on Wave 2 completion)*
+
 - [x] 26-03-PLAN.md — pins: honest degradation on a direct material visit (C-13), admin paths untouched (C-16), closed-list static gate + written C-17 audit artefact, full-suite phase gate
 
 **Locked scope facts (do not re-litigate):**
@@ -173,23 +177,28 @@ Full phase detail: [milestones/v1.3-ROADMAP.md](milestones/v1.3-ROADMAP.md)
 3. A re-render after results are shown (role chip change, theme toggle, focus change) issues **no** additional request, and browser back/forward does not re-issue. *Proof:* the same counter asserted again after each interaction, plus a re-navigation assertion.
 4. A whitespace-only submit navigates to «База знаний» and issues **zero** search requests, keeping the existing blank-query guard visible. *Proof:* Playwright counter at `=== 0` plus the inline guard assertion.
 
-**Plans:** 1/5 plans executed
+**Plans:** 5/5 plans executed
 
 Plans:
 **Wave 1**
+
 - [x] 27-01-PLAN.md — Freeze the adapter (sha256 pin) and the single `searchKnowledge` call-site gate
 
 **Wave 2** *(blocked on Wave 1 completion)*
-- [ ] 27-02-PLAN.md — Tracer: header Enter renders results from `?q`; X-1 counter + X-2 harness; R-1 status gate; re-render Δ=0
+
+- [x] 27-02-PLAN.md — Tracer: header Enter renders results from `?q`; X-1 counter + X-2 harness; R-1 status gate; re-render Δ=0
 
 **Wave 3** *(blocked on Wave 2 completion)*
-- [ ] 27-03-PLAN.md — Module-scope snapshot cache (Back/remount Δ=0) and the one-shot `submitId` re-submit protocol
+
+- [x] 27-03-PLAN.md — Module-scope snapshot cache (Back/remount Δ=0) and the one-shot `submitId` re-submit protocol
 
 **Wave 4** *(blocked on Wave 3 completion)*
-- [ ] 27-04-PLAN.md — Input boundary: blank reset, overlong inline rejection, landing rule keyed on `qUrl`
+
+- [x] 27-04-PLAN.md — Input boundary: blank reset, overlong inline rejection, landing rule keyed on `qUrl`
 
 **Wave 5** *(blocked on Wave 4 completion)*
-- [ ] 27-05-PLAN.md — History `replace` discipline, error/retry path, XSS injection probe
+
+- [x] 27-05-PLAN.md — History `replace` discipline, error/retry path, XSS injection probe
 
 ### Phase 28: Live proof — streamed DeepSeek ingest
 

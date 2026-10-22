@@ -1,20 +1,20 @@
 ---
-gsd_state_version: "1.0"
+gsd_state_version: 1.0
 milestone: v1.4
 milestone_name: UI polish & honest navigation
 current_phase: 27
 current_phase_name: Header search runs on submit
-status: executing
-stopped_at: Completed 27-04-PLAN.md
-last_updated: "2026-10-22T12:20:00.000Z"
+status: verifying
+stopped_at: Completed 27-05-PLAN.md
+last_updated: "2026-10-22T11:57:28.507Z"
 last_activity: 2026-10-22
-last_activity_desc: Phase 27 inline execution — plan 27-04 complete
-state_head: e69bd90
+last_activity_desc: Phase 27 execution resumed (wave continue)
+state_head: c1c4a15eecfd5e88f2a70f05542cedf710768938
 progress:
   total_phases: 4
   completed_phases: 2
   total_plans: 18
-  completed_plans: 17
+  completed_plans: 18
   percent: 50
 ---
 
@@ -31,8 +31,8 @@ See: .planning/PROJECT.md (updated 2026-10-22 — Phase 25 complete)
 
 Phase: 27 (Header search runs on submit) — EXECUTING
 Plan: 5 of 5
-Status: Executing Phase 27 — plan 27-04 complete, plan 27-05 next
-Last activity: 2026-10-22 — Phase 27 inline execution (27-04 GREEN)
+Status: Phase complete — ready for verification
+Last activity: 2026-10-22 — Phase 27 execution resumed (wave continue)
 
 ## Performance Metrics
 
@@ -109,6 +109,7 @@ Last activity: 2026-10-22 — Phase 27 inline execution (27-04 GREEN)
 | Phase 26 P02 | 30min | 3 tasks | 9 files |
 | Phase 26 P03 | 12min | 3 tasks | 3 files |
 | Phase 27 P01 | 10min | 2 tasks | 2 files |
+| Phase 27 P05 | 18min | 3 tasks | 3 files |
 
 ## Accumulated Context
 
@@ -260,6 +261,8 @@ v1.3 roadmap locks:
 - [Phase 27]: 27-03: on a data router navigate() reads state from its SECOND argument — createLocation(loc, path, opts && opts.state) silently drops to.state, so the object-form marker left history.state.usr === null with no error
 - [Phase 27]: 27-03: the submitId branch must sit ABOVE the ref guard as well as above the cache, or a same-q re-submit is swallowed as a duplicate (measured: counter 1, chip unchanged)
 - [Phase 27]: 27-03: the restore branch sits above runSearch, whose first statement is the counter — Δ=0 is enforced by placement; the cache is a module-scope Map (cap 20, LRU) with error eviction under the same (role, q) key
+- [Phase 27]: Header navigate takes { replace: true, state: { submitId } }; the page form and chip write only q with replace and no state — A page-form state marker would be mistaken for a header submission and reset the role (D-07).
+- [Phase 27]: lastHandledQueryRef is assigned before writeQueryToUrl so one click is one request — If the ref is armed after the URL write, the effect fires a second search for the same q.
 
 ### Pending Todos
 
@@ -293,14 +296,14 @@ Carried product deferrals beyond v1.3: leaderboard, quiz, Whisper/Foundry ASR, i
 
 ## Session Continuity
 
-Last session: 2026-10-22T11:55:00.000Z
-Stopped at: Completed 27-04-PLAN.md
+Last session: 2026-10-22T11:56:54.938Z
+Stopped at: Completed 27-05-PLAN.md
 Resume file: None
-Next: execute 27-05 (history discipline, error boundary, XSS probe) inline
+Next: verify phase 27 (all 5 plans executed)
 
 ## Operator Next Steps
 
-- Execute plan 27-04 (input boundary + landing rule) inline, then 27-05
+- Verify phase 27 — all 5 plans executed; ready for /gsd-verify-work
 
 ## v1.4 roadmap (Phases 25-28)
 
