@@ -1001,6 +1001,52 @@ test.describe("Admin Digest — batch select + preview/send gate (ADMIN-04,06,07
     await expect(page.getByRole("checkbox")).toHaveCount(0);
   });
 
+  test("a refused send reports in the danger colour, not the success colour", async ({ page }) => {
+    // WR-12 (25-REVIEW): `Рассылка не отправлена` shared the success banner's
+    // `text-success-ink`, so a failure read as a success. The banner now carries a tone.
+    await gotoAsRole(page, "admin", "/admin/digest");
+    await approveReadyRows(page, [0]);
+    await page.getByRole("button", { name: /предпросмотр письма/i }).click();
+    const emailDialog = page.getByRole("dialog").filter({
+      has: page.getByRole("heading", { name: "Превью письма", exact: true }),
+    });
+    await emailDialog.getByRole("button", { name: "Закрыть", exact: true }).click();
+
+    await page.evaluate(() => window.__DIGEST_ADMIN_HARNESS__.armFailNextSend());
+    await page.getByRole("button", { name: /отправить дайджест/i }).click();
+    await page.getByRole("button", { name: /подтвердить отправку/i }).click();
+
+    const banner = page.getByRole("status").filter({ hasText: "Рассылка не отправлена" });
+    await expect(banner).toBeVisible();
+
+    const measured = await page.evaluate(() => {
+      const resolve = (variable) => {
+        const probe = document.createElement("span");
+        probe.style.color = `var(${variable})`;
+        document.body.appendChild(probe);
+        const value = getComputedStyle(probe).color;
+        probe.remove();
+        return value;
+      };
+      const node = [...document.querySelectorAll('[role="status"]')].find((el) =>
+        el.textContent.includes("Рассылка не отправлена"),
+      );
+      return {
+        banner: node ? getComputedStyle(node).color : null,
+        danger: resolve("--color-danger-ink"),
+        success: resolve("--color-success-ink"),
+      };
+    });
+
+    expect(measured.banner, "the failure banner must use the danger ink").toBe(measured.danger);
+    expect(measured.banner, "the failure banner must not use the success ink").not.toBe(
+      measured.success,
+    );
+    expect(measured.danger, "the two semantic inks must differ for this pin to mean anything").not.toBe(
+      measured.success,
+    );
+  });
+
   test("Уже отправлено when batch already sent", async ({ page }) => {
     await gotoAsRole(page, "admin", "/admin/digest", {
       __DIGEST_ADMIN_ALREADY_SENT__: true,

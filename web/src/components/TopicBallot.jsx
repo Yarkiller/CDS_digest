@@ -23,7 +23,7 @@ export default function TopicBallot({ topics, selectedId, onSelect, disabled = f
             <span
               className={[
                 'mt-1 inline-block size-5 rounded-full border-2',
-                checked ? 'border-primary bg-primary' : 'border-border bg-bg-app',
+                checked ? 'border-primary bg-primary' : 'border-field-border bg-bg-app',
               ].join(' ')}
               aria-hidden="true"
             />

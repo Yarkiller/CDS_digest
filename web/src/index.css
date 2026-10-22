@@ -154,11 +154,23 @@
 
   /* D-02/D-C1 — measured, not derived: the header renders 196.6px tall at 390x844 and
      122.6px at 639x844 on the mock build, because the nav owns its own row below `sm`.
-     One value for the whole sub-`sm` range: max rounded up to a multiple of 4 = 200px.
-     `sm` is 640px, where the nav stops owning a row, so the token stays 64px there. */
+     One value for the whole sub-`sm` range: max rounded up to a multiple of 4 = 200px. */
   @media (max-width: 639.98px) {
     :root {
       --header-height: 200px;
+    }
+  }
+
+  /* D-02 CORRECTION (measured 2026-10-22). The original note claimed the nav stops owning a
+     row at `sm`, so 64px covered everything from 640px up. It does not: the header measures
+     123px at 640-760, 111px at 800, 99px at 860-920 and only 73px from 960px. Keeping 64px
+     through that band left the offset at 80px, i.e. 31.5px of heading underneath the header.
+     The token is chosen so the SMALLEST gap in the band stays >= 1px and the LARGEST stays
+     <= 32px: token + 16 - 123 >= 1 and token + 16 - 99 <= 32 give 108..115; 112 is in range
+     and a multiple of 4. The desktop 64px resumes at 960px, where the header drops to 73px. */
+  @media (min-width: 640px) and (max-width: 959.98px) {
+    :root {
+      --header-height: 112px;
     }
   }
 

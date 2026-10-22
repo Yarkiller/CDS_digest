@@ -752,6 +752,47 @@ test.describe("section context — anchor offset (NAV-01)", () => {
     expect(gate.pad, "C-01: the offset must be declared, not inherited as auto").toBeGreaterThan(0);
   });
 
+  test("anchor offset: mid band 800 keeps the target below the header (C-07)", async ({ page }) => {
+    // NAV-01 residual (WR-11 in the 25 review register): the 64px token was locked for
+    // everything >= 640, but the header keeps wrapping past that breakpoint, so at 800px the
+    // offset was 80px against a much taller header and the heading landed underneath it.
+    // The TOC is hidden at this width, so the flow is the real one for a narrow window:
+    // a fragment navigation into prose.
+    await page.setViewportSize({ width: 800, height: 800 });
+    await page.goto("/materials/rag-systems");
+    await expect(page.getByTestId("material-prose")).toBeVisible();
+    await page.evaluate(() => document.fonts.ready);
+
+    const anchorId = await page.evaluate(() => {
+      const heading = document.querySelector('[data-testid="material-prose"] h2[id]');
+      return heading ? heading.id : null;
+    });
+    expect(anchorId, "C-07: the fixture must expose at least one prose heading id").toBeTruthy();
+
+    await page.setViewportSize({ width: 800, height: 800 });
+
+    const gate = await anchorGate(page, anchorId);
+    assertReachable(gate, "C-07");
+
+    expect(
+      gate.pad,
+      `C-07: offset ${gate.pad}px must clear the live 800px header ${gate.headerHeight}px`,
+    ).toBeGreaterThanOrEqual(gate.headerHeight + 1);
+
+    await page.evaluate((id) => {
+      window.location.hash = id;
+    }, anchorId);
+    await expect
+      .poll(async () => (await gapAfterScroll(page, anchorId)).gap, { message: "C-07: no scroll" })
+      .toBeGreaterThan(-Infinity);
+
+    const after = await gapAfterScroll(page, anchorId);
+    expect(after.gap, "C-07: the target must land below the header").toBeGreaterThanOrEqual(1);
+    expect(after.bottom, "C-07: the whole heading must be in view").toBeLessThanOrEqual(
+      after.innerHeight,
+    );
+  });
+
   test("anchor offset: a short page stays unforced and visible (C-02b)", async ({ page }) => {
     await page.goto("/materials/empty-dek-article");
     await expect(page.getByTestId("material-prose")).toBeVisible();
@@ -935,10 +976,15 @@ test.describe("section context — anchor offset (NAV-01)", () => {
       after.innerHeight,
     );
 
-    // The edge itself: `sm` is 640px, where the nav stops owning its own row. A
-    // min-width query or a wrong boundary keeps 64px at 639 and fails here.
+    // The edge itself: the mid-band token applies from 640px (the header is 123px there,
+    // so 64px would leave the heading under it) and the desktop token resumes at 960px,
+    // where the header drops to 73px. A wrong boundary keeps 112px at 959 and fails here.
     await page.setViewportSize({ width: 640, height: 844 });
-    await expect.poll(token, "C-05: at 640 the desktop token applies").toBe("64px");
+    await expect.poll(token, "C-05: at 640 the mid-band token applies").toBe("112px");
+    await page.setViewportSize({ width: 959, height: 844 });
+    await expect.poll(token, "C-05: at 959 the mid-band token still applies").toBe("112px");
+    await page.setViewportSize({ width: 960, height: 844 });
+    await expect.poll(token, "C-05: at 960 the desktop token applies").toBe("64px");
     await page.setViewportSize({ width: 639, height: 844 });
     await expect.poll(token, "C-05: at 639 the mobile token applies").toBe("200px");
   });

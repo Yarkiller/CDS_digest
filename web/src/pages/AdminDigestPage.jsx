@@ -117,6 +117,8 @@ export default function AdminDigestPage() {
   const [mutating, setMutating] = useState(false)
   const [toast, setToast] = useState('')
   const [banner, setBanner] = useState('')
+  // WR-12: a refused send used to render in the same green as a published issue.
+  const [bannerTone, setBannerTone] = useState('success')
   const [issueUrl, setIssueUrl] = useState('')
   const [previewItem, setPreviewItem] = useState(null)
   const [emailModal, setEmailModal] = useState(null) // null | loading | error | { preview }
@@ -441,6 +443,7 @@ export default function AdminDigestPage() {
         blocks,
       })
       setBanner(result.message || 'Выпуск опубликован')
+      setBannerTone('success')
       setIssueUrl(typeof result.issue_url === 'string' ? result.issue_url : '')
       trackGoal(ANALYTICS_GOALS.digest_send)
       setBatchSent(true)
@@ -452,6 +455,7 @@ export default function AdminDigestPage() {
     } catch (err) {
       if (err instanceof AdminApiError && err.code === 'ALREADY_SENT') {
         setBanner('Уже отправлено')
+        setBannerTone('success')
         setIssueUrl('')
         setBatchSent(true)
         setDigestRest(true)
@@ -461,6 +465,7 @@ export default function AdminDigestPage() {
         setConfirmOpen(false)
       } else {
         setBanner('Рассылка не отправлена')
+        setBannerTone('error')
         setIssueUrl('')
         setConfirmOpen(false)
       }
@@ -768,7 +773,14 @@ export default function AdminDigestPage() {
                 {sendHint}
               </p>
               {banner ? (
-                <p className="mt-1 text-sm font-medium text-success-ink" role="status">
+                <p
+                  className={[
+                    'mt-1 text-sm font-medium',
+                    bannerTone === 'error' ? 'text-danger-ink' : 'text-success-ink',
+                  ].join(' ')}
+                  role="status"
+                  data-banner-tone={bannerTone}
+                >
                   <span>{banner}</span>
                   {issueUrl ? (
                     <>

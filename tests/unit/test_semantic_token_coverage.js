@@ -451,17 +451,38 @@ const DECORATIVE_RULE_EDGES = [
 ]
 
 /**
+ * G-17 third half — the control whose edge is not an `<input>`.
+ *
+ * `TopicBallot` renders each choice as a `<button role="radio">`, so `controlTags` never sees
+ * it and the circle that carries the "this is a radio" affordance is a `<span aria-hidden>`.
+ * Painting that circle with `border-border` measured 1.178:1 in the light theme and 1.554:1 in
+ * the dark one — under the 3:1 floor of WCAG 1.4.11 — while the decorative `rule` (1.485:1
+ * light) is not a substitute either. `field-border` is the only token in the family that
+ * clears 3:1 on both surfaces, so the literal is sanctioned *by exact text*: a divider that
+ * drifts into `field-border` still offends, and rewriting the circle's classes away from the
+ * pin is itself an offender.
+ */
+const CONTROL_INDICATOR_EDGES = [
+  {
+    relative: 'web/src/components/TopicBallot.jsx',
+    edge: "'border-field-border bg-bg-app'",
+  },
+]
+
+/**
  * G-17 negative half — `field-border` never paints decoration.
  *
- * The role is a boundary role: the only legal consumer is a control's `className`. Any other
- * literal that mentions it — the auth card, the separators, the outline button — has
- * reclassified a divider as a boundary, which is the inverse defect of GAP-25-4.
+ * The role is a boundary role: the legal consumers are a control's `className` and the
+ * sanctioned state indicators above. Any other literal that mentions it — the auth card, the
+ * separators, the outline button — has reclassified a divider as a boundary, which is the
+ * inverse defect of GAP-25-4.
  */
-function decorativeBoundaryOffences(relative, source, controlClassNames) {
+function decorativeBoundaryOffences(relative, source, controlClassNames, sanctionedIndicators = new Set()) {
   const offenders = []
   for (const literal of stringLiterals(source)) {
     if (!/(?<![\w-])border-field-border/.test(literal)) continue
     if (controlClassNames.has(literal)) continue
+    if (sanctionedIndicators.has(literal)) continue
     offenders.push(`${relative}: border-field-border on a decorative boundary — "${literal}"`)
   }
   return offenders
@@ -1412,7 +1433,20 @@ describe('semantic token coverage (criterion 3)', () => {
     )
 
     for (const { relative, source } of files) {
-      offenders.push(...decorativeBoundaryOffences(relative, source, controlClassNames))
+      const sanctioned = new Set(
+        CONTROL_INDICATOR_EDGES.filter((indicator) => indicator.relative === relative).map(
+          (indicator) => indicator.edge.slice(1, -1),
+        ),
+      )
+      offenders.push(...decorativeBoundaryOffences(relative, source, controlClassNames, sanctioned))
+    }
+
+    for (const { relative, edge } of CONTROL_INDICATOR_EDGES) {
+      if (!read(relative).includes(edge)) {
+        offenders.push(
+          `${relative}: control indicator reclassified — the radio circle "${edge}" is no longer the sanctioned boundary`,
+        )
+      }
     }
 
     for (const { relative, edge } of DECORATIVE_RULE_EDGES) {
@@ -1472,6 +1506,30 @@ describe('semantic token coverage (criterion 3)', () => {
     )
     assert.equal(decorative.length, 1, 'field-border on a non-control boundary is one offender')
     assert.match(decorative[0], /decorative boundary/)
+
+    // A sanctioned state indicator is the one non-`<input>` boundary that may wear the role…
+    const indicator = new Set(['border-field-border bg-bg-app'])
+    assert.deepEqual(
+      decorativeBoundaryOffences(
+        'synthetic.jsx',
+        '<span className="border-field-border bg-bg-app" />',
+        new Set(),
+        indicator,
+      ),
+      [],
+      'a pinned radio indicator is a boundary, not a divider',
+    )
+    // …and the sanction is literal, so a near-miss divider still offends.
+    assert.equal(
+      decorativeBoundaryOffences(
+        'synthetic.jsx',
+        '<div className="border-field-border bg-paper" />',
+        new Set(),
+        indicator,
+      ).length,
+      1,
+      'the sanction must not bleed onto any other literal in the same file',
+    )
   })
 
   it('G-16: the status contract holds across the e2e specs', () => {

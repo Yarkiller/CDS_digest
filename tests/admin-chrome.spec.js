@@ -806,6 +806,29 @@ test("pipeline retry actions are legible in both themes", async ({ page }) => {
   }
 });
 
+test("an unchecked ballot choice shows a 3:1 border", async ({ page }) => {
+  // WR-11 (25-REVIEW): the radio dot used `border-border`, which measures ~1.57:1 in dark and
+  // ~1.14:1 in light — a control boundary must clear 3:1 (WCAG 1.4.11). The fix moves the
+  // dot to the declared `field-border` control token, which is already gated at 3:1+.
+  for (const theme of ["dark", "light"]) {
+    await gotoAdmin(page, "/voting", theme);
+
+    const radio = page.locator('[role="radio"][aria-checked="false"]').first();
+    await expect(radio, `an unchecked ballot choice must exist (${theme})`).toBeVisible();
+    const dot = radio.locator('span[aria-hidden="true"]');
+
+    const pair = await dot.evaluate((el) => {
+      const style = getComputedStyle(el);
+      return { border: style.borderTopColor, background: style.backgroundColor };
+    });
+
+    expect(
+      contrastRatio(pair.border, pair.background),
+      `ballot dot border vs its fill (${theme}): ${pair.border} on ${pair.background}`,
+    ).toBeGreaterThanOrEqual(3);
+  }
+});
+
 test("in-flight vote label keeps its colour and only dims", async ({ page }) => {
   // 25-VERIFICATION.md 25-04 #7: while a vote is in flight, the button label keeps its
   // theme-independent colour and only its opacity changes. ActionButton.jsx documents the
