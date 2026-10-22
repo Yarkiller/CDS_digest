@@ -658,6 +658,39 @@ test.describe("KNOW-05 header submit runs the search", () => {
     );
     expect(await header.innerText()).not.toMatch(/Не удалось|Повторить/);
   });
+
+  test("a markup payload in q is rendered as inert text", async ({ page }) => {
+    const imgPayload = "<img src=x onerror=window.__KB_XSS__=1>";
+    await page.goto(`/knowledge?q=${encodeURIComponent(imgPayload)}`);
+    await expect(knowledgeSurface(page)).toBeVisible();
+    await expectCount(page, 1, "img payload");
+
+    const imgProbe = await page.evaluate(() => ({
+      xss: window.__KB_XSS__,
+      imgs: document.querySelectorAll('img[src="x"]').length,
+      onerror: document.querySelectorAll("[onerror]").length,
+    }));
+    expect(imgProbe.xss).toBeUndefined();
+    expect(imgProbe.imgs).toBe(0);
+    expect(imgProbe.onerror).toBe(0);
+    expect(page.url()).toMatch(/knowledge/);
+    expect(await page.title()).not.toContain("<img");
+    expect(await page.locator("#kb-search").inputValue()).toBe(imgPayload);
+
+    const scriptPayload = "</script><script>window.__KB_XSS2__=1</script>";
+    await page.goto(`/knowledge?q=${encodeURIComponent(scriptPayload)}`);
+    await expect(knowledgeSurface(page)).toBeVisible();
+
+    const scriptProbe = await page.evaluate(() => ({
+      xss: window.__KB_XSS2__,
+      scripts: document.querySelectorAll("script[data-xss]").length,
+    }));
+    expect(scriptProbe.xss).toBeUndefined();
+    expect(scriptProbe.scripts).toBe(0);
+    expect(await page.locator('p[aria-live="polite"]').textContent()).not.toContain("script");
+    expect(await page.locator("#kb-search").inputValue()).toBe(scriptPayload);
+  });
 });
+
 
 
