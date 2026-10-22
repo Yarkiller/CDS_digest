@@ -673,3 +673,116 @@ test.describe("web app responsive", () => {
  */
 // Visual backstops stay a human gate at /gsd-verify-work.
 // A skipped placeholder test is not an assertion Sonar can trust.
+
+/*
+ * NAV-01 — one global scroll offset (26-UI-SPEC C-01…C-06 / D-01…D-05).
+ *
+ * Every rect assertion begins with the C-00 reachability gate, measured BEFORE
+ * the click: the browser only honours `scroll-padding-top` when the document has
+ * enough scroll left under the target. An unreachable fixture would make a green
+ * assertion vacuous, so it is a hard failure with an "удлинить тело" message.
+ */
+test.describe("section context — anchor offset (NAV-01)", () => {
+  test.use({ viewport: { width: 1280, height: 800 } });
+
+  /** Heading ids are `user-content-…` and Cyrillic — always read them, never build them. */
+  async function anchorIdOf(tocLink) {
+    return decodeURIComponent((await tocLink.getAttribute("href")).slice(1));
+  }
+
+  async function anchorGate(page, anchorId) {
+    return page.evaluate((id) => {
+      const doc = document.documentElement;
+      const header = document.querySelector("header").getBoundingClientRect();
+      // `scrollPaddingTop` computes to "auto" before the fix — parse to 0, never NaN.
+      const pad = Number.parseFloat(getComputedStyle(doc).scrollPaddingTop) || 0;
+      const target = document.getElementById(id);
+      const headingDocTop = target.getBoundingClientRect().top + window.scrollY;
+      const maxScroll = doc.scrollHeight - window.innerHeight;
+      return {
+        headerHeight: header.height,
+        headerBottom: header.bottom,
+        pad,
+        headingDocTop,
+        maxScroll,
+      };
+    }, anchorId);
+  }
+
+  async function gapAfterScroll(page, anchorId) {
+    return page.evaluate((id) => {
+      const header = document.querySelector("header").getBoundingClientRect();
+      const heading = document.getElementById(id).getBoundingClientRect();
+      return {
+        gap: heading.top - header.bottom,
+        top: heading.top,
+        bottom: heading.bottom,
+        innerHeight: window.innerHeight,
+      };
+    }, anchorId);
+  }
+
+  /** C-00: a rect assertion is only meaningful when the document can actually scroll there. */
+  function assertReachable(gate, label) {
+    expect(
+      gate.maxScroll,
+      `${label}: фикстура: maxScroll=${gate.maxScroll} < headingDocTop=${gate.headingDocTop} — удлинить тело (тестовая правка web/src/data/mock.js)`,
+    ).toBeGreaterThanOrEqual(gate.headingDocTop);
+  }
+
+  test("anchor offset: one global scroll offset keeps the target below the header (C-01)", async ({
+    page,
+  }) => {
+    await page.goto("/materials/rag-systems");
+    await expect(page.getByTestId("material-prose")).toBeVisible();
+    // Manrope arrives from fonts.googleapis.com; geometry must be measured after it lands.
+    await page.evaluate(() => document.fonts.ready);
+
+    const anchorId = await anchorIdOf(page.getByTestId("material-toc").getByRole("link").first());
+    const gate = await anchorGate(page, anchorId);
+
+    expect(gate.pad, "C-01: offset must clear the live header").toBeGreaterThanOrEqual(
+      gate.headerHeight + 1,
+    );
+    expect(
+      gate.pad,
+      "C-01: offset must stay within one breath of the live header",
+    ).toBeLessThanOrEqual(gate.headerHeight + 32);
+    expect(gate.pad, "C-01: the offset must be declared, not inherited as auto").toBeGreaterThan(0);
+  });
+
+  test("anchor offset: a short page stays unforced and visible (C-02b)", async ({ page }) => {
+    await page.goto("/materials/empty-dek-article");
+    await expect(page.getByTestId("material-prose")).toBeVisible();
+    await page.evaluate(() => document.fonts.ready);
+
+    const link = page.getByTestId("material-toc").getByRole("link").first();
+    const anchorId = await anchorIdOf(link);
+    const gate = await anchorGate(page, anchorId);
+
+    // The pin is only worth anything while the target stays out of reach.
+    expect(
+      gate.maxScroll,
+      "C-02b: фикстура должна быть недостижимой — иначе пин вакуумный",
+    ).toBeLessThan(gate.headingDocTop);
+
+    const before = await gapAfterScroll(page, anchorId);
+    expect(before.gap, "C-02b: the target starts clear of the header before the click").toBeGreaterThan(
+      32,
+    );
+
+    await link.click();
+    await expect
+      .poll(async () => (await gapAfterScroll(page, anchorId)).gap)
+      .toBeGreaterThanOrEqual(1);
+
+    const after = await gapAfterScroll(page, anchorId);
+    expect(after.bottom, "C-02b: the target must stay inside the viewport").toBeLessThanOrEqual(
+      after.innerHeight,
+    );
+    expect(
+      after.gap,
+      "C-02b: the [1, 32] band does not apply to an unreachable target",
+    ).toBeGreaterThan(32);
+  });
+});
