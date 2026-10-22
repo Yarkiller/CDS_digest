@@ -129,3 +129,147 @@ describe('NAV-01 offset is one mechanism', () => {
     )
   })
 })
+
+/**
+ * NAV-02 / C-17 — the origin marker is a closed list read at exactly one point.
+ *
+ * These gates exist because C-17 cannot be pinned behaviourally without forging
+ * `history.state` in the router's private shape, which would be a vacuous pin rather than
+ * a proof. The UI-SPEC therefore classifies it as a backstop: the structural claim (one
+ * read point, three literals, no second comparison, no storage) is proven statically and
+ * written down in `26-03-SUMMARY.md`.
+ *
+ * Gate 2 is the anti-vacuum half: without it every other gate would pass on a deleted
+ * `AppShell.jsx`, which is the failure mode that makes a static gate worthless.
+ */
+const SEVEN_MARKER_FILES = [
+  'web/src/components/AppShell.jsx',
+  'web/src/components/IssueToc.jsx',
+  'web/src/components/MaterialListRow.jsx',
+  'web/src/pages/ArchivePage.jsx',
+  'web/src/pages/IssuePage.jsx',
+  'web/src/pages/KnowledgePage.jsx',
+  'web/src/pages/MaterialPage.jsx',
+]
+
+const COMPARES_A_SECTION_LITERAL = /===\s*'(archive|base|issue)'/
+
+describe('NAV-02 marker is a closed list read at one point', () => {
+  it('reads the marker once in the shell', () => {
+    const shell = read('web/src/components/AppShell.jsx')
+    assert.equal(
+      count(shell, 'state?.section'),
+      1,
+      `C-17: AppShell must read state?.section exactly once, found ${count(shell, 'state?.section')}`,
+    )
+  })
+
+  it('compares against all three literals in the shell (anti-vacuum)', () => {
+    const shell = read('web/src/components/AppShell.jsx')
+
+    // Anti-vacuum: the "exactly one comparison site" gate below would also pass on an
+    // empty or truncated AppShell, so the literals and the attribute they feed are demanded
+    // here by name. Dropping any literal from the closed list reddens this gate.
+    for (const literal of ["'archive'", "'base'", "'issue'"]) {
+      assert.ok(
+        count(shell, literal) >= 1,
+        `C-17: AppShell must compare the literal ${literal} — the closed list lost a value`,
+      )
+    }
+
+    // Presence alone could be satisfied by the explanatory comment above the comparisons,
+    // so the compared set is asserted explicitly: all three values must reach a `===`.
+    const compared = [...new Set([...shell.matchAll(/===\s*'(archive|base|issue)'/g)].map((m) => m[1]))]
+    assert.deepEqual(
+      compared.sort(),
+      ['archive', 'base', 'issue'],
+      `C-17: AppShell must compare all three closed-list values, compared ${compared.join(', ') || 'none'}`,
+    )
+
+    assert.ok(
+      count(shell, 'aria-current') >= 1,
+      'C-17: AppShell must feed the marker into aria-current, not into className',
+    )
+    assert.ok(
+      count(shell, 'linkClass') >= 1,
+      'C-17: AppShell must reuse linkClass for the fill (a marker must never build a class string)',
+    )
+  })
+
+  it('has exactly one comparison site for the closed list', () => {
+    const sites = sources()
+      .filter(({ source }) => COMPARES_A_SECTION_LITERAL.test(source))
+      .map(({ relative }) => relative)
+
+    assert.deepEqual(
+      sites,
+      ['web/src/components/AppShell.jsx'],
+      `C-17: the three literals must be compared in AppShell only, found comparison sites in ${sites.join(', ')}`,
+    )
+  })
+
+  it('forwards the marker from MaterialPage without comparing it', () => {
+    const material = read('web/src/pages/MaterialPage.jsx')
+
+    assert.equal(
+      count(material, 'originState?.section'),
+      1,
+      'C-17: MaterialPage must read the origin marker once',
+    )
+    assert.equal(
+      count(material, 'originSection ?'),
+      1,
+      'C-17: MaterialPage must forward the marker conditionally, not unconditionally',
+    )
+    assert.ok(
+      !COMPARES_A_SECTION_LITERAL.test(material),
+      'C-17: MaterialPage must blind-forward the marker — a comparison here would be a second read point',
+    )
+  })
+
+  it('keeps the origin out of any storage', () => {
+    for (const relative of SEVEN_MARKER_FILES) {
+      const source = read(relative)
+      for (const token of ['localStorage', 'sessionStorage', 'document.cookie']) {
+        assert.equal(
+          count(source, token),
+          0,
+          `C-17: ${relative} must not touch ${token} — the origin marker must not survive a fresh visit`,
+        )
+      }
+    }
+  })
+
+  it('makes the forwarder props required and keeps the literal at the producer', () => {
+    // No default value on either reusable forwarder: a default would light a false section
+    // for any future caller (D-08) and would hide which page owns the literal.
+    const forwarders = {
+      'web/src/components/IssueToc.jsx': /function\s+IssueToc\s*\(\{[^}]*\bsection\b[^}]*\}\s*\)/,
+      'web/src/components/MaterialListRow.jsx':
+        /function\s+MaterialListRow\s*\(\{[^}]*\bsection\b[^}]*\}\s*\)/,
+    }
+    for (const [relative, receivesSection] of Object.entries(forwarders)) {
+      const source = read(relative)
+      assert.ok(
+        receivesSection.test(source),
+        `C-17: ${relative} must take \`section\` as a destructured prop`,
+      )
+      assert.ok(
+        !/section\s*=\s*['"]/.test(source),
+        `C-17: ${relative} must not default its \`section\` prop — the caller owns the literal`,
+      )
+    }
+
+    // The literals live at the producers, each exactly once.
+    for (const [relative, needle] of [
+      ['web/src/pages/KnowledgePage.jsx', 'section="base"'],
+      ['web/src/pages/ArchivePage.jsx', "section: 'archive'"],
+    ]) {
+      assert.equal(
+        count(read(relative), needle),
+        1,
+        `C-17: ${relative} must own ${needle} exactly once`,
+      )
+    }
+  })
+})
