@@ -1215,4 +1215,54 @@ test.describe("section context — header pills (NAV-02)", () => {
       expect(isLit(await classTokens(other))).toBe(false);
     }
   });
+
+  test("section state: a direct material visit lights nothing (C-13)", async ({ page }) => {
+    // Pin: the RED era of C-13 is 26-02 — a section derived from the pathname, or a marker
+    // that leaked out of the archive, would light a pill here. A fresh test() is a fresh
+    // browser context, so history.state is empty by construction; `page.goto` (never a
+    // hand-made `browser.newContext()`, which loses `use.baseURL`) keeps it honest, and
+    // `history.replaceState` is deliberately absent — a forged state would prove nothing.
+    await page.goto("/materials/rag-systems");
+    await expect(page.getByTestId("material-prose")).toBeVisible();
+
+    // All five shell entries, not just the three sections: «Голосование» and «Разборы» have
+    // no origin marker at all, so a negative that skipped them could hide a broader leak.
+    // Each pill is asserted visible first — an absent node must never produce the negative.
+    for (const name of [/^Выпуск$/, /^Архив$/, /^База$/, /^Голосование$/, /^Разборы$/]) {
+      const pill = sectionPill(page, name);
+      await expect(pill).toBeVisible();
+      expect(
+        await pill.getAttribute("aria-current"),
+        `C-13: ${name} must carry no aria-current on a direct material visit`,
+      ).toBeNull();
+      expect(
+        isLit(await classTokens(pill)),
+        `C-13: ${name} must carry no active fill on a direct material visit`,
+      ).toBe(false);
+    }
+  });
+
+  test("section state: a heading-less material renders no Содержание (zero-heading case)", async ({
+    page,
+  }) => {
+    // `sql-dashboards` has no `body_markdown`, so its `body[]` collapses into one paragraph:
+    // SectionToc returns null, and no heading exists for `rehype-slug` to give an id.
+    await page.goto("/materials/sql-dashboards");
+    await expect(page.getByTestId("material-prose")).toBeVisible();
+
+    await expect(page.getByTestId("material-toc")).toHaveCount(0);
+    await expect(page.locator("details", { hasText: "Содержание" })).toHaveCount(0);
+    expect(await page.locator('[id^="user-content-"]').count()).toBe(0);
+
+    // The offset is global, so it must not depend on anchors existing: a zero-anchor page
+    // still carries a live numeric scroll-padding, otherwise this pin would be vacuous.
+    const { pad, headerHeight } = await page.evaluate(() => ({
+      pad: Number.parseFloat(getComputedStyle(document.documentElement).scrollPaddingTop) || 0,
+      headerHeight: document.querySelector("header").getBoundingClientRect().height,
+    }));
+    expect(pad, "zero-heading: the global scroll offset stays numeric").toBeGreaterThan(0);
+    expect(pad, "zero-heading: the offset still clears the measured header").toBeGreaterThanOrEqual(
+      headerHeight + 1,
+    );
+  });
 });
