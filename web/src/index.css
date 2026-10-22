@@ -145,6 +145,11 @@
     color: var(--color-text-primary);
     background: var(--color-bg-app);
     font-family: var(--font-sans);
+    /* NAV-01 · D-01/D-02/D-03 — the sticky header is out of flow, so a #fragment
+       target would land underneath it. One declaration in @layer base covers every
+       in-page anchor: material prose and razbor prose alike, no component edits.
+       Cascade layers are compared before specificity, so this beats the @theme token. */
+    scroll-padding-top: calc(var(--header-height) + 1rem);
   }
 
   body {
