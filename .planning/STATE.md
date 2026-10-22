@@ -3,42 +3,41 @@ gsd_state_version: "1.0"
 milestone: v1.4
 milestone_name: UI polish & honest navigation
 current_phase: 28
-current_phase_name: Live proof — streamed DeepSeek ingest
-status: planning
-stopped_at: Phase 27 complete, ready to plan Phase 28
-last_updated: "2026-10-22T16:46:03.100Z"
+status: completed
+stopped_at: Phase 28 complete — all phases complete
+last_updated: "2026-10-22T17:33:07.186Z"
 last_activity: 2026-10-22
-last_activity_desc: Phase 27 complete, transitioned to Phase 28
-state_head: a3abe37e68acc922cf10d9fa0af3756ed3a84242
+last_activity_desc: Phase 28 complete
+state_head: a376db6f536a2c5cd8345408a638749ef7a48f6b
 progress:
   total_phases: 4
-  completed_phases: 3
-  total_plans: 18
-  completed_plans: 18
-  percent: 75
+  completed_phases: 4
+  total_plans: 19
+  completed_plans: 19
+  percent: 100
 ---
 
 # Project State
 
 ## Project Reference
 
-See: .planning/PROJECT.md (updated 2026-10-22 — Phase 27 complete)
+See: .planning/PROJECT.md (updated 2026-10-22 — Phase 28 complete, v1.4 ready to close)
 
 **Core value:** Trusted weekly prepared-article issue + one honest vote toward the next разбор
-**Current focus:** Phase 28 — Live proof — streamed DeepSeek ingest
+**Current focus:** v1.4 complete — milestone ready to close (next: `/gsd-complete-milestone`)
 
 ## Current Position
 
 Phase: 28 — Live proof — streamed DeepSeek ingest
-Plan: Not started
-Status: Ready to plan
-Last activity: 2026-10-22 — Phase 27 complete, transitioned to Phase 28
+Plan: 28-01 complete (proof + FU-27-01 rider)
+Status: All phases complete — v1.4 ready to close
+Last activity: 2026-10-22 — Phase 28 complete: live streamed ingest proven on a 24.14 min video
 
 ## Performance Metrics
 
 **Velocity:**
 
-- Total plans completed: 46 (40 v1 + 23 v1.1 + 26 v1.2)
+- Total plans completed: 47 (40 v1 + 23 v1.1 + 26 v1.2)
 - Prior milestones shipped: v1 (5 phases), v1.1 (6 phases), v1.2 (5 phases)
 - v1.3 plans completed: 3
 
@@ -65,6 +64,7 @@ Last activity: 2026-10-22 — Phase 27 complete, transitioned to Phase 28
 | 25 | 10 | Complete (UAT 12/12, threats_open 0) | - |
 | 26 | 3 | Complete (UAT 3/3, threats_open 0) | - |
 | 27 | 5 | Complete (UAT 2 pass + 1 deferred, threats_open 0) | - |
+| 28 | 1 | Complete (live proof 4/4 criteria, UAT 4 pass + 1 deferred, threats_open 0) | - |
 **Per-Plan Metrics:**
 
 | Plan | Duration | Tasks | Files |
@@ -270,6 +270,11 @@ v1.3 roadmap locks:
 - [Phase 27]: C-12 paging resume is proven by 21 test-only `pagingFixtures` (unique `paging` token, `inIssue: false`) instead of a live catalogue — 21 matches are the minimum that keeps `has_more` true after the first append, so the third page must resume at offset 20; `inIssue: false` keeps the issue, archive and voting counts untouched.
 - [Phase 27]: `INVALID_ROLE` toast (T-27-16 / 27-UAT test 3) is deferred to the Phase 28 live stand — The mock adapter cannot produce the code and re-pinning the frozen `knowledgeApi.js` to fake it would trade a real gate for a simulated pass; the owner chose live verification.
 - [Phase 27 security]: T-27-16 accepted below the `high` threshold as AR-27-03 with follow-up FU-27-01 — 27-SECURITY.md records 19 evaluated, 0 open threats.
+- [Phase 28]: the live proof runs through `YOUTUBE_PROXY_URL`, not direct egress — measured: TCP:443 to YouTube opens but TLS handshake times out for `www.youtube.com` and `www.youtube-nocookie.com`, while `api.deepseek.com` negotiates TLSv1.3. The captions stage therefore needs the SOCKS5 proxy; the LLM stage must NOT use it (`trust_env=False`), so the asymmetry is a precondition, not a bug.
+- [Phase 28]: `--template` is mandatory — the ROADMAP command line omits it and exits 2 (`Missing option '--template'`) before any network call. Evidence records the command that actually ran: `... ingest <url> --template lecture --debug`.
+- [Phase 28]: ING-09 satisfied by measurement — material 25 (`status=draft`, `youtube_video_id=HR7hD8TO4Z8`) + `digest_shortlist_items` batch 7 / rank 2 / decision=pending; exit 0 in 21.91 s wall clock, `stage=llm elapsed_ms=16578`, zero `APIConnectionError`. The id was absent from `materials` before the run, so the proof is not an `already_saved` re-hit.
+- [Phase 28]: FU-27-01 closed under TDD (empty header submit → `{ replace: true }`), which closes T-27-16; `27-SECURITY.md` is now 19/19 threats with 0 open. The empty-path push stacked a landing over the settled `?q` and made Back re-enter the executed query.
+- [Phase 28]: the deferred `INVALID_ROLE` toast was NOT closed — the proof ran on the service key and never opened a browser, so an authenticated live SPA session is still required. Recorded as deferred again instead of claimed.
 
 ### Pending Todos
 
@@ -277,7 +282,9 @@ None.
 
 ### Blockers/Concerns
 
-- **Phase 27 left exactly one deferred verification for Phase 28.** `27-UAT.md` test 3 / `27-VERIFICATION.md` row 32: the `INVALID_ROLE` chip toast («Фильтр недоступен» ~4 s, error stays on `kb-search-error`) is unexercised under mocks. Phase 28 runs against the live API — trigger it there and then mark the item resolved. Accepted risk AR-27-03 / follow-up FU-27-01 ride the same live session.
+- **The `INVALID_ROLE` toast survived Phase 28 — it is now the only carried UI verification.** `27-UAT.md` test 3 / `28-UAT.md` test 5: the chip toast («Фильтр недоступен» ~4 s, error stays on `kb-search-error`) is unexercised. Phase 28 could not close it: the live proof ran through the service-key CLI and never opened a browser, and the mock adapter cannot emit the code. Needs the SPA on the live API **with an authenticated session** — that is a UI session, not an ingest run. AR-27-03 is now closed (FU-27-01 landed), so only this toast remains.
+
+- **YouTube egress needs the SOCKS5 proxy; DeepSeek must not use it (measured 2026-10-22).** Direct TLS to `www.youtube.com` / `www.youtube-nocookie.com` times out from this host even though TCP:443 connects, while `api.deepseek.com` negotiates TLSv1.3. `YOUTUBE_PROXY_URL` in `ingestion-service/.env` (`socks5://adguard:***@192.168.1.68:1080`) is therefore a hard precondition for any captions work, and the `adguard-vpn` container must be connected. `build_async_deepseek_client` keeps `trust_env=False` on purpose — routing DeepSeek through the proxy would be a regression, not a robustness win.
 
 - **Vite dev-server flakiness in this workspace (operational, recurring).** Across Phases 18-02, 18-03, the Phase 18 gates and the Phase 24 UAT/validation runs, the Playwright `web` project produced mass failures on `127.0.0.1:5174` — a reuse fight between a stale long-lived Vite server and a new run, or the server dying mid-run. **Phase 24 closing added a second signature:** a stale server left running with `VITE_USE_MOCKS=false` from `web/.env.local` makes every admin spec land on the login screen (17 failures, all on `getByTestId("admin-pipeline-page")`). Always check for a listener on 5174 (`Get-NetTCPConnection -LocalPort 5174 -State Listen`) and kill stale servers before a full-suite run; a clean re-run has produced green every time (17/17 for the Phase 24 slice).
 
@@ -294,6 +301,7 @@ Items acknowledged and deferred at milestone close, most recent first:
 | Category | Item | Status | Deferred At | Milestone |
 |----------|------|--------|-------------|-----------|
 | backlog | 999.4 unify Approve + Mark ready (ADUX-11) | parked (product preference) | 2026-10-13 | v1.3 |
+| deferred_items | 28-UAT.md test 5: `INVALID_ROLE` chip toast («Фильтр недоступен» ~4 s, error stays on `kb-search-error`) | deferred — needs an authenticated live SPA session; ingest proof never opened a browser | 2026-10-22 | v1.4 |
 | deferred_items | 24-UAT.md test 6: live collection against a real enabled source (YouTube Atom → drafts + pending shortlist, cursor not advancing on re-run) | deferred — `pipeline_ingest_sources` empty | 2026-10-18 | v1.3 |
 | backlog | 999.1 / 999.5 / 999.6 / 999.7 | moved into v1.3 (Phases 18 / 22 / 19 / 17) | 2026-10-14 | v1.3 |
 | deferred_items | 13/deferred-items.md: admin.spec.js `/me network failure shows ServiceUnavailable not Forbidden` flake (pre-existing) | acknowledged | 2026-10-05 | v1.2 |
@@ -305,16 +313,17 @@ Carried product deferrals beyond v1.3: leaderboard, quiz, Whisper/Foundry ASR, i
 
 ## Session Continuity
 
-Last session: 2026-10-22T19:52:00.000Z
-Stopped at: Phase 27 complete, ready to plan Phase 28
+Last session: 2026-10-22T17:37:00.000Z
+Stopped at: Phase 28 complete — v1.4 ready to close
 Resume file: None
-Next: plan Phase 28 (ING-09 live proof; also close deferred INVALID_ROLE + FU-27-01 against the live API)
+Next: `/gsd-complete-milestone` for v1.4 (all 4 phases complete, 10/10 requirements mapped and satisfied). Carried forward: the `INVALID_ROLE` toast needs an authenticated live SPA session.
 
 ## Operator Next Steps
 
-- **Phase 28 is proof-only** — `0dddc75` (`stream=True` + delta assembly) is already committed; run a >10 min live video and record the result. Do not rewrite the adapter. If it still fails, record the failure and stop.
-- While the live stand is up, close the carried items in the same session: `INVALID_ROLE` chip toast (27-UAT test 3), AR-27-03 / FU-27-01 from `27-SECURITY.md`.
-- Before any full Playwright run, check port 5174 for a stale server (`Get-NetTCPConnection -LocalPort 5174 -State Listen`).
+- **v1.4 is done.** ING-09 is satisfied by a live run, not by a plan: material 25 (`draft`) + shortlist `batch 7 / rank 2 / pending`, 21.91 s, `stage=llm elapsed_ms=16578`, zero `APIConnectionError`. Evidence: `.planning/phases/28-live-proof-streamed-deepseek-ingest/`.
+- `0dddc75` stayed untouched — the proof phase added **zero** edits to `data-collection/` and `ingestion-service/`; the only production file it changed is `SearchPill.jsx` for the FU-27-01 rider.
+- **Next real gap:** the `INVALID_ROLE` filter toast. It needs the SPA on the live backend with a signed-in session — an ingest run cannot reach it.
+- Before any full Playwright run, check port 5174 for a stale server (`Get-NetTCPConnection -LocalPort 5174 -State Listen`); it produced mass false failures twice in this phase and went green on a clean re-run.
 
 ## v1.4 roadmap (Phases 25-28)
 

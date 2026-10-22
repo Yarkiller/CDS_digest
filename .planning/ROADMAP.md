@@ -6,7 +6,7 @@
 - ✅ **[v1.1 YouTube → LLM → Supabase ingestion](milestones/v1.1-ROADMAP.md)** — Phases 6-11 (shipped 2026-10-02)
 - ✅ **[v1.2 Admin UX + diagnostics + PIPE-01 MVP](milestones/v1.2-ROADMAP.md)** — Phases 12-16 (shipped 2026-10-05)
 - ✅ **[v1.3 Live mail, scheduled ingestion & backlog debt](milestones/v1.3-ROADMAP.md)** — Phases 17-24 (shipped 2026-10-18)
-- 🚧 **v1.4 UI polish & honest navigation** — Phases 25-28 (4 phases, 0 plans; roadmap created 2026-10-21)
+- 🚧 **v1.4 UI polish & honest navigation** — Phases 25-28 (4 phases, 18 plans; roadmap created 2026-10-21; all phases complete 2026-10-22, ready to close)
 
 ## Phases
 
@@ -69,7 +69,7 @@ Full phase detail: [milestones/v1.3-ROADMAP.md](milestones/v1.3-ROADMAP.md)
 ## 🚧 v1.4 UI polish & honest navigation (Phases 25-28)
 
 **Started:** 2026-10-21 · **Requirements:** 10 (`PIPEUI-01…04`, `THEME-01/02`, `NAV-01/02`, `KNOW-05`, `ING-09`) · **Source:** five UI defects reported from live use + the live proof owed for commit `0dddc75`.
-**Phase count:** 4 (Phases 25-28) · **Plans:** 10 · **Status:** Phase 25 complete (10/10 plans, UAT 12/12, threats_open 0) — completed 2026-10-22; Phases 26-28 awaiting planning.
+**Phase count:** 4 (Phases 25-28) · **Plans:** 18 · **Status:** ✅ all four phases complete (18/18 plans) — Phase 25 UAT 12/12 · Phase 26 UAT 3/3 · Phase 27 UAT 2 pass + 1 deferred · Phase 28 live proof passed (4/4 criteria). Milestone ready to close.
 
 ### Phase 25: Admin «Настройка» — naming, readable surfaces, token repair
 
@@ -218,6 +218,12 @@ Plans:
 2. A `status=draft` material **plus** a pending shortlist row exist in Supabase for that video, tied by `youtube_video_id`. *Proof:* a read-only query against `materials` + the shortlist row, recorded with the actual ids.
 3. No `network_error` at stage `llm` and no `APIConnectionError` anywhere in the run; the streamed elapsed time is recorded so the improvement over the pre-fix TCP-idle failure is measurable. *Proof:* the run transcript plus the elapsed value in the summary.
 4. The operator preconditions that made it pass (proxy disabled / env vars used / which `.env` file) are written into the phase summary, so a repeat run is reproducible by another operator. *Proof:* the recorded runbook-grade note, cross-checked against the actual command line used.
+
+**Plans**
+
+- [x] 28-01-PLAN.md — Pre-flight, one live run with `--debug` + wall clock, DB read-back, FU-27-01 rider fix
+
+**Result (2026-10-22):** 4/4 criteria passed. Video `HR7hD8TO4Z8` (24.14 min) → material **25** (`status=draft`) + shortlist `batch 7 / rank 2 / decision=pending`; exit 0 in **21.91 s**, `stage=llm elapsed_ms=16578`, no `APIConnectionError`. **Deviation recorded:** `--template lecture` is mandatory — the command as written above exits 2 without it. **Precondition recorded:** direct TLS to YouTube is blocked from the operator host, so `YOUTUBE_PROXY_URL` (SOCKS5) is required for the captions stage only; DeepSeek is reached directly (`trust_env=False`). Rider `FU-27-01` closed under TDD → `T-27-16` closed.
 
 ### Requirement coverage (v1.4)
 
