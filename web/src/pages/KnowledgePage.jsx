@@ -1,4 +1,4 @@
-import { useEffect, useState } from 'react'
+import { useEffect, useRef, useState } from 'react'
 import { useSearchParams } from 'react-router-dom'
 import {
   DEFAULT_SEARCH_LIMIT,
@@ -23,6 +23,16 @@ const ROLE_CHIPS = [
 ]
 
 const FILTER_TOAST_MS = 4000
+
+/** X-1: request counter installed at the `searchKnowledge` boundary (UI-SPEC X-1). */
+const SEARCH_COUNT_KEY = '__DIGEST_KNOWLEDGE_SEARCH_COUNT__'
+
+/** Counts every search attempt, throwing ones included — «Повторить» is counted the same way. */
+function bumpKnowledgeSearchCount() {
+  if (typeof window === 'undefined') return
+  const current = typeof window[SEARCH_COUNT_KEY] === 'number' ? window[SEARCH_COUNT_KEY] : 0
+  window[SEARCH_COUNT_KEY] = current + 1
+}
 
 function searchFailureState(err, { roleValue, append, q }) {
   if (err instanceof KnowledgeApiError && err.code === 'INVALID_ROLE' && roleValue !== 'all') {
@@ -67,6 +77,35 @@ export default function KnowledgePage() {
     return () => window.clearTimeout(timer)
   }, [toast])
 
+  /** D-01: the URL is the only trigger — one Enter in the header is enough. */
+  const qUrl = (searchParams.get('q') ?? '').trim()
+  /** Read inside the effect, never listed in its deps (D-62: a chip change is its own action). */
+  const roleRef = useRef(role)
+  roleRef.current = role
+  /** Last *executed* normalised q, written synchronously before the first await (D-03). */
+  const lastHandledQueryRef = useRef(null)
+
+  // `runSearch`, `searchParams` and `role` are deliberately omitted: they are new
+  // identities on every render, and including them reproduces the duplicate fire
+  // this phase removes (KNOW-05 criterion 2).
+  useEffect(() => {
+    // D-10: the field mirrors ?q for valid, overlong and empty queries alike.
+    // Cannot loop — this effect is keyed on the URL, never on `query`.
+    setQuery(qUrl)
+
+    const validation = validateKnowledgeQuery(qUrl)
+    // Blank and overlong submissions stay inline-only, with zero requests (27-04).
+    if (!validation.ok) return
+
+    const q = validation.q
+    if (lastHandledQueryRef.current === q) return
+    // Written synchronously BEFORE `runSearch` — StrictMode's setup → cleanup →
+    // setup must find the guard already armed, or a reload costs two requests.
+    lastHandledQueryRef.current = q
+    setInlineError(null)
+    void runSearch(q, { offset: 0, append: false, role: roleRef.current })
+  }, [qUrl])
+
   async function runSearch(q, { offset = 0, append = false, role: roleValue = role } = {}) {
     if (append) {
       setLoadingMore(true)
@@ -74,10 +113,13 @@ export default function KnowledgePage() {
       setSearching(true)
       setError(null)
       setInlineError(null)
+      // Coherent in-flight state: the status node and showZeroHit both read activeQuery.
+      setActiveQuery(q)
     }
 
     let resetInvalidRole = false
     try {
+      bumpKnowledgeSearchCount()
       const dto = await searchKnowledge({
         q,
         role: roleValue === 'all' ? null : roleValue,
