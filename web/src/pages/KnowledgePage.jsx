@@ -34,6 +34,48 @@ function bumpKnowledgeSearchCount() {
   window[SEARCH_COUNT_KEY] = current + 1
 }
 
+/**
+ * Last result per `(role, q)` for the session (C-04, D-04).
+ *
+ * Module scope, not component state: `KnowledgePage` unmounts on the way to a material, so a
+ * component-local cache would die exactly when Back needs it. It is never persisted to any
+ * browser storage — it dies with the document — so a reload re-queries (C-10, T-27-08).
+ */
+const SEARCH_SNAPSHOT_MAX = 20
+const searchSnapshots = new Map()
+/** Seeds the `role` state on remount so a chip change is looked up under the same role (C-09). */
+let lastRoleForQuery = 'all'
+
+/** A string key — user input is never used as an object key or a selector. */
+function snapshotKey(roleValue, q) {
+  return `${roleValue ?? 'all'}\u0000${q}`
+}
+
+function rememberSearchSnapshot(roleValue, q, entry) {
+  const key = snapshotKey(roleValue, q)
+  // Delete before set so a re-write is also an LRU touch.
+  searchSnapshots.delete(key)
+  searchSnapshots.set(key, entry)
+  while (searchSnapshots.size > SEARCH_SNAPSHOT_MAX) {
+    const oldest = searchSnapshots.keys().next().value
+    searchSnapshots.delete(oldest)
+  }
+}
+
+function recallSearchSnapshot(roleValue, q) {
+  const key = snapshotKey(roleValue, q)
+  const entry = searchSnapshots.get(key)
+  if (!entry) return null
+  searchSnapshots.delete(key)
+  searchSnapshots.set(key, entry)
+  return entry
+}
+
+/** An error is never cached: a failed key must re-query on the next visit. */
+function forgetSearchSnapshot(roleValue, q) {
+  searchSnapshots.delete(snapshotKey(roleValue, q))
+}
+
 function searchFailureState(err, { roleValue, append, q }) {
   if (err instanceof KnowledgeApiError && err.code === 'INVALID_ROLE' && roleValue !== 'all') {
     return { invalidRole: true }
@@ -58,7 +100,7 @@ export default function KnowledgePage() {
   const [searchParams] = useSearchParams()
   const [query, setQuery] = useState(() => searchParams.get('q') ?? '')
   /** 'all' omits role; analyst | ds are the only filters sent (D-62). */
-  const [role, setRole] = useState('all')
+  const [role, setRole] = useState(() => lastRoleForQuery)
   /** null = pre-search landing; string = last successful/attempted submitted q */
   const [activeQuery, setActiveQuery] = useState(null)
   const [items, setItems] = useState([])
@@ -102,6 +144,22 @@ export default function KnowledgePage() {
     // Written synchronously BEFORE `runSearch` — StrictMode's setup → cleanup →
     // setup must find the guard already armed, or a reload costs two requests.
     lastHandledQueryRef.current = q
+
+    // C-04: Back from a material, or any remount, replays the stored result and never
+    // reaches the adapter. This branch sits above runSearch, whose first statement is the
+    // counter, so a restore is structurally unable to bump it.
+    const snapshot = recallSearchSnapshot(roleRef.current, q)
+    if (snapshot) {
+      setActiveQuery(q)
+      setItems(snapshot.items)
+      setHasMore(snapshot.hasMore)
+      setNextOffset(snapshot.nextOffset)
+      setSearching(false)
+      setLoadingMore(false)
+      setError(null)
+      return
+    }
+
     setInlineError(null)
     void runSearch(q, { offset: 0, append: false, role: roleRef.current })
   }, [qUrl])
@@ -129,13 +187,37 @@ export default function KnowledgePage() {
       setActiveQuery(q)
       setItems((prev) => (append ? [...prev, ...dto.items] : dto.items))
       setHasMore(Boolean(dto.has_more))
-      setNextOffset(offset + (dto.items?.length ?? 0))
+      const nextCount = offset + (dto.items?.length ?? 0)
+      setNextOffset(nextCount)
+      if (append) {
+        // C-12: a paginated delivery is stored and restored as ONE snapshot.
+        const previous = recallSearchSnapshot(roleValue, q)
+        rememberSearchSnapshot(roleValue, q, {
+          items: previous ? [...previous.items, ...dto.items] : dto.items,
+          hasMore: Boolean(dto.has_more),
+          nextOffset: nextCount,
+          limit: DEFAULT_SEARCH_LIMIT,
+        })
+      } else {
+        rememberSearchSnapshot(roleValue, q, {
+          items: dto.items,
+          hasMore: Boolean(dto.has_more),
+          nextOffset: nextCount,
+          limit: DEFAULT_SEARCH_LIMIT,
+        })
+        // The remount seed: a later visit looks the cache up under this role.
+        lastRoleForQuery = roleValue
+      }
       setError(null)
       if (!append && q) {
         // Privacy: send only the role filter, never the raw user query, to Metrika.
         trackGoal(ANALYTICS_GOALS.search, { role: roleValue })
       }
     } catch (err) {
+      // An error is never cached: evict the key so a cache-eligible revisit re-queries.
+      // `roleValue`/`q` are the same pair the success branch would have stored under, so a
+      // failure under a different role cannot evict another role's snapshot.
+      forgetSearchSnapshot(roleValue, q)
       const failure = searchFailureState(err, { roleValue, append, q })
       if (failure.invalidRole) {
         // Tampered role: toast and fall back to «Все» without clearing q (D-62).
