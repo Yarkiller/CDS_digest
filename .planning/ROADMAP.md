@@ -129,7 +129,7 @@ Full phase detail: [milestones/v1.3-ROADMAP.md](milestones/v1.3-ROADMAP.md)
 **Goal:** A reader who jumps inside an article and a reader who opens a material from a section both keep their bearings.
 **Requirements:** NAV-01, NAV-02
 
-**Plans:** 3/3 plans executed
+**Plans:** 3/3 plans complete
 **Wave 1**
 - [x] 26-01-PLAN.md — NAV-01: one global `scroll-padding-top` in `@layer base :root` + `200px` mobile token; tracer slice proves CSS → computed style → heading rect on a short and a long section, plus 390/639 and razbory
 
