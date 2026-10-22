@@ -387,7 +387,7 @@ function KnowledgeResults({
         </div>
       ) : null}
 
-      {activeQuery !== null && !error ? (
+      {searching || (activeQuery !== null && !error) ? (
         <p className="mb-4 text-xs text-text-secondary" aria-live="polite">
           {knowledgeResultSummary({ searching, items, hasMore })}
         </p>

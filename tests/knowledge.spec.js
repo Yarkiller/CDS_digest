@@ -92,6 +92,69 @@ async function expectCount(page, n, label) {
 /** Hits are anchors rendered by MaterialListRow — there is no result-row testid. */
 const hitLinks = (page) => page.locator('a[href^="/materials/"]');
 
+/**
+ * Settle gate for the knowledge surface itself.
+ *
+ * A URL assertion is necessary but not sufficient: the issue page (`/`) renders an
+ * `IssueToc` whose `/materials/{id}` anchors carry the same accessible names as the
+ * knowledge hits, and `navigate()` updates the URL one commit before React swaps the
+ * route. Asserting a row right after `toHaveURL` can therefore pass against the OUTGOING
+ * surface while the new page has not even started its request (observed: the counter read
+ * 0 with the row «visible»). `kb-role-chips` and the live region exist only on the
+ * knowledge page, so gating on them makes every later row assertion meaningful.
+ */
+const knowledgeSurface = (page) => page.getByTestId("kb-role-chips");
+
+async function expectKnowledgeSettled(page, summary) {
+  await expect(knowledgeSurface(page)).toBeVisible();
+  await expect(page.locator('p[aria-live="polite"]')).toHaveText(summary);
+}
+
+/**
+ * X-2 is a harness-side instrument (UI-SPEC: «тест-харнесс, page.evaluate»), never app code.
+ * It samples the in-flight affordances the page exposes and keeps every label it has seen.
+ */
+const AFFORDANCE_LOG_KEY = "__KB_AFFORDANCE_LOG__";
+
+async function installAffordanceCollector(page) {
+  await page.evaluate((logKey) => {
+    if (window.__KB_AFFORDANCE_OBSERVER__) return;
+    window[logKey] = [];
+    function sample() {
+      const labels = [];
+      if (document.querySelector('[data-state="loading"]')) labels.push("loading-state");
+      if (document.querySelector("#kb-search[disabled]")) labels.push("field-disabled");
+      if (document.querySelector('[aria-live="polite"]')?.textContent?.trim() === "Ищем…") {
+        labels.push("live-searching");
+      }
+      for (const label of labels) {
+        if (!window[logKey].includes(label)) window[logKey].push(label);
+      }
+    }
+    sample();
+    const observer = new MutationObserver(sample);
+    observer.observe(document.documentElement, {
+      subtree: true,
+      childList: true,
+      characterData: true,
+      attributes: true,
+      attributeFilter: ["disabled", "data-state"],
+    });
+    window.__KB_AFFORDANCE_OBSERVER__ = observer;
+  }, AFFORDANCE_LOG_KEY);
+}
+
+async function resetAffordanceLog(page) {
+  await installAffordanceCollector(page);
+  await page.evaluate((logKey) => {
+    window[logKey].length = 0;
+  }, AFFORDANCE_LOG_KEY);
+}
+
+async function affordanceLog(page) {
+  return page.evaluate((logKey) => [...window[logKey]], AFFORDANCE_LOG_KEY);
+}
+
 test.describe("KNOW-05 header submit runs the search", () => {
   test.beforeEach(async ({ page }) => {
     await installKnowledgeCounter(page);
@@ -105,6 +168,7 @@ test.describe("KNOW-05 header submit runs the search", () => {
     await header.press("Enter");
 
     await expect(page).toHaveURL(/\/knowledge\?q=RAG$/);
+    await expectKnowledgeSettled(page, "Показано 2");
     await expect(page.getByRole("link", { name: /building production rag systems/i })).toBeVisible();
     await expect(page.getByTestId("kb-hint-chips")).toHaveCount(0);
     await expect(page.getByRole("searchbox", { name: /поиск по базе знаний/i })).toHaveValue("RAG");
@@ -113,6 +177,7 @@ test.describe("KNOW-05 header submit runs the search", () => {
 
   test("changing ?q while mounted replaces the rows", async ({ page }) => {
     await page.goto("/knowledge?q=RAG");
+    await expectKnowledgeSettled(page, "Показано 2");
     await expect(page.getByRole("link", { name: /building production rag systems/i })).toBeVisible();
 
     const header = page.getByRole("searchbox", { name: /поиск digest cds/i });
@@ -120,8 +185,105 @@ test.describe("KNOW-05 header submit runs the search", () => {
     await header.press("Enter");
 
     await expect(page).toHaveURL(/\/knowledge\?q=SQL$/);
+    await expectKnowledgeSettled(page, "Показано 5");
     await expect(page.getByRole("link", { name: /anomaly detection in audit pipelines/i })).toBeVisible();
     await expect(page.getByRole("link", { name: /building production rag systems/i })).toHaveCount(0);
     await expectCount(page, 2, "q change");
+  });
+
+  test("header submit issues exactly one search request", async ({ page }) => {
+    await page.goto("/");
+
+    const header = page.getByRole("searchbox", { name: /поиск digest cds/i });
+    await header.fill("RAG");
+    await header.press("Enter");
+    // Settle first: a counter read before settle cannot distinguish 1 from 0.
+    await expectKnowledgeSettled(page, "Показано 2");
+    await expectCount(page, 1, "settled");
+
+    await page.getByTestId("theme-toggle").click();
+    await expectCount(page, 1, "theme toggle");
+
+    await header.focus();
+    await page.evaluate(() => document.activeElement?.blur());
+    await expectCount(page, 1, "focus change");
+
+    await header.fill("SQL");
+    await expectCount(page, 1, "typing");
+
+    // Covers timer-driven re-renders. The 4 s kb-filter-toast timer is unreachable here:
+    // setToast('Фильтр недоступен') only fires on an INVALID_ROLE response, which the mock
+    // adapter never produces — waiting 4 s for it would assert nothing.
+    await page.waitForTimeout(1200);
+    await expectCount(page, 1, "idle window");
+  });
+
+  test("the header path shows the in-flight live region", async ({ page }) => {
+    await page.goto("/");
+    // Installed before Enter so the seed sample sees the pre-search tree.
+    await resetAffordanceLog(page);
+
+    const header = page.getByRole("searchbox", { name: /поиск digest cds/i });
+    await header.fill("RAG");
+    await header.press("Enter");
+
+    await expect(page).toHaveURL(/\/knowledge\?q=RAG$/);
+    // Settle on the knowledge surface, not on a bare row: the collector exists precisely to
+    // survive the transient in-flight state, so it is read after the request has landed (a
+    // post-settle toHaveText("Ищем…") would be flaky — the mock answers in ~80 ms).
+    await expectKnowledgeSettled(page, "Показано 2");
+
+    // C-10 non-vacuity control: all three affordances must have been observed.
+    const log = await affordanceLog(page);
+    expect(log).toContain("live-searching");
+    expect(log).toContain("field-disabled");
+    expect(log).toContain("loading-state");
+
+    await expect(page.getByTestId("kb-hint-chips")).toHaveCount(0);
+    await expect(page.getByRole("link", { name: /building production rag systems/i })).toBeVisible();
+  });
+
+  test("a role chip change issues exactly one new request", async ({ page }) => {
+    await page.goto("/knowledge?q=SQL");
+    await expectKnowledgeSettled(page, "Показано 5");
+    await expect(hitLinks(page)).toHaveCount(5);
+    await expectCount(page, 1, "deep link");
+
+    // UI-SPEC reading of ROADMAP criterion 3: a chip change IS a deliberate action and
+    // fires exactly once (+1). The «no extra request» clause covers re-renders and history.
+    await page.getByRole("button", { name: "DS", exact: true }).click();
+
+    await expect(page.getByRole("link", { name: /pgvector for enterprise search/i })).toBeVisible();
+    await expect(hitLinks(page)).toHaveCount(1);
+    await expectCount(page, 2, "chip change");
+    await expect(page.getByRole("button", { name: "DS", exact: true })).toHaveAttribute(
+      "aria-pressed",
+      "true",
+    );
+  });
+
+  test("a zero-hit query renders the empty state and no rows", async ({ page }) => {
+    await page.goto("/knowledge?q=zzzz");
+
+    await expect(page.getByRole("heading", { name: /ничего не нашли/i })).toBeVisible();
+    await expect(hitLinks(page)).toHaveCount(0);
+    await expect(page.getByTestId("kb-hint-chips")).toHaveCount(0);
+    await expect(page.getByRole("button", { name: "Сбросить фильтр" })).toBeEnabled();
+    await expect(page.locator('p[aria-live="polite"]')).toHaveText("Найдено 0 материалов");
+    // The control that keeps the RAG assertion honest: a static row list could satisfy
+    // C-01 without any search happening.
+    await expectCount(page, 1, "zero hit");
+  });
+
+  test("a hint chip click fills the field without a request", async ({ page }) => {
+    await page.goto("/knowledge");
+    await expect(knowledgeSurface(page)).toBeVisible();
+    await expect(page.getByTestId("kb-hint-chips")).toBeVisible();
+
+    await page.getByTestId("kb-hint-chips").getByRole("button", { name: "RAG", exact: true }).click();
+
+    await expect(page.getByRole("searchbox", { name: /поиск по базе знаний/i })).toHaveValue("RAG");
+    await expect(hitLinks(page)).toHaveCount(0);
+    await expectCount(page, 0, "hint chip");
   });
 });
