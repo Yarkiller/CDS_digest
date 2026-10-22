@@ -185,7 +185,7 @@ export default function IssuePage({ isCurrent = true }) {
       ) : null}
 
       <h2 className="mb-6 font-display text-2xl font-semibold">В этом выпуске</h2>
-      <IssueToc items={toTocItems(items)} />
+      <IssueToc items={toTocItems(items)} section={isCurrent ? 'issue' : 'archive'} />
     </section>
   )
 }

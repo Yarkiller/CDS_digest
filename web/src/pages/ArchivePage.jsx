@@ -69,6 +69,9 @@ export default function ArchivePage() {
             <li key={issue.number}>
               <Link
                 to={`/issues/${issue.number}`}
+                // D-08: the archive knows it is the archive, so the marker is honest even
+                // when this issue is opened directly — an archived issue lives only here.
+                state={{ section: 'archive' }}
                 className="block min-h-11 rounded-xl border border-border bg-bg-surface p-5 no-underline transition hover:border-primary"
               >
                 <p className="text-xs uppercase tracking-wide text-text-disabled">
