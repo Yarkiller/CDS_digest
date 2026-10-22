@@ -10,9 +10,9 @@ Authorized СВА staff can read a trustworthy weekly issue of prepared articles
 
 ## Current State
 
-v1.4 UI polish & honest navigation started 2026-10-21 (Phases 25–28). Scope: close the five user-reported UI defects found in live use — honest admin naming and readable form surfaces, theme-independent button labels, section context that survives navigation plus anchor scrolling that clears the sticky header, and a header search that runs on the first Enter — and land one live proof that the streamed DeepSeek ingest completes end-to-end.
+v1.4 UI polish & honest navigation shipped 2026-10-22 (Phases 25–28, 19 plans). Scope: close the five user-reported UI defects found in live use — honest admin naming and readable form surfaces, theme-independent button labels, section context that survives navigation plus anchor scrolling that clears the sticky header, and a header search that runs on the first Enter — and land one live proof that the streamed DeepSeek ingest completes end-to-end.
 
-v1.4 progress: **all four phases complete (19 plans); milestone ready to close 2026-10-22.**
+v1.4 status: **shipped 2026-10-22 — all four phases complete and verified (10/10 requirements), tag `v1.4`.** Before closeout the owner asked for three measured residuals to be settled, and all three landed under TDD (`eedd76d`): the radio-circle border moved to `border-field-border` (WR-11), the send-failure banner gained a tone so it paints `text-danger-ink` (WR-12), and the 640–959.98px header band got `--header-height: 112px` (NAV-01 residual). The full suite grew 215 → 218 Playwright cases.
 
 Phase 26 shipped 2026-10-22: «Содержание» anchors land clear of the sticky header via one `scroll-padding-top: calc(var(--header-height) + 1rem)` declaration plus a measured 200px mobile token (`NAV-01`), and the header keeps «Архив»/«База» lit from a single closed `history.state.usr.section` marker that degrades honestly on a direct visit (`NAV-02`). UAT 3/3, threats_open 0; two review items carried (desktop gap ~7px in the 640–999px band).
 
@@ -20,7 +20,7 @@ Phase 27 shipped 2026-10-22: one Enter in the header runs the search immediately
 
 Phase 28 shipped 2026-10-22: the streaming fix `0dddc75` is proven live rather than asserted — one run on a 24.14-minute video exited 0 in 21.91 s (`stage=llm elapsed_ms=16578`, zero `APIConnectionError`) and landed material 25 as `draft` with a `pending` shortlist row (`batch 7 / rank 2`). The phase was proof-only: `data-collection/` and `ingestion-service/` received zero edits. Two measured facts are now recorded preconditions: direct TLS to YouTube is blocked from the operator host (so `YOUTUBE_PROXY_URL` is required for captions, while DeepSeek is reached directly with `trust_env=False`), and `--template` is mandatory (the ROADMAP command line omits it and exits 2). The rider `FU-27-01` was closed under TDD — the empty header submit now replaces history — which closes `T-27-16` and leaves `27-SECURITY.md` at 19/19 with 0 open. The `INVALID_ROLE` toast was **not** closed: it needs an authenticated live SPA session, which the CLI proof never opened.
 
-Phase 25 (v1.4 phase 1) shipped 2026-10-22: the pipeline section is named «Настройка» on all three surfaces with the URL unchanged, the semantic token family (`paper` / `paper-2` / `ink` / `ink-2` / `muted` / `rule` plus the theme-independent `-solid` / `on-solid` / `voting-ink` / `scrim` roles) is declared and gated by 22 automated checks (`G-0`…`G-21`), the «Админ» eyebrow is gone and the ingest block is «Источники». UAT closed 12/12 (320px geometry, partially filled forms, long ids, zero-one-many rows); security re-check found 37 threats, 0 open. Two findings still need a semantic decision rather than a patch — the radio border (WR-11) and the send-failure colour (WR-12) — and are recorded as deferred.
+Phase 25 (v1.4 phase 1) shipped 2026-10-22: the pipeline section is named «Настройка» on all three surfaces with the URL unchanged, the semantic token family (`paper` / `paper-2` / `ink` / `ink-2` / `muted` / `rule` plus the theme-independent `-solid` / `on-solid` / `voting-ink` / `scrim` roles) is declared and gated by 22 automated checks (`G-0`…`G-21`), the «Админ» eyebrow is gone and the ingest block is «Источники». UAT closed 12/12 (320px geometry, partially filled forms, long ids, zero-one-many rows); security re-check found 37 threats, 0 open. The two findings that needed a semantic decision rather than a patch were settled at closeout under TDD: **WR-11** the radio circle now paints `border-field-border` (G-17 sanctions the one non-`<input>` control boundary by exact literal), and **WR-12** the send banner carries a tone so a failure paints `text-danger-ink`.
 
 v1.3 Live mail, scheduled ingestion & backlog debt started 2026-10-14 (Phases 17+). Scope: backlog tech debt first — 999.1 reader-route honesty, 999.6 unsaved-changes guard, 999.7 YAML merge-key — then MAIL-02 investigation + signup mail, MAIL-01 live SMTP digest delivered to `profiles`, and a cron/systemd scheduled ingestion over the existing `ingest` CLI (YouTube channel/playlist source; drafts only, never auto-send).
 
@@ -36,11 +36,13 @@ v1 MVP (Phases 1–5) remains the editorial read/vote/admin publish surface (shi
 
 Stack: FastAPI, React/Vite, self-hosted Supabase + pgvector, `data-collection` + `ingestion-service`, Playwright, pytest.
 
-## Current Milestone: v1.4 UI polish & honest navigation
+## Shipped Milestone: v1.4 UI polish & honest navigation (SHIPPED 2026-10-22)
+
+**Status:** shipped 2026-10-22 — all four phases (25–28, 19 plans) complete and verified; 10/10 requirements; tag `v1.4`.
 
 **Goal:** Every surface tells the reader the truth about where they are and what they are looking at — the admin section is named honestly, both themes stay legible, section context survives navigation, anchors land below the sticky header, and the header search runs on the first Enter.
 
-**Target features:**
+**Target features (all shipped, 25–28):**
 - Admin «Настройка» (PIPEUI-01…04): the section tab, the hidden heading and the mobile select say «Настройка»; the ingest-source «Тип» select is legible in both themes; the block heading is «Источники»; backlog 999.2 chrome polish lands in the same phase
 - Theme contrast (THEME-01/02): filled buttons and the active nav pill carry a white label in both themes, backed by the missing semantic token family (`paper`, `ink`, `rule`, `accent-ink`) declared in `@theme`
 - Section context (NAV-01/02): «Содержание» anchors stop hiding their heading under the sticky header, and the header keeps «Архив» / «База» lit when the reader opens an issue or a material from that section
@@ -170,7 +172,7 @@ v1 is done only when **all** of the following hold:
 
 ### Active
 
-v1.4 UI polish & honest navigation (Phases 25–28) — **all four phases complete 2026-10-22** (10/10 requirements satisfied); milestone ready to close. The full scoped list with REQ-IDs lives in `.planning/REQUIREMENTS.md`.
+No active milestone — v1.4 shipped 2026-10-22 with all 10 requirements validated. The next milestone is not defined yet; run `/gsd-new-milestone` to question → research → gather requirements → roadmap. Known carry-forward candidates: the `INVALID_ROLE` filter toast (needs an authenticated live SPA session), WR-13 (harness flake risk), and the three Nyquist `VALIDATION.md` drafts for phases 25–27.
 
 ### Out of Scope
 
@@ -267,6 +269,9 @@ v1.4 UI polish & honest navigation (Phases 25–28) — **all four phases comple
 | Phase 28: the recorded command carries `--template lecture`, and the ROADMAP line is treated as inaccurate | The literal command exits 2 (`Missing option '--template'`) before any network call — measured. Evidence must show the command that actually ran, not the aspirational one | ✓ Phase 28 |
 | Phase 28: proof is read back from the database by `youtube_video_id`, not from the presence of `✓ saved` | `youtube_video_id` is unique, so a repeat run reports `already_saved: true` and creates nothing; the only non-vacuous proof is a previously absent id producing a `draft` row plus a `pending` shortlist row tied by `material_id` | ✓ Phase 28 |
 | Phase 28: the empty header submit replaces history (`FU-27-01`), closing `T-27-16` | Pushing stacked a landing over the settled `?q` the reader came from, so Back re-entered an already-executed query; the fix is one navigation option, proven failing-first on `history.length` 2 → 3 | ✓ Phase 28 |
+| v1.4 closeout: the ballot radio circle paints `border-field-border`, and G-17 sanctions that one literal as a state indicator (WR-11) | The `<button role="radio">` never reaches `controlTags` (input/select/textarea only), so the only 3:1 token had no legal consumer; pinning the exact literal keeps dividers out while letting the indicator clear WCAG 1.4.11 | ✓ v1.4 closeout |
+| v1.4 closeout: the send banner carries a tone (`data-banner-tone`) instead of a fixed `text-success-ink` (WR-12) | Colour by outcome is a data question, not a message question — substring-matching «не отправлена» would break on any copy edit | ✓ v1.4 closeout |
+| v1.4 closeout: the 640–959.98px band declares `--header-height: 112px` (NAV-01 residual) | The header grows past 64px only in that band, and the token is the one input `scroll-padding-top` reads; measured 31.5px of heading under the bar at 800px | ✓ v1.4 closeout |
 | MaterialPage resets `redirectToReader`/`forbidden` on every load (CR-01/WR-01) | The instance is reused across the preview→reader handoff the flag itself triggers, so a stale `true` re-rendered `<Navigate>` to the current URL (a blank page) and wedged later navigation; the D-12 URL-only assertion could not see it (WR-02) | ✓ Phase 18 |
 
 <decisions>
@@ -308,4 +313,4 @@ After each phase transition: move validated/invalidated requirements; log decisi
 After milestone: full review of Core Value, Out of Scope, and Context against shipped reality.
 
 ---
-*Last updated: 2026-10-22 — Phase 27 complete (UAT 2 pass + 1 deferred, threats_open 0); Phase 28 ready to plan*
+*Last updated: 2026-10-22 after v1.4 milestone — UI polish & honest navigation shipped, three closeout residuals settled under TDD*

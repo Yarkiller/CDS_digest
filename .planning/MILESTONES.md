@@ -1,5 +1,29 @@
 # Milestones
 
+## v1.4 UI polish & honest navigation (Shipped: 2026-10-22)
+
+**Phases completed:** 4 phases, 19 plans, 35 tasks
+
+**Key accomplishments:**
+- `tests/admin-chrome.spec.js` собран web-проектом Playwright и пинит «Настройка» на вкладке, sr-only `h1` и мобильном `<option>` при неизменном `/admin/pipeline`, доказав RED до GREEN
+- Eyebrow «Админ» удалён из DOM, вкладки опущены до `text-2xl` (24px = кегль контентного `h2`), зазор 8px → 16px, верхний отступ 24px → 0, блок источников переименован в «Источники» — всё доказано computed-style и текстовыми ассертами
+- Шесть темо-зависимых токенов объявлены в `@theme static` с шестью light-override'ами, семь тема-независимых ролей — без override; `#ingest-sources-kind` и оба соседних поля впервые рисуют непрозрачную поверхность `paper` с текстом `ink-2` и контрастом ≥ 4.5 в обеих темах, а гейт G-0…G-8 падает на любом необъявленном токене семейства
+- Все заполненные поверхности под `web/src` несут постоянную подпись — белая на фиолетовой, циановой, зелёной и красной заливках, тёмная на жёлтой `voting`, — а четыре полноэкранных оверлея затемняют сцену одинаково в обеих темах; G-9/G-10 падают на 14+3 реальных сайтах и зеленеют только после миграции
+- Two non-vacuous static gates for KNOW-05: a sha256 pin over the untouched `knowledgeApi.js` adapter and a scanner proving only `KnowledgePage.jsx` imports and calls `searchKnowledge`, both auto-discovered by `npm run test:js` with zero config change.
+- `?q` is now the only thing that starts a search: one effect keyed on the literal `[qUrl]`, a ref armed before the first await so StrictMode cannot double-fire it, and an X-1 counter at the adapter boundary that proved the naive version costs 2 requests where the guarded one costs 1.
+- Two identities for one trigger: `(role, q)` in a module-scope LRU cache makes Back from a material free, and an opaque one-shot `submitId` in history state makes a deliberate re-submit cost exactly one request — with the marker branch ordered above the ref guard so neither identity can swallow the other.
+- Invalid input now arrives through the URL like valid input does, and each variant has a provable zero-request outcome: removing `?q` clears the rows but keeps the chip, an overlong query is rejected with the validator's own copy and no truncation, and the hint block became a pure function of `qUrl` so a landing can never sit on top of a query.
+- Header and page-form submits both `replace`, the chip writes the executed `q` (C-21), failures reuse `kb-search-error` and are never cached, and `?q` markup stays inert text.
+- The streamed DeepSeek path is proven live rather than asserted: one 24.14-minute video → material 25 `draft` + shortlist `batch 7 / rank 2 / pending`, exit 0 in 21.91 s, zero `APIConnectionError`, with the proxy/`--template` preconditions written down
+
+**Delivered (closeout, commit `eedd76d`):** WR-11 (radio circle → `border-field-border`, G-17 sanctioned by exact literal), WR-12 (send failure paints `text-danger-ink` through a banner tone) and the NAV-01 640–959.98px residual (`--header-height: 112px`) — each as a failing Playwright case first; suite 215 → 218.
+
+**Closeout type:** `verified_closeout`. **Known verification overrides:** 0 newly acknowledged, 2 carried forward from a prior close (see STATE.md Deferred Items).
+
+**Stats:** 4 phases · 19 plans · 35 tasks · 146 commits · 115 files changed (+21 249 / −202) · 2026-10-21 → 2026-10-22 · gates: 218 Playwright / 112 static (`G-0`…`G-21`) / 1 156 pytest.
+
+---
+
 ## v1.3 Live mail, scheduled ingestion & backlog debt (Shipped: 2026-10-18)
 
 **Phases completed:** 8 phases, 28 plans, 68 tasks

@@ -2,36 +2,36 @@
 gsd_state_version: "1.0"
 milestone: v1.4
 milestone_name: UI polish & honest navigation
-current_phase: 28
-status: completed
+status: Awaiting next milestone
 stopped_at: Phase 28 complete — all phases complete
-last_updated: "2026-10-22T17:33:07.186Z"
+last_updated: "2026-10-22T18:23:44.715Z"
 last_activity: 2026-10-22
-last_activity_desc: Phase 28 complete
-state_head: a376db6f536a2c5cd8345408a638749ef7a48f6b
+last_activity_desc: Milestone v1.4 completed and archived
+state_head: 8e380759a89080f3618427ca82052e98b0398fc4
 progress:
   total_phases: 4
   completed_phases: 4
   total_plans: 19
   completed_plans: 19
   percent: 100
+current_phase: 28
 ---
 
 # Project State
 
 ## Project Reference
 
-See: .planning/PROJECT.md (updated 2026-10-22 — Phase 28 complete, v1.4 ready to close)
+See: .planning/PROJECT.md (updated 2026-10-22 — v1.4 shipped)
 
 **Core value:** Trusted weekly prepared-article issue + one honest vote toward the next разбор
-**Current focus:** v1.4 complete — milestone ready to close (next: `/gsd-complete-milestone`)
+**Current focus:** v1.4 shipped — no active milestone (next: `/gsd-new-milestone`)
 
 ## Current Position
 
-Phase: 28 — Live proof — streamed DeepSeek ingest
-Plan: 28-01 complete (proof + FU-27-01 rider)
-Status: All phases complete — v1.4 ready to close
-Last activity: 2026-10-22 — Phase 28 complete: live streamed ingest proven on a 24.14 min video
+Phase: Milestone v1.4 complete
+Plan: —
+Status: Awaiting next milestone
+Last activity: 2026-10-22 — Milestone v1.4 completed and archived
 
 ## Performance Metrics
 
@@ -320,10 +320,7 @@ Next: `/gsd-complete-milestone` for v1.4 (all 4 phases complete, 10/10 requireme
 
 ## Operator Next Steps
 
-- **v1.4 is done.** ING-09 is satisfied by a live run, not by a plan: material 25 (`draft`) + shortlist `batch 7 / rank 2 / pending`, 21.91 s, `stage=llm elapsed_ms=16578`, zero `APIConnectionError`. Evidence: `.planning/phases/28-live-proof-streamed-deepseek-ingest/`.
-- `0dddc75` stayed untouched — the proof phase added **zero** edits to `data-collection/` and `ingestion-service/`; the only production file it changed is `SearchPill.jsx` for the FU-27-01 rider.
-- **Next real gap:** the `INVALID_ROLE` filter toast. It needs the SPA on the live backend with a signed-in session — an ingest run cannot reach it.
-- Before any full Playwright run, check port 5174 for a stale server (`Get-NetTCPConnection -LocalPort 5174 -State Listen`); it produced mass false failures twice in this phase and went green on a clean re-run.
+- Start the next milestone with /gsd-new-milestone
 
 ## v1.4 roadmap (Phases 25-28)
 
