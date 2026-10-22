@@ -1197,7 +1197,12 @@ test.describe("section context — header pills (NAV-02)", () => {
     const related = page.getByTestId("material-related");
     await expect(related).toBeVisible();
     await related.getByRole("link", { name: /building production rag systems/i }).click();
-    await expect(page.getByTestId("material-prose")).toBeVisible();
+    // Both materials share `material-prose`, so that is not a render barrier here: the
+    // stale DOM of the previous material still carries the lit «Архив» pill. The target
+    // heading is the only element that proves React committed the new location.
+    await expect(
+      page.getByRole("heading", { name: /building production rag systems/i, level: 1 }),
+    ).toBeVisible();
     expect(page.url()).toContain("/materials/rag-systems");
 
     const archive = sectionPill(page, /^Архив$/);

@@ -259,6 +259,9 @@ export const materials = [
     issuePosition: null,
     summary: 'Гайд для Data Analyst: витрины, KPI и контроль сроков отчётности.',
     body: ['Содержит примеры SQL и структуру дашборда цикла аудита.'],
+    // NAV-02 fixture (test-only, C-12): the second arrow of the chain needs a related
+    // link on a material that is only reachable from the archive.
+    related: [{ slug: 'rag-systems', title: 'Building Production RAG Systems' }],
   },
   {
     id: 'analyst-sql-notes',
