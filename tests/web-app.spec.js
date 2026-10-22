@@ -705,6 +705,7 @@ test.describe("section context — anchor offset (NAV-01)", () => {
         pad,
         headingDocTop,
         maxScroll,
+        innerHeight: window.innerHeight,
       };
     }, anchorId);
   }
@@ -784,5 +785,77 @@ test.describe("section context — anchor offset (NAV-01)", () => {
       after.gap,
       "C-02b: the [1, 32] band does not apply to an unreachable target",
     ).toBeGreaterThan(32);
+  });
+
+  test("anchor offset: short section lands inside the band (C-02)", async ({ page }) => {
+    await page.goto("/materials/rag-systems");
+    await expect(page.getByTestId("material-prose")).toBeVisible();
+    await page.evaluate(() => document.fonts.ready);
+
+    const links = page.getByTestId("material-toc").getByRole("link");
+    const firstLink = links.first();
+    const anchorId = await anchorIdOf(firstLink);
+    const gate = await anchorGate(page, anchorId);
+    assertReachable(gate, "C-02");
+
+    // Criterion 1 is about a SHORT first section — prove it instead of assuming it.
+    const secondDocTop = await page.evaluate((id) => {
+      const target = document.getElementById(id);
+      return target.getBoundingClientRect().top + window.scrollY;
+    }, await anchorIdOf(links.nth(1)));
+    expect(
+      secondDocTop - gate.headingDocTop,
+      "C-02: the first section must be shorter than one viewport, otherwise criterion 1 is tested on a long section",
+    ).toBeLessThan(gate.innerHeight);
+
+    await firstLink.click();
+    await expect
+      .poll(async () => (await gapAfterScroll(page, anchorId)).gap)
+      .toBeGreaterThanOrEqual(1);
+
+    const after = await gapAfterScroll(page, anchorId);
+    expect(after.gap, "C-02: the target must land inside the [1, 32] band").toBeLessThanOrEqual(32);
+    expect(after.bottom, "C-02: the whole heading must be in view").toBeLessThanOrEqual(
+      after.innerHeight,
+    );
+  });
+
+  test("anchor offset: deep target in a long article lands inside the band (C-03)", async ({
+    page,
+  }) => {
+    await page.goto("/materials/rag-systems");
+    await expect(page.getByTestId("material-prose")).toBeVisible();
+    await page.evaluate(() => document.fonts.ready);
+
+    const links = page.getByTestId("material-toc").getByRole("link");
+    const deepLink = links.last();
+    const anchorId = await anchorIdOf(deepLink);
+    const gate = await anchorGate(page, anchorId);
+    assertReachable(gate, "C-03");
+
+    expect(
+      await links.count(),
+      "C-03: the long fixture must expose at least six headings",
+    ).toBeGreaterThanOrEqual(6);
+
+    const belowFold = await page.evaluate((id) => {
+      const target = document.getElementById(id);
+      return target.getBoundingClientRect().top > window.innerHeight;
+    }, anchorId);
+    expect(
+      belowFold,
+      "C-03: the deep target must start below the fold — otherwise the assertion is vacuous",
+    ).toBe(true);
+
+    await deepLink.click();
+    await expect
+      .poll(async () => (await gapAfterScroll(page, anchorId)).gap)
+      .toBeGreaterThanOrEqual(1);
+
+    const after = await gapAfterScroll(page, anchorId);
+    expect(after.gap, "C-03: the target must land inside the [1, 32] band").toBeLessThanOrEqual(32);
+    expect(after.bottom, "C-03: the whole heading must be in view").toBeLessThanOrEqual(
+      after.innerHeight,
+    );
   });
 });
