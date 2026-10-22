@@ -5,16 +5,16 @@ milestone_name: UI polish & honest navigation
 current_phase: 26
 current_phase_name: Section context — anchor scrolling and header active state
 status: executing
-stopped_at: Completed 26-01-PLAN.md
-last_updated: "2026-10-22T05:30:01.362Z"
+stopped_at: Completed 26-02-PLAN.md
+last_updated: "2026-10-22T05:45:02.314Z"
 last_activity: 2026-10-22
 last_activity_desc: Phase 26 execution started
-state_head: 785428578f3cd65c5a8485adda8b44938735a2f9
+state_head: edf1aaf5996ed2069c32dfa0016bef16e7eef923
 progress:
   total_phases: 4
   completed_phases: 1
   total_plans: 13
-  completed_plans: 11
+  completed_plans: 12
   percent: 25
 ---
 
@@ -30,8 +30,8 @@ See: .planning/PROJECT.md (updated 2026-10-22 — Phase 25 complete)
 ## Current Position
 
 Phase: 26 (Section context — anchor scrolling and header active state) — EXECUTING
-Plan: 2 of 3
-Status: Executing Phase 26
+Plan: 3 of 3
+Status: Ready to execute
 Last activity: 2026-10-22 — Phase 26 execution started
 
 ## Performance Metrics
@@ -105,6 +105,7 @@ Last activity: 2026-10-22 — Phase 26 execution started
 | Phase 25 P09 | 17min | 2 tasks | 2 files |
 | Phase 25 P10 | 28 | 2 tasks | 2 files |
 | Phase 26 P01 | 15min | 3 tasks | 4 files |
+| Phase 26 P02 | 30min | 3 tasks | 9 files |
 
 ## Accumulated Context
 
@@ -242,6 +243,9 @@ v1.3 roadmap locks:
 - [Phase 26]: 26-01: the static gate reads raw file text, not parseRules — the helper flattens @layer/@media so it cannot prove the declaration lives in base or that the token stayed in @theme
 - [Phase 26]: 26-01: accepted residual — desktop gap is ~7px (offset 80 vs live header 73) and the 640-999px band stays negative (-43..-19) because D-02 locks 64px on sm+; recorded, not fixed
 - [Phase 26]: 26-01: the tracer gate ran as a TDD pair (RED commit then GREEN commit) instead of a blocking human-verify stop, following the 25-01 precedent — the tracer verify demands a failing result
+- [Phase 26]: 26-02: три пилла разделов вычисляются из маршрута ИЛИ history.state.section через <Link aria-current={lit ? (own ? 'page' : 'true') : undefined}> — NavLink стирает явный aria-current у неактивного маршрута
+- [Phase 26]: 26-02: маркер происхождения — один закрытый литерал в history.state.usr.section (без пути, номера выпуска и storage); сравнение литералов только в AppShell, MaterialPage слепо прокидывает
+- [Phase 26]: 26-02: IssueToc и MaterialListRow требуют section без дефолта — литерал 'base' живёт в KnowledgePage, переиспользуемый компонент не угадывает раздел
 
 ### Pending Todos
 
@@ -275,8 +279,8 @@ Carried product deferrals beyond v1.3: leaderboard, quiz, Whisper/Foundry ASR, i
 
 ## Session Continuity
 
-Last session: 2026-10-22T05:29:50.228Z
-Stopped at: Completed 26-01-PLAN.md
+Last session: 2026-10-22T05:45:02.074Z
+Stopped at: Completed 26-02-PLAN.md
 Resume file: None
 Next: `/gsd-discuss-phase 26` (or `/gsd-plan-phase 26`)
 

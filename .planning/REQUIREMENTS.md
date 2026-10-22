@@ -26,7 +26,7 @@ already-committed streamed DeepSeek fix (`0dddc75`).
 ### Section context
 
 - [x] **NAV-01**: A reader who follows a «Содержание» link lands with the target heading fully visible below the sticky header, with breathing room — no heading hidden under the header and no over-scroll past it
-- [ ] **NAV-02**: The header keeps «Архив» lit while the reader views an archived issue or a material opened from the archive, and «База» lit for a material opened from search; a direct URL visit without origin state lights no false section
+- [x] **NAV-02**: The header keeps «Архив» lit while the reader views an archived issue or a material opened from the archive, and «База» lit for a material opened from search; a direct URL visit without origin state lights no false section
 
 ### Header search
 
@@ -69,7 +69,7 @@ Acknowledged but not in this milestone's roadmap. IDs are reserved and never reu
 | THEME-01 | Phase 25 | Complete |
 | THEME-02 | Phase 25 | Complete |
 | NAV-01 | Phase 26 | Complete |
-| NAV-02 | Phase 26 | Pending |
+| NAV-02 | Phase 26 | Complete |
 | KNOW-05 | Phase 27 | Pending |
 | ING-09 | Phase 28 | Pending |
 
