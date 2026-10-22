@@ -32,11 +32,32 @@ async function resolveShellSession(token) {
 export default function AppShell() {
   const [identity, setIdentity] = useState(() => mockIdentity())
   const [appRole, setAppRole] = useState(/** @type {string | null} */ (null))
-  const { pathname } = useLocation()
+  const { pathname, state } = useLocation()
   // D-09: «Админ» lights up on digest, pipeline, and the materials preview alike.
   // IN-04: the /admin/ prefix is the single source of truth — there is no /admin route
   // (D-04), and the catch-all redirects /admin to /, so an equality branch is dead code.
   const adminActive = pathname.startsWith('/admin/')
+
+  // D-07: the origin marker is a closed list — 'archive' | 'base' | 'issue'. This is the
+  // only place it is compared; an absent or unknown value lights nothing at all (D-10).
+  // It is never rendered and never reaches a className, so a forged history.state can
+  // only paint a pill — it decides nothing about data, routing or access.
+  const section = state?.section
+
+  // D-10: '/issues/:number' exists only inside the archive, so that prefix is the one
+  // honest inference from the address; a material URL never is (it serves three origins).
+  const homeRoute = pathname === '/'
+  const archiveRoute = pathname === '/archive'
+  const issuesBranch = pathname.startsWith('/issues/')
+  const baseRoute = pathname === '/knowledge'
+
+  const homeLit = homeRoute || section === 'issue'
+  const archiveLit = archiveRoute || issuesBranch || section === 'archive'
+  const baseLit = baseRoute || section === 'base'
+
+  // D-11: 'page' only for a pill's own route; 'true' when the section is claimed by
+  // navigation state or by the /issues/ prefix.
+  const current = (ownRoute) => (ownRoute ? 'page' : 'true')
 
   useEffect(() => {
     let cancelled = false
@@ -74,15 +95,30 @@ export default function AppShell() {
             className="order-last flex w-full flex-wrap gap-1 sm:order-none sm:w-auto"
             aria-label="Основная навигация"
           >
-            <NavLink to="/" end className={linkClass}>
+            {/* D-11: NavLink drops an explicit aria-current whenever its own `to` is
+                inactive, so a state-claimed section could never be announced. These three
+                compute the attribute and the fill themselves, exactly like «Админ». */}
+            <Link
+              to="/"
+              aria-current={homeLit ? current(homeRoute) : undefined}
+              className={linkClass({ isActive: homeLit })}
+            >
               Выпуск
-            </NavLink>
-            <NavLink to="/archive" className={linkClass}>
+            </Link>
+            <Link
+              to="/archive"
+              aria-current={archiveLit ? current(archiveRoute) : undefined}
+              className={linkClass({ isActive: archiveLit })}
+            >
               Архив
-            </NavLink>
-            <NavLink to="/knowledge" className={linkClass}>
+            </Link>
+            <Link
+              to="/knowledge"
+              aria-current={baseLit ? current(baseRoute) : undefined}
+              className={linkClass({ isActive: baseLit })}
+            >
               База
-            </NavLink>
+            </Link>
             <NavLink to="/voting" className={linkClass}>
               Голосование
             </NavLink>
