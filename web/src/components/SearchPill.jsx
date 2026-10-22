@@ -33,7 +33,9 @@ export default function SearchPill() {
     event.preventDefault()
     const q = query.trim()
     if (!q) {
-      navigate('/knowledge')
+      // FU-27-01 / AR-27-03: the empty submit REPLACES too. Pushing stacked a landing
+      // over the settled `?q` the reader came from, so Back re-entered the executed query.
+      navigate('/knowledge', { replace: true })
       return
     }
     // The pill knows nothing about the search layer: it hands over a URL and an opaque

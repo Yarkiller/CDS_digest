@@ -761,6 +761,25 @@ test.describe("KNOW-05 header submit runs the search", () => {
     await expect(page).not.toHaveURL(/\/knowledge/);
   });
 
+  test("an empty header submit replaces the history entry", async ({ page }) => {
+    // FU-27-01 / T-27-16 (AR-27-03): the empty path used to PUSH, so from a settled
+    // `?q=RAG` an empty Enter stacked a landing and Back walked into the executed query.
+    await page.goto("/knowledge?q=RAG");
+    await expectKnowledgeSettled(page, "Показано 2");
+    const before = await page.evaluate(() => history.length);
+
+    const header = page.getByRole("searchbox", { name: /поиск digest cds/i });
+    await header.fill("   ");
+    await header.press("Enter");
+    await expect(page).toHaveURL(/\/knowledge$/);
+    await expect
+      .poll(() => page.evaluate(() => history.length), { message: "no new history entry" })
+      .toBe(before);
+
+    await page.goBack();
+    await expect(page).not.toHaveURL(/\/knowledge/);
+  });
+
   test("a page-form submit writes ?q and executes once", async ({ page }) => {
     await page.goto("/knowledge");
     await expect(knowledgeSurface(page)).toBeVisible();
