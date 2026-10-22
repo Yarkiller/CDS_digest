@@ -1017,6 +1017,22 @@ test.describe("section context — header pills (NAV-02)", () => {
     }
   });
 
+  test("section pills: URL variants the router still matches keep their pill (C-15b)", async ({ page }) => {
+    // CR-01: replacing NavLink with a raw `pathname ===` comparison dropped matchPath's
+    // normalisation. A capitalised path or a trailing slash (a usual copy-link artifact)
+    // still renders the page, so every pill going dark there would be exactly the defect
+    // this phase exists to close. The router is asked instead of compared by hand.
+    for (const [path, name] of [
+      ["/archive/", /^Архив$/],
+      ["/Archive", /^Архив$/],
+      ["/knowledge/", /^База$/],
+      ["/Knowledge", /^База$/],
+    ]) {
+      await page.goto(path);
+      await expect(sectionPill(page, name)).toHaveAttribute("aria-current", "page");
+    }
+  });
+
   test("section pills: archive -> issue lights Архив (C-08)", async ({ page }) => {
     await page.goto("/archive");
     await page.getByRole("link", { name: /выпуск №13/i }).click();
