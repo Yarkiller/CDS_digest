@@ -808,11 +808,13 @@ test("pipeline retry actions are legible in both themes", async ({ page }) => {
 
 test("in-flight vote label keeps its colour and only dims", async ({ page }) => {
   // 25-VERIFICATION.md 25-04 #7: while a vote is in flight, the button label keeps its
-  // theme-independent colour and only its opacity changes. ActionButton.jsx:1-7 documents the
-  // contract — `stateFill.loading` is empty (so the variant fill survives) and `stateChrome.loading`
-  // only adds `cursor-wait opacity-80`. The `:disabled` variant (ActionButton.jsx:54) wins over
-  // `opacity-80` / `cursor-wait` by specificity (0-2-0 vs 0-1-0), so the actual opacity is 0.55
-  // and the cursor is `not-allowed`, not 0.8 / `wait`.
+  // theme-independent colour and only its opacity changes. ActionButton.jsx documents the
+  // contract — `stateFill.loading` is empty (so the variant fill survives) and
+  // `stateChrome.loading` adds `cursor-wait opacity-80`. Phase 27 (27-UI-REVIEW Priority 2)
+  // then made that the ONLY opacity/cursor source: `disabledChrome` is empty for `loading`,
+  // so the `:disabled` variant no longer competes and the settled reading is 0.80 / `wait`
+  // (it used to measure 0.55 / `not-allowed` because two opacity utilities sat in one class
+  // list). The button is still `disabled` while loading, which is what prevents a double vote.
   const voting = { color: "rgb(15, 23, 42)", background: "rgb(234, 179, 8)" };
 
   for (const theme of ["dark", "light"]) {
@@ -852,14 +854,15 @@ test("in-flight vote label keeps its colour and only dims", async ({ page }) => 
       `loading contrast (${theme})`,
     ).toBeGreaterThanOrEqual(4.5);
 
-    // Actual opacity is 0.55, not 0.8: `data-state="loading"` sets `disabled`
-    // (ActionButton.jsx:51), so `disabled:opacity-55` (0-2-0) beats `opacity-80` from
-    // `stateChrome.loading` (0-1-0) regardless of stylesheet order.
-    expect(flyingOpacity, `loading opacity (${theme})`).toBe("0.55");
+    // 0.80 / `wait` is the settled single-source reading (see the header comment). The
+    // anti-double-vote guarantee did NOT come from the 0.55 dim — it comes from the element
+    // staying `disabled`, which is asserted explicitly right after.
+    expect(flyingOpacity, `loading opacity (${theme})`).toBe("0.8");
     expect(
       await confirm.evaluate((el) => getComputedStyle(el).cursor),
       `loading cursor (${theme})`,
-    ).toBe("not-allowed");
+    ).toBe("wait");
+    await expect(confirm, `loading stays disabled (${theme})`).toBeDisabled();
 
     await expect(page.getByTestId("vote-toast")).toHaveText("Голос сохранён");
     await expect(confirm).toHaveText("Изменить голос");
