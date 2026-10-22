@@ -41,9 +41,6 @@ export default function SearchPill() {
     // `state` must ride in the SECOND argument: the data router builds the location with
     // `createLocation(loc, path, opts && opts.state, …)` and silently ignores `to.state`.
     navigate({ pathname: '/knowledge', search: `?q=${encodeURIComponent(q)}` }, {
-      // C-07: a submission REPLACES — Back must leave /knowledge instead of walking back
-      // through query variants.
-      replace: true,
       state: { submitId: createSubmitId() },
     })
   }
