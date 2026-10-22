@@ -199,6 +199,59 @@
 
 ---
 
+## Milestone: v1.4 — UI polish & honest navigation
+
+**Shipped:** 2026-10-22
+**Phases:** 4 (25–28) | **Plans:** 19 | **Tasks:** 35
+
+### What Was Built
+
+- Admin «Настройка» naming on the tab, the sr-only heading and the mobile select, `/admin/pipeline` unchanged; «Админ» eyebrow removed; ingest block «Источники»; backlog 999.2 chrome polish folded in (Phase 25)
+- The semantic token family declared in `@theme` and enforced by 22 static gates (`G-0`…`G-21`), each with a mutation proof — the root fix for the invisible `paper/ink/rule` utilities (Phase 25)
+- WCAG 1.4.11 field boundaries (`--color-field-border`) on every control, and theme-independent labels on every fill (Phase 25)
+- Anchor landing clear of the sticky header via one `scroll-padding-top` plus a measured mobile token; section context carried in `history.state.usr.section` (Phase 26)
+- Header search that executes on the first Enter — one request per submission, zero for an empty query, Back restored at Δ=0 from a memory-only cache (Phase 27)
+- Live proof of the streamed DeepSeek ingest: 24.14-minute video → material 25 `draft` + shortlist `batch 7 / rank 2 / pending`, exit 0 in 21.91 s (Phase 28)
+- Closeout debt closed under TDD: WR-11 radio boundary, WR-12 failure-banner tone, NAV-01 640–959.98px header band
+
+### What Worked
+
+- Turning each UI defect into a computed-style or request-count assertion made "looks fixed" checkable — every RED named the number that had to move
+- Coding the readability rules as static gates with proof tests (G-14 tint alpha read from the class, G-16 reading behaviour not file text, G-17 with a text-pinned sanction) closed the class of defect rather than the instance
+- The integration check caught a real cross-phase drift (Phase 25's loading-chrome pin vs Phase 27's single-source contract) that both phase reports had declared green
+- The empty-submit rider (`FU-27-01`) was closed in Phase 28 under TDD, which closed its threat `T-27-16` as a side effect
+- Reading the ingest proof back from the DB by `youtube_video_id` rather than trusting `✓ saved` made an idempotent re-run impossible to mistake for a success
+
+### What Was Inefficient
+
+- The audit's "215 passed" claim needed a full re-run to trust; the stale Phase 25 pin had been overriding a deliberate Phase 27 contract for two phases
+- WR-11 needed a gate-contract decision (a `role="radio"` indicator is not an `<input>`), which the audit had recorded as "needs a semantic decision" and deferred twice — the fix itself was two lines
+- The 640–959.98px header band was measured but never declared in a must-have, so it survived a full navigation phase as a WARNING
+- Three `VALIDATION.md` drafts (25–27) are still unreconciled; phase 28 has none
+- The live ingest proof stays operator-dependent (`YOUTUBE_PROXY_URL` + a connected VPN container), so the milestone's most "live" criterion is the least CI-reproducible
+
+### Patterns Established
+
+- A readability gate may sanction a non-`<input>` control boundary only by exact literal, with a proof that every other literal in the same file still offends
+- Semantic colour for an outcome is a tone carried by state, never a substring match on the message text
+- A responsive header's height belongs in `--header-height` per band; `scroll-padding-top` then needs no second source
+- An ARIA control whose visual indicator is a span inherits the control-boundary role in the token vocabulary, not the decorative one
+
+### Key Lessons
+
+1. A green suite is only evidence if every pin points at a live contract — re-run the full suite before believing a phase report.
+2. When a defect needs "a semantic decision", make the decision in the gate's vocabulary; otherwise it defers forever.
+3. Declare the responsive band you measured; an undeclared band becomes nobody's requirement.
+4. Fixing the README-level colour is not the same as fixing the outcome semantics — the banner needed a tone, not a different token.
+5. Close debt before the archive commit, so the milestone's own record describes what actually shipped.
+
+### Cost Observations
+
+- Model mix: not recorded for this milestone
+- Notable: 4 phases / 19 plans in 2 days (2026-10-21 → 2026-10-22); 146 commits, 115 files (+21 249 / −202); gates ended at 218 Playwright / 112 static / 1 156 pytest
+
+---
+
 ## Cross-Milestone Trends
 
 ### Process Evolution
@@ -209,6 +262,7 @@
 | v1.1 | not recorded | 6 | Separate ingestion CLI + RPC persist; audit tech_debt closed via inserted Phase 11. |
 | v1.2 | not recorded | 5 | Capability hooks (nyquist/security/ui) on the execute tail; stale re-verification route; code review moved ahead of nothing → still after the verifier. |
 | v1.3 | not recorded | 8 | Backlog-debt-first ordering; admin preview honesty surface; DB-backed ingest sources + systemd scheduled collection. Close must collapse ROADMAP.md and delete REQUIREMENTS.md in one pass. |
+| v1.4 | not recorded | 4 | Static token gates with mutation proofs replaced one-off contrast fixes; closeout debt settled before the archive commit; integration check caught a two-phase contract drift. |
 
 ### Cumulative Quality
 
@@ -218,6 +272,7 @@
 | v1.1 | pytest unit + CliRunner + SQL contract tests; manual CLI-03 UAT | not measured | `ingestion-service` + DeepSeek adapter |
 | v1.2 | 761 pytest unit + 50 Playwright admin + node source locks; 49/49 verifier truths | not measured | PIPE-01 config port; debug `StageDiagnostics`/`Clock` ports; strict YAML validator |
 | v1.3 | 227 pytest unit + 17 Playwright (Phase 24 gate); `nyquist_compliant: true`, 0 gaps, 3 manual-only escalations | not measured | systemd ingest timer + `ingest-collect` CLI slice; admin draft preview surface; `IngestSourceRepository`/schedule ports; live SMTP mailer |
+| v1.4 | 1 156 pytest + 218 Playwright web + 112 static gates (`G-0`…`G-21`); full suite re-run at close | not measured | semantic token family + 22 mutation-proven gates; `scroll-padding-top` band tokens; `history.state` section marker; live streamed-ingest proof |
 
 ### Top Lessons (Verified Across Milestones)
 
@@ -229,3 +284,5 @@
 6. A milestone close will resurface every un-closed debug session; close them when their fix lands.
 7. Collapse `ROADMAP.md` and delete `REQUIREMENTS.md` in the same close pass — a later merge can silently restore them.
 8. Prove schedulers on a live host **and** with a real enabled source row; host-level proof alone leaves an end-to-end gap.
+9. Re-run the full suite before believing a phase report — a stale pin can hold a deliberate contract hostage for two phases.
+10. A defect deferred as "needs a semantic decision" is a decision about the gate's vocabulary; make it there, or it defers forever.
