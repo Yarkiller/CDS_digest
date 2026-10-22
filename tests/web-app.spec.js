@@ -1122,4 +1122,44 @@ test.describe("section context — header pills (NAV-02)", () => {
     expect(lightActiveColors.color).toBe("rgb(255, 255, 255)");
     expect((await readColors(sectionPill(page, /^Выпуск$/))).color).toBe("rgb(100, 116, 139)");
   });
+
+  test("section state: archive -> issue -> material keeps Архив (C-09)", async ({ page }) => {
+    await page.goto("/archive");
+    await page.getByRole("link", { name: /выпуск №13/i }).click();
+    await expect(page.getByTestId("issue-ready")).toBeVisible();
+
+    // First issue-TOC row: the issue page has no other `/materials/` link.
+    await page.getByTestId("issue-ready").locator('a[href^="/materials/"]').first().click();
+    await expect(page.getByTestId("material-prose")).toBeVisible();
+    expect(page.url()).toContain("/materials/sql-dashboards");
+
+    const archive = sectionPill(page, /^Архив$/);
+    await expect(archive).toHaveAttribute("aria-current", "true");
+    expect(isLit(await classTokens(archive))).toBe(true);
+
+    for (const name of [/^Выпуск$/, /^База$/]) {
+      const other = sectionPill(page, name);
+      expect(await other.getAttribute("aria-current")).toBeNull();
+      expect(isLit(await classTokens(other))).toBe(false);
+    }
+  });
+
+  test("section state: current issue -> material lights Выпуск (C-10)", async ({ page }) => {
+    await page.goto("/");
+    await expect(page.getByTestId("issue-ready")).toBeVisible();
+
+    await page.getByTestId("issue-ready").locator('a[href^="/materials/"]').first().click();
+    await expect(page.getByTestId("material-prose")).toBeVisible();
+    expect(page.url()).toContain("/materials/rag-systems");
+
+    const home = sectionPill(page, /^Выпуск$/);
+    await expect(home).toHaveAttribute("aria-current", "true");
+    expect(isLit(await classTokens(home))).toBe(true);
+
+    for (const name of [/^Архив$/, /^База$/]) {
+      const other = sectionPill(page, name);
+      expect(await other.getAttribute("aria-current")).toBeNull();
+      expect(isLit(await classTokens(other))).toBe(false);
+    }
+  });
 });
