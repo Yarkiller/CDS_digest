@@ -159,6 +159,14 @@ export default function KnowledgePage() {
     // Blank and whitespace-only queries were handled above; ONLY an overlong ?q reaches here.
     // The copy comes from the validator (T-27-12): this file must not hold a second literal.
     if (!validation.ok) {
+      // 27-UI-SPEC § `overlong`: «строк нет». Same "view reset, not data reset" rule as the
+      // empty branch — the rows and their count must go, the role chip and the snapshot
+      // cache must stay. Without this a mounted surface keeps the previous query's rows
+      // under «Сократите запрос» (WR-03).
+      setActiveQuery(null)
+      setItems([])
+      setHasMore(false)
+      setNextOffset(0)
       setInlineError(validation.message)
       return
     }

@@ -461,6 +461,29 @@ test.describe("KNOW-05 header submit runs the search", () => {
     expect(await header.getAttribute("maxlength")).toBeNull();
   });
 
+  test("an overlong submit on a mounted result surface clears the rows", async ({ page }) => {
+    // 27-UI-SPEC § State model — `overlong`: field keeps the full text, inline
+    // «Сократите запрос», no hint chips, NO rows, no kb-search-error.
+    // Only the mounted case can regress: a fresh goto starts with an empty hit list.
+    await page.goto("/knowledge?q=RAG");
+    await expectKnowledgeSettled(page, "Показано 2");
+    await expect(hitLinks(page)).toHaveCount(2);
+
+    const header = page.getByRole("searchbox", { name: /поиск digest cds/i });
+    await header.fill("a".repeat(501));
+    await header.press("Enter");
+
+    await expect(page).toHaveURL(new RegExp(`/knowledge\\?q=a{501}$`));
+    await expect(page.getByTestId("kb-inline-error")).toHaveText("Сократите запрос");
+
+    // A rejection cannot share the screen with rows or a count for the previous query.
+    await expect(hitLinks(page)).toHaveCount(0);
+    await expect(page.locator('[aria-live="polite"]')).toHaveCount(0);
+    await expect(page.getByTestId("kb-hint-chips")).toHaveCount(0);
+    await expect(page.getByTestId("kb-search-error")).toHaveCount(0);
+    await expectCount(page, 1, "overlong after a settled RAG search");
+  });
+
   test("the landing never coexists with a query", async ({ page }) => {
     // Overlong: no request, so `activeQuery` stays null — the frame that used to leak hints.
     await page.goto(`/knowledge?q=${"a".repeat(501)}`);
