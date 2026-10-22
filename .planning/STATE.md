@@ -5,16 +5,16 @@ milestone_name: UI polish & honest navigation
 current_phase: 26
 current_phase_name: Section context — anchor scrolling and header active state
 status: executing
-stopped_at: Phase 26 UI-SPEC approved
-last_updated: "2026-10-22T04:58:25.864Z"
+stopped_at: Completed 26-01-PLAN.md
+last_updated: "2026-10-22T05:30:01.362Z"
 last_activity: 2026-10-22
-last_activity_desc: Phase 25 complete, transitioned to Phase 26
-state_head: 1cdd672619f01684e4b1a8a1aa5e72a688ae3e1b
+last_activity_desc: Phase 26 execution started
+state_head: 785428578f3cd65c5a8485adda8b44938735a2f9
 progress:
   total_phases: 4
   completed_phases: 1
   total_plans: 13
-  completed_plans: 10
+  completed_plans: 11
   percent: 25
 ---
 
@@ -29,10 +29,10 @@ See: .planning/PROJECT.md (updated 2026-10-22 — Phase 25 complete)
 
 ## Current Position
 
-Phase: 26 (Section context — anchor scrolling and header active state) — READY TO EXECUTE
-Plan: Not started
-Status: Ready to execute
-Last activity: 2026-10-22 — Phase 25 complete, transitioned to Phase 26
+Phase: 26 (Section context — anchor scrolling and header active state) — EXECUTING
+Plan: 2 of 3
+Status: Executing Phase 26
+Last activity: 2026-10-22 — Phase 26 execution started
 
 ## Performance Metrics
 
@@ -104,6 +104,7 @@ Last activity: 2026-10-22 — Phase 25 complete, transitioned to Phase 26
 | Phase 25 P08 | 12m | 3 tasks | 22 files |
 | Phase 25 P09 | 17min | 2 tasks | 2 files |
 | Phase 25 P10 | 28 | 2 tasks | 2 files |
+| Phase 26 P01 | 15min | 3 tasks | 4 files |
 
 ## Accumulated Context
 
@@ -235,6 +236,12 @@ v1.3 roadmap locks:
 - [Phase 25]: [25-10]: G-21 asserts exactly two loading entries (one per stateFill/stateChrome block) so a key rename cannot make the gate pass silently.
 - [Phase 25]: [25-10]: the e2e case neutralises CSS transitions before the click — transition-colors (150ms) otherwise lets an instant colour read slip in mid-transition (mutation #2 first passed for this reason).
 - [Phase 25]: [25-10]: 25-04 #7 closed — the in-flight vote label colour is proven in-browser (computed style) and statically (G-21), both mutation-redden; WR-11 (radio border 1.178/1.554) and 12 backstop points stay deferred to a future UI phase / verify-work.
+- [Phase 26]: 26-01: NAV-01 ships as one declaration — scroll-padding-top: calc(var(--header-height) + 1rem) in the existing @layer base :root; layer order (base after theme) is why it wins, specificity is not involved
+- [Phase 26]: 26-01: the mobile token is a measured 200px under one @media (max-width: 639.98px) block (196.6 @390 / 122.6 @639, max rounded up to a multiple of 4); 640 keeps 64px and index.css:117 stays byte-identical
+- [Phase 26]: 26-01: C-00 reachability gate is maxScroll >= headingDocTop measured before the click — C-02/C-03/C-06 demand it, C-02b proves reachable === false, and C-04/C-05 assert three claims without the [1,32] band
+- [Phase 26]: 26-01: the static gate reads raw file text, not parseRules — the helper flattens @layer/@media so it cannot prove the declaration lives in base or that the token stayed in @theme
+- [Phase 26]: 26-01: accepted residual — desktop gap is ~7px (offset 80 vs live header 73) and the 640-999px band stays negative (-43..-19) because D-02 locks 64px on sm+; recorded, not fixed
+- [Phase 26]: 26-01: the tracer gate ran as a TDD pair (RED commit then GREEN commit) instead of a blocking human-verify stop, following the 25-01 precedent — the tracer verify demands a failing result
 
 ### Pending Todos
 
@@ -268,9 +275,9 @@ Carried product deferrals beyond v1.3: leaderboard, quiz, Whisper/Foundry ASR, i
 
 ## Session Continuity
 
-Last session: 2026-10-22T03:23:50.416Z
-Stopped at: Phase 26 UI-SPEC approved
-Resume file: .planning/phases/26-section-context-anchor-scrolling-and-header-active-state/26-UI-SPEC.md
+Last session: 2026-10-22T05:29:50.228Z
+Stopped at: Completed 26-01-PLAN.md
+Resume file: None
 Next: `/gsd-discuss-phase 26` (or `/gsd-plan-phase 26`)
 
 ## Operator Next Steps
