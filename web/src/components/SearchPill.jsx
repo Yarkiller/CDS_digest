@@ -1,6 +1,17 @@
 import { useEffect, useId, useRef, useState } from 'react'
 import { useNavigate } from 'react-router-dom'
 
+/**
+ * New id per submission. The quantity lives in the id's *history*, not in the URL.
+ * A plain marker: never a variant of the URL, never a query fragment.
+ */
+let submitSeq = 0
+
+function createSubmitId() {
+  submitSeq += 1
+  return `${Date.now()}-${submitSeq}`
+}
+
 export default function SearchPill() {
   const inputId = useId()
   const inputRef = useRef(null)
@@ -21,7 +32,17 @@ export default function SearchPill() {
   function onSubmit(event) {
     event.preventDefault()
     const q = query.trim()
-    navigate(q ? `/knowledge?q=${encodeURIComponent(q)}` : '/knowledge')
+    if (!q) {
+      navigate('/knowledge')
+      return
+    }
+    // The pill knows nothing about the search layer: it hands over a URL and an opaque
+    // one-shot marker (D-05). KnowledgePage decides what the marker means.
+    // `state` must ride in the SECOND argument: the data router builds the location with
+    // `createLocation(loc, path, opts && opts.state, …)` and silently ignores `to.state`.
+    navigate({ pathname: '/knowledge', search: `?q=${encodeURIComponent(q)}` }, {
+      state: { submitId: createSubmitId() },
+    })
   }
 
   return (

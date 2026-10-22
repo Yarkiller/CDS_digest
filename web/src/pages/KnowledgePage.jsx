@@ -1,5 +1,5 @@
 import { useEffect, useRef, useState } from 'react'
-import { useSearchParams } from 'react-router-dom'
+import { useLocation, useSearchParams } from 'react-router-dom'
 import {
   DEFAULT_SEARCH_LIMIT,
   KnowledgeApiError,
@@ -97,7 +97,11 @@ function searchFailureState(err, { roleValue, append, q }) {
  * Role chips re-run search when the trimmed query is non-empty (D-62, D-64 / KNOW-02).
  */
 export default function KnowledgePage() {
-  const [searchParams] = useSearchParams()
+  const [searchParams, setSearchParams] = useSearchParams()
+  const location = useLocation()
+  /** One-shot marker for a deliberate re-submit (D-05). `null` on any normal visit. */
+  const submitId = location.state?.submitId ?? null
+  const consumedSubmitIdRef = useRef(null)
   const [query, setQuery] = useState(() => searchParams.get('q') ?? '')
   /** 'all' omits role; analyst | ds are the only filters sent (D-62). */
   const [role, setRole] = useState(() => lastRoleForQuery)
@@ -140,6 +144,32 @@ export default function KnowledgePage() {
     if (!validation.ok) return
 
     const q = validation.q
+
+    // D-06: a deliberate re-submit beats BOTH the ref guard and the cache, so this branch
+    // comes first — a forced re-run of the same q can never be swallowed as a duplicate or
+    // replay stored rows.
+    if (submitId !== null) {
+      // The marker is only ever compared with `===`: never a URL segment, query value, CSS
+      // selector, element id, cache key or navigation target (C-24, T-27-07).
+      if (consumedSubmitIdRef.current === submitId) return
+      consumedSubmitIdRef.current = submitId
+      // Armed before anything asynchronous, so the strip's re-run returns at the guards.
+      lastHandledQueryRef.current = q
+      setInlineError(null)
+      setError(null)
+      setItems([])
+      setHasMore(false)
+      // D-07: a header submission searches from a clean slate.
+      roleRef.current = 'all'
+      setRole('all')
+      lastRoleForQuery = 'all'
+      // Issued AFTER the guards are set: the navigation re-runs this effect, which then
+      // finds no marker and returns at the ref guard.
+      setSearchParams(searchParams, { replace: true, state: null })
+      void runSearch(q, { offset: 0, append: false, role: 'all' })
+      return
+    }
+
     if (lastHandledQueryRef.current === q) return
     // Written synchronously BEFORE `runSearch` — StrictMode's setup → cleanup →
     // setup must find the guard already armed, or a reload costs two requests.
@@ -162,7 +192,7 @@ export default function KnowledgePage() {
 
     setInlineError(null)
     void runSearch(q, { offset: 0, append: false, role: roleRef.current })
-  }, [qUrl])
+  }, [qUrl, submitId])
 
   async function runSearch(q, { offset = 0, append = false, role: roleValue = role } = {}) {
     if (append) {
@@ -261,6 +291,8 @@ export default function KnowledgePage() {
 
   function handleRoleChange(nextRole) {
     setRole(nextRole)
+    // Keeps the remount seed in agreement with the chip the user just chose (C-09).
+    lastRoleForQuery = nextRole
     const validation = validateKnowledgeQuery(query)
     if (!validation.ok) {
       // Empty query: chip state only, no request (D-64). Overlong stays inline.
