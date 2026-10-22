@@ -5,16 +5,16 @@ milestone_name: UI polish & honest navigation
 current_phase: 27
 current_phase_name: Header search runs on submit
 status: executing
-stopped_at: Completed 27-01-PLAN.md
-last_updated: "2026-10-22T10:13:02.520Z"
+stopped_at: Completed 27-02-PLAN.md
+last_updated: "2026-10-22T11:10:00.000Z"
 last_activity: 2026-10-22
-last_activity_desc: Phase 27 execution resumed (wave continue)
-state_head: e741d1a85d8e096d1032b5adb15a01443f94075a
+last_activity_desc: Phase 27 inline execution — plan 27-02 complete
+state_head: c5e420a
 progress:
   total_phases: 4
   completed_phases: 2
   total_plans: 18
-  completed_plans: 14
+  completed_plans: 15
   percent: 50
 ---
 
@@ -30,9 +30,9 @@ See: .planning/PROJECT.md (updated 2026-10-22 — Phase 25 complete)
 ## Current Position
 
 Phase: 27 (Header search runs on submit) — EXECUTING
-Plan: 2 of 5
-Status: Executing Phase 27 — plan 27-01 complete, plan 27-02 next
-Last activity: 2026-10-22 — Phase 27 execution resumed (wave continue)
+Plan: 3 of 5
+Status: Executing Phase 27 — plan 27-02 complete, plan 27-03 next
+Last activity: 2026-10-22 — Phase 27 inline execution (27-02 GREEN)
 
 ## Performance Metrics
 
@@ -255,6 +255,8 @@ v1.3 roadmap locks:
 - [Phase 27]: 27-01: the adapter digest is pinned over LF-normalised text (6283 bytes, 0 CRLF) — bce5c54e… measured on the clean pre-edit file, so a CRLF checkout cannot redden C-24 for the wrong reason while any real edit still fails
 - [Phase 27]: 27-01: the single-call-site gate excludes the adapter declaration by SHAPE (never by whitelisting a file) and pins that exclusion with its own assertion, so an empty scan cannot pass
 - [Phase 27]: 27-01: DEFAULT_SEARCH_LIMIT is matched by its declaration regex and asserted as a per-file set, because the page imports the bare name (a bare-token count reads 5 across 2 files on a clean tree)
+- [Phase 27]: 27-02: a settle gate must name a node that exists ONLY on the target surface — the row assertion passed against the outgoing IssuePage because IssueToc renders the same /materials/{id} anchors, and the counter read 0 behind a «visible» row
+- [Phase 27]: 27-02: lastHandledQueryRef is assigned BEFORE runSearch (measured: guard removed → 2 requests under StrictMode, guard restored → 1), and the X-1 counter sits at the adapter boundary because VITE_USE_MOCKS=true issues no HTTP for page.route to count
 
 ### Pending Todos
 
@@ -288,14 +290,14 @@ Carried product deferrals beyond v1.3: leaderboard, quiz, Whisper/Foundry ASR, i
 
 ## Session Continuity
 
-Last session: 2026-10-22T10:12:53.313Z
-Stopped at: Completed 27-01-PLAN.md
+Last session: 2026-10-22T11:10:00.000Z
+Stopped at: Completed 27-02-PLAN.md
 Resume file: None
-Next: `/gsd-discuss-phase 26` (or `/gsd-plan-phase 26`)
+Next: execute 27-03 (cache + submitId marker) inline
 
 ## Operator Next Steps
 
-- Start Phase 26 with `/gsd-discuss-phase 26` (or `/gsd-plan-phase 26` to skip discussion)
+- Execute plan 27-03 (cache + `submitId` marker) inline, then 27-04, 27-05
 
 ## v1.4 roadmap (Phases 25-28)
 
