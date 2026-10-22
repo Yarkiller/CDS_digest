@@ -156,7 +156,7 @@ export default function KnowledgePage() {
     }
 
     const validation = validateKnowledgeQuery(qUrl)
-    // Blank and overlong submissions stay inline-only, with zero requests (27-04).
+    // Blank, whitespace-only and overlong submissions stay inline-only, with zero requests.
     if (!validation.ok) return
 
     const q = validation.q

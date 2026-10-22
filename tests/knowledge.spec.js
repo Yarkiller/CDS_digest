@@ -435,4 +435,73 @@ test.describe("KNOW-05 header submit runs the search", () => {
     await expect(page).toHaveURL(/\/knowledge$/);
     await expectCount(page, 0, "blank submit");
   });
+
+  test("an overlong header submit is rejected inline with no request", async ({ page }) => {
+    // One code point over MAX_QUERY_CODE_POINTS (500); the validator's own unit pin owns the cap.
+    const tooLong = "a".repeat(501);
+
+    await page.goto("/");
+    const header = page.getByRole("searchbox", { name: /поиск digest cds/i });
+    await header.fill(tooLong);
+    await header.press("Enter");
+
+    await expect(page).toHaveURL(new RegExp(`/knowledge\\?q=a{501}$`));
+    await expect(page.getByTestId("kb-inline-error")).toHaveText("Сократите запрос");
+    await expect(hitLinks(page)).toHaveCount(0);
+    // The landing rule keeps hints off any non-empty ?q.
+    await expect(page.getByTestId("kb-hint-chips")).toHaveCount(0);
+    await expect(page.getByTestId("kb-search-error")).toHaveCount(0);
+    await expectCount(page, 0, "overlong");
+
+    // C-18: no truncation anywhere — the full text survives in both inputs, and neither
+    // carries a maxlength that could silently clip it.
+    const pageField = page.getByRole("searchbox", { name: /поиск по базе знаний/i });
+    expect(await pageField.inputValue()).toHaveLength(501);
+    expect(await pageField.getAttribute("maxlength")).toBeNull();
+    expect(await header.getAttribute("maxlength")).toBeNull();
+  });
+
+  test("the landing never coexists with a query", async ({ page }) => {
+    // Overlong: no request, so `activeQuery` stays null — the frame that used to leak hints.
+    await page.goto(`/knowledge?q=${"a".repeat(501)}`);
+    await expect(page.getByTestId("kb-inline-error")).toHaveText("Сократите запрос");
+    await expect(page.getByTestId("kb-hint-chips")).toHaveCount(0);
+
+    // Zero-hit.
+    await page.goto("/knowledge?q=zzzz");
+    await expect(page.getByRole("heading", { name: /ничего не нашли/i })).toBeVisible();
+    await expect(page.getByTestId("kb-hint-chips")).toHaveCount(0);
+
+    // Populated.
+    await page.goto("/knowledge?q=RAG");
+    await expectKnowledgeSettled(page, "Показано 2");
+    await expect(page.getByTestId("kb-hint-chips")).toHaveCount(0);
+  });
+
+  test("a whitespace-only q is the landing", async ({ page }) => {
+    await page.goto("/knowledge?q=%20");
+
+    await expect(page.getByTestId("kb-hint-chips")).toBeVisible();
+    await expect(hitLinks(page)).toHaveCount(0);
+    await expect(page.getByRole("searchbox", { name: /поиск по базе знаний/i })).toHaveValue("");
+    await expectCount(page, 0, "whitespace");
+  });
+
+  test("the hint set is four fixed labels", async ({ page }) => {
+    await page.goto("/knowledge");
+    const chips = page.getByTestId("kb-hint-chips");
+    await expect(chips).toBeVisible();
+    await expect(chips.getByRole("button")).toHaveCount(4);
+    for (const label of ["RAG", "SQL", "качество данных", "pgvector"]) {
+      await expect(chips.getByRole("button", { name: label, exact: true })).toBeVisible();
+    }
+  });
+
+  test("the live region carries only the status copy", async ({ page }) => {
+    await page.goto("/knowledge?q=RAG");
+    await expectKnowledgeSettled(page, "Показано 2");
+    // E6 · long-text: the status line never echoes the query (T-27-14).
+    const live = page.locator('p[aria-live="polite"]');
+    expect(await live.textContent()).not.toMatch(/RAG/);
+  });
 });
