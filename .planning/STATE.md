@@ -5,16 +5,16 @@ milestone_name: UI polish & honest navigation
 current_phase: 27
 current_phase_name: Header search runs on submit
 status: executing
-stopped_at: Completed 27-03-PLAN.md
-last_updated: "2026-10-22T11:55:00.000Z"
+stopped_at: Completed 27-04-PLAN.md
+last_updated: "2026-10-22T12:20:00.000Z"
 last_activity: 2026-10-22
-last_activity_desc: Phase 27 inline execution — plan 27-03 complete
-state_head: 1cb6551
+last_activity_desc: Phase 27 inline execution — plan 27-04 complete
+state_head: e69bd90
 progress:
   total_phases: 4
   completed_phases: 2
   total_plans: 18
-  completed_plans: 16
+  completed_plans: 17
   percent: 50
 ---
 
@@ -30,9 +30,9 @@ See: .planning/PROJECT.md (updated 2026-10-22 — Phase 25 complete)
 ## Current Position
 
 Phase: 27 (Header search runs on submit) — EXECUTING
-Plan: 4 of 5
-Status: Executing Phase 27 — plan 27-03 complete, plan 27-04 next
-Last activity: 2026-10-22 — Phase 27 inline execution (27-03 GREEN)
+Plan: 5 of 5
+Status: Executing Phase 27 — plan 27-04 complete, plan 27-05 next
+Last activity: 2026-10-22 — Phase 27 inline execution (27-04 GREEN)
 
 ## Performance Metrics
 
@@ -294,9 +294,9 @@ Carried product deferrals beyond v1.3: leaderboard, quiz, Whisper/Foundry ASR, i
 ## Session Continuity
 
 Last session: 2026-10-22T11:55:00.000Z
-Stopped at: Completed 27-03-PLAN.md
+Stopped at: Completed 27-04-PLAN.md
 Resume file: None
-Next: execute 27-04 (empty/overlong input + landing state) inline
+Next: execute 27-05 (history discipline, error boundary, XSS probe) inline
 
 ## Operator Next Steps
 
