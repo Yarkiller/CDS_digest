@@ -5,16 +5,16 @@ milestone_name: UI polish & honest navigation
 current_phase: 27
 current_phase_name: Header search runs on submit
 status: executing
-stopped_at: Completed 27-02-PLAN.md
-last_updated: "2026-10-22T11:10:00.000Z"
+stopped_at: Completed 27-03-PLAN.md
+last_updated: "2026-10-22T11:55:00.000Z"
 last_activity: 2026-10-22
-last_activity_desc: Phase 27 inline execution — plan 27-02 complete
-state_head: c5e420a
+last_activity_desc: Phase 27 inline execution — plan 27-03 complete
+state_head: 1cb6551
 progress:
   total_phases: 4
   completed_phases: 2
   total_plans: 18
-  completed_plans: 15
+  completed_plans: 16
   percent: 50
 ---
 
@@ -30,9 +30,9 @@ See: .planning/PROJECT.md (updated 2026-10-22 — Phase 25 complete)
 ## Current Position
 
 Phase: 27 (Header search runs on submit) — EXECUTING
-Plan: 3 of 5
-Status: Executing Phase 27 — plan 27-02 complete, plan 27-03 next
-Last activity: 2026-10-22 — Phase 27 inline execution (27-02 GREEN)
+Plan: 4 of 5
+Status: Executing Phase 27 — plan 27-03 complete, plan 27-04 next
+Last activity: 2026-10-22 — Phase 27 inline execution (27-03 GREEN)
 
 ## Performance Metrics
 
@@ -257,6 +257,9 @@ v1.3 roadmap locks:
 - [Phase 27]: 27-01: DEFAULT_SEARCH_LIMIT is matched by its declaration regex and asserted as a per-file set, because the page imports the bare name (a bare-token count reads 5 across 2 files on a clean tree)
 - [Phase 27]: 27-02: a settle gate must name a node that exists ONLY on the target surface — the row assertion passed against the outgoing IssuePage because IssueToc renders the same /materials/{id} anchors, and the counter read 0 behind a «visible» row
 - [Phase 27]: 27-02: lastHandledQueryRef is assigned BEFORE runSearch (measured: guard removed → 2 requests under StrictMode, guard restored → 1), and the X-1 counter sits at the adapter boundary because VITE_USE_MOCKS=true issues no HTTP for page.route to count
+- [Phase 27]: 27-03: on a data router navigate() reads state from its SECOND argument — createLocation(loc, path, opts && opts.state) silently drops to.state, so the object-form marker left history.state.usr === null with no error
+- [Phase 27]: 27-03: the submitId branch must sit ABOVE the ref guard as well as above the cache, or a same-q re-submit is swallowed as a duplicate (measured: counter 1, chip unchanged)
+- [Phase 27]: 27-03: the restore branch sits above runSearch, whose first statement is the counter — Δ=0 is enforced by placement; the cache is a module-scope Map (cap 20, LRU) with error eviction under the same (role, q) key
 
 ### Pending Todos
 
@@ -290,14 +293,14 @@ Carried product deferrals beyond v1.3: leaderboard, quiz, Whisper/Foundry ASR, i
 
 ## Session Continuity
 
-Last session: 2026-10-22T11:10:00.000Z
-Stopped at: Completed 27-02-PLAN.md
+Last session: 2026-10-22T11:55:00.000Z
+Stopped at: Completed 27-03-PLAN.md
 Resume file: None
-Next: execute 27-03 (cache + submitId marker) inline
+Next: execute 27-04 (empty/overlong input + landing state) inline
 
 ## Operator Next Steps
 
-- Execute plan 27-03 (cache + `submitId` marker) inline, then 27-04, 27-05
+- Execute plan 27-04 (input boundary + landing rule) inline, then 27-05
 
 ## v1.4 roadmap (Phases 25-28)
 
