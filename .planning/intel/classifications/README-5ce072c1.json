@@ -3,7 +3,7 @@
   "type": "DOC",
   "confidence": "medium",
   "manifest_override": false,
-  "title": "Responsive evidence (homework Step 6)",
+  "title": "Responsive evidence",
   "summary": "Catalog of Playwright responsive screenshots with viewport/page mapping and overflow assertions.",
   "scope": [
     "Playwright screenshots",
@@ -18,5 +18,5 @@
   ],
   "locked": false,
   "precedence": null,
-  "notes": "Path/filename unclear (evidence README). Dominant signal is artifact catalog for homework screenshots → DOC. One assertion line resembles acceptance criteria but is not PRD-structured."
+  "notes": "Path/filename unclear (evidence README). Dominant signal is artifact catalog for Playwright screenshots → DOC. One assertion line resembles acceptance criteria but is not PRD-structured."
 }

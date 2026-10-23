@@ -1,4 +1,4 @@
-# Responsive evidence (homework Step 6)
+# Responsive evidence
 
 Screenshots captured by Playwright during `tests/web-app.spec.js` (`web app responsive`).
 

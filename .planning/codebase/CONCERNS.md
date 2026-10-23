@@ -92,7 +92,7 @@ last_mapped_commit: 252c024622021ec59fe22abdd251c2047849d1da
 - Symptoms: `SupabaseVoteRepository.list_topics_with_counts` selects all `topic_materials` and cycle votes, then counts in process — correct but chatty.
 - Files: `supabase-integration/src/supabase_integration/vote_repository.py`
 - Trigger: Large topic graphs / many votes.
-- Workaround: Acceptable for homework scale; replace with SQL `GROUP BY` / view.
+- Workaround: Acceptable for current seed-sized topic graphs; replace with SQL `GROUP BY` / view.
 
 **Vote CAS timestamp format fragility:**
 - Symptoms: Upsert CAS retries alternate ISO forms (`Z` vs `+00:00`) because PostgREST/timestamptz string equality is brittle — empty update → `VoteConflictError`.
@@ -250,7 +250,7 @@ last_mapped_commit: 252c024622021ec59fe22abdd251c2047849d1da
 - Scaling path: Real embedder + ANN prefilter; optional partition by material status.
 
 **Voting tallies:**
-- Current capacity: Fine for homework topic counts.
+- Current capacity: Fine for seed-sized topic counts.
 - Limit: Python aggregation over all topic_materials/votes rows.
 - Scaling path: Aggregate SQL; materialized tallies if needed.
 

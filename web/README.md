@@ -1,6 +1,6 @@
 # Digest CDS — web app
 
-React-приложение ДЗ (Vite + React Router + Tailwind CSS v4).
+React-приложение Digest CDS (Vite + React Router + Tailwind CSS v4).
 
 ## Запуск
 
@@ -39,4 +39,3 @@ src/
 Маршруты: `/`, `/voting`, `/knowledge`, `/materials/:id`.
 
 Эталон макетов остаётся в `../design-frontend/`.
-Отчёт ДЗ: [`../development_report.md`](../development_report.md).

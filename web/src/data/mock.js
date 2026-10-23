@@ -1,4 +1,4 @@
-/** Mock content mirrored from design-frontend for homework UI. */
+/** Mock content mirrored from design-frontend for local/UI development. */
 
 export const currentIssue = {
   number: 14,

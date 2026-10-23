@@ -12,10 +12,6 @@
 - source: docs/digest-cds/backlog_UI.md
 - GhostUser findings C3-01…C3-18 against design-frontend static prototypes marked FIXED as of 2026-08-30. Closure of static prototype gaps is not a substitute for production QA/backend/access checks. Severity legend HIGH/MEDIUM/LOW; types UX/QA/CONTENT/IA.
 
-## Development report pointer
-- source: docs/digest-cds/development_report.md
-- Stub pointing to canonical repo-root `development_report.md` for homework submission.
-
 ## Domain docs consumption for agents
 - source: docs/agents/domain.md
 - Before exploring: read CONTEXT.md (or CONTEXT-MAP.md), then relevant docs/adr/. Use glossary vocabulary; flag ADR conflicts explicitly rather than silently overriding. Missing CONTEXT/ADR files → proceed silently.
@@ -27,10 +23,6 @@
 ## Git remote origin via WSL
 - source: docs/agents/git-origin.md
 - Default remote `origin` (Cursor Origin). All origin push/pull/fetch/auth must run via WSL, not PowerShell. Local status/diff/add/commit without push may use PowerShell. Do not commit credentials or put API keys in mcp.json/.env/rules.
-
-## AI session notes (homework Steps 5–6)
-- source: docs/digest-cds/ai_session_notes.md
-- Working appendix: header SearchPill modal removed for enlarged inline search; Playwright coverage map for web app; responsive fixes (min-w-0 at 320px). Evidence under responsive-evidence/.
 
 ## Responsive evidence catalog
 - source: docs/digest-cds/responsive-evidence/README.md

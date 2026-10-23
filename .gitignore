@@ -67,9 +67,6 @@ test-results/
 # Vercel CLI local state
 .vercel/
 
-# Extracted homework archive (derived from archive/*.zip)
-archive/extracted/
-
 # GSD Core local runtime (reinstallable via npx @opengsd/gsd-core@latest --cline --local)
 .cline/
 .gsd-staging/

@@ -43,7 +43,7 @@
 ## Tech stack v1
 - source: docs/digest-cds/technical_specification.md
 - type: protocol
-- content: App host Cloud.ru VM (ADR-0002); FoundryModels for ML pipeline (ADR-0002); self-hosted Supabase+pgvector on separate VM Docker Compose via supabase-integration (ADR-0004); email domains ADR-0003; design canon design-frontend/; homework app Vite+React+React Router+Tailwind in web/; UI tests Playwright; public leaderboard post-v1 (ADR-0001). Minimum three React app functions: issue+material, voting, knowledge. Environments: local, staging (recommended), production.
+- content: App host Cloud.ru VM (ADR-0002); FoundryModels for ML pipeline (ADR-0002); self-hosted Supabase+pgvector on separate VM Docker Compose via supabase-integration (ADR-0004); email domains ADR-0003; design canon design-frontend/; React app Vite+React+React Router+Tailwind in web/; UI tests Playwright; public leaderboard post-v1 (ADR-0001). Minimum three React app functions: issue+material, voting, knowledge. Environments: local, staging (recommended), production.
 
 ## Contour boundaries
 - source: docs/digest-cds/technical_specification.md

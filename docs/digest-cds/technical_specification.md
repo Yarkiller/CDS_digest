@@ -11,7 +11,7 @@ total_non_functional_requirements: 23
 story_coverage: "US-01 … US-31"
 optimization_applied: "Объединены US-02 AC2 и US-06 AC2 (redirect через returnUrl)"
 changelog_1_2: "NFR пересобраны по категориям (perf/SLO/audit); добавлен раздел технологического стека; бизнес-правила вынесены из классических NFR в трассировку к FR"
-changelog_1_3: "Frontend homework-app: Vite + React + React Router + Tailwind; зафиксированы минимум 3 основные функции UI"
+changelog_1_3: "Frontend: Vite + React + React Router + Tailwind; зафиксированы минимум 3 основные функции UI"
 ---
 
 # Техническая спецификация — Digest CDS
@@ -243,13 +243,13 @@ changelog_1_3: "Frontend homework-app: Vite + React + React Router + Tailwind; �
 | Деплой БД и сервисов | Self-hosted Supabase (Docker Compose) на отдельной VM; доступ через адаптер `supabase-integration` | ADR-0004 |
 | Доступ пользователей | Только email-домены `@sberbank.ru`, `@omega.sbrf.ru` (фиксированный список в конфиге) | [ADR-0003](../adr/0003-email-domain-restriction.md) |
 | Frontend — канон дизайна | Статический Editorial UI (`design-frontend/`) — источник экранов, токенов и UX Concept 3 | `design-frontend/`, UI-SPEC |
-| Frontend — приложение ДЗ | **Vite + React + React Router + Tailwind CSS** в каталоге `web/`; визуальные токены переносятся из `design-frontend/styles/tokens.css` | `web/`, раздел 3.3 |
+| Frontend — React-приложение | **Vite + React + React Router + Tailwind CSS** в каталоге `web/`; визуальные токены переносятся из `design-frontend/styles/tokens.css` | `web/`, раздел 3.3 |
 | Тесты UI | **Playwright** (`tests/`, `playwright.config.js`) | TDD / acceptance |
 | Post-v1 (вне ядра) | Публичный лидерборд активности — после v1 | [ADR-0001](../adr/0001-public-leaderboard-gamification.md) |
 
-### 3.3 Frontend-приложение (минимум для сдачи ДЗ)
+### 3.3 Frontend-приложение
 
-Стек сдаваемого UI-приложения:
+Стек UI:
 
 | Слой | Выбор |
 |------|-------|
@@ -259,13 +259,13 @@ changelog_1_3: "Frontend homework-app: Vite + React + React Router + Tailwind; �
 | Стилизация | Tailwind CSS (theme на базе design tokens Concept 3) |
 | Автотесты | Playwright |
 
-Минимум **три** основные функции, которые должны работать в React-приложении (mock-данные допустимы):
+Основные пользовательские функции React-приложения:
 
 1. **Выпуск и материал** — просмотр текущего выпуска (`issue`) и открытие подготовленной статьи (`material`).
 2. **Голосование** — выбор темы цикла и подтверждение голоса (`voting`).
 3. **База знаний** — поиск/фильтры и список материалов (`knowledge`).
 
-`design-frontend/` остаётся эталоном макетов; production backend (auth, SMTP, FoundryModels) в объём ДЗ не входит.
+`design-frontend/` остаётся эталоном макетов; приложение в `web/` ходит в backend API (auth, контент, голосование, админ).
 
 ### 3.4 Границы контура
 

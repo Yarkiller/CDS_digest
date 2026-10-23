@@ -58,7 +58,6 @@ Digital_CDS/
 ├── .agents/skills/             # Project skills (supabase, hallmark, …)
 ├── .scratch/                   # Local issue tracker markdown
 ├── .planning/                  # GSD planning artifacts (incl. this map)
-├── archive/                    # Archived homework zip / notes
 ├── CONTEXT.md                  # Domain glossary
 ├── AGENTS.md                   # Agent entry (TDD, skills pointers)
 ├── pyproject.toml              # uv workspace root
@@ -135,10 +134,6 @@ Digital_CDS/
 **`.scratch/`:**
 - Purpose: Local markdown issues (see `docs/agents/issue-tracker.md`).
 - Generated: No (hand-maintained). Committed: Per project policy for scratch issues.
-
-**`archive/`:**
-- Purpose: Historical homework artifacts.
-- Key files: `archive/README.md`.
 
 ## Key File Locations
 

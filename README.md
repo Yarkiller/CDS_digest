@@ -1,15 +1,14 @@
 # Digest CDS
 
 Digest CDS — корпоративный сервис сбора, структурирования и распространения
-знаний для сотрудников СВА. В репозитории: канонический UI Concept 3
-(Editorial) и React-приложение ДЗ на его основе.
+знаний для сотрудников СВА. В репозитории: канонический UI (`design-frontend/`)
+и React-приложение (`web/`).
 
 ## Ссылки
 
 | Что | Куда |
 |-----|------|
 | GitHub | [https://github.com/Yarkiller/digest_cds](https://github.com/Yarkiller/digest_cds) |
-| Отчёт о разработке | [`development_report.md`](development_report.md) |
 | ТЗ | [`docs/digest-cds/technical_specification.md`](docs/digest-cds/technical_specification.md) |
 | Скриншоты адаптива | [`docs/digest-cds/responsive-evidence/`](docs/digest-cds/responsive-evidence/) |
 | Local platform runbook | [`docs/agents/local-platform-runbook.md`](docs/agents/local-platform-runbook.md) |
@@ -32,7 +31,7 @@ Digest CDS — корпоративный сервис сбора, структ�
 Зависимости приложения: [`web/package.json`](web/package.json).  
 Зависимости тестов (корень): [`package.json`](package.json).
 
-### Минимум 3 основные функции
+### Основные функции UI
 
 1. **Выпуск и материал** — текущий выпуск и страница статьи (`/`, `/materials/:id`).
 2. **Голосование** — выбор и подтверждение темы цикла (`/voting`).
@@ -98,16 +97,15 @@ npm run test:design           # только design-frontend
 
 ```text
 .
-├── web/                   # Vite + React + Tailwind (приложение ДЗ)
-├── design-frontend/       # эталон UI Concept 3 (статика)
+├── web/                   # Vite + React + Tailwind
+├── design-frontend/       # эталон UI (статика)
 ├── docs/
-│   ├── digest-cds/        # ТЗ, отчёт, user stories, скриншоты
+│   ├── digest-cds/        # ТЗ, user stories, скриншоты
 │   ├── adr/
 │   └── agents/
 ├── tests/                 # Playwright
 ├── CONTEXT.md
-├── AGENTS.md
-└── archive/
+└── AGENTS.md
 ```
 
 ## Эталон макетов
