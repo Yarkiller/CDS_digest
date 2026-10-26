@@ -1,10 +1,15 @@
 ---
 gsd_state_version: 1.0
 milestone: v1.5
-milestone_name: Two-pass article enrichment
+milestone_name: Two-pass article enrichment (Phases 29-34)
+current_phase: 29
+current_phase_name: v1.5 1/6 — Pass-1 richer templates
 status: planning
-last_updated: "2026-10-26T12:45:00.000Z"
+stopped_at: Phase 29 context gathered
+last_updated: "2026-10-26T17:01:27.681Z"
 last_activity: 2026-10-26
+last_activity_desc: v1.5 roadmap drafted (phases 29–34, 22/22 requirements mapped)
+state_head: 5a987b6d8f355aebabb143faccf2241de91f5f44
 progress:
   total_phases: 6
   completed_phases: 0
@@ -318,9 +323,9 @@ Carried product deferrals beyond v1.3: leaderboard, quiz, Whisper/Foundry ASR, i
 
 ## Session Continuity
 
-Last session: 2026-10-26
-Stopped at: v1.5 roadmap created (Phases 29–34) — awaiting approval
-Resume file: None
+Last session: 2026-10-26T17:01:27.664Z
+Stopped at: Phase 29 context gathered
+Resume file: .planning/phases/29-pass-1-richer-templates/29-CONTEXT.md
 Next: `/gsd-plan-phase 29` after roadmap approval. Carried forward (not in v1.5): the `INVALID_ROLE` toast needs an authenticated live SPA session.
 
 ## Operator Next Steps
