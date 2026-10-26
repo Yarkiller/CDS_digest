@@ -8,7 +8,21 @@ Digest CDS is an editorial knowledge service for СВА (Служба внутр
 
 Authorized СВА staff can read a trustworthy weekly issue of prepared articles and influence the next разбор through one honest vote — without treating raw video/transcript as published material.
 
+## Current Milestone: v1.5 Two-pass article enrichment
+
+**Goal:** Ingest даёт сотруднику СВА полезную статью, а не сухое трёхблочное резюме: структура по содержанию, сохранённые факты и вывод для аудита; практические темы дополнительно получают гайд, код, проверенные ссылки и скачиваемый cheat sheet.
+
+**Target features:**
+- Проход 1 всегда: новый шаблон (секции по ходу источника + слой фактов + «зачем СВА» и риски), без выдуманных ссылок
+- Классификатор `practical | conceptual`; код / гайд / Tavily / cheat sheet — только у practical
+- Проход 2: Tavily search/extract по коротким запросам; в статью попадают URL из ролика плюс только открывшиеся страницы; код можно сгенерировать
+- Cheat sheet — отдельный markdown-файл у материала; гайд — секции статьи
+- Глобальный лимит Tavily **1000** запросов: `try_consume`, потолок на ролик (~5), на исчерпании лог `tavily_quota_exhausted`, статья прохода 1 всё равно сохраняется
+- Порты в `data-collection`, wiring в `ingestion-service/composition`; backend/SPA только показывают источники и скачивание файла
+
 ## Current State
+
+v1.5 Two-pass article enrichment is in planning on branch `dev` (requirements → roadmap). Phase numbering continues at 29. Tavily is a second public API after DeepSeek (ADR-0002 bend). Carry from v1.4 (`INVALID_ROLE` toast) stays out of this milestone.
 
 v1.4 UI polish & honest navigation shipped 2026-10-22 (Phases 25–28, 19 plans). Scope: close the five user-reported UI defects found in live use — honest admin naming and readable form surfaces, theme-independent button labels, section context that survives navigation plus anchor scrolling that clears the sticky header, and a header search that runs on the first Enter — and land one live proof that the streamed DeepSeek ingest completes end-to-end.
 
@@ -172,7 +186,12 @@ v1 is done only when **all** of the following hold:
 
 ### Active
 
-No active milestone — v1.4 shipped 2026-10-22 with all 10 requirements validated. The next milestone is not defined yet; run `/gsd-new-milestone` to question → research → gather requirements → roadmap. Known carry-forward candidates: the `INVALID_ROLE` filter toast (needs an authenticated live SPA session), WR-13 (harness flake risk), and the three Nyquist `VALIDATION.md` drafts for phases 25–27.
+- [ ] Richer lecture/podcast templates: content-shaped sections, a source-facts layer, and explicit СВА takeaway + risks — not the three-block dry summary
+- [ ] Ingest classifies `practical | conceptual`; generated code, in-article guide, Tavily reads, and a cheat sheet attach only when practical
+- [ ] Two-pass pipeline: pass 1 is transcript-grounded; pass 2 enriches from Tavily search/extract with only live URLs plus links already in the video
+- [ ] Cheat sheet is a downloadable markdown file on the material; the guide stays in article sections
+- [ ] Shared Tavily quota of 1000 requests (`try_consume`, ~5 per video); on exhaustion log `tavily_quota_exhausted` and still persist the pass-1 draft
+- [ ] Reader surfaces a sources block and a cheat-sheet download; DeepSeek/Tavily stay behind ports, wired only in `ingestion-service/composition`
 
 ### Out of Scope
 
@@ -194,6 +213,7 @@ No active milestone — v1.4 shipped 2026-10-22 with all 10 requirements validat
 - **v1.3 focus:** Backlog tech debt (999.1/999.6/999.7), MAIL-02 path (B) shipped in Phase 20, next MAIL-01 live SMTP digest to `profiles`, then cron/systemd scheduled ingestion over the existing `ingest` CLI. No auto-send, no pipeline execution.
 - **v1.4 focus:** UI honesty, not new capability. Five live-use defects (admin naming/readable surfaces, light-theme button labels, anchor scroll under the sticky header, section context in the header, header search that needs a second click) plus backlog 999.2. The DeepSeek streaming fix already landed as `0dddc75`; ING-09 only proves it live.
 - **v1.4 focus (complete):** UI honesty found in live use — admin section naming + readable surfaces (999.2 folded in), theme-independent button labels via a declared token family, anchor scroll offset plus section-aware header state, and header search that executes on submit. The streamed DeepSeek ingest fix (`0dddc75`) got its live proof here (ING-09, material 25). Remaining carry: the `INVALID_ROLE` filter toast needs a signed-in live SPA session.
+- **v1.5 focus:** Replace the three-block DeepSeek summary with a two-pass editorial ingest. Pass 1 always writes a structured, fact-preserving СВА article. Pass 2 runs only for `practical` topics: Tavily search/extract (global 1000-request cap), generated code, in-article guide, verified links, downloadable cheat sheet. Reader delivery is sources + file download; FoundryModels, admin “enrich” button, and the v1.4 `INVALID_ROLE` toast stay out.
 - **Product framing:** Concept 3 Editorial UI («Digest CDS: издание»); personas and journeys J1–J6 in ingest context.
 - **Known debt at v1.1 close:** Nyquist drafts for phases 6–8; Phase 10 deferred admin unit flake; UAT polish items; advisory WR notes in milestone audit; four v1 debug sessions still suppressed (see STATE.md Deferred Items).
 - **Domain language:** `CONTEXT.md` + `docs/adr/` are canonical for agents.
@@ -313,4 +333,4 @@ After each phase transition: move validated/invalidated requirements; log decisi
 After milestone: full review of Core Value, Out of Scope, and Context against shipped reality.
 
 ---
-*Last updated: 2026-10-22 after v1.4 milestone — UI polish & honest navigation shipped, three closeout residuals settled under TDD*
+*Last updated: 2026-10-26 after starting milestone v1.5 — Two-pass article enrichment*

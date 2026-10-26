@@ -1,20 +1,16 @@
 ---
-gsd_state_version: "1.0"
-milestone: v1.4
-milestone_name: UI polish & honest navigation
-status: Awaiting next milestone
-stopped_at: Phase 28 complete — all phases complete
-last_updated: "2026-10-22T18:23:44.715Z"
-last_activity: 2026-10-22
-last_activity_desc: Milestone v1.4 completed and archived
-state_head: 8e380759a89080f3618427ca82052e98b0398fc4
+gsd_state_version: 1.0
+milestone: v1.5
+milestone_name: Two-pass article enrichment
+status: planning
+last_updated: "2026-10-26T09:38:40.123Z"
+last_activity: 2026-10-26
 progress:
-  total_phases: 4
-  completed_phases: 4
-  total_plans: 19
-  completed_plans: 19
-  percent: 100
-current_phase: 28
+  total_phases: 0
+  completed_phases: 0
+  total_plans: 0
+  completed_plans: 0
+  percent: 0
 ---
 
 # Project State
@@ -28,10 +24,10 @@ See: .planning/PROJECT.md (updated 2026-10-22 — v1.4 shipped)
 
 ## Current Position
 
-Phase: Milestone v1.4 complete
+Phase: Not started (defining requirements)
 Plan: —
-Status: Awaiting next milestone
-Last activity: 2026-10-22 — Milestone v1.4 completed and archived
+Status: Defining requirements
+Last activity: 2026-10-26 — Milestone v1.5 started
 
 ## Performance Metrics
 
