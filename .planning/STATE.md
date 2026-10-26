@@ -5,16 +5,16 @@ milestone_name: Two-pass article enrichment (Phases 29-34)
 current_phase: 29
 current_phase_name: Pass-1 richer templates
 status: executing
-stopped_at: Completed 29-01-PLAN.md
-last_updated: "2026-10-26T18:34:41.657Z"
+stopped_at: Completed 29-02-PLAN.md
+last_updated: "2026-10-26T18:45:39.898Z"
 last_activity: 2026-10-26
 last_activity_desc: Phase 29 execution started
-state_head: 7a504b54e76dc2caea14af978b30b5dd32b881bc
+state_head: bf91b22f09265359cac642f7cc92c6521bdf9ae5
 progress:
   total_phases: 6
   completed_phases: 0
   total_plans: 3
-  completed_plans: 1
+  completed_plans: 2
   percent: 0
 ---
 
@@ -30,7 +30,7 @@ See: .planning/PROJECT.md (updated 2026-10-26 — v1.5 Two-pass article enrichme
 ## Current Position
 
 Phase: 29 (Pass-1 richer templates) — EXECUTING
-Plan: 2 of 3
+Plan: 3 of 3
 Status: Ready to execute
 Last activity: 2026-10-26 — Phase 29 execution started
 
@@ -113,6 +113,7 @@ Last activity: 2026-10-26 — Phase 29 execution started
 | Phase 27 P01 | 10min | 2 tasks | 2 files |
 | Phase 27 P05 | 18min | 3 tasks | 3 files |
 | Phase 29 P01 | 4 min | 2 tasks | 4 files |
+| Phase 29 P02 | 7min | 2 tasks | 4 files |
 
 ## Accumulated Context
 
@@ -290,6 +291,9 @@ v1.3 roadmap locks:
 - [Phase 29]: The 1200-1800 word band lives only in ARTICLE_SYSTEM_PROMPT, not in lecture.md — One home only (PATTERNS); lecture.md must not repeat the band so the two templates differ by kind hint, not by length
 - [Phase 29]: LEGACY_PODCAST_HEADINGS is a forward declaration for Plan 02; this plan does not invert the podcast pin — Plan 02 owns podcast.md; asserting the podcast frame here would keep 29-01 red
 - [Phase 29]: Edition-voice, recap-phrase examples, SVA inference boundary, dek hook, and length band are shared in ARTICLE_SYSTEM_PROMPT — RESEARCH Q2: shared rules in the system prompt, per-kind structure in the templates
+- [Phase 29]: podcast.md mirrors lecture.md with one kind-hint paragraph; shared voice/dek/length stay in ARTICLE_SYSTEM_PROMPT — The two templates must differ only by the dialogue/topic kind hint so Phase 32 can freeze one facts heading
+- [Phase 29]: Kind isolation pins unique sentinels (positions of its participants vs single speaker's argument), never shared section headings — A cross-kind absence assertion on a shared heading would be unsatisfiable by design
+- [Phase 29]: Audience-strip mutation: a pure top-placement among h2 sections does not redden equality; non-vacuity required demoting the first section out of h2 — strip_audience_section concatenates remaining h1/h2 sections, so moving the audience block among intact h2s cannot prove the exact-remainder pin is live
 
 ### Pending Todos
 
@@ -328,8 +332,8 @@ Carried product deferrals beyond v1.3: leaderboard, quiz, Whisper/Foundry ASR, i
 
 ## Session Continuity
 
-Last session: 2026-10-26T18:34:06.028Z
-Stopped at: Completed 29-01-PLAN.md
+Last session: 2026-10-26T18:45:20.895Z
+Stopped at: Completed 29-02-PLAN.md
 Resume file: None
 Next: `/gsd-plan-phase 29` after roadmap approval. Carried forward (not in v1.5): the `INVALID_ROLE` toast needs an authenticated live SPA session.
 

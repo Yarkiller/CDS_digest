@@ -121,7 +121,7 @@ Full phase detail: [milestones/v1.4-ROADMAP.md](milestones/v1.4-ROADMAP.md)
 
 **Wave 2** *(blocked on Wave 1 completion)*
 
-- [ ] 29-02-PLAN.md — podcast frame with kind-sentinel isolation and the audience-strip regression pin
+- [x] 29-02-PLAN.md — podcast frame with kind-sentinel isolation and the audience-strip regression pin
 
 **Wave 3** *(blocked on Wave 2 completion)*
 
@@ -243,7 +243,7 @@ Full phase detail: [milestones/v1.4-ROADMAP.md](milestones/v1.4-ROADMAP.md)
 
 | Phase | Plans Complete | Status | Completed |
 |-------|----------------|--------|-----------|
-| 29. Pass-1 richer templates | 1/3 | In Progress|  |
+| 29. Pass-1 richer templates | 2/3 | In Progress|  |
 | 30. Classifier practical \| conceptual | 0/? | Not started | - |
 | 31. Tavily quota and persist-then-enrich floor | 0/? | Not started | - |
 | 32. Pass-2 enricher and personal-KB cheat sheets | 0/? | Not started | - |
