@@ -107,7 +107,7 @@ def test_process_returns_article_draft_for_podcast() -> None:
     payload = {
         "title": "Podcast Title",
         "dek": "Podcast Dek",
-        "body_markdown": "## О чём разговор\n\nBody",
+        "body_markdown": "## Как это устроено\n\nBody",
     }
     client = _stub_client(json.dumps(payload))
     generator = DeepSeekArticleGenerator(
@@ -121,7 +121,7 @@ def test_process_returns_article_draft_for_podcast() -> None:
 
     assert draft.title == "Podcast Title"
     assert draft.dek == "Podcast Dek"
-    assert draft.body_markdown == "## О чём разговор\n\nBody"
+    assert draft.body_markdown == "## Как это устроено\n\nBody"
 
 
 @pytest.mark.parametrize("heading", LEGACY_HEADINGS)
@@ -140,28 +140,20 @@ def test_lecture_prompt_keeps_the_kind_sentinel() -> None:
     assert "positions of its participants" not in user_content
 
 
-def test_podcast_prompt_contains_podcast_headings_not_lecture() -> None:
-    from data_collection.adapters.deepseek_article import DeepSeekArticleGenerator
-    from data_collection.templates import load_article_templates
+@pytest.mark.parametrize("heading", LEGACY_HEADINGS)
+def test_podcast_prompt_omits_every_legacy_heading(heading: str) -> None:
+    assert heading not in _user_content(TemplateKind.PODCAST, "en")
 
-    templates = load_article_templates(importlib.resources.files("data_collection.templates"))
-    client = _stub_client(json.dumps({"title": "T", "dek": "D", "body_markdown": "B"}))
-    generator = DeepSeekArticleGenerator(
-        client=client,
-        model="deepseek-flash",
-        templates=templates,
-        max_transcript_chars=80000,
-    )
 
-    asyncio.run(generator.process(_make_transcript("en"), TemplateKind.PODCAST))
+@pytest.mark.parametrize("heading", SHARED_PROMPT_HEADINGS)
+def test_podcast_prompt_carries_the_shared_frame(heading: str) -> None:
+    assert heading in _user_content(TemplateKind.PODCAST, "en")
 
-    call = client.chat.completions.calls[0]
-    messages = call["messages"]
-    user_content = messages[-1]["content"]
-    assert "## О чём разговор" in user_content
-    assert "## Позиции" in user_content
-    assert "## Что запомнить" in user_content
-    assert "## Тезис" not in user_content
+
+def test_podcast_prompt_keeps_the_kind_sentinel() -> None:
+    user_content = _user_content(TemplateKind.PODCAST, "en")
+    assert "positions of its participants" in user_content
+    assert "single speaker's argument" not in user_content
 
 
 def test_system_prompt_contains_honesty_and_language_rules() -> None:

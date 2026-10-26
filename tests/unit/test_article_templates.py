@@ -1,4 +1,4 @@
-"""RED→GREEN: pass-1 lecture template carries the content-shaped frame (ART-01/ART-02/ART-03, D-01…D-18)."""
+"""RED→GREEN: pass-1 templates carry the content-shaped frame (ART-01/ART-02/ART-03, D-01…D-18)."""
 
 from __future__ import annotations
 
@@ -73,12 +73,68 @@ def test_lecture_md_keeps_the_audience_block_last() -> None:
     assert not any(line.startswith("# ") for line in text.splitlines())
 
 
-def test_podcast_md_contains_russian_headings() -> None:
-    root = importlib.resources.files("data_collection.templates")
-    text = root.joinpath("podcast.md").read_text(encoding="utf-8")
-    assert "## О чём разговор" in text
-    assert "## Позиции" in text
-    assert "## Что запомнить" in text
+@pytest.mark.parametrize("heading", LEGACY_PODCAST_HEADINGS)
+def test_podcast_md_omits_legacy_scaffold(heading: str) -> None:
+    assert heading not in _template_text("podcast")
+
+
+@pytest.mark.parametrize("heading", SHARED_HEADINGS)
+def test_podcast_md_carries_the_shared_frame(heading: str) -> None:
+    assert heading in _template_text("podcast")
+
+
+def test_podcast_md_names_the_dialogue_frame() -> None:
+    text = _template_text("podcast")
+    assert "positions of its participants" in text
+    assert "follow the topics of the conversation" in text
+    assert "implicit editorial chapters" in text
+    assert "no fixed count" in text
+    assert "do not add facts" in text
+    assert "**bold**" in text
+    assert "markdown blockquote" in text
+
+
+def test_podcast_md_states_the_concretika_rules() -> None:
+    text = _template_text("podcast")
+    assert "## Конкретика" in text
+    assert "concrete names, numbers, tools or caveats" in text
+    assert "**item** —" in text
+    assert "explicit grid of numbers" in text
+    assert "PostgreSQL" in text
+    assert "never invent a version" in text
+    assert "Omit the section entirely" in text
+
+
+def test_podcast_md_states_the_sva_rules() -> None:
+    text = _template_text("podcast")
+    assert "## Зачем это СВА" in text
+    assert "working analog for СВА" in text
+    assert "information security" in text
+    assert "Do not invent a duty" in text
+    assert "Omit the section when there is no such analog" in text
+
+
+def test_podcast_md_has_only_the_intended_headings() -> None:
+    text = _template_text("podcast")
+    headings = [line for line in text.splitlines() if line.startswith("#")]
+    assert set(headings) == set(SHARED_HEADINGS)
+
+
+def test_podcast_md_keeps_the_audience_block_last() -> None:
+    text = _template_text("podcast")
+    headings = [line for line in text.splitlines() if line.startswith("#")]
+    assert headings[-1] == "## Аудитория"
+    assert text.rstrip().endswith("employee, analyst, ds.")
+    assert not any(line.startswith("# ") for line in text.splitlines())
+
+
+def test_kind_sentinels_do_not_cross() -> None:
+    lecture = _template_text("lecture")
+    podcast = _template_text("podcast")
+    assert "single speaker's argument" in lecture
+    assert "single speaker's argument" not in podcast
+    assert "positions of its participants" in podcast
+    assert "positions of its participants" not in lecture
 
 
 def test_load_article_templates_returns_both_kinds() -> None:
