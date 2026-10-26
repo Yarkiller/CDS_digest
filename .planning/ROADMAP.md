@@ -102,12 +102,18 @@ Full phase detail: [milestones/v1.4-ROADMAP.md](milestones/v1.4-ROADMAP.md)
   1. Opening a newly ingested lecture or podcast draft, the `##` headings follow the source talk; the three-block lecture scaffold («Тезис / Ход рассуждения / Вывод») and the podcast trio («О чём разговор / Позиции / Что запомнить») are absent.
   2. The article contains a dedicated source-facts block (names, numbers, tools, caveats) filled from the transcript only — no invented numbers, names, or tool versions.
   3. The article contains explicit «Зачем это СВА» and risks/limitations sections even if the talk barely mentioned audit; `dek` stays the 1–2 sentence hook and is not collapsed into those sections.
+  4. (Owner override, D-10/D-11/D-17 — governs criterion 3 where they differ) There is exactly ONE СВА section, `## Зачем это СВА`: it is written whenever an analog for СВА exists (control, data, model, vendor, information security, process quality) and omitted honestly when none does; a second «Риски и ограничения» heading is forbidden; `dek` stays the 1–2 sentence hook.
 **Plans**: TBD
 
 **Locked scope facts (do not re-litigate):**
 - Rewrite `lecture.md` / `podcast.md` honesty prompt only. Pass-1 still streams `json_object`; `stage=llm` / `llm_truncation` stay fail-closed and unchanged.
 - Source-facts stay transcript-only. Do not invent cheat-sheet files, Tavily, or guide extras here.
 - Do not apply the transcript character cap to future extract context (Pitfall 11).
+
+**Plans:** 3 plans
+- [ ] 29-01-PLAN.md — lecture frame + shared system-prompt voice/`dek`/length rules, with the legacy-heading pins inverted (tracer)
+- [ ] 29-02-PLAN.md — podcast frame with kind-sentinel isolation and the audience-strip regression pin
+- [ ] 29-03-PLAN.md — live ingest proof: heading list, per-bullet facts audit against the transcript, `response_chars` band, owner read (blocking)
 
 ### Phase 30: Classifier practical | conceptual
 **Goal**: Every ingest records a closed topic kind; extras never attach when the kind is missing, empty, unknown, or conceptual.
