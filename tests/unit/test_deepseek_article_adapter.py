@@ -194,6 +194,18 @@ def test_system_prompt_contains_honesty_and_language_rules() -> None:
     assert "body_markdown" in system_content
 
 
+def test_system_prompt_carries_the_edition_voice_and_length_rules() -> None:
+    system_content = _system_content(TemplateKind.LECTURE, "ru")
+    assert "voice of the edition" in system_content
+    assert "в подкасте рассказывается" in system_content
+    assert "монолог содержит" in system_content
+    assert "в ролике говорится" in system_content
+    assert "attribute a claim to the speaker by name" in system_content
+    assert "Editorial inference is allowed only" in system_content
+    assert "1-2 sentence hook" in system_content
+    assert "1200-1800 words" in system_content
+
+
 def test_create_kwargs_include_json_object_and_disabled_thinking() -> None:
     from data_collection.adapters.deepseek_article import DeepSeekArticleGenerator
     from data_collection.templates import load_article_templates
