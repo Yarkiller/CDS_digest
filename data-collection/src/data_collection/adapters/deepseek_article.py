@@ -39,6 +39,13 @@ ARTICLE_SYSTEM_PROMPT = (
     "If the transcript language is ru: format only; do not translate.\n"
     "If the transcript language is en: translate into Russian.\n"
     "Preserve technical terms, proper names, library names, numbers, and units as written.\n"
+    "Write in the voice of the edition: state the substance, do not report the container. "
+    "Never write «в подкасте рассказывается», «монолог содержит» or «в ролике говорится»; "
+    "attribute a claim to the speaker by name instead («Элен считает…»).\n"
+    "Editorial inference is allowed only in the closing section about СВА; "
+    "never present it as the speaker's words and never invent a duty, a standard or a number.\n"
+    "dek is a 1-2 sentence hook about the talk, never a summary and never the audit takeaway.\n"
+    "Aim for 1200-1800 words; do not pad to fill space.\n"
     "Return one json object with keys title, dek, body_markdown, roles."
 )
 
