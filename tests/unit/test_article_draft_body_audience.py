@@ -88,3 +88,18 @@ def test_roles_key_still_wins_when_body_also_carries_the_section() -> None:
 
     assert draft.roles == ["analyst"]
     assert "Аудитория" not in draft.body_markdown
+
+
+def test_body_strips_audience_section_after_the_concretika_and_sva_sections() -> None:
+    content = (
+        "## Как устроены языковые модели\n\nМысль.\n\n"
+        "## Конкретика\n\n- **pgvector** — 1536 измерений.\n\n"
+        "## Зачем это СВА\n\nДля СВА это значит, что модель надо проверять."
+    )
+    body = f"{content}\n\n## Аудитория\n\n{PROMPT_LINE}"
+
+    draft = _draft(body)
+
+    assert "Аудитория" not in draft.body_markdown
+    assert "Кто целевая аудитория" not in draft.body_markdown
+    assert draft.body_markdown == content
