@@ -3,8 +3,9 @@
 !.env.example
 !.env*.example
 .cursor/*
-!.cursor/rules/
-!.cursor/rules/**
+.gitignore
+# !.cursor/rules/
+# !.cursor/rules/**
 .venv/
 venv/
 __pycache__/
@@ -85,8 +86,6 @@ gsd-install-state.json
 /notebooks/
 
 # Stray accidental files
-/-H
-/-d
 /agent-skills-researcher.tmp.txt
 
 # Transient local test-run logs (npm run test:web redirected output)
