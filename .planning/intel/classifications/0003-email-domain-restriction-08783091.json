@@ -1,0 +1,13 @@
+{
+  "source_path": "C:/Users/Yarkiller/PycharmPET-Projects/Digital_CDS/docs/adr/0003-email-domain-restriction.md",
+  "type": "ADR",
+  "confidence": "high",
+  "manifest_override": false,
+  "title": "Ограничение регистрации двумя доменами",
+  "summary": "Registration limited to fixed @sberbank.ru and @omega.sbrf.ru emails via config.",
+  "scope": ["email domain restriction", "registration", "sberbank.ru", "omega.sbrf.ru"],
+  "cross_refs": [],
+  "locked": false,
+  "precedence": null,
+  "notes": ""
+}

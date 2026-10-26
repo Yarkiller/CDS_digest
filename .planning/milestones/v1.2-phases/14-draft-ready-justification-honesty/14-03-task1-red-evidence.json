@@ -1,0 +1,9 @@
+{
+  "command": "node --test tests/unit/test_admin_mark_ready.js",
+  "exitCode": 1,
+  "targetTest": "flips matching material_id to ready and leaves others unchanged",
+  "targetFile": "tests/unit/test_admin_mark_ready.js",
+  "expected": "applyMockMarkReady flips matching material_id to ready; applyMockMarkReadyBatch returns order-preserving partial results; getMockDefaultItems includes 104 with factor_labels []; adminApi exports markReady/markReadyBatch without batch→markReady (D-07/D-08; ADUX-05)",
+  "actual": "AssertionError: 'draft' !== 'ready' (RED stub no-op); batch results []; material 104 missing from seed; export async function markReady absent from adminApi.js",
+  "output": "TAP version 13\n# tests 4\n# pass 0\n# fail 4\nnot ok 1 - flips matching material_id to ready and leaves others unchanged\nnot ok 2 - returns order-preserving partial results in a single call (D-08)\nnot ok 3 - includes material_id 104 with empty factor_labels\nnot ok 4 - exports markReady and markReadyBatch; batch body never calls markReady (D-08)\n"
+}

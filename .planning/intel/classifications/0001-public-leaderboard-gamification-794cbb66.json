@@ -1,0 +1,13 @@
+{
+  "source_path": "C:/Users/Yarkiller/PycharmPET-Projects/Digital_CDS/docs/adr/0001-public-leaderboard-gamification.md",
+  "type": "ADR",
+  "confidence": "high",
+  "manifest_override": false,
+  "title": "Публичный лидерборд активности",
+  "summary": "Chose a public leaderboard for all authenticated users to drive digest participation; deferred past v1.",
+  "scope": ["public leaderboard", "gamification", "digests", "voting", "tests"],
+  "cross_refs": [],
+  "locked": true,
+  "precedence": null,
+  "notes": ""
+}

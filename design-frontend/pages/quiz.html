@@ -1,0 +1,65 @@
+<!DOCTYPE html>
+<html lang="ru">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>Карточка с вопросами — Digest CDS</title>
+  <link rel="preconnect" href="https://fonts.googleapis.com">
+  <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+  <link href="https://fonts.googleapis.com/css2?family=JetBrains+Mono&family=Manrope:wght@400;500;600;700&display=swap" rel="stylesheet">
+  <link rel="stylesheet" href="../styles/tokens.css">
+  <link rel="stylesheet" href="../styles/typography.css">
+  <link rel="stylesheet" href="../styles/layout.css">
+  <link rel="stylesheet" href="../styles/components.css">
+</head>
+<body>
+  <div class="concept-nav"><a href="../index.html">← Concept 2</a> <strong>Карточка с вопросами</strong></div>
+  <div class="app-shell">
+    <header class="header">
+      <div class="header__inner">
+        <a class="logo" href="home.html"><span class="logo__title">Digest CDS</span></a>
+        <nav class="nav"><a class="nav__link" href="material.html">← Материал</a></nav>
+        <div class="header__gamification" style="margin-left:auto;">
+          <div class="xp-widget"><span class="xp-widget__level">Ур. 7</span><div class="xp-widget__track"><div class="xp-widget__fill"></div></div></div>
+        </div>
+        <button class="theme-toggle" type="button" data-theme-toggle>☀</button>
+      </div>
+    </header>
+
+    <main class="main">
+      <!-- Question state -->
+      <div id="quiz-question" class="sidebar-panel" style="max-width:560px;margin:0 auto;">
+        <span class="text-overline">Карточка с вопросами · 3 / 5</span>
+        <div class="progress-dots" style="justify-content:flex-start;margin:var(--space-4) 0 var(--space-6);">
+          <span class="progress-dot progress-dot--done"></span>
+          <span class="progress-dot progress-dot--done"></span>
+          <span class="progress-dot progress-dot--current"></span>
+          <span class="progress-dot"></span>
+          <span class="progress-dot"></span>
+        </div>
+        <h1 class="text-h2" style="margin-bottom:var(--space-8);">Что такое гибридный retrieval в контексте RAG?</h1>
+        <button class="quiz-answer" type="button"><span class="quiz-answer__letter">A</span> Только векторный поиск по эмбеддингам</button>
+        <button class="quiz-answer" type="button"><span class="quiz-answer__letter">B</span> Комбинация векторного и полнотекстового поиска</button>
+        <button class="quiz-answer" type="button"><span class="quiz-answer__letter">C</span> Поиск только по метаданным YouTube</button>
+      </div>
+
+      <!-- Result state (visible below for demo; in app toggled via JS) -->
+      <div class="sidebar-panel quiz-result" style="max-width:400px;margin:var(--space-12) auto 0;">
+        <span class="text-overline">Результат</span>
+        <svg class="score-ring" width="120" height="120" viewBox="0 0 120 120">
+          <circle cx="60" cy="60" r="52" fill="none" stroke="var(--color-bg-muted)" stroke-width="8"/>
+          <circle cx="60" cy="60" r="52" fill="none" stroke="var(--color-xp)" stroke-width="8"
+            stroke-dasharray="327" stroke-dashoffset="65" stroke-linecap="round"
+            transform="rotate(-90 60 60)"/>
+          <text x="60" y="58" text-anchor="middle" fill="var(--color-text-primary)" font-size="28" font-weight="700" font-family="JetBrains Mono, monospace">80%</text>
+          <text x="60" y="78" text-anchor="middle" fill="var(--color-text-secondary)" font-size="11">4 / 5</text>
+        </svg>
+        <h2 class="text-h2">Отличный результат</h2>
+        <p class="text-body-sm text-secondary" style="margin:var(--space-3) 0 var(--space-6);">Достижение получено: прогресс к «Тест сдан»</p>
+        <a class="btn btn--xp btn--block" href="home.html">+40 XP · На главную</a>
+      </div>
+    </main>
+  </div>
+  <script src="../scripts/app.js"></script>
+</body>
+</html>

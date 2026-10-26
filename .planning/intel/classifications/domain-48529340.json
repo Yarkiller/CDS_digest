@@ -1,0 +1,18 @@
+{
+  "source_path": "C:/Users/Yarkiller/PycharmPET-Projects/Digital_CDS/docs/agents/domain.md",
+  "type": "DOC",
+  "confidence": "high",
+  "manifest_override": false,
+  "title": "Domain Docs",
+  "summary": "Guide for how engineering skills should consume CONTEXT.md and ADRs when exploring the codebase.",
+  "scope": ["CONTEXT.md", "CONTEXT-MAP.md", "docs/adr", "domain glossary", "engineering skills"],
+  "cross_refs": [
+    "CONTEXT.md",
+    "CONTEXT-MAP.md",
+    "docs/adr/",
+    "src/<context>/docs/adr/"
+  ],
+  "locked": false,
+  "precedence": null,
+  "notes": ""
+}

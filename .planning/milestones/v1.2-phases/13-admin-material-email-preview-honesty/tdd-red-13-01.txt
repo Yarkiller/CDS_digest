@@ -1,0 +1,28 @@
+============================= test session starts =============================
+platform win32 -- Python 3.12.13, pytest-9.1.1, pluggy-1.6.0
+rootdir: C:\Users\Yarkiller\PycharmPET-Projects\Digital_CDS
+configfile: pyproject.toml
+plugins: anyio-4.15.1
+collected 1 item
+
+tests\unit\test_http_admin.py F
+
+================================== FAILURES ===================================
+___________________ test_admin_shortlist_returns_full_items ___________________
+tests\unit\test_http_admin.py:251: in test_admin_shortlist_returns_full_items
+    assert key in first, f"missing required key: {key}"
+E   AssertionError: missing required key: body_markdown
+E   assert 'body_markdown' in {'material_id': 101, 'rank': 1, 'title': 'RAG в продакшене', 'material_status': 'ready', ...}
+---------------------------- Captured stdout call -----------------------------
+{"method": "GET", "path": "/admin/shortlist", "status": 200, "event": "request_finished", "request_id": "14cd11ac-bf30-4a49-a8d8-c1341c63a901", "level": "info", "timestamp": "2026-10-02T19:18:39.579663Z"}
+============================== warnings summary ===============================
+.venv\Lib\site-packages\starlette\testclient.py:53
+  C:\Users\Yarkiller\PycharmPET-Projects\Digital_CDS\.venv\Lib\site-packages\starlette\testclient.py:53: DeprecationWarning: The anyio.abc.BlockingPortal alias is deprecated, use anyio.from_thread.BlockingPortal instead.
+    _PortalFactoryType = Callable[[], AbstractContextManager[anyio.abc.BlockingPortal]]
+
+-- Docs: https://docs.pytest.org/en/stable/how-to/capture-warnings.html
+- generated xml file: C:\Users\Yarkiller\PycharmPET-Projects\Digital_CDS\.planning\phases\13-admin-material-email-preview-honesty\tdd-red-13-01.junit.xml -
+=========================== short test summary info ===========================
+FAILED tests/unit/test_http_admin.py::test_admin_shortlist_returns_full_items
+!!!!!!!!!!!!!!!!!!!!!!!!!! stopping after 1 failures !!!!!!!!!!!!!!!!!!!!!!!!!!
+======================== 1 failed, 1 warning in 1.09s =========================

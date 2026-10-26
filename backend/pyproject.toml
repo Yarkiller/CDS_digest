@@ -1,0 +1,24 @@
+[project]
+name = "backend"
+version = "0.1.0"
+description = "Digest CDS domain, application ports and use-cases"
+requires-python = ">=3.12"
+dependencies = [
+    "cryptography==50.0.1",
+    "fastapi==0.141.1",
+    "haskimail>=1.0.0",
+    "httpx==0.28.1",
+    "pyjwt==2.15.0",
+    "python-multipart==0.0.32",
+    "pyyaml==6.0.3",
+    "structlog==26.1.0",
+    "uvicorn[standard]==0.53.0",
+]
+
+[build-system]
+requires = ["uv_build>=0.10.9,<0.11.0"]
+build-backend = "uv_build"
+
+[tool.uv.build-backend]
+module-name = "backend"
+module-root = "src"

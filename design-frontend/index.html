@@ -1,0 +1,51 @@
+<!DOCTYPE html>
+<html lang="ru">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>Digest CDS — Concept 2</title>
+  <link rel="preconnect" href="https://fonts.googleapis.com">
+  <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+  <link href="https://fonts.googleapis.com/css2?family=JetBrains+Mono&family=Manrope:wght@400;500;600;700&display=swap" rel="stylesheet">
+  <link rel="stylesheet" href="styles/tokens.css">
+  <link rel="stylesheet" href="styles/typography.css">
+  <link rel="stylesheet" href="styles/layout.css">
+  <link rel="stylesheet" href="styles/components.css">
+</head>
+<body>
+  <div class="gallery">
+    <p class="text-overline">Concept 2 · UI-SPEC v2 · канон (ADR-0009)</p>
+    <h1 class="text-h1">Digest CDS — Concept 2</h1>
+    <p class="text-secondary">Dark-first канон со светлой темой и переключателем. Геймификация, лидерборд и карточки с вопросами в этот релиз не входят — их вариант зафиксирован отдельно.</p>
+    <div class="gallery__grid">
+      <a class="gallery__link" href="pages/home.html">
+        <div class="gallery__link-title">Главная</div>
+        <div class="gallery__link-desc">Выпуск, материалы, голосование</div>
+      </a>
+      <a class="gallery__link" href="pages/material.html">
+        <div class="gallery__link-title">Материал</div>
+        <div class="gallery__link-desc">Статья, обложка, содержание</div>
+      </a>
+      <a class="gallery__link" href="pages/voting.html">
+        <div class="gallery__link-title">Голосование</div>
+        <div class="gallery__link-desc">Bento grid, выбор темы цикла</div>
+      </a>
+      <a class="gallery__link" href="pages/login.html">
+        <div class="gallery__link-title">Вход</div>
+        <div class="gallery__link-desc">Dark auth card, theme toggle</div>
+      </a>
+    </div>
+
+    <p class="text-overline" style="margin-top: var(--space-10);">Следующая версия · не входит в релиз</p>
+    <p class="text-caption" style="max-width: 62ch;">
+      Геймификация, лидерборд и игра в карточки знаний отложены решением
+      <a href="../docs/adr/0009-concept2-canon-dark-light-no-gamification.md">ADR-0009</a> и
+      запрещены к выкатке <a href="../docs/adr/0007-drop-gamification-supersedes-0001.md">ADR-0007</a>.
+      Вариант UI сохранён в прототипе: <code>pages/home-gamified.html</code> (геймифицированная
+      главная целиком), <code>pages/leaderboard.html</code>, <code>pages/profile.html</code>,
+      <code>pages/quiz.html</code>. Страницы не линкуются из навигации и не имеют
+      production-маршрутов — открывайте их напрямую.
+    </p>
+  </div>
+</body>
+</html>

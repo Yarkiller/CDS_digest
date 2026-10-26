@@ -1,0 +1,3 @@
+<?xml version="1.0" encoding="utf-8"?><testsuites name="pytest tests"><testsuite name="pytest" errors="0" failures="1" skipped="0" tests="1" time="0.178" timestamp="2026-10-02T22:30:37.243060+03:00" hostname="Katana"><testcase classname="tests.unit.test_preview_digest" name="test_preview_html_present_with_interstitial_paragraphs" time="0.001"><failure message="TypeError: preview_digest_email() got an unexpected keyword argument 'site_url'">tests\unit\test_preview_digest.py:265: in test_preview_html_present_with_interstitial_paragraphs
+    preview = preview_digest_email(
+E   TypeError: preview_digest_email() got an unexpected keyword argument 'site_url'</failure></testcase></testsuite></testsuites>

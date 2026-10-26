@@ -1,0 +1,951 @@
+const { expect, test } = require("@playwright/test");
+
+/**
+ * Phase 4 knowledge honesty gate (KNOW-01…04) under VITE_USE_MOCKS.
+ * No tag/format/topic selects — role chips only (D-62…D-65).
+ */
+test.describe("knowledge honesty (KNOW-01…04)", () => {
+  test("Submit and Enter run search; whitespace shows Введите запрос without hits", async ({
+    page,
+  }) => {
+    await page.goto("/knowledge");
+
+    await expect(page.locator("select")).toHaveCount(0);
+    await expect(page.getByLabel(/^(теги|формат|тема)$/i)).toHaveCount(0);
+
+    const search = page.getByRole("searchbox", { name: /поиск по базе знаний/i });
+    await search.fill("RAG");
+    await page.getByRole("button", { name: "Найти", exact: true }).click();
+    await expect(page.getByRole("link", { name: /building production rag systems/i })).toBeVisible();
+    // KNOW-01 / D-59: never render numeric score badges on hits.
+    await expect(page.getByText(/\bscore\b|\bрейтинг\b|\d+\.\d{2,}/i)).toHaveCount(0);
+
+    await page.goto("/knowledge");
+    await search.fill("RAG");
+    await search.press("Enter");
+    await expect(page.getByRole("link", { name: /building production rag systems/i })).toBeVisible();
+
+    await page.goto("/knowledge");
+    await search.fill("   ");
+    await page.getByRole("button", { name: "Найти", exact: true }).click();
+    await expect(page.getByTestId("kb-inline-error")).toHaveText(/Введите запрос/i);
+    await expect(page.getByRole("link", { name: /building production rag systems/i })).toHaveCount(0);
+  });
+
+  test("DS chip filters and opens a material by slug (KNOW-02/03)", async ({ page }) => {
+    await page.goto("/knowledge");
+
+    const search = page.getByRole("searchbox", { name: /поиск по базе знаний/i });
+    await search.fill("RAG");
+    // D-64: chip change re-runs search without «Найти».
+    await page.getByRole("button", { name: "DS", exact: true }).click();
+    const rag = page.getByRole("link", { name: /building production rag systems/i });
+    await expect(rag).toBeVisible();
+    await rag.click();
+    await expect(page).toHaveURL(/\/materials\/rag-systems/);
+  });
+
+  test("Analyst zero-hit keeps query on Сбросить фильтр (KNOW-04)", async ({ page }) => {
+    await page.goto("/knowledge");
+
+    const search = page.getByRole("searchbox", { name: /поиск по базе знаний/i });
+    await search.fill("RAG");
+    await page.getByRole("button", { name: "Analyst", exact: true }).click();
+    await expect(page.getByRole("heading", { name: /ничего не нашли/i })).toBeVisible();
+    await expect(page.getByRole("link", { name: /building production rag systems/i })).toHaveCount(0);
+    await expect(search).toHaveValue("RAG");
+
+    await page.getByRole("button", { name: "Сбросить фильтр", exact: true }).click();
+    await expect(search).toHaveValue("RAG");
+    await expect(page.getByRole("link", { name: /building production rag systems/i })).toBeVisible();
+    await expect(page.getByRole("heading", { name: /ничего не нашли/i })).toHaveCount(0);
+  });
+});
+
+/** X-1: the request counter installed at the `searchKnowledge` boundary (UI-SPEC X-1). */
+const SEARCH_COUNT_KEY = "__DIGEST_KNOWLEDGE_SEARCH_COUNT__";
+
+/**
+ * Reset the counter on every new document, so «reload ⇒ 1 request» stays
+ * distinguishable from «a cache survived F5» (27-03).
+ */
+async function installKnowledgeCounter(page) {
+  await page.addInitScript((key) => {
+    window[key] = 0;
+  }, SEARCH_COUNT_KEY);
+}
+
+/** Anti-vacuum read: a missing instrument throws instead of reading 0 (T-27-05). */
+async function readCount(page) {
+  return page.evaluate((key) => {
+    if (typeof window[key] !== "number") {
+      throw new Error("knowledge search counter not installed");
+    }
+    return window[key];
+  }, SEARCH_COUNT_KEY);
+}
+
+async function expectCount(page, n, label) {
+  await expect.poll(() => readCount(page), { timeout: 4000, message: label }).toBe(n);
+}
+
+/** Hits are anchors rendered by MaterialListRow — there is no result-row testid. */
+const hitLinks = (page) => page.locator('a[href^="/materials/"]');
+
+/**
+ * Settle gate for the knowledge surface itself.
+ *
+ * A URL assertion is necessary but not sufficient: the issue page (`/`) renders an
+ * `IssueToc` whose `/materials/{id}` anchors carry the same accessible names as the
+ * knowledge hits, and `navigate()` updates the URL one commit before React swaps the
+ * route. Asserting a row right after `toHaveURL` can therefore pass against the OUTGOING
+ * surface while the new page has not even started its request (observed: the counter read
+ * 0 with the row «visible»). `kb-role-chips` and the live region exist only on the
+ * knowledge page, so gating on them makes every later row assertion meaningful.
+ */
+const knowledgeSurface = (page) => page.getByTestId("kb-role-chips");
+
+async function expectKnowledgeSettled(page, summary) {
+  await expect(knowledgeSurface(page)).toBeVisible();
+  await expect(page.locator('p[aria-live="polite"]')).toHaveText(summary);
+}
+
+/**
+ * X-2 is a harness-side instrument (UI-SPEC: «тест-харнесс, page.evaluate»), never app code.
+ * It samples the in-flight affordances the page exposes and keeps every label it has seen.
+ */
+const AFFORDANCE_LOG_KEY = "__KB_AFFORDANCE_LOG__";
+
+async function installAffordanceCollector(page) {
+  await page.evaluate((logKey) => {
+    if (window.__KB_AFFORDANCE_OBSERVER__) return;
+    window[logKey] = [];
+    function sample() {
+      const labels = [];
+      if (document.querySelector('[data-state="loading"]')) labels.push("loading-state");
+      if (document.querySelector("#kb-search[disabled]")) labels.push("field-disabled");
+      if (document.querySelector('[aria-live="polite"]')?.textContent?.trim() === "Ищем…") {
+        labels.push("live-searching");
+      }
+      for (const label of labels) {
+        if (!window[logKey].includes(label)) window[logKey].push(label);
+      }
+    }
+    sample();
+    const observer = new MutationObserver(sample);
+    observer.observe(document.documentElement, {
+      subtree: true,
+      childList: true,
+      characterData: true,
+      attributes: true,
+      attributeFilter: ["disabled", "data-state"],
+    });
+    window.__KB_AFFORDANCE_OBSERVER__ = observer;
+  }, AFFORDANCE_LOG_KEY);
+}
+
+async function resetAffordanceLog(page) {
+  await installAffordanceCollector(page);
+  await page.evaluate((logKey) => {
+    window[logKey].length = 0;
+  }, AFFORDANCE_LOG_KEY);
+}
+
+async function affordanceLog(page) {
+  return page.evaluate((logKey) => [...window[logKey]], AFFORDANCE_LOG_KEY);
+}
+
+test.describe("KNOW-05 header submit runs the search", () => {
+  test.beforeEach(async ({ page }) => {
+    await installKnowledgeCounter(page);
+  });
+
+  test("header submit renders results from ?q", async ({ page }) => {
+    await page.goto("/");
+
+    const header = page.getByRole("searchbox", { name: /поиск digest cds/i });
+    await header.fill("RAG");
+    await header.press("Enter");
+
+    await expect(page).toHaveURL(/\/knowledge\?q=RAG$/);
+    await expectKnowledgeSettled(page, "Показано 2");
+    await expect(page.getByRole("link", { name: /building production rag systems/i })).toBeVisible();
+    await expect(page.getByTestId("kb-hint-chips")).toHaveCount(0);
+    await expect(page.getByRole("searchbox", { name: /поиск по базе знаний/i })).toHaveValue("RAG");
+    await expectCount(page, 1, "header submit");
+  });
+
+  test("changing ?q while mounted replaces the rows", async ({ page }) => {
+    await page.goto("/knowledge?q=RAG");
+    await expectKnowledgeSettled(page, "Показано 2");
+    await expect(page.getByRole("link", { name: /building production rag systems/i })).toBeVisible();
+
+    const header = page.getByRole("searchbox", { name: /поиск digest cds/i });
+    await header.fill("SQL");
+    await header.press("Enter");
+
+    await expect(page).toHaveURL(/\/knowledge\?q=SQL$/);
+    await expectKnowledgeSettled(page, "Показано 5");
+    await expect(page.getByRole("link", { name: /anomaly detection in audit pipelines/i })).toBeVisible();
+    await expect(page.getByRole("link", { name: /building production rag systems/i })).toHaveCount(0);
+    await expectCount(page, 2, "q change");
+  });
+
+  test("header submit issues exactly one search request", async ({ page }) => {
+    await page.goto("/");
+
+    const header = page.getByRole("searchbox", { name: /поиск digest cds/i });
+    await header.fill("RAG");
+    await header.press("Enter");
+    // Settle first: a counter read before settle cannot distinguish 1 from 0.
+    await expectKnowledgeSettled(page, "Показано 2");
+    await expectCount(page, 1, "settled");
+
+    await page.getByTestId("theme-toggle").click();
+    await expectCount(page, 1, "theme toggle");
+
+    await header.focus();
+    await page.evaluate(() => document.activeElement?.blur());
+    await expectCount(page, 1, "focus change");
+
+    await header.fill("SQL");
+    await expectCount(page, 1, "typing");
+
+    // Covers timer-driven re-renders. The 4 s kb-filter-toast timer is unreachable here:
+    // setToast('Фильтр недоступен') only fires on an INVALID_ROLE response, which the mock
+    // adapter never produces — waiting 4 s for it would assert nothing.
+    await page.waitForTimeout(1200);
+    await expectCount(page, 1, "idle window");
+  });
+
+  test("the header path shows the in-flight live region", async ({ page }) => {
+    await page.goto("/");
+    // Installed before Enter so the seed sample sees the pre-search tree.
+    await resetAffordanceLog(page);
+
+    const header = page.getByRole("searchbox", { name: /поиск digest cds/i });
+    await header.fill("RAG");
+    await header.press("Enter");
+
+    await expect(page).toHaveURL(/\/knowledge\?q=RAG$/);
+    // Settle on the knowledge surface, not on a bare row: the collector exists precisely to
+    // survive the transient in-flight state, so it is read after the request has landed (a
+    // post-settle toHaveText("Ищем…") would be flaky — the mock answers in ~80 ms).
+    await expectKnowledgeSettled(page, "Показано 2");
+
+    // C-10 non-vacuity control: all three affordances must have been observed.
+    const log = await affordanceLog(page);
+    expect(log).toContain("live-searching");
+    expect(log).toContain("field-disabled");
+    expect(log).toContain("loading-state");
+
+    await expect(page.getByTestId("kb-hint-chips")).toHaveCount(0);
+    await expect(page.getByRole("link", { name: /building production rag systems/i })).toBeVisible();
+  });
+
+  test("a role chip change issues exactly one new request", async ({ page }) => {
+    await page.goto("/knowledge?q=SQL");
+    await expectKnowledgeSettled(page, "Показано 5");
+    await expect(hitLinks(page)).toHaveCount(5);
+    await expectCount(page, 1, "deep link");
+
+    // UI-SPEC reading of ROADMAP criterion 3: a chip change IS a deliberate action and
+    // fires exactly once (+1). The «no extra request» clause covers re-renders and history.
+    await page.getByRole("button", { name: "DS", exact: true }).click();
+
+    await expect(page.getByRole("link", { name: /pgvector for enterprise search/i })).toBeVisible();
+    await expect(hitLinks(page)).toHaveCount(1);
+    await expectCount(page, 2, "chip change");
+    await expect(page.getByRole("button", { name: "DS", exact: true })).toHaveAttribute(
+      "aria-pressed",
+      "true",
+    );
+  });
+
+  test("a zero-hit query renders the empty state and no rows", async ({ page }) => {
+    await page.goto("/knowledge?q=zzzz");
+
+    await expect(page.getByRole("heading", { name: /ничего не нашли/i })).toBeVisible();
+    await expect(hitLinks(page)).toHaveCount(0);
+    await expect(page.getByTestId("kb-hint-chips")).toHaveCount(0);
+    await expect(page.getByRole("button", { name: "Сбросить фильтр" })).toBeEnabled();
+    await expect(page.locator('p[aria-live="polite"]')).toHaveText("Найдено 0 материалов");
+    // The control that keeps the RAG assertion honest: a static row list could satisfy
+    // C-01 without any search happening.
+    await expectCount(page, 1, "zero hit");
+  });
+
+  test("a hint chip click fills the field without a request", async ({ page }) => {
+    await page.goto("/knowledge");
+    await expect(knowledgeSurface(page)).toBeVisible();
+    await expect(page.getByTestId("kb-hint-chips")).toBeVisible();
+
+    await page.getByTestId("kb-hint-chips").getByRole("button", { name: "RAG", exact: true }).click();
+
+    await expect(page.getByRole("searchbox", { name: /поиск по базе знаний/i })).toHaveValue("RAG");
+    await expect(hitLinks(page)).toHaveCount(0);
+    await expectCount(page, 0, "hint chip");
+  });
+
+  test("returning from a material restores the rows with no request", async ({ page }) => {
+    await page.goto("/knowledge?q=RAG");
+    await expectKnowledgeSettled(page, "Показано 2");
+    await expect(hitLinks(page)).toHaveCount(2);
+    await expectCount(page, 1, "first load");
+
+    // Installed before the click so the restore's own window is observed.
+    await resetAffordanceLog(page);
+    await hitLinks(page).first().click();
+    await expect(page).toHaveURL(/\/materials\//);
+
+    await page.goBack();
+    await expect(page).toHaveURL(/\/knowledge\?q=RAG$/);
+    await expect(hitLinks(page)).toHaveCount(2);
+    // KNOW-05 criterion 4: the same rows, and no second trip to the adapter. The counter
+    // lives inside runSearch, so a cache restore is structurally unable to bump it.
+    await expectCount(page, 1, "restore");
+    // No label at all: no live-searching, no field-disabled, no loading-state. The restored
+    // view must not pretend to be searching.
+    expect(await affordanceLog(page)).toEqual([]);
+
+    // E3 · loading, pinned structurally: a role chip that gains a spinner, a data-state or an
+    // aria-busy is the only way this invariant can break (a settled toBeEnabled() is a tautology).
+    await expect(page.getByTestId("kb-role-chips").locator("[data-state], [aria-busy]")).toHaveCount(0);
+  });
+
+  test("a paginated delivery is restored as one snapshot and resumes from nextOffset", async ({
+    page,
+  }) => {
+    // C-12 / E5 · partial: the appended page is part of ONE snapshot, and the next
+    // «Показать ещё» continues from the shown-rows count instead of restarting at 0.
+    await page.goto("/knowledge?q=paging");
+    await expectKnowledgeSettled(page, "Показано 10+");
+    await expect(hitLinks(page)).toHaveCount(10);
+    await expectCount(page, 1, "first page");
+
+    await page.getByRole("button", { name: "Показать ещё", exact: true }).click();
+    await expectKnowledgeSettled(page, "Показано 20+");
+    await expect(hitLinks(page)).toHaveCount(20);
+    await expectCount(page, 2, "appended page");
+
+    // Open a hit that only exists on the appended page, then come back.
+    await hitLinks(page).nth(15).click();
+    await expect(page).toHaveURL(/\/materials\//);
+
+    await page.goBack();
+    await expect(page).toHaveURL(/\/knowledge\?q=paging$/);
+    // The restore carries the MERGED items, the live count and the load-more affordance.
+    await expectKnowledgeSettled(page, "Показано 20+");
+    await expect(hitLinks(page)).toHaveCount(20);
+    await expectCount(page, 2, "restore");
+    await expect(page.getByRole("button", { name: "Показать ещё", exact: true })).toBeVisible();
+
+    // The resumed fetch continues at offset 20 — a restart at 0 would duplicate rows.
+    await page.getByRole("button", { name: "Показать ещё", exact: true }).click();
+    await expectKnowledgeSettled(page, "Показано 21");
+    await expect(hitLinks(page)).toHaveCount(21);
+    expect(new Set(await hitLinks(page).evaluateAll((links) => links.map((a) => a.href))).size).toBe(
+      21,
+    );
+    await expectCount(page, 3, "resumed page");
+  });
+
+  test("a reloaded URL re-queries because the cache is memory-only", async ({ page }) => {
+    await page.goto("/knowledge?q=RAG");
+    await expectKnowledgeSettled(page, "Показано 2");
+    await expectCount(page, 1, "pre-reload");
+
+    await page.reload();
+    await expect(hitLinks(page)).toHaveCount(2);
+    // installKnowledgeCounter re-installs 0 on the new document: a cache persisted to storage
+    // would read 0 here, a memory-only cache reads 1.
+    await expectCount(page, 1, "post-reload");
+  });
+
+  test("a first search renders no skeleton", async ({ page }) => {
+    await page.goto("/knowledge?q=RAG");
+    await expectKnowledgeSettled(page, "Показано 2");
+    // E5 · loading: the skeleton belongs to the append path (loadingMore) only.
+    await expect(page.locator('[data-testid="kb-skeleton"]')).toHaveCount(0);
+  });
+
+  test("re-submitting the same q issues exactly one new request", async ({ page }) => {
+    await page.goto("/knowledge?q=RAG");
+    await expectKnowledgeSettled(page, "Показано 2");
+    await expectCount(page, 1, "first");
+
+    // A deliberate act, not a re-render: the marker has to beat the cache (D-06).
+    const header = page.getByRole("searchbox", { name: /поиск digest cds/i });
+    await header.fill("RAG");
+    await header.press("Enter");
+
+    await expect(page).toHaveURL(/\/knowledge\?q=RAG$/);
+    await expect(hitLinks(page)).toHaveCount(2);
+    await expectCount(page, 2, "re-submit");
+    await expect(page.getByRole("searchbox", { name: /поиск по базе знаний/i })).toHaveValue("RAG");
+  });
+
+  test("the submitId marker is stripped after it is consumed", async ({ page }) => {
+    await page.goto("/knowledge");
+    const header = page.getByRole("searchbox", { name: /поиск digest cds/i });
+    await header.fill("RAG");
+    await header.press("Enter");
+    await expectKnowledgeSettled(page, "Показано 2");
+
+    // C-24: the opaque marker must not survive the navigation that consumed it.
+    const readSubmitId = () =>
+      page.evaluate(
+        () => window.history.state?.usr?.submitId ?? window.history.state?.submitId ?? null,
+      );
+    await expect.poll(readSubmitId, { timeout: 4000, message: "submitId stripped" }).toBeNull();
+    await expect(page).toHaveURL(/\/knowledge\?q=RAG$/);
+
+    // A strip that left a consumable marker would double-fire on the next load.
+    await page.reload();
+    await expect(hitLinks(page)).toHaveCount(2);
+    await expectCount(page, 1, "after reload");
+  });
+
+  test("a header submit resets the role filter", async ({ page }) => {    await page.goto("/knowledge?q=SQL");
+    await expectKnowledgeSettled(page, "Показано 5");
+    await page.getByRole("button", { name: "DS", exact: true }).click();
+    await expect(hitLinks(page)).toHaveCount(1);
+    await expectCount(page, 2, "chip narrows");
+
+    const header = page.getByRole("searchbox", { name: /поиск digest cds/i });
+    await header.fill("RAG");
+    await header.press("Enter");
+
+    await expect(page).toHaveURL(/\/knowledge\?q=RAG$/);
+    // D-07: a header submission searches from a clean slate, so a previously narrowed chip
+    // cannot silently hide hits. RAG + DS would be one row, RAG + Все is two.
+    await expect(hitLinks(page)).toHaveCount(2);
+    await expect(page.getByRole("button", { name: "Все", exact: true })).toHaveAttribute(
+      "aria-pressed",
+      "true",
+    );
+    await expect(page.getByRole("button", { name: "DS", exact: true })).toHaveAttribute(
+      "aria-pressed",
+      "false",
+    );
+    await expectCount(page, 3, "header resets role");
+  });
+
+  test("removing ?q clears the rows", async ({ page }) => {
+    await page.goto("/knowledge?q=RAG");
+    await expectKnowledgeSettled(page, "Показано 2");
+    await expect(hitLinks(page)).toHaveCount(2);
+    await expectCount(page, 1, "loaded");
+
+    // An empty header submit is a landing navigation, not an error (C-16).
+    const header = page.getByRole("searchbox", { name: /поиск digest cds/i });
+    await header.fill("");
+    await header.press("Enter");
+
+    await expect(page).toHaveURL(/\/knowledge$/);
+    // A bare `return` on the empty branch would leave the two RAG rows on the landing.
+    await expect(hitLinks(page)).toHaveCount(0);
+    await expect(page.getByTestId("kb-hint-chips")).toBeVisible();
+    await expect(page.getByRole("searchbox", { name: /поиск по базе знаний/i })).toHaveValue("");
+    await expectCount(page, 1, "no extra request");
+  });
+
+  test("a blank page-form submit shows the inline error and issues no request", async ({ page }) => {
+    await page.goto("/knowledge");
+    await expect(knowledgeSurface(page)).toBeVisible();
+
+    await page.getByRole("button", { name: "Найти", exact: true }).click();
+
+    const inline = page.getByTestId("kb-inline-error");
+    await expect(inline).toHaveText("Введите запрос");
+    await expect(inline).toHaveAttribute("role", "alert");
+    await expect(inline).toHaveId("kb-search-inline-error");
+    await expect(page.getByRole("searchbox", { name: /поиск по базе знаний/i })).toHaveAttribute(
+      "aria-invalid",
+      "true",
+    );
+    await expect(page.getByRole("searchbox", { name: /поиск по базе знаний/i })).toHaveAttribute(
+      "aria-describedby",
+      "kb-search-inline-error",
+    );
+    // C-17: the page form owns no URL write yet — the blank submit stays put.
+    await expect(page).toHaveURL(/\/knowledge$/);
+    await expectCount(page, 0, "blank submit");
+  });
+
+  test("an overlong header submit is rejected inline with no request", async ({ page }) => {
+    // One code point over MAX_QUERY_CODE_POINTS (500); the validator's own unit pin owns the cap.
+    const tooLong = "a".repeat(501);
+
+    await page.goto("/");
+    const header = page.getByRole("searchbox", { name: /поиск digest cds/i });
+    await header.fill(tooLong);
+    await header.press("Enter");
+
+    await expect(page).toHaveURL(new RegExp(`/knowledge\\?q=a{501}$`));
+    await expect(page.getByTestId("kb-inline-error")).toHaveText("Сократите запрос");
+    await expect(hitLinks(page)).toHaveCount(0);
+    // The landing rule keeps hints off any non-empty ?q.
+    await expect(page.getByTestId("kb-hint-chips")).toHaveCount(0);
+    await expect(page.getByTestId("kb-search-error")).toHaveCount(0);
+    await expectCount(page, 0, "overlong");
+
+    // C-18: no truncation anywhere — the full text survives in both inputs, and neither
+    // carries a maxlength that could silently clip it.
+    const pageField = page.getByRole("searchbox", { name: /поиск по базе знаний/i });
+    expect(await pageField.inputValue()).toHaveLength(501);
+    expect(await pageField.getAttribute("maxlength")).toBeNull();
+    expect(await header.getAttribute("maxlength")).toBeNull();
+  });
+
+  test("an overlong submit on a mounted result surface clears the rows", async ({ page }) => {
+    // 27-UI-SPEC § State model — `overlong`: field keeps the full text, inline
+    // «Сократите запрос», no hint chips, NO rows, no kb-search-error.
+    // Only the mounted case can regress: a fresh goto starts with an empty hit list.
+    await page.goto("/knowledge?q=RAG");
+    await expectKnowledgeSettled(page, "Показано 2");
+    await expect(hitLinks(page)).toHaveCount(2);
+
+    const header = page.getByRole("searchbox", { name: /поиск digest cds/i });
+    await header.fill("a".repeat(501));
+    await header.press("Enter");
+
+    await expect(page).toHaveURL(new RegExp(`/knowledge\\?q=a{501}$`));
+    await expect(page.getByTestId("kb-inline-error")).toHaveText("Сократите запрос");
+
+    // A rejection cannot share the screen with rows or a count for the previous query.
+    await expect(hitLinks(page)).toHaveCount(0);
+    await expect(page.locator('[aria-live="polite"]')).toHaveCount(0);
+    await expect(page.getByTestId("kb-hint-chips")).toHaveCount(0);
+    await expect(page.getByTestId("kb-search-error")).toHaveCount(0);
+    await expectCount(page, 1, "overlong after a settled RAG search");
+  });
+
+  test("the in-flight chrome keeps one opacity source and live role chips", async ({ page }) => {
+    // 27-UI-SPEC § State model `in-flight`: «Найти» `data-state="loading"` + `opacity-80`;
+    // § E3·loading: «У чипов нет спиннера/`disabled` во время поиска».
+    await page.goto("/knowledge");
+
+    await page.evaluate(() => {
+      window.__KB_CHROME_SAMPLES__ = [];
+      window.__KB_CHROME_STOP__ = false;
+      const sample = () => {
+        if (window.__KB_CHROME_STOP__) return;
+        const button = document.querySelector('button[data-state="loading"]');
+        if (button) {
+          const style = getComputedStyle(button);
+          window.__KB_CHROME_SAMPLES__.push({
+            opacity: style.opacity,
+            cursor: style.cursor,
+            chips: [...document.querySelectorAll('[data-testid="kb-role-chips"] button')].map(
+              (chip) => chip.disabled,
+            ),
+          });
+        }
+        requestAnimationFrame(sample);
+      };
+      requestAnimationFrame(sample);
+    });
+
+    await page.getByRole("searchbox", { name: /поиск по базе знаний/i }).fill("RAG");
+    await page.getByRole("button", { name: "Найти", exact: true }).click();
+    await expectKnowledgeSettled(page, "Показано 2");
+
+    const samples = await page.evaluate(() => {
+      window.__KB_CHROME_STOP__ = true;
+      return [...window.__KB_CHROME_SAMPLES__];
+    });
+
+    // Anti-vacuum: a sampler that never observes the window would make every check below empty.
+    expect(samples.length, "the in-flight window must be sampled at least once").toBeGreaterThan(0);
+    const opacities = [...new Set(samples.map((sample) => sample.opacity))];
+    const cursors = [...new Set(samples.map((sample) => sample.cursor))];
+    expect(opacities, "exactly one opacity source during in-flight").toEqual(["0.8"]);
+    expect(cursors, "the contract's cursor-wait, not not-allowed").toEqual(["wait"]);
+    const chipStates = samples.flatMap((sample) => sample.chips);
+    expect(
+      chipStates.every((disabled) => disabled === false),
+      "role chips stay live during in-flight",
+    ).toBe(true);
+  });
+
+  test("both search inputs keep their placeholder above 4.5:1 in both themes", async ({ page }) => {
+    // 27-UI-SPEC § Color — placeholder copy is the only text on the phase's primary input.
+    const srgb = (value) => {
+      const match = /^rgba?\((\d+),\s*(\d+),\s*(\d+)(?:,\s*([\d.]+))?\)$/.exec(value);
+      if (!match) return null;
+      return [
+        Number(match[1]),
+        Number(match[2]),
+        Number(match[3]),
+        match[4] === undefined ? 1 : Number(match[4]),
+      ];
+    };
+    const luminance = ([r, g, b]) => {
+      const channel = (raw) => {
+        const c = raw / 255;
+        return c <= 0.03928 ? c / 12.92 : ((c + 0.055) / 1.055) ** 2.4;
+      };
+      return 0.2126 * channel(r) + 0.7152 * channel(g) + 0.0722 * channel(b);
+    };
+    const ratio = (fg, bg) => {
+      const [light, dark] = [luminance(fg), luminance(bg)].sort((a, b) => b - a);
+      return (light + 0.05) / (dark + 0.05);
+    };
+
+    const read = async () =>
+      page.evaluate(() => {
+        const probe = (element) => {
+          const placeholder = getComputedStyle(element, "::placeholder").color;
+          let node = element;
+          let background = getComputedStyle(node).backgroundColor;
+          while (node && (background === "rgba(0, 0, 0, 0)" || background === "transparent")) {
+            node = node.parentElement;
+            if (!node) break;
+            background = getComputedStyle(node).backgroundColor;
+          }
+          return { placeholder, background };
+        };
+        return {
+          pill: probe(document.querySelector('header input[type="search"]')),
+          field: probe(document.querySelector("#kb-search")),
+        };
+      });
+
+    const check = async (theme) => {
+      const { pill, field } = await read();
+      for (const [name, probe] of [
+        ["header pill", pill],
+        ["page field", field],
+      ]) {
+        const foreground = srgb(probe.placeholder);
+        const background = srgb(probe.background);
+        expect(
+          foreground,
+          `${theme}/${name}: no explicit placeholder colour token (computed "${probe.placeholder}")`,
+        ).not.toBeNull();
+        expect(background, `${theme}/${name}: surface must be an opaque rgb colour`).not.toBeNull();
+        const measured = ratio(foreground, background);
+        expect(
+          measured,
+          `${theme}/${name}: placeholder contrast ${measured.toFixed(2)}:1 (${probe.placeholder} on ${probe.background})`,
+        ).toBeGreaterThanOrEqual(4.5);
+      }
+      return { pill: pill.placeholder, field: field.placeholder };
+    };
+
+    await page.goto("/knowledge?q=RAG");
+    const dark = await check("dark");
+
+    await page.getByTestId("theme-toggle").click();
+    await expect(page.locator("html")).toHaveAttribute("data-theme", "light");
+    const light = await check("light");
+
+    // One placeholder role for the page's two search inputs, not two different greys.
+    expect(dark.pill, "dark: the two inputs must share one placeholder colour").toBe(dark.field);
+    expect(light.pill, "light: the two inputs must share one placeholder colour").toBe(light.field);
+  });
+
+  test("a slower older search cannot overwrite a newer settled one", async ({ page }) => {
+    // WR-01: `runSearch` applied every settled response unconditionally, so on a variable
+    // network the older query could land last and leave rows that disagree with the URL.
+    // The mock's latency is a fixed `delay(80)`, so the harness holds exactly those timers and
+    // releases them out of order — the only way to reach this path without touching the frozen
+    // adapter and without stubbing a request that mock mode never makes.
+    await page.addInitScript(() => {
+      window.__KB_HELD__ = [];
+      window.__KB_HOLD_SEARCH_LATENCY__ = false;
+      const schedule = window.setTimeout.bind(window);
+      window.setTimeout = (callback, ms, ...args) => {
+        if (ms === 80 && window.__KB_HOLD_SEARCH_LATENCY__) {
+          window.__KB_HELD__.push(() => callback(...args));
+          return -1;
+        }
+        return schedule(callback, ms, ...args);
+      };
+    });
+
+    await page.goto("/knowledge");
+    await page.evaluate(() => {
+      window.__KB_HOLD_SEARCH_LATENCY__ = true;
+    });
+
+    const header = page.getByRole("searchbox", { name: /поиск digest cds/i });
+    await header.fill("RAG");
+    await header.press("Enter");
+    await header.fill("SQL");
+    await header.press("Enter");
+
+    // Both latency timers are held, so the two searches are genuinely concurrent.
+    await expect.poll(() => page.evaluate(() => window.__KB_HELD__.length)).toBe(2);
+
+    // The NEWER query settles first…
+    await page.evaluate(() => window.__KB_HELD__[1]());
+    await expectKnowledgeSettled(page, "Показано 5");
+
+    // …then the older one arrives. It must be discarded, not committed over the newer rows.
+    await page.evaluate(() => window.__KB_HELD__[0]());
+    await page.waitForTimeout(100);
+
+    await expect(page).toHaveURL(/\/knowledge\?q=SQL$/);
+    await expectKnowledgeSettled(page, "Показано 5");
+    await expect(
+      page.getByRole("link", { name: /anomaly detection in audit pipelines/i }),
+    ).toBeVisible();
+    await expect(page.getByRole("link", { name: /building production rag systems/i })).toHaveCount(
+      0,
+    );
+  });
+
+  test("the landing never coexists with a query", async ({ page }) => {
+    // Overlong: no request, so `activeQuery` stays null — the frame that used to leak hints.
+    await page.goto(`/knowledge?q=${"a".repeat(501)}`);
+    await expect(page.getByTestId("kb-inline-error")).toHaveText("Сократите запрос");
+    await expect(page.getByTestId("kb-hint-chips")).toHaveCount(0);
+
+    // Zero-hit.
+    await page.goto("/knowledge?q=zzzz");
+    await expect(page.getByRole("heading", { name: /ничего не нашли/i })).toBeVisible();
+    await expect(page.getByTestId("kb-hint-chips")).toHaveCount(0);
+
+    // Populated.
+    await page.goto("/knowledge?q=RAG");
+    await expectKnowledgeSettled(page, "Показано 2");
+    await expect(page.getByTestId("kb-hint-chips")).toHaveCount(0);
+  });
+
+  test("a whitespace-only q is the landing", async ({ page }) => {
+    await page.goto("/knowledge?q=%20");
+
+    await expect(page.getByTestId("kb-hint-chips")).toBeVisible();
+    await expect(hitLinks(page)).toHaveCount(0);
+    await expect(page.getByRole("searchbox", { name: /поиск по базе знаний/i })).toHaveValue("");
+    await expectCount(page, 0, "whitespace");
+  });
+
+  test("the hint set is four fixed labels", async ({ page }) => {
+    await page.goto("/knowledge");
+    const chips = page.getByTestId("kb-hint-chips");
+    await expect(chips).toBeVisible();
+    await expect(chips.getByRole("button")).toHaveCount(4);
+    for (const label of ["RAG", "SQL", "качество данных", "pgvector"]) {
+      await expect(chips.getByRole("button", { name: label, exact: true })).toBeVisible();
+    }
+  });
+
+  test("the live region carries only the status copy", async ({ page }) => {
+    await page.goto("/knowledge?q=RAG");
+    await expectKnowledgeSettled(page, "Показано 2");
+    // E6 · long-text: the status line never echoes the query (T-27-14).
+    const live = page.locator('p[aria-live="polite"]');
+    expect(await live.textContent()).not.toMatch(/RAG/);
+  });
+
+  test("a header submit replaces the history entry", async ({ page }) => {
+    await page.goto("/");
+    const before = await page.evaluate(() => history.length);
+
+    const header = page.getByRole("searchbox", { name: /поиск digest cds/i });
+    await header.fill("RAG");
+    await header.press("Enter");
+    await expect(page).toHaveURL(/\/knowledge\?q=RAG$/);
+    // C-07: a push grows the stack (plus the marker strip's replace of that
+    // pushed entry). `goBack` from `/` returns to `/` either way, so the length
+    // pin is the non-vacuous half; the destination after Back is
+    // browser-dependent — only "not /knowledge" is contractual.
+    await expect
+      .poll(() => page.evaluate(() => history.length), { message: "no new history entry" })
+      .toBe(before);
+
+    await page.goBack();
+    await expect(page).not.toHaveURL(/\/knowledge/);
+  });
+
+  test("an empty header submit replaces the history entry", async ({ page }) => {
+    // FU-27-01 / T-27-16 (AR-27-03): the empty path used to PUSH, so from a settled
+    // `?q=RAG` an empty Enter stacked a landing and Back walked into the executed query.
+    await page.goto("/knowledge?q=RAG");
+    await expectKnowledgeSettled(page, "Показано 2");
+    const before = await page.evaluate(() => history.length);
+
+    const header = page.getByRole("searchbox", { name: /поиск digest cds/i });
+    await header.fill("   ");
+    await header.press("Enter");
+    await expect(page).toHaveURL(/\/knowledge$/);
+    await expect
+      .poll(() => page.evaluate(() => history.length), { message: "no new history entry" })
+      .toBe(before);
+
+    await page.goBack();
+    await expect(page).not.toHaveURL(/\/knowledge/);
+  });
+
+  test("a page-form submit writes ?q and executes once", async ({ page }) => {
+    await page.goto("/knowledge");
+    await expect(knowledgeSurface(page)).toBeVisible();
+
+    await page.getByRole("searchbox", { name: /поиск по базе знаний/i }).fill("RAG");
+    await page.getByRole("button", { name: "Найти" }).click();
+
+    await expect(page).toHaveURL(/\/knowledge\?q=RAG$/);
+    await expect(hitLinks(page)).toHaveCount(2);
+    await expectCount(page, 1, "form submit");
+
+    await page.getByRole("button", { name: "Найти" }).click();
+    await expect(page).toHaveURL(/\/knowledge\?q=RAG$/);
+    await expectCount(page, 2, "second click");
+  });
+
+  test("a chip change keeps the URL and adds no history entry", async ({ page }) => {
+    await page.goto("/knowledge?q=SQL");
+    await expectKnowledgeSettled(page, "Показано 5");
+    const before = page.url();
+
+    await page.getByRole("button", { name: "DS", exact: true }).click();
+    await expect(hitLinks(page)).toHaveCount(1);
+    expect(page.url()).toBe(before);
+    await expectCount(page, 2, "chip");
+
+    await page.goBack();
+    await expect(page).not.toHaveURL(/\/knowledge/);
+  });
+
+  test("a chip change on a landing with typed text writes ?q", async ({ page }) => {
+    await page.goto("/knowledge");
+    await expect(page.getByTestId("kb-hint-chips")).toBeVisible();
+
+    // Typed, not submitted: without a URL write the landing rule
+    // (`preSearch = qUrl === '' && error === null`) would keep the hints above
+    // the new result surface. C-21 closes that frame.
+    await page.getByRole("searchbox", { name: /поиск по базе знаний/i }).fill("RAG");
+    await page.getByRole("button", { name: "DS", exact: true }).click();
+
+    await expect(page).toHaveURL(/\/knowledge\?q=RAG$/);
+    await expect(page.getByTestId("kb-hint-chips")).toHaveCount(0);
+    await expectCount(page, 1, "chip from landing");
+  });
+
+  test("a failed search shows the error panel and retry recovers", async ({ page }) => {
+    await page.goto("/");
+    // Arm after goto: the flag lives on `window` and survives same-document SPA
+    // navigation, but not a reload. Prefer the in-SPA path (header Enter).
+    await page.evaluate(() => {
+      window.__DIGEST_FAIL_NEXT_KNOWLEDGE__ = true;
+    });
+
+    const header = page.getByRole("searchbox", { name: /поиск digest cds/i });
+    await header.fill("RAG");
+    await header.press("Enter");
+
+    const panel = page.getByTestId("kb-search-error");
+    await expect(panel).toBeVisible();
+    await expect(panel).toContainText("Не удалось найти материалы");
+    await expect(page.getByRole("button", { name: "Повторить" })).toBeVisible();
+    await expect(page.getByTestId("kb-hint-chips")).toHaveCount(0);
+    await expect(page.locator('p[aria-live="polite"]')).toHaveCount(0);
+    await expect(hitLinks(page)).toHaveCount(0);
+    await expectCount(page, 1, "failed");
+
+    // E8 · loading: the panel carries no loading affordance and retry is an ordinary action.
+    await expect(panel.locator('[data-state="loading"], [aria-busy="true"]')).toHaveCount(0);
+    await expect(page.getByRole("button", { name: "Повторить" })).toBeEnabled();
+
+    await page.getByRole("button", { name: "Повторить" }).click();
+    await expect(hitLinks(page)).toHaveCount(2);
+    await expect(page.getByTestId("kb-search-error")).toHaveCount(0);
+    await expectCount(page, 2, "retry");
+  });
+
+  test("an error is not cached", async ({ page }) => {
+    // Seed-then-fail: the store is success-only, so a case that starts from a
+    // failure has nothing to evict. Seed snapshotKey('all','RAG') first.
+    await page.goto("/knowledge?q=RAG");
+    await expect(hitLinks(page)).toHaveCount(2);
+    await expectCount(page, 1, "seeded");
+
+    await page.evaluate(() => {
+      window.__DIGEST_FAIL_NEXT_KNOWLEDGE__ = true;
+    });
+
+    // Marker path (D-06): a deliberate header re-submit of the same q.
+    const header = page.getByRole("searchbox", { name: /поиск digest cds/i });
+    await header.fill("RAG");
+    await header.press("Enter");
+    await expect(page).toHaveURL(/\/knowledge\?q=RAG$/);
+    await expect(page.getByTestId("kb-search-error")).toBeVisible();
+    await expect(hitLinks(page)).toHaveCount(0);
+    await expectCount(page, 2, "seeded snapshot failed");
+
+    // Leave via a push so Back restores an entry whose location.state is null
+    // (the marker was stripped). Do not goto() the same URL — that would reset X-1.
+    await page.getByRole("link", { name: "Голосование" }).click();
+    await expect(page).toHaveURL(/\/voting/);
+    // Settle on the voting surface so KnowledgePage actually unmounts. A URL-only
+    // wait can fire before the outlet swaps, and goBack would then reuse the
+    // still-mounted error state (ref guard, Δ=0) instead of the cache lookup.
+    await expect(page.getByRole("heading", { name: /голосование/i })).toBeVisible();
+    await page.goBack();
+    await expect(page).toHaveURL(/\/knowledge\?q=RAG$/);
+
+    await expect(page.getByTestId("kb-search-error")).toBeVisible();
+    await expect(hitLinks(page)).toHaveCount(0);
+    await expectCount(page, 3, "cache-eligible revisit after error");
+  });
+
+  test("the header never shows a search error", async ({ page }) => {
+    await page.goto("/");
+    await page.evaluate(() => {
+      window.__DIGEST_FAIL_NEXT_KNOWLEDGE__ = true;
+    });
+
+    const headerSearch = page.getByRole("searchbox", { name: /поиск digest cds/i });
+    await headerSearch.fill("RAG");
+    await headerSearch.press("Enter");
+    await expect(page.getByTestId("kb-search-error")).toBeVisible();
+
+    // role="search" exists twice on this route (SearchPill and the page form);
+    // every locator here is header-scoped so strict mode cannot fire.
+    const header = page.locator("header");
+    await expect(header.getByRole("alert")).toHaveCount(0);
+    await expect(header.getByRole("searchbox", { name: /поиск digest cds/i })).not.toHaveAttribute(
+      "aria-invalid",
+      "true",
+    );
+    expect(await header.innerText()).not.toMatch(/Не удалось|Повторить/);
+  });
+
+  test("a markup payload in q is rendered as inert text", async ({ page }) => {
+    const imgPayload = "<img src=x onerror=window.__KB_XSS__=1>";
+    await page.goto(`/knowledge?q=${encodeURIComponent(imgPayload)}`);
+    await expect(knowledgeSurface(page)).toBeVisible();
+    await expectCount(page, 1, "img payload");
+
+    const imgProbe = await page.evaluate(() => ({
+      xss: window.__KB_XSS__,
+      imgs: document.querySelectorAll('img[src="x"]').length,
+      onerror: document.querySelectorAll("[onerror]").length,
+    }));
+    expect(imgProbe.xss).toBeUndefined();
+    expect(imgProbe.imgs).toBe(0);
+    expect(imgProbe.onerror).toBe(0);
+    expect(page.url()).toMatch(/knowledge/);
+    expect(await page.title()).not.toContain("<img");
+    expect(await page.locator("#kb-search").inputValue()).toBe(imgPayload);
+
+    const scriptPayload = "</script><script>window.__KB_XSS2__=1</script>";
+    await page.goto(`/knowledge?q=${encodeURIComponent(scriptPayload)}`);
+    await expect(knowledgeSurface(page)).toBeVisible();
+
+    const scriptProbe = await page.evaluate(() => ({
+      xss: window.__KB_XSS2__,
+      scripts: document.querySelectorAll("script[data-xss]").length,
+    }));
+    expect(scriptProbe.xss).toBeUndefined();
+    expect(scriptProbe.scripts).toBe(0);
+    expect(await page.locator('p[aria-live="polite"]').textContent()).not.toContain("script");
+    expect(await page.locator("#kb-search").inputValue()).toBe(scriptPayload);
+  });
+});
+
+
+

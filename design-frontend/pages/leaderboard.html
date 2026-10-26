@@ -1,0 +1,99 @@
+<!DOCTYPE html>
+<html lang="ru">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>Лидерборд — Digest CDS</title>
+  <link rel="preconnect" href="https://fonts.googleapis.com">
+  <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+  <link href="https://fonts.googleapis.com/css2?family=JetBrains+Mono&family=Manrope:wght@400;500;600;700&display=swap" rel="stylesheet">
+  <link rel="stylesheet" href="../styles/tokens.css">
+  <link rel="stylesheet" href="../styles/typography.css">
+  <link rel="stylesheet" href="../styles/layout.css">
+  <link rel="stylesheet" href="../styles/components.css">
+</head>
+<body>
+  <div class="concept-nav"><a href="../index.html">← Concept 2</a> <strong>Лидерборд</strong></div>
+  <div class="app-shell">
+    <header class="header">
+      <div class="header__inner">
+        <a class="logo" href="home.html"><span class="logo__title">Digest CDS</span></a>
+        <nav class="nav">
+          <a class="nav__link" href="home.html">Главная</a>
+          <a class="nav__link" href="material.html">База знаний</a>
+          <a class="nav__link" href="voting.html">Голосование</a>
+          <a class="nav__link nav__link--active" href="leaderboard.html">Лидерборд</a>
+          <a class="nav__link" href="profile.html">Профиль</a>
+        </nav>
+        <div class="header__search"><div class="search-bar"><span class="search-bar__icon">⌕</span><input class="search-bar__input" type="search" placeholder="Поиск…"></div></div>
+        <div class="header__gamification">
+          <span class="streak-pill"><span class="streak-pill__icon"><svg width="14" height="14" viewBox="0 0 24 24" fill="currentColor"><path d="M12 2C12 2 7 10 7 14a5 5 0 0 0 10 0c0-4-5-12-5-12z"/></svg></span>12</span>
+          <div class="xp-widget"><span class="xp-widget__level">Ур. 7</span><div class="xp-widget__track"><div class="xp-widget__fill"></div></div></div>
+          <a class="rank-chip" href="leaderboard.html">#8</a>
+        </div>
+        <div class="header__user"><button class="theme-toggle" type="button" data-theme-toggle aria-label="Тема">☀</button><a href="profile.html" class="avatar">ИП</a></div>
+      </div>
+    </header>
+
+    <main class="main">
+      <h1 class="text-h1">Лидерборд</h1>
+      <p class="text-caption" style="margin:var(--space-2) 0 var(--space-6);">Публичный рейтинг активности · ADR-0001</p>
+
+      <div class="tabs">
+        <button class="tab tab--active" type="button">Эта неделя</button>
+        <button class="tab" type="button">Всё время</button>
+      </div>
+
+      <div class="card" style="overflow:hidden;">
+        <table class="leaderboard-table">
+          <thead>
+            <tr class="text-overline" style="text-align:left;">
+              <td style="padding:var(--space-4);">#</td>
+              <td>Участник</td>
+              <td>Ур.</td>
+              <td>XP</td>
+              <td>Серия</td>
+            </tr>
+          </thead>
+          <tbody>
+            <tr class="leaderboard-row leaderboard-row--top">
+              <td><span class="rank-num rank-num--1">1</span></td>
+              <td><div class="lb-user"><div class="avatar avatar--sm">АК</div><span class="text-body-sm">Anna K.</span></div></td>
+              <td><span class="level-badge">Ур. 12</span></td>
+              <td><span class="lb-xp">840</span></td>
+              <td><span class="streak-pill streak-pill--sm"><span class="streak-pill__icon"><svg width="12" height="12" viewBox="0 0 24 24" fill="currentColor"><path d="M12 2C12 2 7 10 7 14a5 5 0 0 0 10 0c0-4-5-12-5-12z"/></svg></span>21</span></td>
+            </tr>
+            <tr class="leaderboard-row leaderboard-row--top">
+              <td><span class="rank-num rank-num--2">2</span></td>
+              <td><div class="lb-user"><div class="avatar avatar--sm">МС</div><span class="text-body-sm">Maria S.</span></div></td>
+              <td><span class="level-badge">Ур. 11</span></td>
+              <td><span class="lb-xp">720</span></td>
+              <td><span class="streak-pill streak-pill--sm"><span class="streak-pill__icon"><svg width="12" height="12" viewBox="0 0 24 24" fill="currentColor"><path d="M12 2C12 2 7 10 7 14a5 5 0 0 0 10 0c0-4-5-12-5-12z"/></svg></span>18</span></td>
+            </tr>
+            <tr class="leaderboard-row leaderboard-row--top">
+              <td><span class="rank-num rank-num--3">3</span></td>
+              <td><div class="lb-user"><div class="avatar avatar--sm">АK</div><span class="text-body-sm">Alex K.</span></div></td>
+              <td><span class="level-badge">Ур. 10</span></td>
+              <td><span class="lb-xp">610</span></td>
+              <td><span class="streak-pill streak-pill--sm"><span class="streak-pill__icon"><svg width="12" height="12" viewBox="0 0 24 24" fill="currentColor"><path d="M12 2C12 2 7 10 7 14a5 5 0 0 0 10 0c0-4-5-12-5-12z"/></svg></span>15</span></td>
+            </tr>
+            <tr class="leaderboard-row"><td><span class="rank-num text-mono">4</span></td><td><div class="lb-user"><div class="avatar avatar--sm">ЕП</div><span class="text-body-sm">Elena P.</span></div></td><td><span class="level-badge">Ур. 9</span></td><td><span class="lb-xp">520</span></td><td><span class="streak-pill streak-pill--sm">8</span></td></tr>
+            <tr class="leaderboard-row"><td><span class="rank-num text-mono">5</span></td><td><div class="lb-user"><div class="avatar avatar--sm">ОН</div><span class="text-body-sm">Oleg N.</span></div></td><td><span class="level-badge">Ур. 8</span></td><td><span class="lb-xp">480</span></td><td><span class="streak-pill streak-pill--sm">6</span></td></tr>
+            <tr class="leaderboard-row leaderboard-row--self">
+              <td><span class="rank-num text-mono" style="color:var(--color-primary);">8</span></td>
+              <td><div class="lb-user"><div class="avatar avatar--sm">ИП</div><span class="text-body-sm"><strong>Вы</strong> — Ivan P.</span></div></td>
+              <td><span class="level-badge">Ур. 7</span></td>
+              <td><span class="lb-xp">340</span></td>
+              <td><span class="streak-pill streak-pill--sm"><span class="streak-pill__icon"><svg width="12" height="12" viewBox="0 0 24 24" fill="currentColor"><path d="M12 2C12 2 7 10 7 14a5 5 0 0 0 10 0c0-4-5-12-5-12z"/></svg></span>12</span></td>
+            </tr>
+          </tbody>
+        </table>
+      </div>
+
+      <p class="text-caption" style="margin-top:var(--space-4);">Обновляется каждый час · 47 участников</p>
+      <p class="text-body-sm" style="margin-top:var(--space-2);"><a href="profile.html">Настройки приватности</a> — скрыть себя из лидерборда</p>
+    </main>
+  </div>
+  <script src="../scripts/app.js"></script>
+</body>
+</html>

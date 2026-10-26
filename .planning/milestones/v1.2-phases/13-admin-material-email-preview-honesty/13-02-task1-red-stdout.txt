@@ -1,0 +1,20 @@
+============================= test session starts =============================
+platform win32 -- Python 3.12.13, pytest-9.1.1, pluggy-1.6.0
+rootdir: C:\Users\Yarkiller\PycharmPET-Projects\Digital_CDS
+configfile: pyproject.toml
+plugins: anyio-4.15.1
+collected 1 item
+
+tests\unit\test_email_render.py F                                        [100%]
+
+================================== FAILURES ===================================
+_______________ test_render_interstitial_html_single_paragraph ________________
+tests\unit\test_email_render.py:25: in test_render_interstitial_html_single_paragraph
+    assert render_interstitial_html("hello") == "<p>hello</p>"
+E   AssertionError: assert '' == '<p>hello</p>'
+E     
+E     - <p>hello</p>
+- generated xml file: C:\Users\Yarkiller\PycharmPET-Projects\Digital_CDS\.planning\phases\13-admin-material-email-preview-honesty\13-02-task1-red-junit.xml -
+=========================== short test summary info ===========================
+FAILED tests/unit/test_email_render.py::test_render_interstitial_html_single_paragraph
+============================== 1 failed in 0.23s ==============================

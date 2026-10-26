@@ -1,0 +1,9 @@
+{
+  "command": "uv run pytest tests/unit/test_mark_material_ready.py tests/unit/test_http_admin.py -k \"ready or draft_in_send_pool\" --tb=line -q",
+  "exitCode": 1,
+  "targetTest": "test_mark_material_ready_empty_body_draft_sets_ready_leaves_published_at",
+  "targetFile": "tests/unit/test_mark_material_ready.py",
+  "expected": "status READY, published_at None after mark_material_ready on empty-body draft (D-06/D-10; ADUX-05)",
+  "actual": "AssertionError: assert MaterialStatus.DRAFT == MaterialStatus.READY (RED stub returns unchanged material); HTTP POST /admin/materials/102/ready returns 404",
+  "output": "TAP version 13\n# tests 7\n# pass 4\n# fail 3\nnot ok 1 - test_mark_material_ready_empty_body_draft_sets_ready_leaves_published_at\nnot ok 2 - test_admin_mark_ready_promotes_draft_and_clears_send_gate\nnot ok 3 - test_admin_mark_ready_missing_material_returns_404\nok 4 - test_mark_material_ready_missing_raises_not_found\nok 5 - test_mark_material_ready_already_ready_is_noop\nok 6 - test_admin_send_draft_in_pool_returns_400\nok 7 - test_admin_send_happy_path_publishes_and_returns_issue_link\n"
+}

@@ -1,0 +1,24 @@
+{
+  "plan": "13-03",
+  "task": "1",
+  "command": "npx playwright test --project=web tests/admin.spec.js -g \"material preview\"",
+  "exit_code": 1,
+  "failed_tests": [
+    "material preview shows body_markdown provenance counts and reader link",
+    "material preview empty body shows Текст материала недоступен without toast"
+  ],
+  "expected_failure_reason": "Admin material preview stub renders title/dek only — missing provenance, counts, markdown body, reader link, and empty-body copy",
+  "actual_failures": [
+    {
+      "test": "material preview shows body_markdown provenance counts and reader link",
+      "assertion": "dialog.getByText('YouTube · lecture').toBeVisible()",
+      "actual": "element(s) not found — provenance not rendered"
+    },
+    {
+      "test": "material preview empty body shows Текст материала недоступен without toast",
+      "assertion": "dialog.getByText('Текст материала недоступен').toBeVisible()",
+      "actual": "element(s) not found — empty-body copy not rendered"
+    }
+  ],
+  "verdict_target": "RED_EVIDENCE_OK"
+}

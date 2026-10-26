@@ -1,0 +1,35 @@
+
+Running 1 test using 1 worker
+
+[web] 09:56:29 [vite] (client) [console.warn] Something has shimmed the React DevTools global hook (__REACT_DEVTOOLS_GLOBAL_HOOK__). Fast Refresh is not compatible with this shim and will be disabled.
+[web] 09:56:30 [vite] (client) [console.warn] Something has shimmed the React DevTools global hook (__REACT_DEVTOOLS_GLOBAL_HOOK__). Fast Refresh is not compatible with this shim and will be disabled.
+  x  1 [web] › tests\admin.spec.js:520:3 › Admin Digest — interstitial hint (ADUX-03, D-15) › Пустая строка = новый абзац hint under intro and connecting text (7.8s)
+
+
+  1) [web] › tests\admin.spec.js:520:3 › Admin Digest — interstitial hint (ADUX-03, D-15) › Пустая строка = новый абзац hint under intro and connecting text 
+
+    Error: expect(locator).toBeVisible() failed
+
+    Locator: locator('section').filter({ hasText: 'Контекст дайджеста' }).getByText('Пустая строка = новый абзац', { exact: true })
+    Expected: visible
+    Timeout: 5000ms
+    Error: element(s) not found
+
+    Call log:
+      - Expect "toBeVisible" with timeout 5000ms
+      - waiting for locator('section').filter({ hasText: 'Контекст дайджеста' }).getByText('Пустая строка = новый абзац', { exact: true })
+
+
+      525 |
+      526 |     const introSection = page.locator("section").filter({ hasText: "Контекст дайджеста" });
+    > 527 |     await expect(introSection.getByText("Пустая строка = новый абзац", { exact: true })).toBeVisible();
+          |                                                                                          ^
+      528 |
+      529 |     await page.getByRole("button", { name: /добавить текст/i }).click();
+      530 |     const textBlock = page.getByTestId("admin-issue-block-text").first();
+        at C:\Users\Yarkiller\PycharmPET-Projects\Digital_CDS\tests\admin.spec.js:527:90
+
+    Error Context: test-results\admin-Admin-Digest-—-inter-e6ba3-r-intro-and-connecting-text-web\error-context.md
+
+  1 failed
+    [web] › tests\admin.spec.js:520:3 › Admin Digest — interstitial hint (ADUX-03, D-15) › Пустая строка = новый абзац hint under intro and connecting text 

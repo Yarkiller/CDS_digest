@@ -1,0 +1,21 @@
+<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 480 270" role="img" aria-label="RAG systems">
+  <defs>
+    <linearGradient id="rag-bg" x1="0%" y1="0%" x2="100%" y2="100%">
+      <stop offset="0%" stop-color="#0F4C81"/>
+      <stop offset="100%" stop-color="#0D9488"/>
+    </linearGradient>
+  </defs>
+  <rect width="480" height="270" fill="url(#rag-bg)"/>
+  <circle cx="120" cy="135" r="40" fill="none" stroke="rgba(255,255,255,0.35)" stroke-width="2"/>
+  <circle cx="120" cy="135" r="18" fill="rgba(255,255,255,0.2)"/>
+  <rect x="200" y="95" width="80" height="80" rx="8" fill="rgba(255,255,255,0.15)"/>
+  <rect x="210" y="105" width="60" height="8" rx="2" fill="rgba(255,255,255,0.5)"/>
+  <rect x="210" y="120" width="45" height="6" rx="2" fill="rgba(255,255,255,0.3)"/>
+  <rect x="210" y="132" width="50" height="6" rx="2" fill="rgba(255,255,255,0.3)"/>
+  <rect x="210" y="144" width="35" height="6" rx="2" fill="rgba(255,255,255,0.3)"/>
+  <line x1="160" y1="135" x2="200" y2="135" stroke="rgba(255,255,255,0.5)" stroke-width="2"/>
+  <line x1="280" y1="135" x2="320" y2="135" stroke="rgba(255,255,255,0.5)" stroke-width="2"/>
+  <circle cx="360" cy="135" r="40" fill="none" stroke="rgba(255,255,255,0.35)" stroke-width="2"/>
+  <path d="M345 130 L360 145 L380 120" fill="none" stroke="rgba(255,255,255,0.7)" stroke-width="3" stroke-linecap="round"/>
+  <text x="24" y="248" fill="rgba(255,255,255,0.9)" font-family="system-ui,sans-serif" font-size="18" font-weight="600">RAG Systems</text>
+</svg>

@@ -1,0 +1,133 @@
+<!DOCTYPE html>
+<html lang="ru">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>Главная — Digest CDS</title>
+  <link rel="preconnect" href="https://fonts.googleapis.com">
+  <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+  <link href="https://fonts.googleapis.com/css2?family=JetBrains+Mono&family=Manrope:wght@400;500;600;700&display=swap" rel="stylesheet">
+  <link rel="stylesheet" href="../styles/tokens.css">
+  <link rel="stylesheet" href="../styles/typography.css">
+  <link rel="stylesheet" href="../styles/layout.css">
+  <link rel="stylesheet" href="../styles/components.css">
+</head>
+<body>
+  <div class="concept-nav">
+    <a href="../index.html">← Concept 2</a>
+    <strong>Главная</strong>
+  </div>
+
+  <div class="app-shell">
+    <header class="header">
+      <div class="header__inner">
+        <a class="logo" href="home.html">
+          <span class="logo__title">Digest CDS</span>
+          <span class="logo__subtitle">СВА · DS</span>
+        </a>
+        <nav class="nav">
+          <a class="nav__link nav__link--active" href="home.html">Главная</a>
+          <a class="nav__link" href="material.html">База знаний</a>
+          <a class="nav__link" href="voting.html">Голосование</a>
+          <!-- Лидерборд и Профиль отложены: ADR-0009, следующая версия. -->
+        </nav>
+        <div class="header__search">
+          <div class="search-bar" role="search">
+            <span class="search-bar__icon">⌕</span>
+            <input class="search-bar__input" type="search" placeholder="Поиск по базе знаний…">
+          </div>
+        </div>
+        <!-- Геймификация шапки отложена: ADR-0007/0009. Вариант — home-gamified.html. -->
+        <div class="header__user">
+          <button class="theme-toggle" type="button" data-theme-toggle aria-label="Светлая тема">☀</button>
+          <span class="avatar" aria-label="Профиль">ИП</span>
+        </div>
+      </div>
+    </header>
+
+    <main class="main">
+      <!-- Квест/XP-баннер отложен: ADR-0007/0009. -->
+
+      <div class="home-grid" style="grid-template-columns: minmax(0, 1fr);">
+        <!-- LEFT: профиль с XP/достижениями отложен — см. home-gamified.html -->
+
+        <!-- CENTER -->
+        <div class="center-stack">
+          <section class="voting-block">
+            <div class="voting-block__header">
+              <div>
+                <span class="text-overline">Цикл голосования · 3–16 апр</span>
+                <h2 class="text-h2" style="margin-top:var(--space-2);">RAG в корпоративной среде</h2>
+              </div>
+              <a class="btn btn--primary btn--sm" href="voting.html">Проголосовать</a>
+            </div>
+            <div class="bento">
+              <div class="topic-card topic-card--selected topic-card--pulse">
+                <h3 class="text-h3">RAG в корпоративной среде</h3>
+                <span class="text-caption">5 материалов · 31 голос</span>
+                <div class="vote-bar"><div class="vote-bar__fill" style="width:62%"></div></div>
+              </div>
+              <div class="topic-card">
+                <h3 class="text-h3">LLM для аудита</h3>
+                <span class="text-caption">3 материала · 24 голоса</span>
+                <div class="vote-bar"><div class="vote-bar__fill" style="width:48%"></div></div>
+              </div>
+            </div>
+          </section>
+
+          <section>
+            <div style="display:flex;justify-content:space-between;align-items:center;margin-bottom:var(--space-4);">
+              <h2 class="text-h2">Дайджест №12</h2>
+              <a class="text-body-sm" href="#">Архив →</a>
+            </div>
+            <a class="card card--glow material-card" href="material.html">
+              <div class="material-card__thumb-wrap">
+                <img class="material-card__thumb" src="../assets/covers/rag-systems.png" width="480" height="270" alt="">
+                <span class="material-card__format">Статья</span>
+              </div>
+              <div class="material-card__body">
+                <h3 class="text-h3 material-card__title">Building Production RAG Systems</h3>
+                <p class="material-card__summary">Архитектура RAG для корпоративных баз знаний.</p>
+                <div class="material-card__footer">
+                  <span class="tag-pill">#RAG</span>
+                </div>
+              </div>
+            </a>
+          </section>
+
+          <section>
+            <h2 class="text-h2" style="margin-bottom:var(--space-4);">Лента материалов</h2>
+            <div style="display:flex;flex-direction:column;gap:var(--space-3);">
+              <a class="card card--glow material-card" href="material.html">
+                <div class="material-card__thumb-wrap">
+                  <img class="material-card__thumb" src="../assets/covers/langgraph-agents.png" width="480" height="270" alt="">
+                  <span class="material-card__format">Статья</span>
+                </div>
+                <div class="material-card__body">
+                  <h3 class="text-h3 material-card__title">LangGraph for Multi-Agent Workflows</h3>
+                  <p class="material-card__summary">Оркестрация агентов для аналитических пайплайнов.</p>
+                  <div class="material-card__footer"><span class="tag-pill">#agents</span></div>
+                </div>
+              </a>
+              <a class="card card--glow material-card" href="material.html">
+                <div class="material-card__thumb-wrap">
+                  <img class="material-card__thumb" src="../assets/covers/anomaly-detection.png" width="480" height="270" alt="">
+                  <span class="material-card__format">Презентация</span>
+                </div>
+                <div class="material-card__body">
+                  <h3 class="text-h3 material-card__title">Anomaly Detection with Isolation Forest</h3>
+                  <p class="material-card__summary">Isolation Forest для аномалий в транзакциях.</p>
+                  <div class="material-card__footer"><span class="tag-pill">#ML</span><span class="text-caption">Прочитано</span></div>
+                </div>
+              </a>
+            </div>
+          </section>
+        </div>
+
+        <!-- RIGHT: мини-лидерборд отложен — см. home-gamified.html / leaderboard.html -->
+      </div>
+    </main>
+  </div>
+  <script src="../scripts/app.js"></script>
+</body>
+</html>

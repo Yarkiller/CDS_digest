@@ -1,0 +1,20 @@
+
+Running 5 tests using 1 worker
+
+[web] 09:55:47 [vite] (client) [console.warn] Something has shimmed the React DevTools global hook (__REACT_DEVTOOLS_GLOBAL_HOOK__). Fast Refresh is not compatible with this shim and will be disabled.
+[web] 09:55:49 [vite] (client) [console.warn] Something has shimmed the React DevTools global hook (__REACT_DEVTOOLS_GLOBAL_HOOK__). Fast Refresh is not compatible with this shim and will be disabled.
+  ok 1 [web] › tests\admin.spec.js:214:3 › Admin Digest — batch select + preview/send gate (ADMIN-04,06,07, D-85, D-86) › preview failure keeps send locked (3.2s)
+[web] 09:55:50 [vite] (client) [console.warn] Something has shimmed the React DevTools global hook (__REACT_DEVTOOLS_GLOBAL_HOOK__). Fast Refresh is not compatible with this shim and will be disabled.
+[web] 09:55:51 [vite] (client) [console.warn] Something has shimmed the React DevTools global hook (__REACT_DEVTOOLS_GLOBAL_HOOK__). Fast Refresh is not compatible with this shim and will be disabled.
+  ok 2 [web] › tests\admin.spec.js:272:3 › Admin Digest — batch select + preview/send gate (ADMIN-04,06,07, D-85, D-86) › Вводный текст appears in Превью письма (G-05-1 / ADMIN-04) (3.0s)
+[web] 09:55:53 [vite] (client) [console.warn] Something has shimmed the React DevTools global hook (__REACT_DEVTOOLS_GLOBAL_HOOK__). Fast Refresh is not compatible with this shim and will be disabled.
+[web] 09:55:55 [vite] (client) [console.warn] Something has shimmed the React DevTools global hook (__REACT_DEVTOOLS_GLOBAL_HOOK__). Fast Refresh is not compatible with this shim and will be disabled.
+  ok 3 [web] › tests\admin.spec.js:290:3 › Admin Digest — batch select + preview/send gate (ADMIN-04,06,07, D-85, D-86) › Блоки выпуска: reorder + interstitial text drive preview (G-05-1) (3.6s)
+[web] 09:55:57 [vite] (client) [console.warn] Something has shimmed the React DevTools global hook (__REACT_DEVTOOLS_GLOBAL_HOOK__). Fast Refresh is not compatible with this shim and will be disabled.
+[web] 09:55:58 [vite] (client) [console.warn] Something has shimmed the React DevTools global hook (__REACT_DEVTOOLS_GLOBAL_HOOK__). Fast Refresh is not compatible with this shim and will be disabled.
+  ok 4 [web] › tests\admin.spec.js:349:3 › Admin Digest — batch select + preview/send gate (ADMIN-04,06,07, D-85, D-86) › G-05-1: intro + interstitial in Превью письма; send records Отправка записана (3.3s)
+[web] 09:56:00 [vite] (client) [console.warn] Something has shimmed the React DevTools global hook (__REACT_DEVTOOLS_GLOBAL_HOOK__). Fast Refresh is not compatible with this shim and will be disabled.
+[web] 09:56:01 [vite] (client) [console.warn] Something has shimmed the React DevTools global hook (__REACT_DEVTOOLS_GLOBAL_HOOK__). Fast Refresh is not compatible with this shim and will be disabled.
+  ok 5 [web] › tests\admin.spec.js:520:3 › Admin Digest — email preview honesty (ADUX-02, D-08/D-12) › email-preview-frame shows sandboxed backend HTML with material title (2.6s)
+
+  5 passed (18.8s)

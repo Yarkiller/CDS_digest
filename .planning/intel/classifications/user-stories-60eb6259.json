@@ -1,0 +1,33 @@
+{
+  "source_path": "C:/Users/Yarkiller/PycharmPET-Projects/Digital_CDS/docs/digest-cds/user_stories.md",
+  "type": "PRD",
+  "confidence": "high",
+  "manifest_override": false,
+  "title": "User Story Mapping — Digest CDS (Concept 3)",
+  "summary": "Editorial UI user-story map with personas, journeys, and prioritized Must/Should/Nice stories for Digest CDS v1.",
+  "scope": [
+    "Digest CDS",
+    "Editorial UI",
+    "personas",
+    "user journeys",
+    "login",
+    "issue",
+    "material",
+    "voting",
+    "knowledge base",
+    "razbor",
+    "admin digest",
+    "archive"
+  ],
+  "cross_refs": [
+    "../../design-frontend/",
+    "../../design-frontend/README.md",
+    "../../design-frontend/UI-SPEC_3.md",
+    "../../CONTEXT.md",
+    "backlog_UI.md",
+    "acceptance_criteria.md"
+  ],
+  "locked": false,
+  "precedence": null,
+  "notes": ""
+}

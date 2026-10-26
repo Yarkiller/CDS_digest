@@ -1,0 +1,49 @@
+[project]
+name = "digest-cds"
+version = "0.1.0"
+description = "Digest CDS — knowledge digests for SVA DS community"
+readme = "README.md"
+requires-python = ">=3.12"
+dependencies = [
+    "backend",
+    "data-collection",
+    "ingestion-service",
+    "supabase-integration",
+]
+
+[tool.uv]
+package = false
+
+# Security: force patched versions of transitive deps flagged by pip-audit (CI `security` job).
+constraint-dependencies = ["multidict>=6.9.1,<7", "pyjwt>=2.15.0"]
+
+[tool.uv.workspace]
+members = ["backend", "data-collection", "ingestion-service", "supabase-integration"]
+
+[tool.uv.sources]
+backend = { workspace = true }
+data-collection = { workspace = true }
+ingestion-service = { workspace = true }
+supabase-integration = { workspace = true }
+
+[dependency-groups]
+dev = [
+    "pytest>=8.3.0",
+    "ruff>=0.16.0",
+]
+
+[tool.pytest.ini_options]
+testpaths = ["tests/unit"]
+pythonpath = ["."]
+markers = [
+    "integration: optional live/network tests (skipped by default via testpaths)",
+]
+
+[tool.ruff]
+target-version = "py312"
+line-length = 100
+extend-exclude = ["*.ipynb", "design-frontend", "node_modules", ".venv", "archive"]
+
+[tool.ruff.lint]
+select = ["E", "F", "W", "B"]
+ignore = ["E501", "B008"]

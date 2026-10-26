@@ -1,0 +1,30 @@
+# Line endings: one canonical tree for every git client.
+#
+# `core.autocrlf` is per-client, not per-repository. The Windows (PowerShell)
+# client runs with `autocrlf=true` and normalises on commit, while a Linux/WSL
+# checkout runs with `autocrlf=false` and does neither — so the 84 files stored
+# with LF in the index were reported as "modified" in WSL while Windows called
+# the same tree clean. `text=auto` makes every client normalise the worktree
+# before comparing or hashing, so both agree without rewriting anyone's global
+# git config.
+#
+# No `eol=` is pinned for text: checkouts follow `core.eol` (`native`), which
+# keeps CRLF on Windows and LF elsewhere.
+* text=auto
+
+# Notebooks are JSON and must stay diffable, so they are text — but pinned to LF
+# so the embedded base64 payloads cannot churn the whole file between clients.
+*.ipynb text eol=lf
+
+# Binary payloads: never normalised, never diffed as text.
+*.png binary
+*.jpg binary
+*.jpeg binary
+*.gif binary
+*.ico binary
+*.webp binary
+*.pdf binary
+*.zip binary
+*.woff binary
+*.woff2 binary
+*.ttf binary

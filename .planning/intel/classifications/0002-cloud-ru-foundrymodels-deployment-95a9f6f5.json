@@ -1,0 +1,13 @@
+{
+  "source_path": "C:/Users/Yarkiller/PycharmPET-Projects/Digital_CDS/docs/adr/0002-cloud-ru-foundrymodels-deployment.md",
+  "type": "ADR",
+  "confidence": "high",
+  "manifest_override": false,
+  "title": "Развёртывание на Cloud.ru и обработка через FoundryModels",
+  "summary": "Deploy Digest CDS on Cloud.ru VM; process YouTube/text via FoundryModels API, not public APIs or on-prem Whisper.",
+  "scope": ["Cloud.ru", "FoundryModels", "Digest CDS", "YouTube", "ML-pipeline", "Whisper"],
+  "cross_refs": [],
+  "locked": false,
+  "precedence": null,
+  "notes": ""
+}

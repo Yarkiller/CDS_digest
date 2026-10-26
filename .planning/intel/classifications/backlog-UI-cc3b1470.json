@@ -1,0 +1,13 @@
+{
+  "source_path": "C:/Users/Yarkiller/PycharmPET-Projects/Digital_CDS/docs/digest-cds/backlog_UI.md",
+  "type": "DOC",
+  "confidence": "medium",
+  "manifest_override": false,
+  "title": "Реестр UI-замечаний — Digest CDS",
+  "summary": "Closure registry of GhostUser UI findings for design-frontend Editorial screens; all C3/X items marked FIXED.",
+  "scope": ["UI backlog", "design-frontend", "Editorial UI", "GhostUser", "production follow-up"],
+  "cross_refs": ["../../design-frontend/"],
+  "locked": false,
+  "precedence": null,
+  "notes": "Path/filename suggest backlog, not ADR/PRD/SPEC. Dominant content is closed UI issue registry with severity legend and FIXED items; residual production checklist is secondary. Classified DOC over PRD."
+}

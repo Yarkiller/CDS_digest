@@ -1,0 +1,9 @@
+{
+  "command": "npx playwright test --project=web tests/admin.spec.js --grep \"preview lists one approved-ready|Вводный текст appears|Блоки выпуска: reorder|превью unlocks send|email-preview-frame shows sandboxed|email preview close stays visible\"",
+  "exitCode": 1,
+  "targetTest": "preview lists one approved-ready article (zero-one-many E4)",
+  "targetFile": "tests/admin.spec.js",
+  "expected": "Successful email preview shows subject and sandboxed iframe with dialog ul count 0; the one-article title is inside the iframe heading",
+  "actual": "expect(emailDialog.locator('ul')).toHaveCount(0) received 1 — numbered preview.items list still rendered under the iframe",
+  "output": "1..6\nnot ok 1 - preview lists one approved-ready article (zero-one-many E4)\n  ---\n  error: Expected ul count 0 Received 1 — numbered items list still under the iframe\n  ...\nnot ok 2 - Вводный текст appears in Превью письма (G-05-1 / ADMIN-04)\n  ---\n  error: Expected ul count 0 Received 1\n  ...\nnot ok 3 - Блоки выпуска: reorder + interstitial text drive preview (G-05-1)\n  ---\n  error: Expected ul count 0 Received 1 after iframe body order checks\n  ...\nok 4 - email-preview-frame shows sandboxed backend HTML with material title\nnot ok 5 - превью unlocks send; confirm records Отправка записана + issue link (D-90)\n  ---\n  error: Expected ul count 0 Received 1\n  ...\nnot ok 6 - email preview close stays visible while the preview scrolls\n  ---\n  error: Expected ul count 0 Received 1\n  ...\n# tests 6\n# pass 1\n# fail 5\n# cancelled 0\n"
+}

@@ -1,0 +1,9 @@
+{
+  "command": "npm run test:web -- tests/admin.spec.js -g \"Обоснование|обоснование\"",
+  "exitCode": 1,
+  "targetTest": "populated shortlist shows ≤5 rows with badges and score factors",
+  "targetFile": "tests/admin.spec.js",
+  "expected": "Exact D-15 empty copy «Обоснование недоступно — скоринг не запускался» visible for empty factor_labels (D-15; ADUX-06)",
+  "actual": "TimeoutError: getByText('Обоснование недоступно — скоринг не запускался', { exact: true }) not found — factorText still returns old lowercase phrase",
+  "output": "TAP version 13\n# tests 1\n# pass 0\n# fail 1\nnot ok 1 - populated shortlist shows ≤5 rows with badges and score factors\n"
+}

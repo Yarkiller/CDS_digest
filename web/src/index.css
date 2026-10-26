@@ -1,0 +1,224 @@
+@import url("https://fonts.googleapis.com/css2?family=JetBrains+Mono&family=Manrope:wght@400;500;600;700&display=swap");
+@import "tailwindcss";
+
+/* Concept 2 tokens — dark-first, light via [data-theme="light"] (ADR-0009).
+   `static` keeps tokens that no utility happens to consume: they are a design-system
+   contract that must exist in :root at runtime, not only when Tailwind finds a user. */
+@theme static {
+  --color-bg-app: #0B0F17;
+  --color-bg-surface: #131925;
+  --color-bg-elevated: #1A2233;
+  --color-bg-muted: #242D3D;
+  --color-bg-glass: rgba(19, 25, 37, 0.72);
+  --color-text-primary: #F1F5F9;
+  --color-text-secondary: #94A3B8;
+  --color-text-disabled: #64748B;
+  --color-border: #2A3548;
+  --color-border-glow: rgba(139, 92, 246, 0.35);
+  --color-primary: #8B5CF6;
+  --color-primary-hover: #7C3AED;
+  --color-accent: #06B6D4;
+  --color-accent-hover: #0891B2;
+  --color-xp: #A3E635;
+  --color-xp-muted: #3F6212;
+  --color-xp-text: #1A2E05;
+  --color-streak: #F97316;
+  --color-voting: #EAB308;
+  --color-success: #22C55E;
+  --color-danger: #EF4444;
+  --color-info: #38BDF8;
+  --color-rank-1: #A3E635;
+  --color-rank-2: #94A3B8;
+  --color-rank-3: #CD7F32;
+
+  /* Semantic admin family. The components already say `bg-paper` / `text-ink-2` /
+     `border-rule`, but Tailwind v4 emits no utility for a token that does not exist —
+     which is why the «Тип» select stayed a transparent field with inherited text. These
+     six values depend on the theme, so their light counterparts live in the
+     [data-theme="light"] block below. */
+  --color-paper: #131925;
+  --color-paper-2: #1A2233;
+  --color-ink: #F1F5F9;
+  --color-ink-2: #CBD5E1;
+  --color-muted: #94A3B8;
+  --color-rule: #2A3548;
+
+  /* Destructive *ink*. `--color-danger` (#EF4444) is a fill/status colour: as text on the
+     dark row surface it is 4.71:1 only on paper and 4.34:1 on paper-2, so a destructive
+     label cannot ride it. This token is the label role and is measured against both
+     surfaces in both themes (G-7): dark 6.36 / 5.75, light 6.47 / 5.90. */
+  --color-danger-ink: #F87171;
+
+  /* Status *label* roles. `--color-success` / `--color-voting` / `--color-danger` are
+     fill/status colours: as text on their own translucent tint they fail 4.5:1 in the light
+     theme (1.925 / 1.62 / 3.17), because a theme-flat tint over a themed surface composites
+     to a themed colour. These are the label roles and are measured against that composite in
+     both themes (G-14). `--color-accent-text` is the same defect one family over: the base
+     `--color-accent` reads 2.43:1 on the light `paper`, this role keeps 5.358 while the dark
+     value stays byte-identical to `--color-accent`. */
+  --color-success-ink: #4ADE80;
+  --color-voting-ink-on-tint: #FDE68A;
+  --color-accent-text: #06B6D4;
+
+  /* Роль подписи для primary. База `--color-primary` остаётся заливкой/бордером/рингом (D-05);
+     `#8B5CF6` как текст даёт 3.566…4.529 против порога 4.5. Тёмное значение — 5.844 на
+     `paper-2`, худшая из шести плоских пар. */
+  --color-primary-text: #A78BFA;
+
+  /* Theme-independent roles: identical in both themes, so they get no override. A label
+     that flips with the theme is the defect this family exists to remove; every pair is
+     measured in tests/unit/test_semantic_token_coverage.js (G-7). */
+  --color-primary-solid: #7C3AED;
+  --color-accent-solid: #0E7490;
+  --color-success-solid: #15803D;
+  --color-danger-solid: #DC2626;
+  --color-on-solid: #FFFFFF;
+  --color-voting-ink: #0F172A;
+  --color-scrim: rgba(0, 0, 0, 0.6);
+
+  /* Boundary role for form controls, deliberately **not** theme-dependent: #64748B clears
+     WCAG 1.4.11's 3:1 on paper / paper-2 / bg-app in both themes (3.698 / 3.342 / 4.030 dark,
+     4.759 / 4.344 / 4.548 light), while the decorative `rule` stays at 1.425 / 1.485 by
+     design — G-15 proves the same floor rejects it. The pair #4B5563/#64748B would fail its
+     own 3:1 gate in the dark theme (2.328).
+
+     Non-text boundary role only — never paint text with `field-border`; labels ride `ink`,
+     `ink-2` or the `-ink` label roles above and are measured by G-14. */
+  --color-field-border: #64748B;
+
+  --font-display: "Manrope", "Segoe UI", system-ui, sans-serif;
+  --font-sans: "Manrope", "Segoe UI", system-ui, sans-serif;
+  --font-mono: "JetBrains Mono", "Consolas", monospace;
+
+  /* Scales carried for parity with design-frontend/styles/tokens.css. Concept 2 pages
+     use the Tailwind default scale directly, but the canon scale is still a contract. */
+  --space-1: 4px;
+  --space-2: 8px;
+  --space-3: 12px;
+  --space-4: 16px;
+  --space-5: 20px;
+  --space-6: 24px;
+  --space-8: 32px;
+  --space-10: 40px;
+  --space-12: 48px;
+  --space-16: 64px;
+
+  --radius-sm: 6px;
+  --radius-md: 10px;
+  --radius-lg: 14px;
+  --radius-xl: 20px;
+  --radius-full: 9999px;
+
+  --shadow-sm: 0 1px 0 rgba(255, 255, 255, 0.04) inset;
+  --shadow-md: 0 0 0 1px var(--color-border), 0 4px 24px rgba(0, 0, 0, 0.4);
+  --shadow-glow: 0 0 0 1px var(--color-border-glow), 0 0 24px rgba(139, 92, 246, 0.12);
+
+  --container-max: 1280px;
+  --header-height: 64px;
+
+  --duration-fast: 150ms;
+  --duration-normal: 250ms;
+  --duration-xp: 600ms;
+  --ease-default: cubic-bezier(0.4, 0, 0.2, 1);
+}
+
+@layer utilities {
+  .sr-only {
+    position: absolute;
+    width: 1px;
+    height: 1px;
+    padding: 0;
+    margin: -1px;
+    overflow: hidden;
+    clip: rect(0, 0, 0, 0);
+    white-space: nowrap;
+    border-width: 0;
+  }
+}
+
+@layer base {
+  button:not(:disabled) {
+    cursor: pointer;
+  }
+
+  :root {
+    color: var(--color-text-primary);
+    background: var(--color-bg-app);
+    font-family: var(--font-sans);
+    /* NAV-01 · D-01/D-02/D-03 — the sticky header is out of flow, so a #fragment
+       target would land underneath it. One declaration in @layer base covers every
+       in-page anchor: material prose and razbor prose alike, no component edits.
+       Cascade layers are compared before specificity, so this beats the @theme token. */
+    scroll-padding-top: calc(var(--header-height) + 1rem);
+  }
+
+  /* D-02/D-C1 — measured, not derived: the header renders 196.6px tall at 390x844 and
+     122.6px at 639x844 on the mock build, because the nav owns its own row below `sm`.
+     One value for the whole sub-`sm` range: max rounded up to a multiple of 4 = 200px. */
+  @media (max-width: 639.98px) {
+    :root {
+      --header-height: 200px;
+    }
+  }
+
+  /* D-02 CORRECTION (measured 2026-10-22). The original note claimed the nav stops owning a
+     row at `sm`, so 64px covered everything from 640px up. It does not: the header measures
+     123px at 640-760, 111px at 800, 99px at 860-920 and only 73px from 960px. Keeping 64px
+     through that band left the offset at 80px, i.e. 31.5px of heading underneath the header.
+     The token is chosen so the SMALLEST gap in the band stays >= 1px and the LARGEST stays
+     <= 32px: token + 16 - 123 >= 1 and token + 16 - 99 <= 32 give 108..115; 112 is in range
+     and a multiple of 4. The desktop 64px resumes at 960px, where the header drops to 73px. */
+  @media (min-width: 640px) and (max-width: 959.98px) {
+    :root {
+      --header-height: 112px;
+    }
+  }
+
+  body {
+    margin: 0;
+    min-height: 100svh;
+    background: var(--color-bg-app);
+    color: var(--color-text-primary);
+  }
+
+  #root {
+    min-height: 100svh;
+  }
+
+  [data-theme="light"] {
+    --color-bg-app: #F8FAFC;
+    --color-bg-surface: #FFFFFF;
+    --color-bg-elevated: #F1F5F9;
+    --color-bg-muted: #E2E8F0;
+    --color-bg-glass: rgba(255, 255, 255, 0.85);
+    --color-text-primary: #0F172A;
+    --color-text-secondary: #64748B;
+    --color-text-disabled: #94A3B8;
+    --color-border: #E2E8F0;
+    --color-border-glow: rgba(139, 92, 246, 0.2);
+
+    /* Theme-dependent half of the semantic family declared in @theme above. The seven
+       theme-independent roles are deliberately absent — an override there would make a
+       label flip with the theme again. */
+    --color-paper: #FFFFFF;
+    --color-paper-2: #F1F5F9;
+    --color-ink: #0F172A;
+    --color-ink-2: #334155;
+    --color-muted: #475569;
+    --color-rule: #CBD5E1;
+    --color-danger-ink: #B91C1C;
+
+    /* Label roles: the tint composite flips with the surface even though the tint token does
+       not, so these three cannot stay flat (G-14). The base `--color-accent` stays untouched
+       and keeps painting outlines. */
+    --color-success-ink: #166534;
+    --color-voting-ink-on-tint: #713F12;
+    --color-accent-text: #0E7490;
+    --color-primary-text: #6D28D9;
+
+    --color-xp-text: #1A2E05;
+    --shadow-md: 0 0 0 1px var(--color-border), 0 4px 24px rgba(15, 23, 42, 0.08);
+    --shadow-glow: 0 0 0 1px var(--color-border-glow), 0 0 20px rgba(139, 92, 246, 0.08);
+  }
+}
+

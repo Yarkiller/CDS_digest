@@ -1,0 +1,181 @@
+{
+  "consoleErrors": [],
+  "viewports": {
+    "desktop": {
+      "url": "http://127.0.0.1:5174/admin/pipeline",
+      "title": "web",
+      "sectionCount": 1,
+      "scrollWidth": 1440,
+      "clientWidth": 1440
+    },
+    "tablet": {
+      "url": "http://127.0.0.1:5174/admin/pipeline",
+      "title": "web",
+      "sectionCount": 1,
+      "scrollWidth": 768,
+      "clientWidth": 768
+    },
+    "mobile": {
+      "url": "http://127.0.0.1:5174/admin/pipeline",
+      "title": "web",
+      "sectionCount": 1,
+      "scrollWidth": 375,
+      "clientWidth": 375
+    }
+  },
+  "measurements": {
+    "heading": {
+      "fontSize": "24px",
+      "fontWeight": "600",
+      "color": "oklch(0.2 0.015 270)",
+      "fontFamily": "\"IBM Plex Sans\", \"Segoe UI\", sans-serif",
+      "rect": {
+        "w": 1070,
+        "h": 32
+      }
+    },
+    "section": {
+      "backgroundColor": "oklch(0.97 0.012 95)",
+      "borderColor": "oklch(0.84 0.018 95)",
+      "borderRadius": "16px",
+      "padding": "24px",
+      "rect": {
+        "w": 1120,
+        "h": 422
+      }
+    },
+    "timeInput": {
+      "fontSize": "14px",
+      "color": "oklch(0.2 0.015 270)",
+      "borderColor": "oklch(0.84 0.018 95)",
+      "borderRadius": "12px",
+      "minHeight": "44px",
+      "rect": {
+        "w": 97,
+        "h": 44
+      }
+    },
+    "toggle": {
+      "fontSize": "14px",
+      "fontWeight": "500",
+      "color": "oklch(0.43 0.02 270)",
+      "backgroundColor": "rgba(0, 0, 0, 0)",
+      "borderColor": "oklch(0.84 0.018 95)",
+      "borderRadius": "3.35544e+07px",
+      "rect": {
+        "w": 120,
+        "h": 44
+      }
+    },
+    "day1": {
+      "fontSize": "14px",
+      "color": "oklch(0.43 0.02 270)",
+      "borderColor": "oklch(0.84 0.018 95)",
+      "borderRadius": "3.35544e+07px",
+      "rect": {
+        "w": 44,
+        "h": 44
+      }
+    },
+    "status": {
+      "fontSize": "14px",
+      "color": "oklch(0.48 0.018 270)",
+      "text": "Включён"
+    },
+    "statusText": "Включён",
+    "headingText": "Автоматический сбор",
+    "toggleText": "Выключить",
+    "togglePressed": "true",
+    "daysPressed": [
+      {
+        "day": "ingestion-schedule-day-1",
+        "pressed": "true",
+        "text": "пн"
+      },
+      {
+        "day": "ingestion-schedule-day-2",
+        "pressed": "true",
+        "text": "вт"
+      },
+      {
+        "day": "ingestion-schedule-day-3",
+        "pressed": "true",
+        "text": "ср"
+      },
+      {
+        "day": "ingestion-schedule-day-4",
+        "pressed": "true",
+        "text": "чт"
+      },
+      {
+        "day": "ingestion-schedule-day-5",
+        "pressed": "true",
+        "text": "пт"
+      },
+      {
+        "day": "ingestion-schedule-day-6",
+        "pressed": "true",
+        "text": "сб"
+      },
+      {
+        "day": "ingestion-schedule-day-7",
+        "pressed": "true",
+        "text": "вс"
+      }
+    ],
+    "fontSizes": [
+      "12px",
+      "14px",
+      "16px",
+      "24px",
+      "30px"
+    ],
+    "fontWeights": [
+      "400",
+      "500",
+      "600"
+    ],
+    "fonts": [
+      "\"IBM Plex Sans\", \"Segoe UI\", sans-serif",
+      "\"Bricolage Grotesque\", \"Trebuchet MS\", sans-serif",
+      "\"IBM Plex Mono\", Consolas, monospace"
+    ],
+    "colorsText": [
+      "oklch(0.2 0.015 270)",
+      "oklch(0.43 0.02 270)",
+      "oklch(0.48 0.018 270)",
+      "oklch(0.52 0.13 278)",
+      "oklch(0.98 0.005 95)"
+    ],
+    "colorsBg": [
+      "oklab(0.935 -0.00156881 0.0179315 / 0.4)",
+      "oklch(0.52 0.13 278)",
+      "oklch(0.935 0.018 95)",
+      "oklch(0.97 0.012 95)"
+    ],
+    "focusables": 27,
+    "sectionTop": 626,
+    "docHeight": 1696,
+    "focusFirst": {
+      "tag": "A",
+      "text": "Выпуск",
+      "outline": "rgb(16, 16, 16) auto 1px",
+      "boxShadow": "none"
+    },
+    "focusToggle": {
+      "outline": "rgb(16, 16, 16) auto 1px",
+      "boxShadow": "none"
+    },
+    "focusDay": {
+      "outline": "rgb(16, 16, 16) auto 1px",
+      "boxShadow": "none"
+    },
+    "emptyWeekStatus": "Выберите хотя бы один день недели.",
+    "afterToggle": {
+      "status": "Выключен. Сохранено",
+      "pressed": "false",
+      "label": "Включить"
+    }
+  },
+  "screenshotDir": "C:\\Users\\Yarkiller\\PycharmPET-Projects\\Digital_CDS\\.planning\\ui-reviews\\24-20261018-211500"
+}

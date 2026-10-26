@@ -1,0 +1,7 @@
+{
+  "command": "uv run pytest tests/unit/test_supabase_draft_persister_contract.py::test_sqlstate_23514_maps_to_batch_error -x",
+  "exit_code": 1,
+  "failing_test": "tests/unit/test_supabase_draft_persister_contract.py::test_sqlstate_23514_maps_to_batch_error",
+  "expected": "PostgrestAPIError code 23514 maps to DraftPersistBatchError with reason batch_creation_failed; _BATCH_CODES includes 23514",
+  "actual": "AssertionError: assert '23514' in frozenset({'P0001', 'check_violation'})"
+}

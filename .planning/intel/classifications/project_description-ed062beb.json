@@ -1,0 +1,31 @@
+{
+  "source_path": "C:/Users/Yarkiller/PycharmPET-Projects/Digital_CDS/docs/digest-cds/project_description.md",
+  "type": "DOC",
+  "confidence": "medium",
+  "manifest_override": false,
+  "title": "Digest CDS — описание проекта",
+  "summary": "Product overview of Digest CDS: idea, audience, value, and v1 feature map.",
+  "scope": [
+    "Digest CDS",
+    "Editorial UI",
+    "weekly digest",
+    "knowledge base",
+    "voting cycle",
+    "admin shortlist",
+    "FoundryModels",
+    "Cloud.ru"
+  ],
+  "cross_refs": [
+    "../../CONTEXT.md",
+    "../../design-frontend/",
+    "../../design-frontend/README.md",
+    "user_stories.md",
+    "acceptance_criteria.md",
+    "error_handling.md",
+    "technical_specification.md",
+    "../../CONTEXT.md"
+  ],
+  "locked": false,
+  "precedence": null,
+  "notes": "Filename/path unclear; content is prose product description. Feature lists resemble soft PRD signals, but user stories and acceptance criteria live in linked docs — dominant type DOC."
+}

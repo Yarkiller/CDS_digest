@@ -1,0 +1,61 @@
+<!DOCTYPE html>
+<html lang="ru">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>Building Production RAG Systems — Digest CDS</title>
+  <link rel="preconnect" href="https://fonts.googleapis.com">
+  <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+  <link href="https://fonts.googleapis.com/css2?family=JetBrains+Mono&family=Manrope:wght@400;500;600;700&display=swap" rel="stylesheet">
+  <link rel="stylesheet" href="../styles/tokens.css">
+  <link rel="stylesheet" href="../styles/typography.css">
+  <link rel="stylesheet" href="../styles/layout.css">
+  <link rel="stylesheet" href="../styles/components.css">
+</head>
+<body>
+  <div class="concept-nav"><a href="../index.html">← Concept 2</a> <strong>Материал</strong></div>
+  <div class="app-shell">
+    <header class="header">
+      <div class="header__inner">
+        <a class="logo" href="home.html"><span class="logo__title">Digest CDS</span></a>
+        <nav class="nav">
+          <a class="nav__link" href="home.html">Главная</a>
+          <a class="nav__link nav__link--active" href="material.html">База знаний</a>
+          <a class="nav__link" href="voting.html">Голосование</a>
+          <!-- Лидерборд отложен: ADR-0009. -->
+        </nav>
+        <div class="header__search"><div class="search-bar"><span class="search-bar__icon">⌕</span><input class="search-bar__input" type="search" placeholder="Поиск…"></div></div>
+        <!-- Геймификация шапки отложена: ADR-0007/0009. -->
+        <div class="header__user"><button class="theme-toggle" type="button" data-theme-toggle>☀</button><span class="avatar">ИП</span></div>
+      </div>
+    </header>
+
+    <main class="main">
+      <article class="prose">
+        <figure class="material-hero">
+          <img src="../assets/covers/rag-systems.png" width="480" height="270" alt="Building Production RAG Systems">
+          <span class="format-badge">Статья</span>
+        </figure>
+
+        <h1 class="text-display">Building Production RAG Systems</h1>
+        <p class="text-caption" style="margin:var(--space-3) 0;">
+          20 марта 2026 · arXiv / Medium
+        </p>
+
+        <h2 class="text-h2">Резюме</h2>
+        <p>Статья описывает полный цикл построения RAG-системы для корпоративной базы знаний: ingestion, chunking, embedding через FoundryModels, гибридный retrieval и reranking в закрытом контуре.</p>
+        <p>Для СВА релевантны сценарии поиска по регламентам и методологиям аудита с цитированием источников.</p>
+
+        <div style="display:flex;gap:var(--space-2);flex-wrap:wrap;margin:var(--space-6) 0;">
+          <span class="tag-pill">#RAG</span>
+          <span class="tag-pill">#LLM</span>
+          <span class="tag-pill">#pgvector</span>
+        </div>
+
+        <!-- Карточка с вопросами (+40 XP) отложена: ADR-0007/0009. Вариант — quiz.html. -->
+      </article>
+    </main>
+  </div>
+  <script src="../scripts/app.js"></script>
+</body>
+</html>

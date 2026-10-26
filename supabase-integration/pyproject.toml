@@ -1,0 +1,20 @@
+[project]
+name = "supabase-integration"
+version = "0.1.0"
+description = "Supabase/Postgres adapter, migrations and schema for Digest CDS"
+requires-python = ">=3.12"
+dependencies = [
+    "backend",
+    "supabase>=2.31.0,<3",
+]
+
+[build-system]
+requires = ["uv_build>=0.10.9,<0.11.0"]
+build-backend = "uv_build"
+
+[tool.uv.build-backend]
+module-name = "supabase_integration"
+module-root = "src"
+
+[tool.uv.sources]
+backend = { workspace = true }

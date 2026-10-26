@@ -1,0 +1,82 @@
+:root {
+  --color-bg-app: #0B0F17;
+  --color-bg-surface: #131925;
+  --color-bg-elevated: #1A2233;
+  --color-bg-muted: #242D3D;
+  --color-bg-glass: rgba(19, 25, 37, 0.72);
+  --color-text-primary: #F1F5F9;
+  --color-text-secondary: #94A3B8;
+  --color-text-disabled: #64748B;
+  --color-border: #2A3548;
+  --color-border-glow: rgba(139, 92, 246, 0.35);
+  --color-primary: #8B5CF6;
+  --color-primary-hover: #7C3AED;
+  --color-accent: #06B6D4;
+  --color-accent-hover: #0891B2;
+  --color-xp: #A3E635;
+  --color-xp-muted: #3F6212;
+  --color-xp-text: #1A2E05;
+  --color-streak: #F97316;
+  --color-voting: #EAB308;
+  --color-success: #22C55E;
+  --color-danger: #EF4444;
+  --color-info: #38BDF8;
+  --color-rank-1: #A3E635;
+  --color-rank-2: #94A3B8;
+  --color-rank-3: #CD7F32;
+
+  --font-sans: "Manrope", "Segoe UI", system-ui, sans-serif;
+  --font-mono: "JetBrains Mono", "Consolas", monospace;
+
+  --space-1: 4px;
+  --space-2: 8px;
+  --space-3: 12px;
+  --space-4: 16px;
+  --space-5: 20px;
+  --space-6: 24px;
+  --space-8: 32px;
+  --space-10: 40px;
+  --space-12: 48px;
+  --space-16: 64px;
+
+  --radius-sm: 6px;
+  --radius-md: 10px;
+  --radius-lg: 14px;
+  --radius-xl: 20px;
+  --radius-full: 9999px;
+
+  --shadow-sm: 0 1px 0 rgba(255, 255, 255, 0.04) inset;
+  --shadow-md: 0 0 0 1px var(--color-border), 0 4px 24px rgba(0, 0, 0, 0.4);
+  --shadow-glow: 0 0 0 1px var(--color-border-glow), 0 0 24px rgba(139, 92, 246, 0.12);
+
+  --container-max: 1280px;
+  --header-height: 64px;
+
+  --duration-fast: 150ms;
+  --duration-normal: 250ms;
+  --duration-xp: 600ms;
+  --ease-default: cubic-bezier(0.4, 0, 0.2, 1);
+}
+
+[data-theme="light"] {
+  --color-bg-app: #F8FAFC;
+  --color-bg-surface: #FFFFFF;
+  --color-bg-elevated: #F1F5F9;
+  --color-bg-muted: #E2E8F0;
+  --color-bg-glass: rgba(255, 255, 255, 0.85);
+  --color-text-primary: #0F172A;
+  --color-text-secondary: #64748B;
+  --color-text-disabled: #94A3B8;
+  --color-border: #E2E8F0;
+  --color-border-glow: rgba(139, 92, 246, 0.2);
+  --color-xp-text: #1A2E05;
+  --shadow-md: 0 0 0 1px var(--color-border), 0 4px 24px rgba(15, 23, 42, 0.08);
+  --shadow-glow: 0 0 0 1px var(--color-border-glow), 0 0 20px rgba(139, 92, 246, 0.08);
+}
+
+@media (prefers-reduced-motion: reduce) {
+  *, *::before, *::after {
+    animation-duration: 0.01ms !important;
+    transition-duration: 0.01ms !important;
+  }
+}

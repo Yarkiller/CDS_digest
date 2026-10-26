@@ -1,0 +1,36 @@
+{
+  "source_path": "C:/Users/Yarkiller/PycharmPET-Projects/Digital_CDS/docs/digest-cds/technical_specification.md",
+  "type": "SPEC",
+  "confidence": "high",
+  "manifest_override": false,
+  "title": "Техническая спецификация — Digest CDS",
+  "summary": "Functional and non-functional requirements plus tech stack for Digest CDS Concept 3 Editorial UI.",
+  "scope": [
+    "Digest CDS",
+    "functional requirements",
+    "non-functional requirements",
+    "Editorial UI",
+    "TDD",
+    "auth",
+    "issue",
+    "material",
+    "voting",
+    "knowledge base",
+    "FoundryModels",
+    "Supabase",
+    "Vite",
+    "React",
+    "Playwright"
+  ],
+  "cross_refs": [
+    "docs/digest-cds/user_stories.md",
+    "docs/digest-cds/acceptance_criteria.md",
+    "../adr/0002-cloud-ru-foundrymodels-deployment.md",
+    "../adr/0004-self-hosted-supabase-on-vm.md",
+    "../adr/0003-email-domain-restriction.md",
+    "../adr/0001-public-leaderboard-gamification.md"
+  ],
+  "locked": false,
+  "precedence": null,
+  "notes": ""
+}

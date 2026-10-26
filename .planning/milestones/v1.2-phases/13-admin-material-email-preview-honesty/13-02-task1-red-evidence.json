@@ -1,0 +1,9 @@
+{
+  "command": "uv run pytest tests/unit/test_email_render.py::test_render_interstitial_html_single_paragraph --junitxml=.planning/phases/13-admin-material-email-preview-honesty/13-02-task1-red-junit.xml",
+  "exitCode": 1,
+  "targetTest": "tests.unit.test_email_render",
+  "targetFile": "tests/unit/test_email_render.py",
+  "expected": "<p>hello</p>",
+  "actual": "",
+  "output": "<?xml version=\"1.0\" encoding=\"utf-8\"?><testsuites name=\"pytest tests\"><testsuite name=\"pytest\" errors=\"0\" failures=\"1\" skipped=\"0\" tests=\"1\" time=\"0.170\" timestamp=\"2026-10-02T22:29:02.898521+03:00\" hostname=\"Katana\"><testcase classname=\"tests.unit.test_email_render\" name=\"test_render_interstitial_html_single_paragraph\" time=\"0.001\"><failure message=\"AssertionError: assert '' == '&lt;p&gt;hello&lt;/p&gt;'&#10;  &#10;  - &lt;p&gt;hello&lt;/p&gt;\">tests\\unit\\test_email_render.py:25: in test_render_interstitial_html_single_paragraph\n    assert render_interstitial_html(\"hello\") == \"&lt;p&gt;hello&lt;/p&gt;\"\nE   AssertionError: assert '' == '&lt;p&gt;hello&lt;/p&gt;'\nE     \nE     - &lt;p&gt;hello&lt;/p&gt;</failure></testcase></testsuite></testsuites>"
+}

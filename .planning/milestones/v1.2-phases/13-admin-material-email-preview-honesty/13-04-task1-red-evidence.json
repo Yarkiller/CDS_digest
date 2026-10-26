@@ -1,0 +1,9 @@
+{
+  "command": "npx playwright test --project=web tests/admin.spec.js --grep email-preview-frame",
+  "exitCode": 1,
+  "targetTest": "email-preview-frame shows sandboxed backend HTML with material title",
+  "targetFile": "tests/admin.spec.js",
+  "expected": "iframe data-testid=email-preview-frame visible with sandbox empty and material title in srcDoc",
+  "actual": "element(s) not found — email-preview-frame not rendered (plain email-preview-body still shown)",
+  "output": "1..1\nnot ok 1 - email-preview-frame shows sandboxed backend HTML with material title\n  ---\n  error: expect(locator).toBeVisible() failed — getByTestId('email-preview-frame') not found\n  ...\n# tests 1\n# pass 0\n# fail 1\n# cancelled 0\n"
+}

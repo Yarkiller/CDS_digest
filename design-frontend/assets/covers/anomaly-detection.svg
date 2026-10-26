@@ -1,0 +1,15 @@
+<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 480 270" role="img" aria-label="Anomaly detection">
+  <defs>
+    <linearGradient id="ad-bg" x1="0%" y1="100%" x2="100%" y2="0%">
+      <stop offset="0%" stop-color="#1e3a5f"/>
+      <stop offset="100%" stop-color="#6366f1"/>
+    </linearGradient>
+  </defs>
+  <rect width="480" height="270" fill="url(#ad-bg)"/>
+  <polyline points="40,200 80,180 120,185 160,120 200,130 240,90 280,100 320,60 360,70 400,40 440,50"
+            fill="none" stroke="rgba(255,255,255,0.4)" stroke-width="2"/>
+  <circle cx="160" cy="120" r="10" fill="#FDE68A" stroke="#D97706" stroke-width="2"/>
+  <circle cx="320" cy="60" r="10" fill="#FDE68A" stroke="#D97706" stroke-width="2"/>
+  <rect x="40" y="210" width="400" height="1" fill="rgba(255,255,255,0.2)"/>
+  <text x="24" y="248" fill="rgba(255,255,255,0.9)" font-family="system-ui,sans-serif" font-size="18" font-weight="600">Anomaly Detection</text>
+</svg>

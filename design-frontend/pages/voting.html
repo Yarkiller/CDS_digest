@@ -1,0 +1,75 @@
+<!DOCTYPE html>
+<html lang="ru">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>Голосование — Digest CDS</title>
+  <link rel="preconnect" href="https://fonts.googleapis.com">
+  <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+  <link href="https://fonts.googleapis.com/css2?family=JetBrains+Mono&family=Manrope:wght@400;500;600;700&display=swap" rel="stylesheet">
+  <link rel="stylesheet" href="../styles/tokens.css">
+  <link rel="stylesheet" href="../styles/typography.css">
+  <link rel="stylesheet" href="../styles/layout.css">
+  <link rel="stylesheet" href="../styles/components.css">
+</head>
+<body>
+  <div class="concept-nav"><a href="../index.html">← Concept 2</a> <strong>Голосование</strong></div>
+  <div class="app-shell">
+    <header class="header">
+      <div class="header__inner">
+        <a class="logo" href="home.html"><span class="logo__title">Digest CDS</span></a>
+        <nav class="nav">
+          <a class="nav__link" href="home.html">Главная</a>
+          <a class="nav__link nav__link--active" href="voting.html">Голосование</a>
+          <!-- Лидерборд отложен: ADR-0009. -->
+        </nav>
+        <div class="header__search"><div class="search-bar"><span class="search-bar__icon">⌕</span><input class="search-bar__input" type="search" placeholder="Поиск…"></div></div>
+        <!-- Геймификация шапки отложена: ADR-0007/0009. -->
+        <div class="header__user"><button class="theme-toggle" type="button" data-theme-toggle>☀</button><span class="avatar">ИП</span></div>
+      </div>
+    </header>
+
+    <main class="main" style="max-width:960px;">
+      <div style="display:flex;justify-content:space-between;align-items:flex-start;flex-wrap:wrap;gap:var(--space-4);margin-bottom:var(--space-8);">
+        <div>
+          <h1 class="text-h1">Голосование за тему разбора</h1>
+          <p class="text-caption" style="margin-top:var(--space-2);">Цикл голосования · 3–16 апреля 2026</p>
+        </div>
+        <div style="text-align:right;">
+          <p class="text-mono text-h2" style="color:var(--color-voting);">5д 14ч</p>
+        </div>
+      </div>
+
+      <p class="text-body-sm text-secondary" style="margin-bottom:var(--space-6);">Один голос за цикл. Изменить выбор можно до 16 апреля.</p>
+
+      <div class="bento" style="margin-bottom:var(--space-6);">
+        <div class="topic-card topic-card--selected topic-card--pulse" style="min-height:200px;">
+          <h3 class="text-h2">RAG в корпоративной среде</h3>
+          <span class="text-caption">5 материалов</span>
+          <div class="vote-bar" style="margin-top:auto;"><div class="vote-bar__fill" style="width:62%"></div></div>
+          <span class="text-caption">31 голос · <strong style="color:var(--color-voting);">Ваш выбор</strong></span>
+        </div>
+        <div class="topic-card topic-card--pulse" style="min-height:200px;">
+          <h3 class="text-h2">LLM для аудита</h3>
+          <span class="text-caption">3 материала</span>
+          <div class="vote-bar" style="margin-top:auto;"><div class="vote-bar__fill" style="width:48%"></div></div>
+          <span class="text-caption">24 голоса</span>
+        </div>
+        <div class="topic-card">
+          <h3 class="text-h3">AutoML для рисков</h3>
+          <span class="text-caption">1 материал · 12 голосов</span>
+          <div class="vote-bar"><div class="vote-bar__fill" style="width:24%"></div></div>
+        </div>
+        <div class="topic-card">
+          <h3 class="text-h3">Explainable AI</h3>
+          <span class="text-caption">2 материала · 18 голосов</span>
+          <div class="vote-bar"><div class="vote-bar__fill" style="width:35%"></div></div>
+        </div>
+      </div>
+
+      <!-- XP-подсказка отложена: ADR-0007/0009. -->
+    </main>
+  </div>
+  <script src="../scripts/app.js"></script>
+</body>
+</html>

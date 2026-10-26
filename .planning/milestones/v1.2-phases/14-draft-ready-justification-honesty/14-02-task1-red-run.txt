@@ -1,0 +1,44 @@
+...FF......FFFF                                                          [100%]
+================================== FAILURES ===================================
+E   AssertionError: mark_materials_ready batch helper missing (D-08)
+    assert False
+     +  where False = hasattr(<module 'backend.application.use_cases.mark_material_ready' from 'C:\\Users\\Yarkiller\\PycharmPET-Projects\\Digital_CDS\\backend\\src\\backend\\application\\use_cases\\mark_material_ready.py'>, 'mark_materials_ready')
+C:\Users\Yarkiller\PycharmPET-Projects\Digital_CDS\tests\unit\test_mark_material_ready.py:79: AssertionError: mark_materials_ready batch helper missing (D-08)
+E   AssertionError: mark_materials_ready batch helper missing (D-08)
+    assert False
+     +  where False = hasattr(<module 'backend.application.use_cases.mark_material_ready' from 'C:\\Users\\Yarkiller\\PycharmPET-Projects\\Digital_CDS\\backend\\src\\backend\\application\\use_cases\\mark_material_ready.py'>, 'mark_materials_ready')
+C:\Users\Yarkiller\PycharmPET-Projects\Digital_CDS\tests\unit\test_mark_material_ready.py:105: AssertionError: mark_materials_ready batch helper missing (D-08)
+E   assert 404 == 200
+     +  where 404 = <Response [404 Not Found]>.status_code
+---------------------------- Captured stdout call -----------------------------
+{"method": "POST", "path": "/admin/materials/ready", "status": 404, "event": "request_finished", "request_id": "cb26a030-cc99-4452-b4b1-8098106cb514", "level": "info", "timestamp": "2026-10-03T12:50:43.371697Z"}
+C:\Users\Yarkiller\PycharmPET-Projects\Digital_CDS\tests\unit\test_http_admin.py:1055: assert 404 == 200
+E   assert 404 == 200
+     +  where 404 = <Response [404 Not Found]>.status_code
+---------------------------- Captured stdout call -----------------------------
+{"method": "POST", "path": "/admin/materials/ready", "status": 404, "event": "request_finished", "request_id": "dacf0fa0-4712-47bf-9a64-2532835d7ad5", "level": "info", "timestamp": "2026-10-03T12:50:43.399163Z"}
+C:\Users\Yarkiller\PycharmPET-Projects\Digital_CDS\tests\unit\test_http_admin.py:1088: assert 404 == 200
+E   assert 404 == 422
+     +  where 404 = <Response [404 Not Found]>.status_code
+---------------------------- Captured stdout call -----------------------------
+{"method": "POST", "path": "/admin/materials/ready", "status": 404, "event": "request_finished", "request_id": "47dae623-d4f5-455f-9070-9ff7e84531c5", "level": "info", "timestamp": "2026-10-03T12:50:43.424265Z"}
+C:\Users\Yarkiller\PycharmPET-Projects\Digital_CDS\tests\unit\test_http_admin.py:1102: assert 404 == 422
+E   assert 404 == 403
+     +  where 404 = <Response [404 Not Found]>.status_code
+---------------------------- Captured stdout call -----------------------------
+{"method": "POST", "path": "/admin/materials/ready", "status": 404, "event": "request_finished", "request_id": "91007d68-8b40-4890-be43-8798030946db", "level": "info", "timestamp": "2026-10-03T12:50:43.451436Z"}
+C:\Users\Yarkiller\PycharmPET-Projects\Digital_CDS\tests\unit\test_http_admin.py:1126: assert 404 == 403
+============================== warnings summary ===============================
+.venv\Lib\site-packages\starlette\testclient.py:53
+  C:\Users\Yarkiller\PycharmPET-Projects\Digital_CDS\.venv\Lib\site-packages\starlette\testclient.py:53: DeprecationWarning: The anyio.abc.BlockingPortal alias is deprecated, use anyio.from_thread.BlockingPortal instead.
+    _PortalFactoryType = Callable[[], AbstractContextManager[anyio.abc.BlockingPortal]]
+
+-- Docs: https://docs.pytest.org/en/stable/how-to/capture-warnings.html
+=========================== short test summary info ===========================
+FAILED tests/unit/test_mark_material_ready.py::test_mark_materials_ready_order_preserving_partial_results
+FAILED tests/unit/test_mark_material_ready.py::test_mark_materials_ready_empty_ids_returns_empty
+FAILED tests/unit/test_http_admin.py::test_admin_mark_ready_batch_partial_success_preserves_order
+FAILED tests/unit/test_http_admin.py::test_admin_mark_ready_batch_empty_ids_returns_empty_results
+FAILED tests/unit/test_http_admin.py::test_admin_mark_ready_batch_unknown_field_returns_422
+FAILED tests/unit/test_http_admin.py::test_admin_mark_ready_batch_employee_returns_403
+6 failed, 9 passed, 21 deselected, 1 warning in 1.42s

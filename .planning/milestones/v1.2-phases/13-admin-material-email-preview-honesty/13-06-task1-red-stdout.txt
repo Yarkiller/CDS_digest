@@ -1,0 +1,29 @@
+============================= test session starts =============================
+platform win32 -- Python 3.12.13, pytest-9.1.1, pluggy-1.6.0
+rootdir: C:\Users\Yarkiller\PycharmPET-Projects\Digital_CDS
+configfile: pyproject.toml
+plugins: anyio-4.15.1
+collected 15 items / 11 deselected / 4 selected
+
+tests\unit\test_send_digest.py .FFF                                      [100%]
+
+================================== FAILURES ===================================
+______ test_send_records_body_html_with_interstitial_and_omits_issue_url ______
+tests\unit\test_send_digest.py:516: in test_send_records_body_html_with_interstitial_and_omits_issue_url
+    html = mailer.last_body_html
+           ^^^^^^^^^^^^^^^^^^^^^
+E   AttributeError: 'StubMailer' object has no attribute 'last_body_html'. Did you mean: 'last_body_text'?
+______________ test_send_body_html_uses_site_url_for_chitat_href ______________
+tests\unit\test_send_digest.py:543: in test_send_body_html_uses_site_url_for_chitat_href
+    send_digest(
+E   TypeError: send_digest() got an unexpected keyword argument 'site_url'
+______________ test_post_shortlist_send_passes_settings_site_url ______________
+tests\unit\test_send_digest.py:569: in test_post_shortlist_send_passes_settings_site_url
+    assert "site_url" in send_fn
+E   AssertionError: assert 'site_url' in 'def post_shortlist_send(\n    request: Request,\n    body: SendDigestRequest | None = None,\n    admin: CurrentUser =...tus=result.delivery_status,\n        recipient_count=result.recipient_count,\n        message=result.message,\n    )\n'
+- generated xml file: C:\Users\Yarkiller\PycharmPET-Projects\Digital_CDS\.planning\phases\13-admin-material-email-preview-honesty\13-06-task1-red-junit.xml -
+=========================== short test summary info ===========================
+FAILED tests/unit/test_send_digest.py::test_send_records_body_html_with_interstitial_and_omits_issue_url
+FAILED tests/unit/test_send_digest.py::test_send_body_html_uses_site_url_for_chitat_href
+FAILED tests/unit/test_send_digest.py::test_post_shortlist_send_passes_settings_site_url
+================= 3 failed, 1 passed, 11 deselected in 1.46s ==================

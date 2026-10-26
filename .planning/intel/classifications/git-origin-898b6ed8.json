@@ -1,0 +1,13 @@
+{
+  "source_path": "C:/Users/Yarkiller/PycharmPET-Projects/Digital_CDS/docs/agents/git-origin.md",
+  "type": "DOC",
+  "confidence": "medium",
+  "manifest_override": false,
+  "title": "Git: remote `origin`",
+  "summary": "Agent guide requiring all git operations against remote origin to run via WSL, not PowerShell.",
+  "scope": ["git", "origin", "WSL", "Cursor Origin", "authentication"],
+  "cross_refs": [],
+  "locked": false,
+  "precedence": null,
+  "notes": ""
+}

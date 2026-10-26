@@ -1,0 +1,19 @@
+<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 480 270" role="img" aria-label="Vector databases">
+  <defs>
+    <linearGradient id="pg-bg" x1="0%" y1="0%" x2="0%" y2="100%">
+      <stop offset="0%" stop-color="#0F4C81"/>
+      <stop offset="100%" stop-color="#312e81"/>
+    </linearGradient>
+  </defs>
+  <rect width="480" height="270" fill="url(#pg-bg)"/>
+  <ellipse cx="240" cy="200" rx="160" ry="24" fill="rgba(255,255,255,0.08)"/>
+  <ellipse cx="240" cy="160" rx="160" ry="24" fill="rgba(255,255,255,0.12)"/>
+  <ellipse cx="240" cy="120" rx="160" ry="24" fill="rgba(255,255,255,0.16)"/>
+  <circle cx="180" cy="118" r="6" fill="#CCFBF1"/>
+  <circle cx="240" cy="112" r="6" fill="#CCFBF1"/>
+  <circle cx="300" cy="120" r="6" fill="#CCFBF1"/>
+  <circle cx="210" cy="158" r="6" fill="#99F6E4"/>
+  <circle cx="270" cy="152" r="6" fill="#99F6E4"/>
+  <circle cx="240" cy="198" r="6" fill="#5EEAD4"/>
+  <text x="24" y="248" fill="rgba(255,255,255,0.9)" font-family="system-ui,sans-serif" font-size="18" font-weight="600">Vector DB / pgvector</text>
+</svg>

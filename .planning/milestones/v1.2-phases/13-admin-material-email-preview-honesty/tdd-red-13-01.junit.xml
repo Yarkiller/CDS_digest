@@ -1,0 +1,4 @@
+<?xml version="1.0" encoding="utf-8"?><testsuites name="pytest tests"><testsuite name="pytest" errors="0" failures="1" skipped="0" tests="1" time="1.089" timestamp="2026-10-02T22:18:38.675629+03:00" hostname="Katana"><testcase classname="tests.unit.test_http_admin" name="test_admin_shortlist_returns_full_items" time="0.038"><failure message="AssertionError: missing required key: body_markdown&#10;assert 'body_markdown' in {'material_id': 101, 'rank': 1, 'title': 'RAG в продакшене', 'material_status': 'ready', ...}">tests\unit\test_http_admin.py:251: in test_admin_shortlist_returns_full_items
+    assert key in first, f"missing required key: {key}"
+E   AssertionError: missing required key: body_markdown
+E   assert 'body_markdown' in {'material_id': 101, 'rank': 1, 'title': 'RAG в продакшене', 'material_status': 'ready', ...}</failure></testcase></testsuite></testsuites>

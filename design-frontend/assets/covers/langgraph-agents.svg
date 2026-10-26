@@ -1,0 +1,17 @@
+<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 480 270" role="img" aria-label="Multi-agent workflows">
+  <defs>
+    <linearGradient id="lg-bg" x1="0%" y1="0%" x2="100%" y2="100%">
+      <stop offset="0%" stop-color="#064e3b"/>
+      <stop offset="100%" stop-color="#0D9488"/>
+    </linearGradient>
+  </defs>
+  <rect width="480" height="270" fill="url(#lg-bg)"/>
+  <circle cx="120" cy="100" r="28" fill="rgba(255,255,255,0.2)" stroke="rgba(255,255,255,0.5)" stroke-width="2"/>
+  <circle cx="240" cy="135" r="32" fill="rgba(255,255,255,0.25)" stroke="rgba(255,255,255,0.6)" stroke-width="2"/>
+  <circle cx="360" cy="100" r="28" fill="rgba(255,255,255,0.2)" stroke="rgba(255,255,255,0.5)" stroke-width="2"/>
+  <line x1="148" y1="110" x2="208" y2="125" stroke="rgba(255,255,255,0.45)" stroke-width="2"/>
+  <line x1="272" y1="125" x2="332" y2="110" stroke="rgba(255,255,255,0.45)" stroke-width="2"/>
+  <line x1="120" y1="128" x2="240" y2="167" stroke="rgba(255,255,255,0.3)" stroke-width="1.5" stroke-dasharray="4"/>
+  <line x1="360" y1="128" x2="240" y2="167" stroke="rgba(255,255,255,0.3)" stroke-width="1.5" stroke-dasharray="4"/>
+  <text x="24" y="248" fill="rgba(255,255,255,0.9)" font-family="system-ui,sans-serif" font-size="18" font-weight="600">Multi-Agent AI</text>
+</svg>

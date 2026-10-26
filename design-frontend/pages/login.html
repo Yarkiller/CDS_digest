@@ -1,0 +1,43 @@
+<!DOCTYPE html>
+<html lang="ru">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>Вход — Digest CDS</title>
+  <link rel="preconnect" href="https://fonts.googleapis.com">
+  <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+  <link href="https://fonts.googleapis.com/css2?family=JetBrains+Mono&family=Manrope:wght@400;500;600;700&display=swap" rel="stylesheet">
+  <link rel="stylesheet" href="../styles/tokens.css">
+  <link rel="stylesheet" href="../styles/typography.css">
+  <link rel="stylesheet" href="../styles/layout.css">
+  <link rel="stylesheet" href="../styles/components.css">
+</head>
+<body>
+  <div class="concept-nav"><a href="../index.html">← Concept 2</a> <strong>Вход</strong></div>
+
+  <div class="auth-layout">
+    <div class="auth-card">
+      <div style="text-align:center;margin-bottom:var(--space-8);">
+        <h1 class="text-h1" style="background:linear-gradient(135deg,#8B5CF6,#06B6D4);-webkit-background-clip:text;-webkit-text-fill-color:transparent;background-clip:text;">Digest CDS</h1>
+        <p class="text-caption">СВА · DS-направление</p>
+      </div>
+      <form class="form-stack" action="home.html">
+        <div class="field">
+          <label class="field__label" for="email">Email</label>
+          <input class="field__input" id="email" type="email" placeholder="name@sberbank.ru">
+        </div>
+        <div class="field">
+          <label class="field__label" for="password">Пароль</label>
+          <input class="field__input" id="password" type="password">
+        </div>
+        <button class="btn btn--primary btn--block" type="submit">Войти</button>
+      </form>
+      <p class="text-caption" style="text-align:center;margin-top:var(--space-6);">@sberbank.ru · @omega.sbrf.ru</p>
+      <div style="text-align:center;margin-top:var(--space-4);">
+        <button class="theme-toggle" type="button" data-theme-toggle style="margin:0 auto;">☀</button>
+      </div>
+    </div>
+  </div>
+  <script src="../scripts/app.js"></script>
+</body>
+</html>

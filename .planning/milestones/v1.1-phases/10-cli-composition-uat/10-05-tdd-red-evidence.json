@@ -1,0 +1,9 @@
+{
+  "command": "uv run pytest tests/unit/test_supabase_draft_persister_contract.py::test_persist_maps_already_saved_true_with_stored_slug -x --tb=short",
+  "exitCode": 1,
+  "targetTest": "test_persist_maps_already_saved_true_with_stored_slug",
+  "targetFile": "tests/unit/test_supabase_draft_persister_contract.py",
+  "expected": "PersistResult(..., already_saved=True) for RPC payload with already_saved: true and stored slug",
+  "actual": "AssertionError: already_saved: False != True — adapter does not map already_saved from RPC payload",
+  "output": "TAP version 13\n# tests 1\n# pass 0\n# fail 1\nnot ok 1 - test_persist_maps_already_saved_true_with_stored_slug\n"
+}

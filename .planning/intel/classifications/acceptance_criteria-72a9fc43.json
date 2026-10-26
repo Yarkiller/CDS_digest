@@ -1,0 +1,29 @@
+{
+  "source_path": "C:/Users/Yarkiller/PycharmPET-Projects/Digital_CDS/docs/digest-cds/acceptance_criteria.md",
+  "type": "PRD",
+  "confidence": "high",
+  "manifest_override": false,
+  "title": "Критерии приёмки (Acceptance Criteria) — Digest CDS Concept 3",
+  "summary": "Given/When/Then acceptance criteria covering all 31 Digest CDS user stories (US-01–US-31).",
+  "scope": [
+    "Digest CDS",
+    "acceptance criteria",
+    "user stories",
+    "login",
+    "voting",
+    "materials",
+    "knowledge base",
+    "admin digest",
+    "archive",
+    "razbory"
+  ],
+  "cross_refs": [
+    "user_stories.md",
+    "../../design-frontend/",
+    "error_handling.md",
+    "../../CONTEXT.md"
+  ],
+  "locked": false,
+  "precedence": null,
+  "notes": ""
+}

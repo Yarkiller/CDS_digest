@@ -1,0 +1,9 @@
+{
+  "command": "npm run test:web -- tests/admin.spec.js -g \"email preview close stays visible while the preview scrolls\"",
+  "exitCode": 1,
+  "targetTest": "email preview close stays visible while the preview scrolls",
+  "targetFile": "tests/admin.spec.js",
+  "expected": "Close named Закрыть is not a descendant of overflow-y-auto, includes cursor-pointer, and stays in the viewport after the email scroll region is scrolled to the end",
+  "actual": "expect(closeContract.insideOverflow).toBe(false) received true — close button is inside an overflow-y-auto ancestor",
+  "output": "1..1\nnot ok 1 - email preview close stays visible while the preview scrolls\n  ---\n  error: Expected false Received true — closeContract.insideOverflow (button is a descendant of overflow-y-auto)\n  ...\n# tests 1\n# pass 0\n# fail 1\n# cancelled 0\n"
+}

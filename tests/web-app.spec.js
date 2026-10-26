@@ -1,0 +1,1330 @@
+const { expect, test } = require("@playwright/test");
+
+test.describe("web app main flows", () => {
+  test("opens material by stable slug /materials/rag-systems", async ({ page }) => {
+    // Prefer slug URLs for MAT-* stability (phase gate)
+    await page.goto("/materials/rag-systems");
+
+    await expect(page).toHaveURL(/\/materials\/rag-systems/);
+    await expect(page.getByRole("heading", { name: /building production rag systems/i })).toBeVisible();
+    await expect(page.getByTestId("material-format-badge")).toHaveText(/статья/i);
+    await expect(page.getByTestId("material-prose")).toBeVisible();
+    const toc = page.getByRole("navigation", { name: /содержание/i });
+    await expect(toc).toBeVisible();
+    await expect(toc.getByRole("link").first()).toBeVisible();
+  });
+
+  test("opens a material from the issue table of contents", async ({ page }) => {
+    await page.goto("/");
+
+    await expect(page.getByRole("heading", { name: /новости ds для сва/i })).toBeVisible();
+    await page.getByRole("link", { name: /building production rag systems/i }).click();
+
+    await expect(page).toHaveURL(/\/materials\/rag-systems/);
+    await expect(page.getByRole("heading", { name: /building production rag systems/i })).toBeVisible();
+    // MAT-01/03: Статья badge + markdown prose (not legacy «Резюме» stub)
+    await expect(page.getByTestId("material-format-badge")).toHaveText(/статья/i);
+    await expect(page.getByTestId("material-prose")).toBeVisible();
+    await expect(page.getByTestId("material-prose")).toContainText(/регламент/i);
+    // TOC present when body_markdown has headings
+    const toc = page.getByRole("navigation", { name: /содержание/i });
+    await expect(toc).toBeVisible();
+    await expect(toc.getByRole("link").first()).toBeVisible();
+  });
+
+  test("hides material dek block when empty", async ({ page }) => {
+    await page.goto("/materials/empty-dek-article");
+
+    await expect(page.getByRole("heading", { name: /empty dek article/i })).toBeVisible();
+    await expect(page.getByTestId("material-dek")).toHaveCount(0);
+    await expect(page.getByText(/заглушк|stub|dek отсутствует|нет описания/i)).toHaveCount(0);
+  });
+
+  test("ships Concept 2 dark by default and a working light theme", async ({ page }) => {
+    await page.goto("/");
+
+    // Dark is `:root` in the canon, so the attribute is absent there.
+    await expect(page.locator("html")).not.toHaveAttribute("data-theme", "light");
+
+    const bgToken = () =>
+      page.evaluate(() =>
+        getComputedStyle(document.documentElement).getPropertyValue("--color-bg-app").trim(),
+      );
+    expect(await bgToken()).toBe("#0B0F17");
+
+    await page.getByTestId("theme-toggle").click();
+    await expect(page.locator("html")).toHaveAttribute("data-theme", "light");
+    expect(await bgToken()).toBe("#F8FAFC");
+
+    // The choice is part of the canon contract: it survives a reload via `digest-cds-theme`.
+    await page.reload();
+    await expect(page.locator("html")).toHaveAttribute("data-theme", "light");
+    expect(await page.evaluate(() => localStorage.getItem("digest-cds-theme"))).toBe("light");
+  });
+
+
+  test("renders archive issues as linked cards with period and count", async ({ page }) => {
+    await page.goto("/archive");
+
+    const list = page.getByTestId("archive-list");
+    await expect(list).toBeVisible();
+
+    const firstIssue = list.getByRole("link").first();
+    await expect(firstIssue).toBeVisible();
+    await expect(firstIssue).toContainText(/выпуск №/i);
+    await expect(firstIssue).toContainText(/материал/i);
+  });
+
+  test("renders related materials under a heading", async ({ page }) => {
+    await page.goto("/materials/rag-systems");
+
+    const related = page.getByTestId("material-related");
+    await expect(related).toBeVisible();
+    await expect(related.getByRole("heading", { name: /связанные материалы/i })).toBeVisible();
+    await expect(related.getByRole("link", { name: /anomaly detection/i })).toBeVisible();
+  });
+
+  test("renders the material body as markdown prose", async ({ page }) => {
+    await page.goto("/materials/rag-systems");
+
+    const prose = page.getByTestId("material-prose");
+    await expect(prose).toBeVisible();
+    await expect(prose.getByRole("heading", { name: /введение/i })).toBeVisible();
+    await expect(prose).toContainText(/регламент/i);
+  });
+
+  test("keeps the material TOC as a desktop rail and a mobile disclosure", async ({ page }) => {
+    await page.goto("/materials/rag-systems");
+
+    const rail = page.getByTestId("material-toc");
+    await expect(rail).toBeVisible();
+    await expect(rail).toHaveCSS("position", "sticky");
+    await expect(rail.getByRole("link").first()).toBeVisible();
+
+    // Below the lg breakpoint the rail gives way to a disclosure with the same links.
+    await page.setViewportSize({ width: 390, height: 844 });
+    await expect(rail).toBeHidden();
+
+    const disclosure = page.locator("details", { hasText: "Содержание" }).first();
+    await expect(disclosure).toBeVisible();
+    await disclosure.locator("summary").click();
+    await expect(disclosure.getByRole("link").first()).toBeVisible();
+
+    // Neither layout may introduce horizontal overflow on a phone.
+    const overflow = await page.evaluate(
+      () => document.documentElement.scrollWidth - document.documentElement.clientWidth,
+    );
+    expect(overflow).toBeLessThanOrEqual(0);
+  });
+
+  test("shows empty current issue «Выпуск готовится» with archive CTA", async ({ page }) => {
+    await page.addInitScript(() => {
+      window.__DIGEST_EMPTY_CURRENT_ISSUE__ = true;
+    });
+    await page.goto("/");
+
+    await expect(page.getByTestId("issue-loading")).toHaveCount(0);
+    const empty = page.getByTestId("issue-empty");
+    await expect(empty).toBeVisible();
+    await expect(page.getByRole("heading", { name: "Выпуск готовится" })).toBeVisible();
+    await expect(page.getByText(/свежий выпуск скоро появится/i)).toBeVisible();
+    const archiveCta = page.getByRole("link", { name: /в архив/i });
+    await expect(archiveCta).toBeVisible();
+    // Archive page lands in 02-03; catch-all would redirect — assert CTA target only (D-30).
+    await expect(archiveCta).toHaveAttribute("href", "/archive");
+  });
+
+  test("shows open voting callout with Выбрать тему CTA on current issue", async ({ page }) => {
+    await page.goto("/");
+
+    await expect(page.getByTestId("issue-ready")).toBeVisible();
+    const callout = page.getByTestId("editorial-callout");
+    await expect(callout).toBeVisible();
+    await expect(callout.getByText(/голосование открыто до/i)).toBeVisible();
+    const cta = callout.getByRole("link", { name: /выбрать тему →/i });
+    await expect(cta).toBeVisible();
+    await expect(cta).toHaveAttribute("href", "/voting");
+  });
+
+  test("shows closed voting callout without topic-select CTA", async ({ page }) => {
+    await page.addInitScript(() => {
+      window.__DIGEST_VOTING_CYCLE_CLOSED__ = true;
+    });
+    await page.goto("/");
+
+    await expect(page.getByTestId("issue-ready")).toBeVisible();
+    const callout = page.getByTestId("editorial-callout");
+    await expect(callout).toBeVisible();
+    await expect(callout.getByText(/голосование закрыто/i)).toBeVisible();
+    await expect(callout.getByRole("link", { name: /выбрать тему/i })).toHaveCount(0);
+  });
+
+  test("hides voting callout when cycle is absent", async ({ page }) => {
+    await page.addInitScript(() => {
+      window.__DIGEST_NO_VOTING_CYCLE__ = true;
+    });
+    await page.goto("/");
+
+    await expect(page.getByTestId("issue-ready")).toBeVisible();
+    await expect(page.getByTestId("editorial-callout")).toHaveCount(0);
+    await expect(page.getByText(/голосование открыто|голосование закрыто/i)).toHaveCount(0);
+  });
+
+  test("navigates Архив nav to past issue without voting callout", async ({ page }) => {
+    await page.goto("/");
+
+    const nav = page.getByRole("navigation", { name: /основная навигация/i });
+    const archiveNav = nav.getByRole("link", { name: /^Архив$/ });
+    await expect(archiveNav).toBeVisible();
+
+    // Архив sits between Выпуск and База (D-28)
+    const labels = await nav.getByRole("link").allTextContents();
+    const archiveIdx = labels.findIndex((t) => t.trim() === "Архив");
+    const issueIdx = labels.findIndex((t) => t.trim() === "Выпуск");
+    const knowledgeIdx = labels.findIndex((t) => t.trim() === "База");
+    expect(archiveIdx).toBeGreaterThan(issueIdx);
+    expect(knowledgeIdx).toBeGreaterThan(archiveIdx);
+
+    await archiveNav.click();
+    await expect(page).toHaveURL(/\/archive/);
+    await expect(page.getByRole("link", { name: /← К текущему выпуску/ })).toBeVisible();
+    await expect(page.getByText(/текущий/i)).toHaveCount(0);
+
+    await page.getByRole("link", { name: /выпуск №13/i }).click();
+    await expect(page).toHaveURL(/\/issues\/13/);
+    await expect(page.getByRole("heading", { name: /прошлый выпуск/i })).toBeVisible();
+    await expect(page.getByText(/голосование открыто/i)).toHaveCount(0);
+    await expect(page.getByRole("link", { name: /выбрать тему/i })).toHaveCount(0);
+  });
+
+  test("shows empty archive «Архив пуст» with CTA to current", async ({ page }) => {
+    await page.addInitScript(() => {
+      window.__DIGEST_EMPTY_ARCHIVE__ = true;
+    });
+    await page.goto("/archive");
+
+    await expect(page.getByRole("heading", { name: "Архив пуст" })).toBeVisible();
+    await expect(page.getByText(/прошлых выпусков пока нет/i)).toBeVisible();
+    await expect(page.getByRole("link", { name: /← К текущему выпуску/ })).toBeVisible();
+    const cta = page.getByRole("link", { name: /к текущему выпуску →/i });
+    await expect(cta).toBeVisible();
+    await expect(cta).toHaveAttribute("href", "/");
+    await cta.click();
+    await expect(page).toHaveURL(/\/$/);
+  });
+
+  // VOTE-02/04 · D-40…43, D-41 — leader strip + audit dek + 0 материалов (03-06)
+  test("shows leader strip and 0 материалов without row Лидирует", async ({ page }) => {
+    await page.goto("/voting");
+
+    const strip = page.getByTestId("leader-strip");
+    await expect(strip).toBeVisible();
+    await expect(strip).toContainText(/Сейчас лидирует:\s*RAG в корпоративной среде\s*·\s*31 голосов/i);
+    // Row badge forbidden (D-40); strip may contain «лидирует» as phrase
+    await expect(page.getByText("Лидирует", { exact: true })).toHaveCount(0);
+
+    await expect(page.getByText("0 материалов")).toBeVisible();
+    await expect(
+      page.getByRole("radio", { name: /AutoML для прогнозирования рисков/i }),
+    ).toContainText(/0 материалов/i);
+    await expect(
+      page.getByRole("radio", { name: /RAG в корпоративной среде/i }),
+    ).toContainText(/Корпоративный RAG/i);
+  });
+
+  // VOTE-03 · D-48…50 — closed / empty topics / no cycle under mock harnesses
+  test("shows closed banner Цикл голосования закрыт with disabled radios", async ({ page }) => {
+    await page.addInitScript(() => {
+      window.__DIGEST_VOTING_CLOSED__ = true;
+    });
+    await page.goto("/voting");
+
+    await expect(page.getByTestId("voting-closed-banner")).toContainText(/Цикл голосования закрыт/i);
+    await expect(page.getByTestId("leader-strip")).toBeVisible();
+    const radios = page.getByRole("radio");
+    await expect(radios.first()).toBeDisabled();
+    await expect(page.getByTestId("confirm-vote")).toHaveCount(0);
+    await expect(page.getByText(/Темы ещё не объявлены/i)).toHaveCount(0);
+    await expect(page.getByText(/Сейчас нет активного голосования/i)).toHaveCount(0);
+  });
+
+  test("shows Темы ещё не объявлены empty state with К выпуску", async ({ page }) => {
+    await page.addInitScript(() => {
+      window.__DIGEST_VOTING_NO_TOPICS__ = true;
+    });
+    await page.goto("/voting");
+
+    await expect(page.getByRole("heading", { name: /Темы ещё не объявлены/i })).toBeVisible();
+    const cta = page.getByRole("link", { name: /К выпуску/i });
+    await expect(cta).toBeVisible();
+    await expect(cta).toHaveAttribute("href", "/");
+    await expect(page.getByTestId("voting-closed-banner")).toHaveCount(0);
+    await expect(page.getByRole("radio")).toHaveCount(0);
+  });
+
+  test("shows Сейчас нет активного голосования without closed banner", async ({ page }) => {
+    await page.addInitScript(() => {
+      window.__DIGEST_VOTING_NO_CYCLE__ = true;
+    });
+    await page.goto("/voting");
+
+    await expect(page.getByText(/Сейчас нет активного голосования/i)).toBeVisible();
+    const cta = page.getByRole("link", { name: /К выпуску/i });
+    await expect(cta).toBeVisible();
+    await expect(cta).toHaveAttribute("href", "/");
+    await expect(page.getByTestId("voting-closed-banner")).toHaveCount(0);
+    await expect(page.getByText(/Темы ещё не объявлены/i)).toHaveCount(0);
+  });
+
+  // VOTE-01/02 · D-40, D-44, D-47, D-52, D-56 — honest never-voted + confirm under mocks
+  test("lets a reader pick a voting topic and confirm", async ({ page }) => {
+    await page.goto("/voting");
+
+    await expect(page.getByRole("radio", { checked: true })).toHaveCount(0);
+    await expect(page.getByRole("status")).toContainText(/голос не отдан/i);
+    await expect(page.getByText("Лидирует", { exact: true })).toHaveCount(0);
+
+    const confirm = page.getByTestId("confirm-vote");
+    await expect(confirm).toBeDisabled();
+    await expect(confirm).toHaveText(/подтвердить голос/i);
+
+    await page.getByRole("radio", { name: /RAG в корпоративной среде/i }).click();
+    await expect(confirm).toBeEnabled();
+    await confirm.click();
+
+    await expect(page.getByRole("status")).toContainText(/ваш голос:\s*RAG в корпоративной среде/i);
+    await expect(confirm).toHaveText(/изменить голос/i);
+    await expect(confirm).not.toHaveText(/голос принят/i);
+    // D-47: pointless POST guard while selection equals confirmed topic
+    await expect(confirm).toBeDisabled();
+
+    await page.getByRole("radio", { name: /LLM для анализа аудиторских данных/i }).click();
+    await expect(confirm).toBeEnabled();
+  });
+
+});
+
+test.describe("web app UI states", () => {
+  test("confirms a vote with loading then Изменить голос state", async ({ page }) => {
+    await page.goto("/voting");
+
+    await page.getByRole("radio", { name: /RAG в корпоративной среде/i }).click();
+    const confirm = page.getByTestId("confirm-vote");
+    await confirm.click();
+
+    await expect(confirm).toHaveAttribute("data-state", "loading");
+    await expect(page.getByRole("status")).toContainText(/ваш голос:\s*RAG в корпоративной среде/i);
+    await expect(confirm).toHaveText(/изменить голос/i);
+    await expect(confirm).not.toHaveText(/голос принят/i);
+    await expect(confirm).toBeDisabled();
+  });
+
+  // KNOW-* honesty cases live in tests/knowledge.spec.js (04-09).
+  test("keeps header search as an enlarged inline field without a modal", async ({ page }) => {
+    await page.goto("/");
+
+    await expect(page.getByRole("dialog")).toHaveCount(0);
+    const headerSearch = page.getByRole("searchbox", { name: /поиск digest cds/i });
+    await expect(headerSearch).toBeVisible();
+
+    const box = await headerSearch.boundingBox();
+    expect(box?.height ?? 0).toBeGreaterThanOrEqual(44);
+    expect(box?.width ?? 0).toBeGreaterThanOrEqual(240);
+
+    await page.keyboard.press("Control+k");
+    await expect(page.getByRole("dialog")).toHaveCount(0);
+    await expect(headerSearch).toBeFocused();
+
+    await headerSearch.fill("RAG");
+    await headerSearch.press("Enter");
+    await expect(page).toHaveURL(/\/knowledge/);
+    await expect(page.getByRole("searchbox", { name: /поиск по базе знаний/i })).toHaveValue("RAG");
+  });
+});
+
+test.describe("web app edge and error cases", () => {
+  test("shows not-found recovery for an unknown material id", async ({ page }) => {
+    await page.goto("/materials/does-not-exist");
+
+    await expect(page.getByRole("heading", { name: /материал не найден/i })).toBeVisible();
+    await expect(page.getByText(/ссылка устарела|ещё готовится/i)).toBeVisible();
+    await expect(page.locator('img[src*="bad_gateway"]')).toHaveCount(0);
+    await expect(page.getByRole("link", { name: /в архив/i })).toBeVisible();
+    await page.getByRole("link", { name: /к выпуску/i }).click();
+    await expect(page).toHaveURL(/\/$/);
+    await expect(page.getByRole("heading", { name: /новости ds для сва/i })).toBeVisible();
+  });
+
+  test("shows soft empty «Выпуск не найден» for unknown issue number", async ({ page }) => {
+    await page.goto("/issues/99999");
+
+    await expect(page.getByRole("heading", { name: "Выпуск не найден" })).toBeVisible();
+    await expect(page.getByText(/проверьте номер выпуска/i)).toBeVisible();
+    await expect(page.locator('img[src*="bad_gateway"]')).toHaveCount(0);
+    const cta = page.getByRole("link", { name: /к текущему выпуску →/i });
+    await expect(cta).toBeVisible();
+    await expect(cta).toHaveAttribute("href", "/");
+    await cta.click();
+    await expect(page).toHaveURL(/\/$/);
+  });
+
+  // D-21…D-23: page load failure → ServiceUnavailable splash + Retry (never mock fallback)
+  test("shows ошибочка splash with bad_gateway art and recovers on Повторить", async ({ page }) => {
+    await page.addInitScript(() => {
+      window.__DIGEST_FAIL_NEXT_CONTENT__ = true;
+    });
+    await page.goto("/");
+
+    const splash = page.getByTestId("service-unavailable");
+    await expect(splash).toBeVisible();
+    // Title lives on the art — no duplicate heading under the image
+    await expect(splash.getByRole("heading", { name: /ошибочка вышла/i })).toHaveCount(0);
+    await expect(splash.getByText(/не удалось загрузить/i)).toBeVisible();
+    const art = splash.locator('img[src="/bad_gateway.png"]');
+    await expect(art).toBeVisible();
+    await expect(art).toHaveAttribute("alt", /котёнок.*ошибочка/i);
+    // D-23: no HTTP status codes or stacktraces on screen
+    await expect(splash).not.toContainText(/\b(502|503|500|404)\b/);
+    await expect(splash).not.toContainText(/stack|traceback|Error:/i);
+    // Primary UX: splash only — no Phase-1 profile ErrorPanel crowding the failure
+    await expect(page.getByRole("heading", { name: /ошибка профиля/i })).toHaveCount(0);
+    await expect(page.getByTestId("welcome-toast")).toHaveCount(0);
+    await expect(page.getByText(/платформенный контур/i)).toHaveCount(0);
+    await expect(page.getByText(/не удалось загрузить выпуск\. проверьте сеть/i)).toHaveCount(0);
+    // D-21: must not silently show mock issue content
+    await expect(page.getByTestId("issue-ready")).toHaveCount(0);
+    await expect(page.getByRole("heading", { name: /новости ds для сва/i })).toHaveCount(0);
+
+    const retry = splash.getByRole("button", { name: /^Повторить$/ });
+    await expect(retry).toBeVisible();
+    await retry.click();
+
+    await expect(page.getByTestId("service-unavailable")).toHaveCount(0);
+    await expect(page.getByTestId("issue-ready")).toBeVisible();
+    await expect(page.getByRole("heading", { name: /новости ds для сва/i })).toBeVisible();
+  });
+
+  test("keeps confirm vote disabled when no topic is selected", async ({ page }) => {
+    await page.goto("/voting");
+
+    const confirm = page.getByTestId("confirm-vote");
+    await expect(confirm).toBeDisabled();
+    await expect(page.getByRole("status")).toContainText(/голос не отдан/i);
+    await expect(page.getByRole("radio", { checked: true })).toHaveCount(0);
+  });
+
+  // VOTE-01 / D-47 — empty submit blocked client-side; no POST
+  test("blocks empty submit with Выберите тему and does not POST", async ({ page }) => {
+    const posts = [];
+    page.on("request", (req) => {
+      if (req.method() === "POST" && /\/voting\//.test(req.url())) {
+        posts.push(req.url());
+      }
+    });
+
+    await page.goto("/voting");
+    const confirm = page.getByTestId("confirm-vote");
+    await expect(page.getByRole("status")).toContainText(/голос не отдан/i);
+    await expect(confirm).toBeDisabled();
+    await expect(page.getByText(/Выберите тему/i)).toBeVisible();
+
+    // Disabled CTA must not fire a vote POST even if force-clicked (VOTE-01)
+    await confirm.click({ force: true });
+    await expect(page.getByRole("status")).toContainText(/голос не отдан/i);
+    expect(posts).toHaveLength(0);
+  });
+
+  test("shows vote error state and recovers on retry", async ({ page }) => {
+    await page.goto("/voting?simulateError=1");
+
+    await page.getByRole("radio", { name: /RAG в корпоративной среде/i }).click();
+    const confirm = page.getByTestId("confirm-vote");
+    await confirm.click();
+
+    await expect(confirm).toHaveAttribute("data-state", "loading");
+    await expect(confirm).toHaveAttribute("data-state", "error");
+    await expect(confirm).toHaveText(/повторить/i);
+
+    const alert = page.getByRole("alert");
+    await expect(alert).toBeVisible();
+    await expect(alert.getByRole("heading", { name: /ошибка сохранения/i })).toBeVisible();
+    await expect(alert).toContainText(/временно недоступен|соединен/i);
+    await expect(alert).toContainText(/попытка 1/i);
+    // D-53: selection kept; no full ServiceUnavailable splash for mutation failure
+    await expect(page.getByTestId("service-unavailable")).toHaveCount(0);
+    await expect(page.getByRole("radio", { name: /RAG в корпоративной среде/i })).toBeChecked();
+
+    await confirm.click();
+    await expect(page.getByRole("status")).toContainText(/ваш голос:\s*RAG в корпоративной среде/i);
+    await expect(confirm).toHaveText(/изменить голос/i);
+    await expect(confirm).not.toHaveText(/голос принят/i);
+    await expect(page.getByRole("alert")).toHaveCount(0);
+  });
+
+  // VOTE-03 · D-45 — first save toast «Голос сохранён»; A→B status + «Голос изменён»
+  test("shows Голос сохранён then changes vote A→B with Голос изменён", async ({ page }) => {
+    await page.goto("/voting");
+
+    await page.getByRole("radio", { name: /RAG в корпоративной среде/i }).click();
+    await page.getByTestId("confirm-vote").click();
+
+    await expect(page.getByTestId("vote-toast")).toContainText(/Голос сохранён/i);
+    await expect(page.getByRole("status")).toContainText(/ваш голос:\s*RAG в корпоративной среде/i);
+
+    await page.getByRole("radio", { name: /LLM для анализа аудиторских данных/i }).click();
+    await page.getByTestId("confirm-vote").click();
+
+    await expect(page.getByTestId("vote-toast")).toContainText(/Голос изменён/i);
+    await expect(page.getByRole("status")).toContainText(
+      /ваш голос:\s*LLM для анализа аудиторских данных/i,
+    );
+  });
+
+  // VOTE-03 · D-51 — close mid-submit flips to read-only closed UI (not toast-only)
+  test("flips to closed banner when submit races cycle close", async ({ page }) => {
+    await page.addInitScript(() => {
+      window.__DIGEST_VOTING_CLOSE_ON_SUBMIT__ = true;
+    });
+    await page.goto("/voting");
+
+    await expect(page.getByTestId("voting-closed-banner")).toHaveCount(0);
+    await page.getByRole("radio", { name: /RAG в корпоративной среде/i }).click();
+    await page.getByTestId("confirm-vote").click();
+
+    await expect(page.getByTestId("voting-closed-banner")).toContainText(/Цикл голосования закрыт/i);
+    await expect(page.getByRole("radio").first()).toBeDisabled();
+    await expect(page.getByTestId("confirm-vote")).toHaveCount(0);
+  });
+
+  // D-54 — CAS conflict adopts server vote into radios/status
+  test("adopts server vote on VOTE_CONFLICT response", async ({ page }) => {
+    await page.addInitScript(() => {
+      window.__DIGEST_VOTING_CONFLICT_ON_SUBMIT__ = true;
+    });
+    await page.goto("/voting");
+
+    // Seed a prior server vote via conflict harness setup: first confirm succeeds
+    await page.getByRole("radio", { name: /RAG в корпоративной среде/i }).click();
+    await page.getByTestId("confirm-vote").click();
+    await expect(page.getByRole("status")).toContainText(/ваш голос:\s*RAG в корпоративной среде/i);
+
+    // Change selection then conflict: server stays on RAG
+    await page.getByRole("radio", { name: /LLM для анализа аудиторских данных/i }).click();
+    await page.getByTestId("confirm-vote").click();
+
+    await expect(page.getByTestId("vote-conflict-banner")).toBeVisible();
+    await expect(page.getByTestId("vote-conflict-banner")).toContainText(/на сервере/i);
+    await expect(page.locator('[role="status"][aria-live="polite"]')).toContainText(
+      /ваш голос:\s*RAG в корпоративной среде/i,
+    );
+    await expect(page.getByRole("radio", { name: /RAG в корпоративной среде/i })).toBeChecked();
+  });
+
+  // D-55 — initial ballot GET failure → ServiceUnavailable splash + Повторить
+  test("shows ServiceUnavailable splash on ballot GET failure with Повторить", async ({ page }) => {
+    await page.addInitScript(() => {
+      window.__DIGEST_FAIL_NEXT_BALLOT__ = true;
+    });
+    await page.goto("/voting");
+
+    const splash = page.getByTestId("service-unavailable");
+    await expect(splash).toBeVisible();
+    await expect(splash.getByText(/не удалось загрузить/i)).toBeVisible();
+    await expect(splash.getByRole("button", { name: /^Повторить$/ })).toBeVisible();
+    // Mutation ErrorPanel must not replace the splash for GET failure
+    await expect(page.getByRole("heading", { name: /ошибка сохранения/i })).toHaveCount(0);
+    await expect(page.getByTestId("confirm-vote")).toHaveCount(0);
+
+    await splash.getByRole("button", { name: /^Повторить$/ }).click();
+    await expect(page.getByTestId("service-unavailable")).toHaveCount(0);
+    await expect(page.getByTestId("voting-page")).toBeVisible();
+    await expect(page.getByTestId("confirm-vote")).toBeVisible();
+  });
+});
+
+test.describe("web app responsive", () => {
+  test("keeps mobile shell usable without horizontal overflow", async ({ page }) => {
+    await page.setViewportSize({ width: 390, height: 844 });
+
+    // Include archive + material reader (ISSUE-04 / MAT-01 overflow sampling)
+    for (const path of ["/", "/archive", "/materials/rag-systems", "/knowledge", "/voting"]) {
+      await page.goto(path);
+
+      const overflow = await page.evaluate(() => ({
+        scrollWidth: document.documentElement.scrollWidth,
+        clientWidth: document.documentElement.clientWidth,
+      }));
+      expect(overflow.scrollWidth, `overflow on ${path}`).toBeLessThanOrEqual(overflow.clientWidth + 1);
+
+      await expect(page.getByRole("navigation", { name: /основная навигация/i })).toBeVisible();
+      await expect(page.getByRole("searchbox", { name: /поиск digest cds/i })).toBeVisible();
+      await expect(page.getByTestId("shell-identity")).toBeVisible();
+      await expect(page.getByTestId("shell-identity")).toHaveText("Мария Сидорова");
+    }
+
+    await page.goto("/");
+    await page.screenshot({
+      path: "docs/digest-cds/responsive-evidence/mobile-390-issue.png",
+      fullPage: true,
+    });
+  });
+
+  test("avoids horizontal overflow on a narrow 320px phone", async ({ page }) => {
+    await page.setViewportSize({ width: 320, height: 568 });
+    await page.goto("/");
+
+    const overflow = await page.evaluate(() => ({
+      scrollWidth: document.documentElement.scrollWidth,
+      clientWidth: document.documentElement.clientWidth,
+    }));
+    expect(overflow.scrollWidth).toBeLessThanOrEqual(overflow.clientWidth + 1);
+
+    const search = page.getByRole("searchbox", { name: /поиск digest cds/i });
+    await expect(search).toBeVisible();
+    const box = await search.boundingBox();
+    expect(box?.width ?? 0).toBeLessThanOrEqual(320);
+
+    await page.screenshot({
+      path: "docs/digest-cds/responsive-evidence/mobile-320-issue.png",
+      fullPage: true,
+    });
+  });
+
+  test("shows desktop identity and a wider header search", async ({ page }) => {
+    await page.setViewportSize({ width: 1280, height: 800 });
+    await page.goto("/");
+
+    await expect(page.getByText("Мария Сидорова")).toBeVisible();
+
+    const box = await page.getByRole("searchbox", { name: /поиск digest cds/i }).boundingBox();
+    expect(box?.width ?? 0).toBeGreaterThanOrEqual(280);
+
+    const overflow = await page.evaluate(() => ({
+      scrollWidth: document.documentElement.scrollWidth,
+      clientWidth: document.documentElement.clientWidth,
+    }));
+    expect(overflow.scrollWidth).toBeLessThanOrEqual(overflow.clientWidth + 1);
+
+    await page.screenshot({
+      path: "docs/digest-cds/responsive-evidence/desktop-1280-issue.png",
+      fullPage: true,
+    });
+  });
+
+  test("keeps voting confirm reachable on a phone viewport", async ({ page }) => {
+    await page.setViewportSize({ width: 390, height: 844 });
+    await page.goto("/voting");
+
+    const topic = page.getByRole("radio", { name: /RAG в корпоративной среде/i });
+    await expect(topic).toBeVisible();
+    await topic.click();
+    const confirm = page.getByTestId("confirm-vote");
+    await expect(confirm).toBeVisible();
+    await expect(confirm).toBeInViewport();
+
+    await page.screenshot({
+      path: "docs/digest-cds/responsive-evidence/mobile-390-voting.png",
+      fullPage: true,
+    });
+  });
+
+  test("regenerates the same evidence in the light theme", async ({ page }) => {
+    // ADR-0009: the light layer is a contract, so evidence in one theme proves nothing.
+    await page.addInitScript(() => {
+      try {
+        localStorage.setItem("digest-cds-theme", "light");
+      } catch {}
+    });
+
+    for (const shot of [
+      { width: 320, height: 568, path: "/", file: "mobile-320-issue-light.png", ready: /новости ds для сва/i },
+      { width: 390, height: 844, path: "/", file: "mobile-390-issue-light.png", ready: /новости ds для сва/i },
+      { width: 390, height: 844, path: "/voting", file: "mobile-390-voting-light.png", ready: /RAG в корпоративной среде/i },
+      { width: 1280, height: 800, path: "/", file: "desktop-1280-issue-light.png", ready: /новости ds для сва/i },
+    ]) {
+      await page.setViewportSize({ width: shot.width, height: shot.height });
+      await page.goto(shot.path);
+      await expect(page.locator("html")).toHaveAttribute("data-theme", "light");
+      // Evidence of a loading skeleton proves nothing: wait for real content first.
+      await expect(page.getByText(shot.ready).first()).toBeVisible();
+
+      const overflow = await page.evaluate(
+        () => document.documentElement.scrollWidth - document.documentElement.clientWidth,
+      );
+      expect(overflow, `overflow on ${shot.path} at ${shot.width}px`).toBeLessThanOrEqual(1);
+
+      await page.screenshot({
+        path: `docs/digest-cds/responsive-evidence/${shot.file}`,
+        fullPage: true,
+      });
+    }
+  });
+});
+
+/*
+ * UI-SPEC backstops (02-UI-SPEC ## UI Considerations) — held for /gsd-verify-work.
+ * Do NOT silent-pass: visual/held-out confirmation required.
+ * - IssueToc: overflow / Russian plural (1/2/5+) / long title wrap
+ * - Archive: grid overflow / 44px targets on mobile
+ * - Material: prose overflow / sticky TOC / long title + deep headings
+ * - EditorialCallout: long topic/date wrap
+ * - Hero: long issue title reflow
+ * - AppShell nav: mobile reflow without overlapping wordmark
+ */
+// Visual backstops stay a human gate at /gsd-verify-work.
+// A skipped placeholder test is not an assertion Sonar can trust.
+
+/*
+ * NAV-01 — one global scroll offset (26-UI-SPEC C-01…C-06 / D-01…D-05).
+ *
+ * Every rect assertion begins with the C-00 reachability gate, measured BEFORE
+ * the click: the browser only honours `scroll-padding-top` when the document has
+ * enough scroll left under the target. An unreachable fixture would make a green
+ * assertion vacuous, so it is a hard failure with an "удлинить тело" message.
+ */
+test.describe("section context — anchor offset (NAV-01)", () => {
+  test.use({ viewport: { width: 1280, height: 800 } });
+
+  /** Heading ids are `user-content-…` and Cyrillic — always read them, never build them. */
+  async function anchorIdOf(tocLink) {
+    return decodeURIComponent((await tocLink.getAttribute("href")).slice(1));
+  }
+
+  async function anchorGate(page, anchorId) {
+    return page.evaluate((id) => {
+      const doc = document.documentElement;
+      const header = document.querySelector("header").getBoundingClientRect();
+      // `scrollPaddingTop` computes to "auto" before the fix — parse to 0, never NaN.
+      const pad = Number.parseFloat(getComputedStyle(doc).scrollPaddingTop) || 0;
+      const target = document.getElementById(id);
+      const headingDocTop = target.getBoundingClientRect().top + window.scrollY;
+      const maxScroll = doc.scrollHeight - window.innerHeight;
+      return {
+        headerHeight: header.height,
+        headerBottom: header.bottom,
+        pad,
+        headingDocTop,
+        maxScroll,
+        innerHeight: window.innerHeight,
+      };
+    }, anchorId);
+  }
+
+  async function gapAfterScroll(page, anchorId) {
+    return page.evaluate((id) => {
+      const header = document.querySelector("header").getBoundingClientRect();
+      const heading = document.getElementById(id).getBoundingClientRect();
+      return {
+        gap: heading.top - header.bottom,
+        top: heading.top,
+        bottom: heading.bottom,
+        innerHeight: window.innerHeight,
+      };
+    }, anchorId);
+  }
+
+  /** C-00: a rect assertion is only meaningful when the document can actually scroll there. */
+  function assertReachable(gate, label) {
+    expect(
+      gate.maxScroll,
+      `${label}: фикстура: maxScroll=${gate.maxScroll} < headingDocTop=${gate.headingDocTop} — удлинить тело (тестовая правка web/src/data/mock.js)`,
+    ).toBeGreaterThanOrEqual(gate.headingDocTop);
+  }
+
+  test("anchor offset: one global scroll offset keeps the target below the header (C-01)", async ({
+    page,
+  }) => {
+    await page.goto("/materials/rag-systems");
+    await expect(page.getByTestId("material-prose")).toBeVisible();
+    // Manrope arrives from fonts.googleapis.com; geometry must be measured after it lands.
+    await page.evaluate(() => document.fonts.ready);
+
+    const anchorId = await anchorIdOf(page.getByTestId("material-toc").getByRole("link").first());
+    const gate = await anchorGate(page, anchorId);
+
+    expect(gate.pad, "C-01: offset must clear the live header").toBeGreaterThanOrEqual(
+      gate.headerHeight + 1,
+    );
+    expect(
+      gate.pad,
+      "C-01: offset must stay within one breath of the live header",
+    ).toBeLessThanOrEqual(gate.headerHeight + 32);
+    expect(gate.pad, "C-01: the offset must be declared, not inherited as auto").toBeGreaterThan(0);
+  });
+
+  test("anchor offset: mid band 800 keeps the target below the header (C-07)", async ({ page }) => {
+    // NAV-01 residual (WR-11 in the 25 review register): the 64px token was locked for
+    // everything >= 640, but the header keeps wrapping past that breakpoint, so at 800px the
+    // offset was 80px against a much taller header and the heading landed underneath it.
+    // The TOC is hidden at this width, so the flow is the real one for a narrow window:
+    // a fragment navigation into prose.
+    await page.setViewportSize({ width: 800, height: 800 });
+    await page.goto("/materials/rag-systems");
+    await expect(page.getByTestId("material-prose")).toBeVisible();
+    await page.evaluate(() => document.fonts.ready);
+
+    const anchorId = await page.evaluate(() => {
+      const heading = document.querySelector('[data-testid="material-prose"] h2[id]');
+      return heading ? heading.id : null;
+    });
+    expect(anchorId, "C-07: the fixture must expose at least one prose heading id").toBeTruthy();
+
+    await page.setViewportSize({ width: 800, height: 800 });
+
+    const gate = await anchorGate(page, anchorId);
+    assertReachable(gate, "C-07");
+
+    expect(
+      gate.pad,
+      `C-07: offset ${gate.pad}px must clear the live 800px header ${gate.headerHeight}px`,
+    ).toBeGreaterThanOrEqual(gate.headerHeight + 1);
+
+    await page.evaluate((id) => {
+      window.location.hash = id;
+    }, anchorId);
+    await expect
+      .poll(async () => (await gapAfterScroll(page, anchorId)).gap, { message: "C-07: no scroll" })
+      .toBeGreaterThan(-Infinity);
+
+    const after = await gapAfterScroll(page, anchorId);
+    expect(after.gap, "C-07: the target must land below the header").toBeGreaterThanOrEqual(1);
+    expect(after.bottom, "C-07: the whole heading must be in view").toBeLessThanOrEqual(
+      after.innerHeight,
+    );
+  });
+
+  test("anchor offset: a short page stays unforced and visible (C-02b)", async ({ page }) => {
+    await page.goto("/materials/empty-dek-article");
+    await expect(page.getByTestId("material-prose")).toBeVisible();
+    await page.evaluate(() => document.fonts.ready);
+
+    const link = page.getByTestId("material-toc").getByRole("link").first();
+    const anchorId = await anchorIdOf(link);
+    const gate = await anchorGate(page, anchorId);
+
+    // The pin is only worth anything while the target stays out of reach.
+    expect(
+      gate.maxScroll,
+      "C-02b: фикстура должна быть недостижимой — иначе пин вакуумный",
+    ).toBeLessThan(gate.headingDocTop);
+
+    const before = await gapAfterScroll(page, anchorId);
+    expect(before.gap, "C-02b: the target starts clear of the header before the click").toBeGreaterThan(
+      32,
+    );
+
+    await link.click();
+    await expect
+      .poll(async () => (await gapAfterScroll(page, anchorId)).gap)
+      .toBeGreaterThanOrEqual(1);
+
+    const after = await gapAfterScroll(page, anchorId);
+    expect(after.bottom, "C-02b: the target must stay inside the viewport").toBeLessThanOrEqual(
+      after.innerHeight,
+    );
+    expect(
+      after.gap,
+      "C-02b: the [1, 32] band does not apply to an unreachable target",
+    ).toBeGreaterThan(32);
+  });
+
+  test("anchor offset: short section lands inside the band (C-02)", async ({ page }) => {
+    await page.goto("/materials/rag-systems");
+    await expect(page.getByTestId("material-prose")).toBeVisible();
+    await page.evaluate(() => document.fonts.ready);
+
+    const links = page.getByTestId("material-toc").getByRole("link");
+    const firstLink = links.first();
+    const anchorId = await anchorIdOf(firstLink);
+    const gate = await anchorGate(page, anchorId);
+    assertReachable(gate, "C-02");
+
+    // Criterion 1 is about a SHORT first section — prove it instead of assuming it.
+    const secondDocTop = await page.evaluate((id) => {
+      const target = document.getElementById(id);
+      return target.getBoundingClientRect().top + window.scrollY;
+    }, await anchorIdOf(links.nth(1)));
+    expect(
+      secondDocTop - gate.headingDocTop,
+      "C-02: the first section must be shorter than one viewport, otherwise criterion 1 is tested on a long section",
+    ).toBeLessThan(gate.innerHeight);
+
+    await firstLink.click();
+    await expect
+      .poll(async () => (await gapAfterScroll(page, anchorId)).gap)
+      .toBeGreaterThanOrEqual(1);
+
+    const after = await gapAfterScroll(page, anchorId);
+    expect(after.gap, "C-02: the target must land inside the [1, 32] band").toBeLessThanOrEqual(32);
+    expect(after.bottom, "C-02: the whole heading must be in view").toBeLessThanOrEqual(
+      after.innerHeight,
+    );
+  });
+
+  test("anchor offset: deep target in a long article lands inside the band (C-03)", async ({
+    page,
+  }) => {
+    await page.goto("/materials/rag-systems");
+    await expect(page.getByTestId("material-prose")).toBeVisible();
+    await page.evaluate(() => document.fonts.ready);
+
+    const links = page.getByTestId("material-toc").getByRole("link");
+    const deepLink = links.last();
+    const anchorId = await anchorIdOf(deepLink);
+    const gate = await anchorGate(page, anchorId);
+    assertReachable(gate, "C-03");
+
+    expect(
+      await links.count(),
+      "C-03: the long fixture must expose at least six headings",
+    ).toBeGreaterThanOrEqual(6);
+
+    const belowFold = await page.evaluate((id) => {
+      const target = document.getElementById(id);
+      return target.getBoundingClientRect().top > window.innerHeight;
+    }, anchorId);
+    expect(
+      belowFold,
+      "C-03: the deep target must start below the fold — otherwise the assertion is vacuous",
+    ).toBe(true);
+
+    await deepLink.click();
+    await expect
+      .poll(async () => (await gapAfterScroll(page, anchorId)).gap)
+      .toBeGreaterThanOrEqual(1);
+
+    const after = await gapAfterScroll(page, anchorId);
+    expect(after.gap, "C-03: the target must land inside the [1, 32] band").toBeLessThanOrEqual(32);
+    expect(after.bottom, "C-03: the whole heading must be in view").toBeLessThanOrEqual(
+      after.innerHeight,
+    );
+  });
+
+  test("anchor offset: phone 390 keeps the target below the header (C-04)", async ({ page }) => {
+    await page.setViewportSize({ width: 390, height: 844 });
+    await page.goto("/materials/rag-systems");
+    await expect(page.getByTestId("material-prose")).toBeVisible();
+    await page.evaluate(() => document.fonts.ready);
+
+    const token = () =>
+      page.evaluate(() =>
+        getComputedStyle(document.documentElement).getPropertyValue("--header-height").trim(),
+      );
+
+    // Claim 1 and claim 2 are independent reasons the phone is broken today; soft
+    // assertions keep both visible in one RED run (25-02 precedent).
+    expect
+      .soft(await token(), "C-04: the mobile token must not stay at the desktop 64px")
+      .not.toBe("64px");
+
+    const disclosure = page.locator("details", { hasText: "Содержание" }).first();
+    await expect(disclosure).toBeVisible();
+    await disclosure.locator("summary").click();
+    const link = disclosure.getByRole("link").first();
+    const anchorId = await anchorIdOf(link);
+    const gate = await anchorGate(page, anchorId);
+
+    expect
+      .soft(gate.pad, "C-04: the offset must clear the live mobile header")
+      .toBeGreaterThanOrEqual(gate.headerHeight + 1);
+
+    // Claim 3: the target ends up below the header and inside the viewport. The
+    // [1, 32] band is deliberately NOT asserted here — one mobile token cannot
+    // produce it at both 390 and 639.
+    await link.click();
+    await expect
+      .poll(async () => (await gapAfterScroll(page, anchorId)).gap)
+      .toBeGreaterThanOrEqual(1);
+    const after = await gapAfterScroll(page, anchorId);
+    expect(after.bottom, "C-04: the target must be inside the viewport").toBeLessThanOrEqual(
+      after.innerHeight,
+    );
+  });
+
+  test("anchor offset: 639 breakpoint edge keeps the mobile token (C-05)", async ({ page }) => {
+    await page.setViewportSize({ width: 639, height: 844 });
+    await page.goto("/materials/rag-systems");
+    await expect(page.getByTestId("material-prose")).toBeVisible();
+    await page.evaluate(() => document.fonts.ready);
+
+    const token = () =>
+      page.evaluate(() =>
+        getComputedStyle(document.documentElement).getPropertyValue("--header-height").trim(),
+      );
+
+    expect
+      .soft(await token(), "C-05: the mobile token must not stay at the desktop 64px")
+      .not.toBe("64px");
+
+    const disclosure = page.locator("details", { hasText: "Содержание" }).first();
+    await expect(disclosure).toBeVisible();
+    await disclosure.locator("summary").click();
+    const link = disclosure.getByRole("link").first();
+    const anchorId = await anchorIdOf(link);
+    const gate = await anchorGate(page, anchorId);
+
+    expect
+      .soft(gate.pad, "C-05: the offset must clear the live header at 639")
+      .toBeGreaterThanOrEqual(gate.headerHeight + 1);
+
+    await link.click();
+    await expect
+      .poll(async () => (await gapAfterScroll(page, anchorId)).gap)
+      .toBeGreaterThanOrEqual(1);
+    const after = await gapAfterScroll(page, anchorId);
+    expect(after.bottom, "C-05: the target must be inside the viewport").toBeLessThanOrEqual(
+      after.innerHeight,
+    );
+
+    // The edge itself: the mid-band token applies from 640px (the header is 123px there,
+    // so 64px would leave the heading under it) and the desktop token resumes at 960px,
+    // where the header drops to 73px. A wrong boundary keeps 112px at 959 and fails here.
+    await page.setViewportSize({ width: 640, height: 844 });
+    await expect.poll(token, "C-05: at 640 the mid-band token applies").toBe("112px");
+    await page.setViewportSize({ width: 959, height: 844 });
+    await expect.poll(token, "C-05: at 959 the mid-band token still applies").toBe("112px");
+    await page.setViewportSize({ width: 960, height: 844 });
+    await expect.poll(token, "C-05: at 960 the desktop token applies").toBe("64px");
+    await page.setViewportSize({ width: 639, height: 844 });
+    await expect.poll(token, "C-05: at 639 the mobile token applies").toBe("200px");
+  });
+
+  test("anchor offset: a razbor anchor uses the same global rule (C-06)", async ({ page }) => {
+    await page.goto("/razbory/3");
+    await expect(page.getByTestId("razbor-toc")).toBeVisible();
+    await page.evaluate(() => document.fonts.ready);
+
+    const link = page.getByTestId("razbor-toc").getByRole("link").first();
+    const anchorId = await anchorIdOf(link);
+    const gate = await anchorGate(page, anchorId);
+    // D-05: the razbor must be covered by the same global rule, with zero edits
+    // to RazborPage — otherwise the anchor work would only be true by the letter.
+    assertReachable(gate, "C-06");
+
+    await link.click();
+    await expect
+      .poll(async () => (await gapAfterScroll(page, anchorId)).gap)
+      .toBeGreaterThanOrEqual(1);
+
+    const after = await gapAfterScroll(page, anchorId);
+    expect(after.gap, "C-06: the target must land inside the [1, 32] band").toBeLessThanOrEqual(32);
+    expect(after.bottom, "C-06: the whole heading must be in view").toBeLessThanOrEqual(
+      after.innerHeight,
+    );
+  });
+});
+
+/*
+ * NAV-02 — the header keeps the section the reader came from (26-UI-SPEC C-08…C-20).
+ *
+ * The marker rides `history.state` as one of three literals (`'archive' | 'base' | 'issue'`)
+ * and is compared at exactly one read point (`AppShell`). `aria-current` carries `page` for
+ * the pill's own route and `true` for a section claimed by state or by the `/issues/` prefix.
+ * Class comparisons are token-exact: `bg-primary` is a substring of `bg-primary-solid`, so
+ * `toHaveClass(/bg-primary/)` would silently pass on every pill.
+ */
+test.describe("section context — header pills (NAV-02)", () => {
+  function shellNav(page) {
+    return page.getByRole("navigation", { name: /основная навигация/i });
+  }
+
+  function sectionPill(page, name) {
+    return shellNav(page).getByRole("link", { name });
+  }
+
+  async function classTokens(locator) {
+    return (await locator.getAttribute("class")).split(/\s+/).filter(Boolean);
+  }
+
+  function isLit(tokens) {
+    return tokens.includes("bg-primary-solid") && tokens.includes("text-on-solid");
+  }
+
+  async function litCount(page) {
+    let count = 0;
+    for (const name of [/^Выпуск$/, /^Архив$/, /^База$/]) {
+      if (isLit(await classTokens(sectionPill(page, name)))) count += 1;
+    }
+    return count;
+  }
+
+  test("section pills: own routes keep aria-current=page (C-15)", async ({ page }) => {
+    // Pin, not RED: the three sections move from NavLink to Link in this phase, so the
+    // own-route announcement must be proven before the element changes.
+    for (const [path, name] of [
+      ["/", /^Выпуск$/],
+      ["/archive", /^Архив$/],
+      ["/knowledge", /^База$/],
+      ["/voting", /^Голосование$/],
+      ["/razbory", /^Разборы$/],
+    ]) {
+      await page.goto(path);
+      await expect(sectionPill(page, name)).toHaveAttribute("aria-current", "page");
+    }
+  });
+
+  test("section pills: URL variants the router still matches keep their pill (C-15b)", async ({ page }) => {
+    // CR-01: replacing NavLink with a raw `pathname ===` comparison dropped matchPath's
+    // normalisation. A capitalised path or a trailing slash (a usual copy-link artifact)
+    // still renders the page, so every pill going dark there would be exactly the defect
+    // this phase exists to close. The router is asked instead of compared by hand.
+    for (const [path, name] of [
+      ["/archive/", /^Архив$/],
+      ["/Archive", /^Архив$/],
+      ["/knowledge/", /^База$/],
+      ["/Knowledge", /^База$/],
+    ]) {
+      await page.goto(path);
+      await expect(sectionPill(page, name)).toHaveAttribute("aria-current", "page");
+    }
+  });
+
+  test("section pills: archive -> issue lights Архив (C-08)", async ({ page }) => {
+    await page.goto("/archive");
+    await page.getByRole("link", { name: /выпуск №13/i }).click();
+    // Render barrier, never waitForURL: the URL changes before React commits.
+    await expect(page.getByTestId("issue-ready")).toBeVisible();
+
+    const archive = sectionPill(page, /^Архив$/);
+    await expect(archive).toHaveAttribute("aria-current", "true");
+    const archiveTokens = await classTokens(archive);
+    expect(archiveTokens).toContain("bg-primary-solid");
+    expect(archiveTokens).toContain("text-on-solid");
+
+    for (const name of [/^Выпуск$/, /^База$/]) {
+      const other = sectionPill(page, name);
+      expect(await other.getAttribute("aria-current")).toBeNull();
+      expect(isLit(await classTokens(other))).toBe(false);
+    }
+  });
+
+  test("section pills: a direct /issues/13 lights Архив (C-14)", async ({ page }) => {
+    // First action of a fresh test() = fresh history.state (no origin marker anywhere).
+    await page.goto("/issues/13");
+    await expect(page.getByTestId("issue-ready")).toBeVisible();
+
+    const archive = sectionPill(page, /^Архив$/);
+    await expect(archive).toHaveAttribute("aria-current", "true");
+    const archiveTokens = await classTokens(archive);
+    expect(archiveTokens).toContain("bg-primary-solid");
+    expect(archiveTokens).toContain("text-on-solid");
+
+    for (const name of [/^Выпуск$/, /^База$/]) {
+      const other = sectionPill(page, name);
+      expect(await other.getAttribute("aria-current")).toBeNull();
+      expect(isLit(await classTokens(other))).toBe(false);
+    }
+  });
+
+  test("section pills: at most one lit pill (C-20)", async ({ page }) => {
+    for (const path of ["/", "/issues/13"]) {
+      await page.goto(path);
+      if (path === "/issues/13") {
+        await expect(page.getByTestId("issue-ready")).toBeVisible();
+      }
+
+      expect(await litCount(page), `${path}: exactly one section is claimed`).toBe(1);
+
+      let marked = 0;
+      for (const name of [/^Выпуск$/, /^Архив$/, /^База$/]) {
+        const value = await sectionPill(page, name).getAttribute("aria-current");
+        if (value === "page" || value === "true") marked += 1;
+      }
+      expect(marked, `${path}: exactly one pill carries aria-current`).toBe(1);
+    }
+  });
+
+  test("section pills: the pill changes paint only, token-exact (C-18)", async ({ page }) => {
+    const shared = ["min-h-11", "rounded-full", "px-2.5", "text-sm"];
+    const readColors = (locator) =>
+      locator.evaluate((el) => {
+        const style = getComputedStyle(el);
+        return { background: style.backgroundColor, color: style.color };
+      });
+
+    await page.goto("/archive");
+    const activePill = sectionPill(page, /^Архив$/);
+    // Attribute first: a colour read during a transition measures the interpolation.
+    await expect(activePill).toHaveAttribute("aria-current", "page");
+    const activeTokens = await classTokens(activePill);
+    expect(activeTokens).toContain("bg-primary-solid");
+    expect(activeTokens).toContain("text-on-solid");
+    expect(activeTokens).not.toContain("bg-primary");
+    expect(activeTokens).not.toContain("text-text-secondary");
+    for (const token of shared) {
+      expect(activeTokens, `active pill keeps ${token}`).toContain(token);
+    }
+    const activeColors = await readColors(activePill);
+    expect(activeColors.background).toBe("rgb(124, 58, 237)");
+    expect(activeColors.color).toBe("rgb(255, 255, 255)");
+
+    await page.goto("/");
+    const idlePill = sectionPill(page, /^Архив$/);
+    const idleTokens = await classTokens(idlePill);
+    expect(idleTokens).toContain("text-text-secondary");
+    expect(idleTokens).toContain("hover:bg-bg-surface");
+    expect(idleTokens).not.toContain("bg-primary-solid");
+    expect(idleTokens).not.toContain("bg-primary");
+    for (const token of shared) {
+      expect(idleTokens, `inactive pill keeps ${token}`).toContain(token);
+    }
+    const idleColors = await readColors(idlePill);
+    expect(idleColors.background).toBe("rgba(0, 0, 0, 0)");
+    expect(idleColors.color).toBe("rgb(148, 163, 184)");
+
+    // The active fill is theme-independent; the inactive label is not.
+    await page.getByTestId("theme-toggle").click();
+    await expect(page.locator("html")).toHaveAttribute("data-theme", "light");
+    await page.goto("/archive");
+    await expect(page.locator("html")).toHaveAttribute("data-theme", "light");
+    const lightActive = sectionPill(page, /^Архив$/);
+    await expect(lightActive).toHaveAttribute("aria-current", "page");
+    const lightActiveColors = await readColors(lightActive);
+    expect(lightActiveColors.background).toBe("rgb(124, 58, 237)");
+    expect(lightActiveColors.color).toBe("rgb(255, 255, 255)");
+    expect((await readColors(sectionPill(page, /^Выпуск$/))).color).toBe("rgb(100, 116, 139)");
+  });
+
+  test("section state: archive -> issue -> material keeps Архив (C-09)", async ({ page }) => {
+    await page.goto("/archive");
+    await page.getByRole("link", { name: /выпуск №13/i }).click();
+    await expect(page.getByTestId("issue-ready")).toBeVisible();
+
+    // First issue-TOC row: the issue page has no other `/materials/` link.
+    await page.getByTestId("issue-ready").locator('a[href^="/materials/"]').first().click();
+    await expect(page.getByTestId("material-prose")).toBeVisible();
+    expect(page.url()).toContain("/materials/sql-dashboards");
+
+    const archive = sectionPill(page, /^Архив$/);
+    await expect(archive).toHaveAttribute("aria-current", "true");
+    expect(isLit(await classTokens(archive))).toBe(true);
+
+    for (const name of [/^Выпуск$/, /^База$/]) {
+      const other = sectionPill(page, name);
+      expect(await other.getAttribute("aria-current")).toBeNull();
+      expect(isLit(await classTokens(other))).toBe(false);
+    }
+  });
+
+  test("section state: current issue -> material lights Выпуск (C-10)", async ({ page }) => {
+    await page.goto("/");
+    await expect(page.getByTestId("issue-ready")).toBeVisible();
+
+    await page.getByTestId("issue-ready").locator('a[href^="/materials/"]').first().click();
+    await expect(page.getByTestId("material-prose")).toBeVisible();
+    expect(page.url()).toContain("/materials/rag-systems");
+
+    const home = sectionPill(page, /^Выпуск$/);
+    await expect(home).toHaveAttribute("aria-current", "true");
+    expect(isLit(await classTokens(home))).toBe(true);
+
+    for (const name of [/^Архив$/, /^База$/]) {
+      const other = sectionPill(page, name);
+      expect(await other.getAttribute("aria-current")).toBeNull();
+      expect(isLit(await classTokens(other))).toBe(false);
+    }
+  });
+
+  test("section state: knowledge -> material lights База (C-11)", async ({ page }) => {
+    await page.goto("/knowledge");
+    const search = page.getByRole("searchbox", { name: /поиск по базе знаний/i });
+    await search.fill("RAG");
+    await page.getByRole("button", { name: "Найти", exact: true }).click();
+
+    const hit = page.getByRole("link", { name: /building production rag systems/i });
+    await expect(hit).toBeVisible();
+    await hit.click();
+    await expect(page.getByTestId("material-prose")).toBeVisible();
+    expect(page.url()).toContain("/materials/rag-systems");
+
+    const base = sectionPill(page, /^База$/);
+    await expect(base).toHaveAttribute("aria-current", "true");
+    expect(isLit(await classTokens(base))).toBe(true);
+
+    for (const name of [/^Выпуск$/, /^Архив$/]) {
+      const other = sectionPill(page, name);
+      expect(await other.getAttribute("aria-current")).toBeNull();
+      expect(isLit(await classTokens(other))).toBe(false);
+    }
+  });
+
+  test("section state: related materials keep the marker (C-12)", async ({ page }) => {
+    await page.goto("/archive");
+    await page.getByRole("link", { name: /выпуск №13/i }).click();
+    await expect(page.getByTestId("issue-ready")).toBeVisible();
+    await page.getByTestId("issue-ready").locator('a[href^="/materials/"]').first().click();
+    await expect(page.getByTestId("material-prose")).toBeVisible();
+    expect(page.url()).toContain("/materials/sql-dashboards");
+
+    const related = page.getByTestId("material-related");
+    await expect(related).toBeVisible();
+    await related.getByRole("link", { name: /building production rag systems/i }).click();
+    // Both materials share `material-prose`, so that is not a render barrier here: the
+    // stale DOM of the previous material still carries the lit «Архив» pill. The target
+    // heading is the only element that proves React committed the new location.
+    await expect(
+      page.getByRole("heading", { name: /building production rag systems/i, level: 1 }),
+    ).toBeVisible();
+    expect(page.url()).toContain("/materials/rag-systems");
+
+    const archive = sectionPill(page, /^Архив$/);
+    await expect(archive).toHaveAttribute("aria-current", "true");
+    expect(isLit(await classTokens(archive))).toBe(true);
+
+    for (const name of [/^Выпуск$/, /^База$/]) {
+      const other = sectionPill(page, name);
+      expect(await other.getAttribute("aria-current")).toBeNull();
+      expect(isLit(await classTokens(other))).toBe(false);
+    }
+  });
+
+  test("section state: a direct material visit lights nothing (C-13)", async ({ page }) => {
+    // Pin: the RED era of C-13 is 26-02 — a section derived from the pathname, or a marker
+    // that leaked out of the archive, would light a pill here. A fresh test() is a fresh
+    // browser context, so history.state is empty by construction; `page.goto` (never a
+    // hand-made `browser.newContext()`, which loses `use.baseURL`) keeps it honest, and
+    // `history.replaceState` is deliberately absent — a forged state would prove nothing.
+    await page.goto("/materials/rag-systems");
+    await expect(page.getByTestId("material-prose")).toBeVisible();
+
+    // All five shell entries, not just the three sections: «Голосование» and «Разборы» have
+    // no origin marker at all, so a negative that skipped them could hide a broader leak.
+    // Each pill is asserted visible first — an absent node must never produce the negative.
+    for (const name of [/^Выпуск$/, /^Архив$/, /^База$/, /^Голосование$/, /^Разборы$/]) {
+      const pill = sectionPill(page, name);
+      await expect(pill).toBeVisible();
+      expect(
+        await pill.getAttribute("aria-current"),
+        `C-13: ${name} must carry no aria-current on a direct material visit`,
+      ).toBeNull();
+      expect(
+        isLit(await classTokens(pill)),
+        `C-13: ${name} must carry no active fill on a direct material visit`,
+      ).toBe(false);
+    }
+  });
+
+  test("section state: a heading-less material renders no Содержание (zero-heading case)", async ({
+    page,
+  }) => {
+    // `sql-dashboards` has no `body_markdown`, so its `body[]` collapses into one paragraph:
+    // SectionToc returns null, and no heading exists for `rehype-slug` to give an id.
+    await page.goto("/materials/sql-dashboards");
+    await expect(page.getByTestId("material-prose")).toBeVisible();
+
+    await expect(page.getByTestId("material-toc")).toHaveCount(0);
+    await expect(page.locator("details", { hasText: "Содержание" })).toHaveCount(0);
+    expect(await page.locator('[id^="user-content-"]').count()).toBe(0);
+
+    // The offset is global, so it must not depend on anchors existing: a zero-anchor page
+    // still carries a live numeric scroll-padding, otherwise this pin would be vacuous.
+    const { pad, headerHeight } = await page.evaluate(() => ({
+      pad: Number.parseFloat(getComputedStyle(document.documentElement).scrollPaddingTop) || 0,
+      headerHeight: document.querySelector("header").getBoundingClientRect().height,
+    }));
+    expect(pad, "zero-heading: the global scroll offset stays numeric").toBeGreaterThan(0);
+    expect(pad, "zero-heading: the offset still clears the measured header").toBeGreaterThanOrEqual(
+      headerHeight + 1,
+    );
+  });
+});
