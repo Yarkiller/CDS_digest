@@ -3,10 +3,10 @@ gsd_state_version: 1.0
 milestone: v1.5
 milestone_name: Two-pass article enrichment
 status: planning
-last_updated: "2026-10-26T09:38:40.123Z"
+last_updated: "2026-10-26T12:45:00.000Z"
 last_activity: 2026-10-26
 progress:
-  total_phases: 0
+  total_phases: 6
   completed_phases: 0
   total_plans: 0
   completed_plans: 0
@@ -17,17 +17,17 @@ progress:
 
 ## Project Reference
 
-See: .planning/PROJECT.md (updated 2026-10-22 — v1.4 shipped)
+See: .planning/PROJECT.md (updated 2026-10-26 — v1.5 Two-pass article enrichment)
 
 **Core value:** Trusted weekly prepared-article issue + one honest vote toward the next разбор
-**Current focus:** v1.4 shipped — no active milestone (next: `/gsd-new-milestone`)
+**Current focus:** Planning roadmap for v1.5 — Phases 29–34 (two-pass article enrichment)
 
 ## Current Position
 
-Phase: Not started (defining requirements)
+Phase: 29 of 34 (v1.5 1/6 — Pass-1 richer templates)
 Plan: —
-Status: Defining requirements
-Last activity: 2026-10-26 — Milestone v1.5 started
+Status: Ready to plan
+Last activity: 2026-10-26 — v1.5 roadmap drafted (phases 29–34, 22/22 requirements mapped)
 
 ## Performance Metrics
 
@@ -113,6 +113,15 @@ Last activity: 2026-10-26 — Milestone v1.5 started
 ### Decisions
 
 Full decision log: `.planning/PROJECT.md` (Key Decisions and `<decisions>`).
+
+v1.5 roadmap locks:
+
+- Order: 29 → 30 → 31 → 32 → 33 → 34. Research sketched 29–36; merged Tavily-port+quota (31+32) and enricher+cheat-sheet-files (33+34) as too-thin adjacent pairs. Do not invert: templates+classifier+persist floor before Tavily; Tavily port+quota before enricher; enricher before reader DTO.
+- Cheat sheets are personal-KB markdown notes, **one file per key technology** (several files allowed). Not a second article. Not `razbors.notebook_path`. Guide stays in `body_markdown`.
+- Persist-then-enrich; fail-soft pass 2; Tavily `trust_env=False` (never YouTube SOCKS5); quota 1000 initiated requests (`try_consume`); `already_saved` skips Tavily and the enricher.
+- Coverage 22/22: ART-01…03 → 29; KIND-01…03 → 30; ART-04, TAV-02 → 31; TAV-01/03, ENR-01…03, SHEET-01, ING-11 → 32; SHEET-02/03, MAT-10/11, ADUX-13 → 33; DBG-03, ING-12 → 34.
+- Deferred stay out: ING-10/13, ADUX-11/14, PIPE-06, KNOW-06, v1.4 `INVALID_ROLE` toast.
+- Phase 33 is the only UI-hint phase (reader sources + downloads). Plan 31, 32, 34 with `--research-phase`.
 
 v1.3 roadmap locks:
 
@@ -309,14 +318,28 @@ Carried product deferrals beyond v1.3: leaderboard, quiz, Whisper/Foundry ASR, i
 
 ## Session Continuity
 
-Last session: 2026-10-22T17:37:00.000Z
-Stopped at: Phase 28 complete — v1.4 ready to close
+Last session: 2026-10-26
+Stopped at: v1.5 roadmap created (Phases 29–34) — awaiting approval
 Resume file: None
-Next: `/gsd-complete-milestone` for v1.4 (all 4 phases complete, 10/10 requirements mapped and satisfied). Carried forward: the `INVALID_ROLE` toast needs an authenticated live SPA session.
+Next: `/gsd-plan-phase 29` after roadmap approval. Carried forward (not in v1.5): the `INVALID_ROLE` toast needs an authenticated live SPA session.
 
 ## Operator Next Steps
 
-- Start the next milestone with /gsd-new-milestone
+- Review `.planning/ROADMAP.md` (v1.5 Phases 29–34) and approve or revise
+- After approval: `/gsd-plan-phase 29`
+
+## v1.5 roadmap (Phases 29-34)
+
+| Phase | Name | Requirements |
+|-------|------|--------------|
+| 29 | Pass-1 richer templates | ART-01, ART-02, ART-03 |
+| 30 | Classifier practical \| conceptual | KIND-01, KIND-02, KIND-03 |
+| 31 | Tavily quota and persist-then-enrich floor | ART-04, TAV-02 |
+| 32 | Pass-2 enricher and personal-KB cheat sheets | TAV-01, TAV-03, ENR-01, ENR-02, ENR-03, SHEET-01, ING-11 |
+| 33 | Reader sources and cheat-sheet downloads | SHEET-02, SHEET-03, MAT-10, MAT-11, ADUX-13 |
+| 34 | Collect honesty and operator debug | ING-12, DBG-03 |
+
+**v1.5 roadmap locks (for phase planners):** see Accumulated Context → v1.5 roadmap locks above, and `.planning/ROADMAP.md` § v1.5 roadmap locks.
 
 ## v1.4 roadmap (Phases 25-28)
 

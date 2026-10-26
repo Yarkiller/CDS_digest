@@ -96,34 +96,34 @@ Which phases cover which requirements. Updated during roadmap creation.
 
 | Requirement | Phase | Status |
 |-------------|-------|--------|
-| ART-01 | — | Pending |
-| ART-02 | — | Pending |
-| ART-03 | — | Pending |
-| ART-04 | — | Pending |
-| KIND-01 | — | Pending |
-| KIND-02 | — | Pending |
-| KIND-03 | — | Pending |
-| TAV-01 | — | Pending |
-| TAV-02 | — | Pending |
-| TAV-03 | — | Pending |
-| ENR-01 | — | Pending |
-| ENR-02 | — | Pending |
-| ENR-03 | — | Pending |
-| SHEET-01 | — | Pending |
-| SHEET-02 | — | Pending |
-| SHEET-03 | — | Pending |
-| MAT-10 | — | Pending |
-| MAT-11 | — | Pending |
-| ADUX-13 | — | Pending |
-| DBG-03 | — | Pending |
-| ING-11 | — | Pending |
-| ING-12 | — | Pending |
+| ART-01 | Phase 29 | Pending |
+| ART-02 | Phase 29 | Pending |
+| ART-03 | Phase 29 | Pending |
+| ART-04 | Phase 31 | Pending |
+| KIND-01 | Phase 30 | Pending |
+| KIND-02 | Phase 30 | Pending |
+| KIND-03 | Phase 30 | Pending |
+| TAV-01 | Phase 32 | Pending |
+| TAV-02 | Phase 31 | Pending |
+| TAV-03 | Phase 32 | Pending |
+| ENR-01 | Phase 32 | Pending |
+| ENR-02 | Phase 32 | Pending |
+| ENR-03 | Phase 32 | Pending |
+| SHEET-01 | Phase 32 | Pending |
+| SHEET-02 | Phase 33 | Pending |
+| SHEET-03 | Phase 33 | Pending |
+| MAT-10 | Phase 33 | Pending |
+| MAT-11 | Phase 33 | Pending |
+| ADUX-13 | Phase 33 | Pending |
+| DBG-03 | Phase 34 | Pending |
+| ING-11 | Phase 32 | Pending |
+| ING-12 | Phase 34 | Pending |
 
 **Coverage:**
 - v1.5 requirements: 22 total
-- Mapped to phases: 0
-- Unmapped: 22 ⚠️ (filled by `/gsd-new-milestone` roadmap)
+- Mapped to phases: 22
+- Unmapped: 0 ✓
 
 ---
 *Requirements defined: 2026-10-26*
-*Last updated: 2026-10-26 after initial definition*
+*Last updated: 2026-10-26 after v1.5 roadmap (phases 29–34)*
