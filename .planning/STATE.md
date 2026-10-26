@@ -1,20 +1,20 @@
 ---
-gsd_state_version: "1.0"
+gsd_state_version: 1.0
 milestone: v1.5
 milestone_name: Two-pass article enrichment (Phases 29-34)
 current_phase: 29
 current_phase_name: Pass-1 richer templates
 status: executing
-stopped_at: Phase 29 context gathered
-last_updated: "2026-10-26T17:48:26.368Z"
+stopped_at: Completed 29-01-PLAN.md
+last_updated: "2026-10-26T18:34:41.657Z"
 last_activity: 2026-10-26
-last_activity_desc: v1.5 roadmap drafted (phases 29–34, 22/22 requirements mapped)
-state_head: 678625c05f7bd24d57a7127713e828d838164928
+last_activity_desc: Phase 29 execution started
+state_head: 7a504b54e76dc2caea14af978b30b5dd32b881bc
 progress:
   total_phases: 6
   completed_phases: 0
   total_plans: 3
-  completed_plans: 0
+  completed_plans: 1
   percent: 0
 ---
 
@@ -25,14 +25,14 @@ progress:
 See: .planning/PROJECT.md (updated 2026-10-26 — v1.5 Two-pass article enrichment)
 
 **Core value:** Trusted weekly prepared-article issue + one honest vote toward the next разбор
-**Current focus:** Planning roadmap for v1.5 — Phases 29–34 (two-pass article enrichment)
+**Current focus:** Phase 29 — Pass-1 richer templates
 
 ## Current Position
 
-Phase: 29 (Pass-1 richer templates) — READY TO EXECUTE
-Plan: —
+Phase: 29 (Pass-1 richer templates) — EXECUTING
+Plan: 2 of 3
 Status: Ready to execute
-Last activity: 2026-10-26 — v1.5 roadmap drafted (phases 29–34, 22/22 requirements mapped)
+Last activity: 2026-10-26 — Phase 29 execution started
 
 ## Performance Metrics
 
@@ -112,6 +112,7 @@ Last activity: 2026-10-26 — v1.5 roadmap drafted (phases 29–34, 22/22 requir
 | Phase 26 P03 | 12min | 3 tasks | 3 files |
 | Phase 27 P01 | 10min | 2 tasks | 2 files |
 | Phase 27 P05 | 18min | 3 tasks | 3 files |
+| Phase 29 P01 | 4 min | 2 tasks | 4 files |
 
 ## Accumulated Context
 
@@ -285,6 +286,10 @@ v1.3 roadmap locks:
 - [Phase 28]: ING-09 satisfied by measurement — material 25 (`status=draft`, `youtube_video_id=HR7hD8TO4Z8`) + `digest_shortlist_items` batch 7 / rank 2 / decision=pending; exit 0 in 21.91 s wall clock, `stage=llm elapsed_ms=16578`, zero `APIConnectionError`. The id was absent from `materials` before the run, so the proof is not an `already_saved` re-hit.
 - [Phase 28]: FU-27-01 closed under TDD (empty header submit → `{ replace: true }`), which closes T-27-16; `27-SECURITY.md` is now 19/19 threats with 0 open. The empty-path push stacked a landing over the settled `?q` and made Back re-enter the executed query.
 - [Phase 28]: the deferred `INVALID_ROLE` toast was NOT closed — the proof ran on the service key and never opened a browser, so an authenticated live SPA session is still required. Recorded as deferred again instead of claimed.
+- [Phase 29]: Instruction-only structure rules are a lead paragraph plus bullets with no ## heading, so lecture.md headings equal the headings the model is asked to emit — A ## line in a template is an output heading the model will emit; test_lecture_md_has_only_the_intended_headings pins the set to the three shared output headings
+- [Phase 29]: The 1200-1800 word band lives only in ARTICLE_SYSTEM_PROMPT, not in lecture.md — One home only (PATTERNS); lecture.md must not repeat the band so the two templates differ by kind hint, not by length
+- [Phase 29]: LEGACY_PODCAST_HEADINGS is a forward declaration for Plan 02; this plan does not invert the podcast pin — Plan 02 owns podcast.md; asserting the podcast frame here would keep 29-01 red
+- [Phase 29]: Edition-voice, recap-phrase examples, SVA inference boundary, dek hook, and length band are shared in ARTICLE_SYSTEM_PROMPT — RESEARCH Q2: shared rules in the system prompt, per-kind structure in the templates
 
 ### Pending Todos
 
@@ -323,9 +328,9 @@ Carried product deferrals beyond v1.3: leaderboard, quiz, Whisper/Foundry ASR, i
 
 ## Session Continuity
 
-Last session: 2026-10-26T17:01:27.664Z
-Stopped at: Phase 29 context gathered
-Resume file: .planning/phases/29-pass-1-richer-templates/29-CONTEXT.md
+Last session: 2026-10-26T18:34:06.028Z
+Stopped at: Completed 29-01-PLAN.md
+Resume file: None
 Next: `/gsd-plan-phase 29` after roadmap approval. Carried forward (not in v1.5): the `INVALID_ROLE` toast needs an authenticated live SPA session.
 
 ## Operator Next Steps
