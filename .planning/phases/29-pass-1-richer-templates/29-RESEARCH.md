@@ -59,6 +59,21 @@ Three findings drive planning more than anything else in this document. First, t
 - Classifier `practical | conceptual` — Phase 30.
 </user_constraints>
 
+## Project Constraints (from .cursor/rules/)
+
+Directives extracted from `.cursor/rules/` + `AGENTS.md`. They carry the same authority as the locked decisions above; a plan that contradicts them is wrong even if it satisfies a success criterion.
+
+| Directive | Source | Consequence for Phase 29 |
+|-----------|--------|--------------------------|
+| **Mandatory Red–Green–Refactor.** No production code without a failing test first; exceptions only for config/generated/one-off files and only with explicit agreement. | `.cursor/rules/tdd.mdc`, `AGENTS.md` | The two `.md` files are **production prompt content**, not config. Write the failing assertions in `test_article_templates.py` / `test_deepseek_article_adapter.py` first, run them, observe the expected failure, then edit the templates. Never edit the templates and then write tests. |
+| **Ports & Adapters.** Dependencies point inward; no `supabase`/`httpx`/`fastapi`/raw SQL in domain or use cases; wiring only in `composition/`; no `Any` on ports or module boundaries. | `.cursor/rules/architecture.mdc` | Phase 29 adds **no port, no adapter, no use case, no wiring**. Prompt text lives in the `data-collection` templates and (optionally) the adapter's `ARTICLE_SYSTEM_PROMPT`. A plan task that touches `composition/`, `backend/` or the `ArticleGenerator` protocol is out of bounds. |
+| **`uv` owns Python deps.** Add/remove packages through `uv`. | `.cursor/rules/python-uv.mdc` | No dependency change at all this phase; `pyproject.toml` / `uv.lock` must show zero diff. |
+| **Use Context7 for library/API docs.** | `.cursor/rules/context7.mdc` | Followed here: the DeepSeek `json_object` / `max_tokens` / empty-content facts come from Context7's `/websites/api-docs_deepseek` (see Sources). Future tasks touching the API contract should do the same rather than guess. |
+| **Single-context domain docs:** `CONTEXT.md` + `docs/adr/` at repo root; issues live under `.scratch/`. | `AGENTS.md` | `docs/adr/0002-cloud-ru-foundrymodels-deployment.md` still governs the "DeepSeek is the temporary public-API bend" framing; this phase adds no new ADR. |
+| **Git: `origin` operations (push/pull/fetch/auth) only via WSL** (`wsl.exe`), not PowerShell. Local commits are allowed on `dev`. | `AGENTS.md` | Research/plan commits are local. If a ship step needs `origin`, use WSL. |
+| **User-facing prose in Russian.** | `AGENTS.md` / `.planning/config.json` `response_language: russian` | Commit messages/plans may be English; anything the owner reads in chat is Russian. Prompt content itself is English instructions + Russian heading literals (Phase 8 D-16 precedent). |
+| **Project skills.** `.agents/skills/` contains `hallmark`, `supabase`, `supabase-postgres-best-practices`; `.cursor/skills/` does not exist. | skills scan | None of them apply to a prompt-text rewrite — no skill needs loading for this phase. Do not invent a skill dependency. |
+
 <phase_requirements>
 ## Phase Requirements
 
@@ -444,6 +459,10 @@ Source: `MaterialPage.jsx:240-245` `[VERIFIED]`. Default sanitize schema allows 
 5. **Do existing materials get relabelled or re-ingested?**
    - What we know: success criteria say "newly ingested".
    - Recommendation: no backfill, no re-ingest (a re-ingest of a saved video returns `already_saved` and spends no LLM call anyway).
+6. **The ROADMAP/REQUIREMENTS wording for criterion 3 does not match D-10/D-11 — which text does verification score against?**
+   - What we know: `.planning/ROADMAP.md` Phase 29 criterion 3 still reads "explicit «Зачем это СВА» **and risks/limitations sections** even if the talk barely mentioned audit"; `REQUIREMENTS.md` ART-03 says the same. CONTEXT D-10 merges the two headings into one and D-11 makes it optional (owner override, gathered after the roadmap was written).
+   - What's unclear: a literal-reading verifier will demand a second section and demand presence on a talk with no analog — both explicitly rejected by the owner.
+   - Recommendation: plan and verify against the CONTEXT reading (one optional `## Зачем это СВА`, residual caution in its prose), state the override in the phase summary/VERIFICATION notes, and (cheap, optional) ask the owner to amend criterion 3 in `.planning/ROADMAP.md` + ART-03 so the artifact and the intent do not disagree.
 
 ## Environment Availability
 
