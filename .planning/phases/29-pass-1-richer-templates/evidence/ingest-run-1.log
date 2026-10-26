@@ -1,0 +1,14 @@
+command: uv run --env-file ./ingestion-service/.env ingest "https://www.youtube.com/watch?v=aircAruvnKk" --template lecture --debug
+wall_clock_before_utc: 2026-10-26T18:54:44Z
+wall_clock_after_utc: 2026-10-26T18:54:53Z
+elapsed_s: 8.71
+exit_code: 1
+
+--- stderr ---
+[21:54:48] debug stage=captions elapsed_ms=2032 video_id=aircAruvnKk transcript_chars=16960 transcript_words=2506 language=ru
+[21:54:53] debug stage=metadata elapsed_ms=5015 reason=network_error exit_code=1
+{"ok": false, "stage": "metadata", "reason": "network_error", "message": "metadata network_error for aircAruvnKk", "exit_code": 1, "context": {"video_id": "aircAruvnKk", "exception_class": "ProxyError"}}
+
+--- stdout ---
+✓ transcript
+
