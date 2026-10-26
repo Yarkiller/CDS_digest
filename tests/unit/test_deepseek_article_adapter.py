@@ -23,6 +23,16 @@ from data_collection.dto.article_draft import ArticleDraft
 from data_collection.dto.template_kind import TemplateKind
 from data_collection.dto.transcript import Transcript
 
+LEGACY_HEADINGS = (
+    "## Тезис",
+    "## Ход рассуждения",
+    "## Вывод",
+    "## О чём разговор",
+    "## Позиции",
+    "## Что запомнить",
+)
+SHARED_PROMPT_HEADINGS = ("## Конкретика", "## Зачем это СВА", "## Аудитория")
+
 
 def _stub_client(content: str) -> Any:
     class _Completions:
@@ -46,6 +56,18 @@ def _stub_client(content: str) -> Any:
 
 def _make_transcript(language: str = "ru") -> Transcript:
     return Transcript(text="some transcript text", language=language, video_id="vid1")
+
+
+def _user_content(kind: TemplateKind, language: str) -> str:
+    client = _stub_client(json.dumps({"title": "T", "dek": "D", "body_markdown": "B"}))
+    asyncio.run(_make_generator(client).process(_make_transcript(language), kind))
+    return client.chat.completions.calls[0]["messages"][-1]["content"]
+
+
+def _system_content(kind: TemplateKind, language: str) -> str:
+    client = _stub_client(json.dumps({"title": "T", "dek": "D", "body_markdown": "B"}))
+    asyncio.run(_make_generator(client).process(_make_transcript(language), kind))
+    return client.chat.completions.calls[0]["messages"][0]["content"]
 
 
 def test_process_returns_article_draft_for_lecture() -> None:
@@ -102,28 +124,20 @@ def test_process_returns_article_draft_for_podcast() -> None:
     assert draft.body_markdown == "## О чём разговор\n\nBody"
 
 
-def test_lecture_prompt_contains_lecture_headings_not_podcast() -> None:
-    from data_collection.adapters.deepseek_article import DeepSeekArticleGenerator
-    from data_collection.templates import load_article_templates
+@pytest.mark.parametrize("heading", LEGACY_HEADINGS)
+def test_lecture_prompt_omits_every_legacy_heading(heading: str) -> None:
+    assert heading not in _user_content(TemplateKind.LECTURE, "ru")
 
-    templates = load_article_templates(importlib.resources.files("data_collection.templates"))
-    client = _stub_client(json.dumps({"title": "T", "dek": "D", "body_markdown": "B"}))
-    generator = DeepSeekArticleGenerator(
-        client=client,
-        model="deepseek-flash",
-        templates=templates,
-        max_transcript_chars=80000,
-    )
 
-    asyncio.run(generator.process(_make_transcript("ru"), TemplateKind.LECTURE))
+@pytest.mark.parametrize("heading", SHARED_PROMPT_HEADINGS)
+def test_lecture_prompt_carries_the_shared_frame(heading: str) -> None:
+    assert heading in _user_content(TemplateKind.LECTURE, "ru")
 
-    call = client.chat.completions.calls[0]
-    messages = call["messages"]
-    user_content = messages[-1]["content"]
-    assert "## Тезис" in user_content
-    assert "## Ход рассуждения" in user_content
-    assert "## Вывод" in user_content
-    assert "## О чём разговор" not in user_content
+
+def test_lecture_prompt_keeps_the_kind_sentinel() -> None:
+    user_content = _user_content(TemplateKind.LECTURE, "ru")
+    assert "single speaker's argument" in user_content
+    assert "positions of its participants" not in user_content
 
 
 def test_podcast_prompt_contains_podcast_headings_not_lecture() -> None:

@@ -1,4 +1,4 @@
-"""RED→GREEN: article templates are package markdown with D-16 headings (LLM-02, D-17)."""
+"""RED→GREEN: pass-1 lecture template carries the content-shaped frame (ART-01/ART-02/ART-03, D-01…D-18)."""
 
 from __future__ import annotations
 
@@ -9,13 +9,68 @@ import pytest
 
 from data_collection.dto.template_kind import TemplateKind
 
+LEGACY_LECTURE_HEADINGS = ("## Тезис", "## Ход рассуждения", "## Вывод")
+LEGACY_PODCAST_HEADINGS = ("## О чём разговор", "## Позиции", "## Что запомнить")
+SHARED_HEADINGS = ("## Конкретика", "## Зачем это СВА", "## Аудитория")
 
-def test_lecture_md_contains_russian_headings() -> None:
+
+def _template_text(kind: str) -> str:
     root = importlib.resources.files("data_collection.templates")
-    text = root.joinpath("lecture.md").read_text(encoding="utf-8")
-    assert "## Тезис" in text
-    assert "## Ход рассуждения" in text
-    assert "## Вывод" in text
+    return root.joinpath(f"{kind}.md").read_text(encoding="utf-8")
+
+
+@pytest.mark.parametrize("heading", LEGACY_LECTURE_HEADINGS)
+def test_lecture_md_omits_legacy_scaffold(heading: str) -> None:
+    assert heading not in _template_text("lecture")
+
+
+@pytest.mark.parametrize("heading", SHARED_HEADINGS)
+def test_lecture_md_carries_the_shared_frame(heading: str) -> None:
+    assert heading in _template_text("lecture")
+
+
+def test_lecture_md_names_the_topics_frame() -> None:
+    text = _template_text("lecture")
+    assert "single speaker's argument" in text
+    assert "implicit editorial chapters" in text
+    assert "no fixed count" in text
+    assert "do not add facts" in text
+    assert "**bold**" in text
+    assert "markdown blockquote" in text
+
+
+def test_lecture_md_states_the_concretika_rules() -> None:
+    text = _template_text("lecture")
+    assert "## Конкретика" in text
+    assert "concrete names, numbers, tools or caveats" in text
+    assert "**item** —" in text
+    assert "explicit grid of numbers" in text
+    assert "PostgreSQL" in text
+    assert "never invent a version" in text
+    assert "Omit the section entirely" in text
+
+
+def test_lecture_md_states_the_sva_rules() -> None:
+    text = _template_text("lecture")
+    assert "## Зачем это СВА" in text
+    assert "working analog for СВА" in text
+    assert "information security" in text
+    assert "Do not invent a duty" in text
+    assert "Omit the section when there is no such analog" in text
+
+
+def test_lecture_md_has_only_the_intended_headings() -> None:
+    text = _template_text("lecture")
+    headings = [line for line in text.splitlines() if line.startswith("#")]
+    assert set(headings) == set(SHARED_HEADINGS)
+
+
+def test_lecture_md_keeps_the_audience_block_last() -> None:
+    text = _template_text("lecture")
+    headings = [line for line in text.splitlines() if line.startswith("#")]
+    assert headings[-1] == "## Аудитория"
+    assert text.rstrip().endswith("employee, analyst, ds.")
+    assert not any(line.startswith("# ") for line in text.splitlines())
 
 
 def test_podcast_md_contains_russian_headings() -> None:
@@ -32,8 +87,8 @@ def test_load_article_templates_returns_both_kinds() -> None:
     root = importlib.resources.files("data_collection.templates")
     templates = load_article_templates(root)
     assert set(templates.keys()) == set(TemplateKind)
-    assert "## Тезис" in templates[TemplateKind.LECTURE]
-    assert "## О чём разговор" in templates[TemplateKind.PODCAST]
+    assert "## Конкретика" in templates[TemplateKind.LECTURE]
+    assert "## Аудитория" in templates[TemplateKind.PODCAST]
 
 
 def test_missing_lecture_md_raises_template_load_error(tmp_path: Path) -> None:
