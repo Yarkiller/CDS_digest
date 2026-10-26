@@ -24,7 +24,7 @@ created: 2026-10-26
 | **Config file** | `pyproject.toml` `[tool.pytest.ini_options]` — no `pytest.ini` |
 | **Quick run command** | `uv run pytest tests/unit/test_article_templates.py tests/unit/test_deepseek_article_adapter.py tests/unit/test_article_draft_body_audience.py -x` |
 | **Full suite command** | `uv run pytest` |
-| **Estimated runtime** | ~2 s quick / ~14 s full (measured baseline: 58 passed in 2.06 s; 1156 passed in 13.73 s) |
+| **Estimated runtime** | ~1.4 s quick / ~13.5 s full (measured baseline: 54 passed in 1.37 s; 1156 passed in 13.42 s) |
 
 ---
 
@@ -77,7 +77,7 @@ created: 2026-10-26
 | A real ingested lecture/podcast draft has `##` shaped by the talk and none of the six legacy scaffolds | ART-01 | Requires a live DeepSeek call plus a real transcript; the default suite never calls the network | `uv run --env-file ./ingestion-service/.env ingest <new-url> --template lecture --debug`; open `/admin/materials/{id}`; record the `##` list and confirm no scaffold heading appears |
 | Every name / number / tool in `## Конкретика` appears in the transcript; no invented versions | ART-02 | Semantic ghost-diff review cannot be automated without a false-positive-heavy regex | Capture the transcript used for the run; audit each fact bullet against it (digit + canonical-name audit); record pass/fail per bullet |
 | `## Зачем это СВА` present when an analog exists, `dek` still a 1–2 sentence hook, and no invented СВА duty/policy | ART-03 | Editorial judgment; owner-overridden by D-11/D-16 | Read the preview; confirm the section is present for an analog-bearing talk, quotes are `>`, and no policy/standard is asserted that is absent from the transcript |
-| `response_chars` stays well under the ~16K truncation-risk band | ART-01 (quality guard) | Only observable on a live run; adapter does not read `finish_reason` | Record `response_chars=` from `--debug`; if ≥ 16K, re-run with a shorter-source talk and note the band in the phase summary |
+| `response_chars` stays under the ~16K truncation-risk band | ART-01 (quality guard) | Only observable on a live run; adapter does not read `finish_reason` | Record `response_chars=` from `--debug`; `≥ 16000` is a **one-way owner escalation** (a `max_tokens` change is a locked-surface exception) — do not silently re-run; record the figure in the phase summary / `29-UAT.md` |
 
 *If none: "All phase behaviors have automated verification."* — Not applicable: 4 manual-only behaviors above.
 

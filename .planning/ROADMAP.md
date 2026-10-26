@@ -95,6 +95,7 @@ Full phase detail: [milestones/v1.4-ROADMAP.md](milestones/v1.4-ROADMAP.md)
 **Granularity:** standard (research sketched 29–36; merged Tavily-port+quota and enricher+cheat-sheet-files as too-thin adjacent pairs). Order is not inverted.
 
 ### Phase 29: Pass-1 richer templates
+
 **Goal**: A newly ingested material is a Russian longread shaped like the talk, with a transcript-only facts layer and an explicit СВА takeaway — not a three-block summary.
 **Depends on**: Nothing (v1.5 first phase; builds on shipped v1.1–v1.4 ingest)
 **Requirements**: ART-01, ART-02, ART-03
@@ -103,6 +104,7 @@ Full phase detail: [milestones/v1.4-ROADMAP.md](milestones/v1.4-ROADMAP.md)
   2. The article contains a dedicated source-facts block (names, numbers, tools, caveats) filled from the transcript only — no invented numbers, names, or tool versions.
   3. The article contains explicit «Зачем это СВА» and risks/limitations sections even if the talk barely mentioned audit; `dek` stays the 1–2 sentence hook and is not collapsed into those sections.
   4. (Owner override, D-10/D-11/D-17 — governs criterion 3 where they differ) There is exactly ONE СВА section, `## Зачем это СВА`: it is written whenever an analog for СВА exists (control, data, model, vendor, information security, process quality) and omitted honestly when none does; a second «Риски и ограничения» heading is forbidden; `dek` stays the 1–2 sentence hook.
+
 **Plans**: TBD
 
 **Locked scope facts (do not re-litigate):**
@@ -111,11 +113,17 @@ Full phase detail: [milestones/v1.4-ROADMAP.md](milestones/v1.4-ROADMAP.md)
 - Do not apply the transcript character cap to future extract context (Pitfall 11).
 
 **Plans:** 3 plans
+**Wave 1**
 - [ ] 29-01-PLAN.md — lecture frame + shared system-prompt voice/`dek`/length rules, with the legacy-heading pins inverted (tracer)
+
+**Wave 2** *(blocked on Wave 1 completion)*
 - [ ] 29-02-PLAN.md — podcast frame with kind-sentinel isolation and the audience-strip regression pin
+
+**Wave 3** *(blocked on Wave 2 completion)*
 - [ ] 29-03-PLAN.md — live ingest proof: heading list, per-bullet facts audit against the transcript, `response_chars` band, owner read (blocking)
 
 ### Phase 30: Classifier practical | conceptual
+
 **Goal**: Every ingest records a closed topic kind; extras never attach when the kind is missing, empty, unknown, or conceptual.
 **Depends on**: Phase 29
 **Requirements**: KIND-01, KIND-02, KIND-03
@@ -123,6 +131,7 @@ Full phase detail: [milestones/v1.4-ROADMAP.md](milestones/v1.4-ROADMAP.md)
   1. After ingest, the draft stores `topic_kind` as `practical` or `conceptual`.
   2. Missing, empty, or unknown `topic_kind` is stored as `conceptual` and does not attach guide sections, generated-code extras, Tavily reads, or a cheat sheet.
   3. A conceptual material has no empty «Гайд» heading and no “ссылки скоро появятся” placeholder in the body (no cheat-sheet path either). Download controls are omitted later in Phase 33 because no files exist — never a disabled CTA.
+
 **Plans**: TBD
 
 **Locked scope facts (do not re-litigate):**
@@ -132,6 +141,7 @@ Full phase detail: [milestones/v1.4-ROADMAP.md](milestones/v1.4-ROADMAP.md)
 - Reader-facing quota/classifier badges are out of scope.
 
 ### Phase 31: Tavily quota and persist-then-enrich floor
+
 **Goal**: Pass-1 always lands as a draft plus a pending shortlist item; Tavily is a proxy-free budgeted port that quota exhaustion and `already_saved` never spend.
 **Depends on**: Phase 30
 **Requirements**: ART-04, TAV-02
@@ -139,6 +149,7 @@ Full phase detail: [milestones/v1.4-ROADMAP.md](milestones/v1.4-ROADMAP.md)
   1. A successful pass-1 write always leaves a `materials` row with `status=draft` plus a pending shortlist item, including when the topic is conceptual or Tavily is skipped.
   2. A shared counter stops initiating Tavily requests at 1000 (`try_consume`); the operator log contains `tavily_quota_exhausted`; the pass-1 draft from criterion 1 remains.
   3. Per-video initiation is capped (~5). If remaining quota cannot grant the planned `n` for that video, pass 2 is skipped (fail-soft, keep pass 1) rather than consuming a partial grant.
+
 **Plans**: TBD
 
 **Locked scope facts (do not re-litigate):**
@@ -152,6 +163,7 @@ Full phase detail: [milestones/v1.4-ROADMAP.md](milestones/v1.4-ROADMAP.md)
 - **Plan with `--research-phase`:** Tavily SDK constructor/`search`/`extract` shapes; quota remaining=3 vs per-video=5 rule (locked above: skip unless full `n`); concurrent `try_consume` RPC.
 
 ### Phase 32: Pass-2 enricher and personal-KB cheat sheets
+
 **Goal**: A practical ingest with quota may enrich the already-saved article with in-article guide, marked generated code, only live URLs, and one personal-KB markdown note per key technology — without failing ingest.
 **Depends on**: Phase 31
 **Requirements**: TAV-01, TAV-03, ENR-01, ENR-02, ENR-03, SHEET-01, ING-11
@@ -161,6 +173,7 @@ Full phase detail: [milestones/v1.4-ROADMAP.md](milestones/v1.4-ROADMAP.md)
   3. Tavily errors, timeouts, or a failed pass-2 JSON do not fail ingest: exit 0, no `stage=llm` envelope, pass-1 draft kept.
   4. A `practical` material may attach one or more markdown notes written as a personal knowledge-base entry (dense, scannable, copy-pasteable: commands, gotchas, links) — not as a second article; each key technology in the material gets its own file. Paths live on the material, not `razbors.notebook_path`.
   5. A re-run whose `youtube_video_id` is already saved returns `already_saved` and makes zero Tavily and zero enricher calls (no second cheat-sheet files either).
+
 **Plans**: TBD
 
 **Locked scope facts (do not re-litigate):**
@@ -172,6 +185,7 @@ Full phase detail: [milestones/v1.4-ROADMAP.md](milestones/v1.4-ROADMAP.md)
 - **Plan with `--research-phase`:** extract whole-POST 400 on one bad URL (pre-filter locally); prompt-injection fencing and frozen-facts comparison need a concrete delimiter/normalization rule.
 
 ### Phase 33: Reader sources and cheat-sheet downloads
+
 **Goal**: An authenticated reader and an admin previewing a draft or ready material see the same sources list and the same set of cheat-sheet downloads; missing notes omit the control rather than serving an empty file.
 **Depends on**: Phase 32
 **Requirements**: SHEET-02, SHEET-03, MAT-10, MAT-11, ADUX-13
@@ -180,6 +194,7 @@ Full phase detail: [milestones/v1.4-ROADMAP.md](milestones/v1.4-ROADMAP.md)
   2. An authenticated reader sees a download for each cheat-sheet note that exists (filename/title from the technology) and no control for notes that were not produced; when no files exist, download controls are omitted — not a disabled CTA, not an empty file.
   3. An authenticated reader can download each existing note; a missing or path-invalid file does not return a successful empty body.
   4. Admin preview of a draft or ready material shows the same sources block and the same set of cheat-sheet downloads as the reader DTO (no second fetch shape).
+
 **Plans**: TBD
 **UI hint**: yes
 
@@ -190,6 +205,7 @@ Full phase detail: [milestones/v1.4-ROADMAP.md](milestones/v1.4-ROADMAP.md)
 - Knowledge search does not index cheat-sheet file text (KNOW-06 deferred). No reader-facing quota/classifier badges.
 
 ### Phase 34: Collect honesty and operator debug
+
 **Goal**: Unattended collect treats enrich skip, quota exhaust, and fail-soft pass 2 as success for that video; `--debug` reports classifier, remaining quota, and URL counts without secrets.
 **Depends on**: Phase 33
 **Requirements**: ING-12, DBG-03
@@ -197,6 +213,7 @@ Full phase detail: [milestones/v1.4-ROADMAP.md](milestones/v1.4-ROADMAP.md)
   1. `ingest-collect` treats enrich skip, quota exhaust, and fail-soft pass-2 as success for that video — they do not increment `videos_failed` and do not change the two-line stdout contract (`EXPECTED_SUCCESS_LINES` byte-identical).
   2. Operator `--debug` reports classifier, remaining Tavily quota, and opened-vs-failed URL counts, with no API keys, no `tvly-` tokens, and no extract bodies.
   3. Collect can emit `tavily_quota_exhausted` through `emit_diagnostic` (journal, not only `--debug`); `str(err)` stays sanitized; if wall-clock remaining under `TimeoutStartSec=1800` is tight, pass 2 is skipped and the video still counts as success.
+
 **Plans**: TBD
 
 **Locked scope facts (do not re-litigate):**

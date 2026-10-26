@@ -16,6 +16,10 @@ Pass 2 is a gated enhancement for `practical` topics only.
 - [ ] **ART-01**: A newly ingested material is a Russian longread whose `##` headings follow the source talk, not the three-block lecture scaffold («Тезис / Ход рассуждения / Вывод») or the podcast trio («О чём разговор / Позиции / Что запомнить»)
 - [ ] **ART-02**: The article contains a dedicated source-facts block (names, numbers, tools, caveats) filled from the transcript only — no invented numbers, names, or tool versions
 - [ ] **ART-03**: The article contains explicit «Зачем это СВА» and risks/limitations sections even if the talk barely mentioned audit; `dek` stays the 1–2 sentence hook and is not collapsed into those sections
+
+> **Phase 29 owner overrides** (CONTEXT.md D-08, D-10, D-11 — gathered 2026-10-26 after these lines were written; verification scores against this reading):
+> - **ART-02** — read as «the `## Конкретика` block exists when the talk carries concreteness». Omitting it on a talk with no names/numbers/tools is correct, not a gap; no empty heading, no stub.
+> - **ART-03** — read as **one** optional `## Зачем это СВА` section (the separate «риски и ограничения» heading is merged into its prose, per D-10), omitted when there is no working analog for СВА (D-11). `dek` stays the 1–2 sentence hook (D-17).
 - [ ] **ART-04**: A successful pass-1 write always leaves a `materials` row with `status=draft` plus a pending shortlist item, including when the topic is conceptual or Tavily is skipped
 
 ### Classifier

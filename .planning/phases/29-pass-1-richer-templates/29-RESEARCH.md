@@ -439,30 +439,30 @@ Source: `MaterialPage.jsx:240-245` `[VERIFIED]`. Default sanitize schema allows 
 | A4 | A single streamed call can still satisfy "content-shaped `##`" quality-wise, without per-section drafting | Standard Stack / Alternatives | Per-section drafting is the documented quality lever for longform-from-transcript work, but it is a call-shape change and out of scope; if quality is poor at UAT, that becomes a Phase-32-style discussion, not a Phase-29 patch. |
 | A5 | The live proof can obtain a YouTube video id absent from `materials` (needed because `youtube_video_id` is unique and a re-run yields `already_saved`) | Validation Architecture | Without a fresh id the proof cannot observe new-template output; the operator would have to accept a "prompt captured" proof instead. |
 
-## Open Questions
+## Open Questions (RESOLVED)
 
 1. **How do we bound output length: prompt band or `max_tokens`?**
    - What we know: measured output 10,314 chars; default completion cap 8K tokens; no `max_tokens` in the adapter; a cut stream is `invalid_json` (fail-closed, zero rows).
    - What's unclear: whether the richer frame lands at 12K or 20K chars in production.
-   - Recommendation: ship the prompt length band (in scope), measure `response_chars` in the live proof, and treat > ~16,000 chars as the trigger to ask the owner for a `max_tokens` change (a locked-surface exception).
+   - Recommendation: **RESOLVED** — ship the prompt length band (in scope), measure `response_chars` in the live proof, and treat > ~16,000 chars as the trigger to ask the owner for a `max_tokens` change (a locked-surface exception). Implemented in 29-01/29-02/29-03.
 2. **Where do the voice rules live: `ARTICLE_SYSTEM_PROMPT` or the templates?**
    - What we know: both are allowed by CONTEXT discretion; the existing system-prompt test pins ten substrings, all additive-compatible.
    - What's unclear: nothing technical — this is a maintainability call.
-   - Recommendation: shared rules (voice, attribution, no-recap) in `ARTICLE_SYSTEM_PROMPT`; per-kind structure and the two optional section clauses in the template files. This keeps the two `.md` files differing by one paragraph.
+   - Recommendation: **RESOLVED** — shared rules (voice, attribution, no-recap) in `ARTICLE_SYSTEM_PROMPT`; per-kind structure and the two optional section clauses in the template files. This keeps the two `.md` files differing by one paragraph. Implemented in 29-01.
 3. **Which video proves the phase, and who runs it?**
    - What we know: Phase 28's runbook (`uv run --env-file ./ingestion-service/.env ingest <url> --template lecture --debug`) is proven; captions need `YOUTUBE_PROXY_URL` + the `adguard-vpn` container; DeepSeek must stay direct (`trust_env=False`).
    - What's unclear: operator availability at execution time and a suitable unused video id.
-   - Recommendation: make the live proof an explicit task with a `checkpoint:human-verify`, and pre-record the acceptance checklist (headings follow the talk; `## Конкретика` present or honestly absent; `## Зачем это СВА` present when an analog exists; `dek` unchanged in role; `response_chars` recorded).
+   - Recommendation: **RESOLVED** — make the live proof an explicit task with a `checkpoint:human-verify`, and pre-record the acceptance checklist (headings follow the talk; `## Конкретика` present or honestly absent; `## Зачем это СВА` present when an analog exists; `dek` unchanged in role; `response_chars` recorded). Implemented as 29-03.
 4. **Do we accept flat-rendered quotes and tables?**
    - What we know: `strong` is bold; `blockquote`/`table` have no styling on the materials surface.
-   - Recommendation: accept for v1.5 (bullets are the documented default), and do not write a UAT criterion that depends on visual emphasis.
+   - Recommendation: **RESOLVED** — accept for v1.5 (bullets are the documented default), and do not write a UAT criterion that depends on visual emphasis.
 5. **Do existing materials get relabelled or re-ingested?**
    - What we know: success criteria say "newly ingested".
-   - Recommendation: no backfill, no re-ingest (a re-ingest of a saved video returns `already_saved` and spends no LLM call anyway).
+   - Recommendation: **RESOLVED** — no backfill, no re-ingest (a re-ingest of a saved video returns `already_saved` and spends no LLM call anyway).
 6. **The ROADMAP/REQUIREMENTS wording for criterion 3 does not match D-10/D-11 — which text does verification score against?**
    - What we know: `.planning/ROADMAP.md` Phase 29 criterion 3 still reads "explicit «Зачем это СВА» **and risks/limitations sections** even if the talk barely mentioned audit"; `REQUIREMENTS.md` ART-03 says the same. CONTEXT D-10 merges the two headings into one and D-11 makes it optional (owner override, gathered after the roadmap was written).
    - What's unclear: a literal-reading verifier will demand a second section and demand presence on a talk with no analog — both explicitly rejected by the owner.
-   - Recommendation: plan and verify against the CONTEXT reading (one optional `## Зачем это СВА`, residual caution in its prose), state the override in the phase summary/VERIFICATION notes, and (cheap, optional) ask the owner to amend criterion 3 in `.planning/ROADMAP.md` + ART-03 so the artifact and the intent do not disagree.
+   - Recommendation: **RESOLVED** — plan and verify against the CONTEXT reading (one optional `## Зачем это СВА`, residual caution in its prose), state the override in the phase summary/VERIFICATION notes, and record the override beside ART-02/ART-03 in `.planning/REQUIREMENTS.md` + `.planning/PROJECT.md` (done at plan time; see "Phase 29 owner overrides" there).
 
 ## Environment Availability
 
@@ -489,8 +489,8 @@ Source: `MaterialPage.jsx:240-245` `[VERIFIED]`. Default sanitize schema allows 
 |----------|-------|
 | Framework | pytest `>=8.3.0` (Python 3.12.13), `testpaths = ["tests/unit"]` `[VERIFIED: pyproject.toml:31, 35-39]` |
 | Config file | `pyproject.toml` `[tool.pytest.ini_options]` — no `pytest.ini` |
-| Quick run command | `uv run pytest tests/unit/test_article_templates.py tests/unit/test_deepseek_article_adapter.py tests/unit/test_article_draft_body_audience.py -x` — measured **58 passed in 2.06 s** |
-| Full suite command | `uv run pytest` — measured **1156 passed in 13.73 s** (baseline before any Phase 29 edit) |
+| Quick run command | `uv run pytest tests/unit/test_article_templates.py tests/unit/test_deepseek_article_adapter.py tests/unit/test_article_draft_body_audience.py -x` — measured **54 passed in 1.37 s** |
+| Full suite command | `uv run pytest` — measured **1156 passed in 13.42 s** (re-measured at plan time, before any Phase 29 edit) |
 
 ### Phase Requirements → Test Map
 | Req ID | Behavior | Test Type | Automated Command | File Exists? |
@@ -561,7 +561,7 @@ Source: `MaterialPage.jsx:240-245` `[VERIFIED]`. Default sanitize schema allows 
 - `web/node_modules/hast-util-sanitize/lib/schema.js:139-198`; `web/node_modules/tailwindcss/preflight.css:7-16, 102-105` — allowed tags/protocols and the zeroed blockquote/table styling.
 - `.planning/milestones/v1.4-phases/28-live-proof-streamed-deepseek-ingest/evidence/ingest-run-1.log:1-7` — measured `transcript_chars=20923`, `response_chars=10314`, `elapsed_ms=16578`.
 - `uv.lock:917-919, 1087-1089, 1858-1860`; `pyproject.toml:31, 35-39` — locked versions and pytest config.
-- Local runs: `uv run pytest` → **1156 passed in 13.73 s**; targeted files → **58 passed in 2.06 s**.
+- Local runs: `uv run pytest` → **1156 passed in 13.42 s**; targeted files → **54 passed in 1.37 s**.
 
 ### Secondary (MEDIUM confidence — official provider docs via Context7)
 - DeepSeek, *JSON Output* — `https://api-docs.deepseek.com/guides/json_mode` — `json_object` requires the word "json" in the prompt, the docs recommend an example JSON shape and a sane `max_tokens`, and warn that empty content may occur.
