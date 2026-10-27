@@ -1,16 +1,16 @@
 ---
-status: deferred
+status: awaiting_owner
 phase: 29-pass-1-richer-templates
 plan: 03
 started: 2026-10-26T18:47:47Z
-updated: 2026-10-27T02:32:00Z
+updated: 2026-10-27T05:55:00Z
 ---
 
 # Phase 29 — Live ingest UAT (plan 03)
 
-Owner editorial sign-off is Task 3 (`checkpoint:human-verify`, `gate=blocking-human`). This file records the machine-observable evidence. **It is not owner approval.** The live proof has not persisted a draft, so every ART criterion below is **deferred**, not pass and not fail.
+Owner editorial sign-off is Task 3 (`checkpoint:human-verify`, `gate=blocking-human`). This file records the machine-observable evidence. **It is not owner approval.** Attempt 3 persisted a draft (`material_id=26`); ART criteria below are scored against that draft. Task 3 is still awaiting `"approved"` or a named defect.
 
-**Attempt 1 failed** (2026-10-26) at `stage=metadata` `ProxyError`. **Attempt 2** (2026-10-27) ran after the operator confirmed SOCKS5/adguard-vpn is running; that confirmation unblocks the *intent* of the metadata path, not the dest connect. The httpx oEmbed probe still did not return HTTP 200, so **no ingest was spent** and no draft exists for editorial sign-off.
+**Attempt 1 failed** (2026-10-26) at `stage=metadata` `ProxyError`. **Attempt 2** (2026-10-27) ran after the operator confirmed SOCKS5/adguard-vpn is running; that confirmation unblocks the *intent* of the metadata path, not the dest connect. The httpx oEmbed probe still did not return HTTP 200, so **no ingest was spent**. **Attempt 3** (2026-10-27): operator authorized one live ingest with YouTube proxy disabled in-process (direct egress). That is **not** owner editorial approval of a draft. SOCKS hostname/IPv6 CONNECT refused on Attempts 1–2; this proof used direct YouTube because SOCKS dest-connect was refused.
 
 ## Pre-flight (recorded before the run)
 
@@ -22,29 +22,37 @@ Credentials probe (`uv run --env-file ./ingestion-service/.env python -c "… Se
 True True True True
 ```
 
-No secret printed. All four required values are present. Re-probed on Attempt 2: still `True True True True`.
+No secret printed. All four required values are present in `.env`. Re-probed on Attempt 2: still `True True True True`.
 
-| Check | Attempt 1 (2026-10-26) | Attempt 2 (2026-10-27, after operator restored VPN) |
-|-------|------------------------|------------------------------------------------------|
-| `DEEPSEEK_API_KEY` | present | present |
-| `SUPABASE_URL` | present | present |
-| `SUPABASE_SECRET_KEY` | present | present |
-| `YOUTUBE_PROXY_URL` | present (`socks5://adguard:***@192.168.1.68:1080`; password masked) | unchanged; not printed |
-| `api.deepseek.com` TLS | TLSv1.3 (direct; `trust_env=False` on the DeepSeek client) | TLSv1.3 (direct) |
-| SOCKS5 endpoint `192.168.1.68:1080` | TCP open (`Test-NetConnection TcpTestSucceeded=True`) | TCP open again (`TcpTestSucceeded=True`, ~35 s) |
-| Local `adguard-vpn` container on this host | not visible (`docker` Desktop pipe missing; `wsl docker` missing) | still not visible (`docker` Desktop pipe missing) |
-| Unit gate (post-29-01/29-02 tree) | 95 passed in 1.57s | 95 passed in 1.61s |
-| Full suite before verdict | 1197 passed, 1 warning in 14.80s | not re-run (no draft to verdict) |
+**Attempt 3 override (operator, 2026-10-27):** SOCKS dest-connect still refused; ingest must load `.env` then clear `YOUTUBE_PROXY_URL` in-process before `Settings.from_env` / CLI. `.env` file was **not** edited. After that load+clear:
 
-Candidate video (same id on both attempts; still unused):
+```
+True True True False
+```
+
+(`bool(deepseek_api_key)`, `bool(supabase_url)`, `bool(supabase_secret_key)`, `bool(youtube_proxy_url)`). `bool(Settings.from_env().youtube_proxy_url)` printed `False`. `proxy_cleared True`.
+
+| Check | Attempt 1 (2026-10-26) | Attempt 2 (2026-10-27, after operator restored VPN) | Attempt 3 (2026-10-27, direct egress) |
+|-------|------------------------|------------------------------------------------------|----------------------------------------|
+| `DEEPSEEK_API_KEY` | present | present | present |
+| `SUPABASE_URL` | present | present | present |
+| `SUPABASE_SECRET_KEY` | present | present | present |
+| `YOUTUBE_PROXY_URL` | present (`socks5://adguard:***@192.168.1.68:1080`; password masked) | unchanged; not printed | present in `.env` (unchanged); **cleared in-process** so `Settings.youtube_proxy_url is None` |
+| `api.deepseek.com` TLS | TLSv1.3 (direct; `trust_env=False` on the DeepSeek client) | TLSv1.3 (direct) | TLSv1.3 (direct) |
+| SOCKS5 endpoint `192.168.1.68:1080` | TCP open (`Test-NetConnection TcpTestSucceeded=True`) | TCP open again (`TcpTestSucceeded=True`, ~35 s) | not used; orchestrator probe: `127.0.0.1:1080` not listening; SOCKS dest-connect previously refused |
+| Local `adguard-vpn` container on this host | not visible (`docker` Desktop pipe missing; `wsl docker` missing) | still not visible | not used |
+| Unit gate (post-29-01/29-02 tree) | 95 passed in 1.57s | 95 passed in 1.61s | 95 passed in 1.70s |
+| Full suite before verdict | 1197 passed, 1 warning in 14.80s | not re-run (no draft to verdict) | 1197 passed, 1 warning in 14.37s |
+
+Candidate video (same id on all three attempts; unused until Attempt 3):
 
 | Field | Value |
 |-------|--------|
 | URL | `https://www.youtube.com/watch?v=aircAruvnKk` |
 | `youtube_video_id` | `aircAruvnKk` |
 | Kind | lecture (single-speaker explainer; `--template lecture`) |
-| Pre-run `materials` query | Attempt 1: 0 rows. Attempt 2 (Supabase MCP `select id, youtube_video_id, status where youtube_video_id = 'aircAruvnKk'`): **0 rows**. Still absent; not an `already_saved` re-hit. |
-| Captions probe | Attempt 1: `video_id=aircAruvnKk language=ru chars=16960` (adapter `get`; `ru` preferred over `en`). `evidence/transcript-1.txt` kept. Attempt 2 did not recapture because ingest was not spent. |
+| Pre-run `materials` query | Attempt 1: 0 rows. Attempt 2 (Supabase MCP `select id, youtube_video_id, status where youtube_video_id = 'aircAruvnKk'`): **0 rows**. Attempt 3 (same MCP query before ingest): **0 rows**. Still absent; not an `already_saved` re-hit. |
+| Captions probe | Attempt 1: `video_id=aircAruvnKk language=ru chars=16960` (adapter `get`; `ru` preferred over `en`). `evidence/transcript-1.txt` kept. Attempt 2 did not recapture because ingest was not spent. Attempt 3 recapture skipped (same id; pre-flight captions `aircAruvnKk ru 16960` with proxy unset). |
 | `MAX_TRANSCRIPT_CHARS` | 80000; 16960 fits, so the run cannot die on the budget gate |
 | Duration (public listing) | ~19 min (above the 15+ min bar) |
 
@@ -67,6 +75,23 @@ Probed with the same client ingest uses (`build_httpx_client(Settings.from_env()
 
 Interpretation: TCP:1080 is open, so the operator’s “VPN is running” is true at the socket, but the SOCKS dest connect still does not tunnel HTTPS (YouTube oEmbed *and* example.com). That is the same class of egress issue as Attempt 1’s metadata `ProxyError`. Captions succeeding on Attempt 1 does not make metadata httpx succeed. **No production file was edited.**
 
+### Attempt 3 pre-flight (direct egress; SOCKS precondition overridden)
+
+Operator signal: `done` — proceed with ingest using direct YouTube egress (no SOCKS). **Not** “approved” of a draft.
+
+Same ingest client with proxy unset (`build_httpx_client` after in-process clear):
+
+| Probe | Result |
+|-------|--------|
+| credentials after env-file + clear | `True True True False` |
+| `bool(youtube_proxy_url)` | `False` |
+| httpx oEmbed (no proxy) | **HTTP 200** |
+| captions adapter `get(aircAruvnKk)` (no proxy) | `aircAruvnKk ru 16960` |
+| `api.deepseek.com` TLS | TLSv1.3 |
+| `.env` | unchanged (git status clean under `ingestion-service/` and `data-collection/`) |
+
+Orchestrator (2026-10-27) had already measured httpx oEmbed without proxy HTTP 200 and captions `ru` 16960 chars; SOCKS `127.0.0.1:1080` not listening. Plan precondition “`YOUTUBE_PROXY_URL` is set and the `adguard-vpn` container is connected” is **operator-overridden** for this attempt and recorded here; it is not silently dropped.
+
 ## Run
 
 ### Attempt 1 (2026-10-26) — ingest spent, metadata failed
@@ -77,7 +102,7 @@ One command only. Template actually run: **lecture**. No second run of this vide
 uv run --env-file ./ingestion-service/.env ingest "https://www.youtube.com/watch?v=aircAruvnKk" --template lecture --debug
 ```
 
-Quoted from `evidence/ingest-run-1.log` (canonical evidence file; **not overwritten** on Attempt 2 because no ingest was spent):
+Quoted from the Attempt 1 capture of `evidence/ingest-run-1.log` (later overwritten by Attempt 3, which is the canonical live-proof log):
 
 ```
 command: uv run --env-file ./ingestion-service/.env ingest "https://www.youtube.com/watch?v=aircAruvnKk" --template lecture --debug
@@ -103,92 +128,155 @@ This is a captions-vs-metadata split on the same SOCKS5 URL: captions completed 
 
 Operator signal: `SOCKS5/adguard-vpn запущен и работает`. That is **not** “approved” of a draft; it only unblocked the retry of the metadata probe.
 
-Required HTTP 200 on httpx oEmbed was not observed (see Attempt 2 probe table). Per resume instructions: do not invent a run. `evidence/ingest-run-1.log` still holds Attempt 1. `aircAruvnKk` remains absent from `materials`.
+Required HTTP 200 on httpx oEmbed was not observed (see Attempt 2 probe table). Per resume instructions: do not invent a run. `aircAruvnKk` remained absent from `materials`.
+
+### Attempt 3 (2026-10-27) — ingest spent, persist succeeded (direct egress)
+
+One command only. Template actually run: **lecture**. Same video id; first persist, so not `already_saved`. `.env` not edited. Proxy cleared in-process after `--env-file` load.
+
+```
+uv run --env-file ./ingestion-service/.env python $env:TEMP\gsd-29-03-ingest.py
+argv: ingest https://www.youtube.com/watch?v=aircAruvnKk --template lecture --debug
+```
+
+Quoted from `evidence/ingest-run-1.log` (canonical evidence file; overwritten by this successful run):
+
+```
+command: uv run --env-file ./ingestion-service/.env python $env:TEMP\gsd-29-03-ingest.py
+argv: ingest https://www.youtube.com/watch?v=aircAruvnKk --template lecture --debug
+override: YOUTUBE_PROXY_URL cleared in-process after --env-file load; .env file unchanged; direct YouTube egress (no SOCKS)
+wall_clock_before_utc: 2026-10-27T05:54:02Z
+wall_clock_after_utc: 2026-10-27T05:54:22Z
+elapsed_s: 20.06
+exit_code: 0
+
+--- stderr ---
+[08:54:04] debug stage=captions elapsed_ms=1063 video_id=aircAruvnKk transcript_chars=16960 transcript_words=2506 language=ru
+[08:54:05] debug stage=metadata elapsed_ms=577 video_id=aircAruvnKk
+[08:54:22] debug stage=llm elapsed_ms=16766 template=lecture response_chars=9847
+[08:54:22] debug stage=persist elapsed_ms=311 material_id=26 slug=neiroset-kak-matematicheskaia-model-struktura-vesa-aircAruvnKk batch_id=7 rank=3 already_saved=False
+
+--- stdout ---
+✓ transcript
+✓ LLM
+✓ saved
+material_id: 26
+slug: neiroset-kak-matematicheskaia-model-struktura-vesa-aircAruvnKk
+batch_id: 7
+rank: 3
+already_saved: false
+```
+
+Printed ids: `material_id: 26`, `slug: neiroset-kak-matematicheskaia-model-struktura-vesa-aircAruvnKk`, `batch_id: 7`, `rank: 3`, `already_saved: false`. `stage=llm` carries `template=lecture` and `response_chars=9847`. No `network_error` and no `APIConnectionError` anywhere in the log. `transcript_chars=16960` matches `evidence/transcript-1.txt`. Shortlist read-back (read-only): `digest_shortlist_items` row `material_id=26` / `batch_id=7` / `rank=3` / `decision=pending`. **No production file was edited.**
 
 ## Draft read-back route
 
-**None.** No `material_id` was printed, so neither `/admin/materials/{id}` nor the read-only `materials` fallback ran. `evidence/draft-1.json` was **not** written (the fallback is only for when a draft exists and the admin preview is unavailable).
+**Read-only fallback** (admin preview not opened: Vite `5174` / `VITE_USE_MOCKS=false` login risk from STATE.md). Route: `build_supabase_service_client(Settings.from_env()).table('materials').select('title,dek,body_markdown').eq('id', '26').single()` after the same env-file load + in-process proxy clear. Writes `evidence/draft-1.json` with exactly those three keys. Never updates the row. Equivalent MCP `select title, dek, body_markdown from materials where id = '26'` returned the same row. `len(body_markdown)=9847` matches `response_chars=9847`.
 
-Pre-run absence of `aircAruvnKk` was re-checked on Attempt 2; neither attempt inserted a row.
+Preview path for the owner (Task 3): `/admin/materials/26`.
 
 ## Transcribed heading list
 
-Not observed. No `body_markdown` was persisted.
+Ordered `##` from `body_markdown` in `evidence/draft-1.json` (verbatim, no paraphrase):
 
-Legacy scaffold walk (cannot be scored against a live draft):
+1. `## Нейрон — это просто число`
+2. `## Зачем нужны скрытые слои`
+3. `## Как устроен переход между слоями`
+4. `## Матрицы и векторы: компактная запись`
+5. `## Вся сеть — это функция`
+6. `## Сигмоида устарела? Разговор с Лишей Ли`
+7. `## Конкретика`
+8. `## Зачем это СВА`
+
+Section count: **8** (not a fixed three). No heading named «Содержание доклада». No `## Аудитория` in the body.
+
+Legacy scaffold walk against the produced `##` list:
 
 | Literal | In produced `##` list |
 |---------|------------------------|
-| `## Тезис` | not observed |
-| `## Ход рассуждения` | not observed |
-| `## Вывод` | not observed |
-| `## О чём разговор` | not observed |
-| `## Позиции` | not observed |
-| `## Что запомнить` | not observed |
-
-Section count: not observed (cannot confirm “not a fixed three”).
+| `## Тезис` | absent |
+| `## Ход рассуждения` | absent |
+| `## Вывод` | absent |
+| `## О чём разговор` | absent |
+| `## Позиции` | absent |
+| `## Что запомнить` | absent |
 
 ## dek
 
-Not observed. No draft row.
+Observed (verbatim from `evidence/draft-1.json`):
+
+> Как из 784 пикселей получается цифра? Разбираем устройство простейшей нейросети — без магии, но с матрицами и 13 000 параметров.
+
+Two sentences. Topic hook about the talk (pixels → digit, structure, 13 000 parameters). Not an audit summary and not a substitute for `## Зачем это СВА`.
 
 ## `## Конкретика` per-bullet audit
 
-Section presence: **not observed** (no article body). This is not D-08 honest omission of an empty facts block — the model never ran.
+Section presence: **present**. Talk is a 3Blue1Brown intro to neural nets (handwritten digits, 28×28, weighted sums, sigmoid, ReLU cameo) — concrete numbers/tools exist, so D-08 omit-when-empty does not apply.
 
 | # | Subject | Asserted number/name/tool/version | Transcript fragment |
 |---|---------|-----------------------------------|---------------------|
-| — | — | — | no bullets to audit; ingest stopped before `stage=llm` (Attempt 1) / was not started (Attempt 2) |
+| 1 | Input layer size | **784** neurons for **28x28** pixels | `каждому из 28x28 пикселей входного изображения, а это всего 784 нейрона` |
+| 2 | Output layer size | **10** neurons, one per digit | `мы видим 10 нейронов, каждый из которых соответствует определённой цифре` |
+| 3 | Hidden layers | **two** hidden layers of **16** neurons; arbitrary, for explanation | `два скрытых слоя по 16 нейронов в каждом, и, признаться, это довольно произвольный выбор` / `я выбрал два слоя, потому что так будет проще объяснить` |
+| 4 | Parameter count | almost **13 000** weights and biases | `эта сеть содержит почти 13 000 весов и смещений` |
+| 5 | Sigmoid | compresses weighted sum to **0..1**; rarely used in modern nets | `сигмоидную функцию, также называемую логистической кривой` / `в современных сетях сигмоид используется довольно редко` |
+| 6 | ReLU | **ReLU (Rectified Linear Unit)** = max(0, a); easier to train; works in deep nets | `ReLU просто гораздо проще для обучения` / `Rectified Linear Unit` / `берёт максимум из нуля и a` / `отлично работает для очень глубоких нейросетей` |
+
+Zero `NOT FOUND` rows. Canonical spelling: ReLU expanded in the bullet as in the transcript (`Rectified Linear Unit`); «сигмоида» for the speaker’s «сигмоидная функция» (same referent; D-09).
 
 ## Criterion verdicts
 
 ### ART-01 criterion 1 — headings follow the talk
 
-**Verdict: deferred**
+**Verdict: pass** (machine-observable; editorial “would an editor accept these as implicit chapters” remains Task 3)
 
-Observed: Attempt 1 ingest exited 1 at `stage=metadata` with `exception_class=ProxyError`. Attempt 2 httpx oEmbed probe did not return HTTP 200 (`ProxyError` / `ConnectError`); ingest was not started. No `body_markdown`, no heading list. The six legacy scaffold literals cannot be walked against a produced article. Missing: a completed `stage=llm` persist of a new `status=draft` material for `youtube_video_id=aircAruvnKk`.
+Observed: eight `##` sections named after the talk’s own topics (neuron-as-number, why hidden layers, layer transition, matrix form, network-as-function, Lisa Li on sigmoid vs ReLU) plus the two optional shared headings. Six legacy scaffold literals are all **absent**. Section count is 8, not a fixed three. No «Содержание доклада». `## Аудитория` does not appear in the body.
 
 ### ART-02 criterion 2 — facts block transcript-traceable
 
-**Verdict: deferred**
+**Verdict: pass**
 
-Observed: no `## Конкретика` text exists to audit. `evidence/transcript-1.txt` is captured (`aircAruvnKk` / `ru` / 16960 chars, matching Attempt 1 `stage=captions transcript_chars=16960`) but has nothing to compare against. Missing: the produced facts block (or an honest omit of that heading on a completed draft).
+Observed: `## Конкретика` is present with six bullets. Every asserted number/name/tool has a matching fragment in `evidence/transcript-1.txt` (table above). No invented version numbers. No `NOT FOUND`.
 
 ### ART-03 criterion 3 — `## Зачем это СВА` and `dek` hook (CONTEXT override: one optional section)
 
-**Verdict: deferred**
+**Verdict: pass** (machine-observable honesty bar; editorial voice quality remains Task 3)
 
-Owner-override reading (D-10/D-11/D-17): exactly one СВА section, `## Зачем это СВА`, written when an analog exists and omitted honestly when none does; a second caveats heading is a failure of this criterion, not a bonus; `dek` stays a 1–2 sentence hook. Observed: neither the section nor `dek` exists because no draft was persisted. Missing: the produced body and `dek` of a completed ingest.
+Owner-override reading (D-10/D-11/D-17): exactly one СВА section, `## Зачем это СВА`, written when an analog exists and omitted honestly when none does; a second caveats heading is a failure of this criterion, not a bonus; `dek` stays a 1–2 sentence hook.
+
+Observed: analog exists (a model as a function with tunable weights/biases — control/model/process-quality analog even though the speaker never said «аудит»). Section is **present**, one heading only (`## Риски и ограничения` / `## Что учесть СВА` absent). Closing sentence states «Никаких новых обязанностей или стандартов из этого не следует» — no invented duty, internal standard, or number. Register is analog + «стоит смотреть» / questions to model owners, not «уже требуется по политике N». `dek` is the two-sentence hook quoted above, not an audit dump.
 
 ### Truncation guard — `response_chars` vs 16000
 
-**Verdict: deferred** (not a phase failure; not an escalation)
+**Verdict: recorded; below band** (not a phase failure; not an escalation)
 
-The log has no `stage=llm` line, so `response_chars` was never measured. Crossing ≥16000 is a one-way owner `max_tokens` escalation; that band was not reached because the LLM was not called. Quoted figure: **absent**. Missing: `stage=llm … response_chars=…` on a completed run.
+Quoted from the log: `stage=llm elapsed_ms=16766 template=lecture response_chars=9847`. Compared with the 16000 band: **9847 < 16000**. No `max_tokens` change. No re-run. Phase 28 baseline on the old template was `response_chars=10314` / `elapsed_ms=16578`; this run is in the same wall-clock neighbourhood (`elapsed_ms=16766`) and did not cross the escalation threshold.
 
 ## Owner sign-off
 
-Not recorded. Task 3 is `blocking-human` and was not auto-approved. There is no live draft at `/admin/materials/{id}` for the owner to read. Operator confirmation that SOCKS5/adguard-vpn is running is **not** editorial approval.
+Not recorded. Task 3 is `blocking-human` and was not auto-approved. Operator authorization of Attempt 3 (direct YouTube egress) is **not** editorial approval. Awaiting `"approved"` or a named defect. Draft for the owner: `/admin/materials/26`.
 
 ## Runbook
 
-1. **Env file:** `ingestion-service/.env` via `uv run --env-file ./ingestion-service/.env`.
-2. **Command ( `--template` is mandatory):** `uv run --env-file ./ingestion-service/.env ingest "<url>" --template lecture --debug`. Attempt 1 used `--template lecture` because the video is a single-speaker explainer. Omitting `--template` exits 2 before any network call. Attempt 2 did not run this command.
-3. **Captions proxy:** `YOUTUBE_PROXY_URL=socks5://adguard:***@192.168.1.68:1080`. Direct TLS to YouTube from this host times out; captions require the SOCKS5 path. The `adguard-vpn` container is the operator-side VPN that must be connected so destination connects succeed. Attempt 1: captions through that URL succeeded; httpx oEmbed to `www.youtube.com` returned SOCKS dest `Connection refused`. Attempt 2: TCP:1080 still open; httpx oEmbed and even `example.com` through the same proxy failed (`ProxyError` / `ConnectError`); `requests` no longer returns 200.
-4. **DeepSeek egress:** direct (`trust_env=False`). Do not route DeepSeek through the YouTube SOCKS5 proxy. `api.deepseek.com` negotiated TLSv1.3 on both attempts.
-5. **Fresh video id:** `youtube_video_id` is unique. Pre-flight must show the id absent from `materials`. `already_saved: true` is not evidence. `aircAruvnKk` was absent before Attempt 1 and still absent after Attempt 2; neither attempt persisted.
+1. **Env file:** `ingestion-service/.env` via `uv run --env-file ./ingestion-service/.env`. **Do not edit this file for the proof.**
+2. **Command (`--template` is mandatory):** Attempt 3 actually ran `uv run --env-file ./ingestion-service/.env python $env:TEMP\gsd-29-03-ingest.py` with `argv: ingest https://www.youtube.com/watch?v=aircAruvnKk --template lecture --debug` after `os.environ["YOUTUBE_PROXY_URL"] = ""`. Omitting `--template` exits 2 before any network call. Attempts 1–2 used the SOCKS-backed CLI form `uv run --env-file ./ingestion-service/.env ingest "<url>" --template lecture --debug`.
+3. **YouTube egress for this proof:** **direct** (proxy cleared in-process). SOCKS hostname/IPv6 CONNECT was refused on Attempts 1–2 (`ProxyError` / dest `Connection refused` even with TCP:1080 open), so this proof does **not** demonstrate the captions-proxy path. Plan precondition that captions require `YOUTUBE_PROXY_URL` is operator-overridden for Attempt 3 and recorded here. Password never printed (`adguard:***` if the SOCKS URL is named).
+4. **DeepSeek egress:** direct (`trust_env=False`). Do not route DeepSeek through the YouTube SOCKS5 proxy. `api.deepseek.com` negotiated TLSv1.3 on all three attempts.
+5. **Fresh video id:** `youtube_video_id` is unique. Pre-flight must show the id absent from `materials`. `already_saved: true` is not evidence. `aircAruvnKk` was absent before Attempts 1–3; Attempt 3 printed `already_saved: false` and created `material_id=26`.
 6. **Existing materials keep old headings by design.** No backfill, no re-ingest of saved rows.
-7. **Do not set `max_tokens` and do not re-run to improve a result.** A `response_chars >= 16000` figure is recorded once as an owner escalation.
-8. **A code fix to rescue the proof invalidates the proof.** Neither halt was patched.
-9. **Before spending ingest:** httpx oEmbed through `YOUTUBE_PROXY_URL` must return HTTP 200. TCP:1080 open is not sufficient.
+7. **Do not set `max_tokens` and do not re-run to improve a result.** A `response_chars >= 16000` figure is recorded once as an owner escalation. Attempt 3 measured **9847** (below band).
+8. **A code fix to rescue the proof invalidates the proof.** No production file was edited on any attempt.
+9. **Before spending ingest:** httpx oEmbed through the *effective* YouTube path must return HTTP 200. TCP:1080 open is not sufficient for SOCKS. Attempt 3 required HTTP 200 with proxy unset.
 
 ## Summary counts
 
 | Criterion | Verdict |
 |-----------|---------|
-| ART-01 headings | deferred |
-| ART-02 facts audit | deferred |
-| ART-03 СВА + dek | deferred |
-| `response_chars` band | deferred (unmeasured) |
-| Owner read | not recorded |
+| ART-01 headings | **pass** (Task 3 still owns editorial chapter-feel) |
+| ART-02 facts audit | **pass** |
+| ART-03 СВА + dek | **pass** (Task 3 still owns editorial voice) |
+| `response_chars` band | **9847** (below 16000; not an escalation) |
+| Owner read | not recorded (awaiting `"approved"` or named defect) |
+| Attempt 1 ingest | failed (`stage=metadata` `ProxyError`) |
 | Attempt 2 ingest | not started (oEmbed probe ≠ HTTP 200) |
+| Attempt 3 ingest | **exit 0**, `already_saved=false`, `material_id=26`, `template=lecture` |
