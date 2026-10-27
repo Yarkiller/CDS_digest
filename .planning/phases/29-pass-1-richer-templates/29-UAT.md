@@ -1,14 +1,14 @@
 ---
-status: awaiting_owner
+status: rejected_pending_path
 phase: 29-pass-1-richer-templates
 plan: 03
 started: 2026-10-26T18:47:47Z
-updated: 2026-10-27T05:55:00Z
+updated: 2026-10-27T08:22:00Z
 ---
 
 # Phase 29 — Live ingest UAT (plan 03)
 
-Owner editorial sign-off is Task 3 (`checkpoint:human-verify`, `gate=blocking-human`). This file records the machine-observable evidence. **It is not owner approval.** Attempt 3 persisted a draft (`material_id=26`); ART criteria below are scored against that draft. Task 3 is still awaiting `"approved"` or a named defect.
+Owner editorial sign-off is Task 3 (`checkpoint:human-verify`, `gate=blocking-human`). This file records the machine-observable evidence. **It is not owner approval.** Attempt 3 persisted a draft (`material_id=26`); ART criteria below are scored against that draft. On 2026-10-27 the owner **rejected** the live draft with a named defect (quoted in Owner sign-off). Task 3 remains open: path pending. ART-01 / ART-02 / ART-03 are **not** marked complete. Live row 26 was not patched.
 
 **Attempt 1 failed** (2026-10-26) at `stage=metadata` `ProxyError`. **Attempt 2** (2026-10-27) ran after the operator confirmed SOCKS5/adguard-vpn is running; that confirmation unblocks the *intent* of the metadata path, not the dest connect. The httpx oEmbed probe still did not return HTTP 200, so **no ingest was spent**. **Attempt 3** (2026-10-27): operator authorized one live ingest with YouTube proxy disabled in-process (direct egress). That is **not** owner editorial approval of a draft. SOCKS hostname/IPv6 CONNECT refused on Attempts 1–2; this proof used direct YouTube because SOCKS dest-connect was refused.
 
@@ -254,7 +254,32 @@ Quoted from the log: `stage=llm elapsed_ms=16766 template=lecture response_chars
 
 ## Owner sign-off
 
-Not recorded. Task 3 is `blocking-human` and was not auto-approved. Operator authorization of Attempt 3 (direct YouTube egress) is **not** editorial approval. Awaiting `"approved"` or a named defect. Draft for the owner: `/admin/materials/26`.
+**Rejected by owner on 2026-10-27. Not approved.**
+
+Task 3 is `blocking-human` and was not auto-approved. Operator authorization of Attempt 3 (direct YouTube egress) is **not** editorial approval. Draft remains `/admin/materials/26`. Live material `id=26` is **left as-is**: neither a shape defect nor a content defect is patched by editing the live row. Templates, CSS, renderer, and production code were not edited in this record.
+
+Owner's words (verbatim, no paraphrase of the complaint):
+
+> Разделы и Зачем это СВА нужно выделить из общего массива, возможно рамочкой но не очень яркой или фоном. В Конкретику должно попасть интересные факты, а не просто набор статичных данных - 784 нейрона — входной слой для изображения 28x28 пикселей. Это ещё нормально а вот 10 нейронов — выходной слой, по одному на каждую цифру. - это уже не понятно для чего. Сними ограничение на использование только данных из статьи - пусть LLM добавит определения сложных терминов или сноски с текста, которые не понятны, а также справочные данные.
+
+### Classification of named items
+
+| # | Owner item (quoted) | Class | Home | This commit |
+|---|---------------------|-------|------|-------------|
+| 1 | «Разделы и Зачем это СВА нужно выделить из общего массива, возможно рамочкой но не очень яркой или фоном.» | Visual frame / background for topic sections and `## Зачем это СВА`. Renderer/UI (`MaterialPage`). | **Not** a 29-01/02 template reopen. Phase 29 Pitfall 4 (`29-RESEARCH.md`) and plan 29-02 prohibition: flat-looking blockquotes/tables on `MaterialPage` are accepted for v1.5; plan 29-03 also forbids a UAT criterion that depends on visual emphasis. Candidate later UI work (Phase 33-adjacent). | Recorded only. Not patched. |
+| 2 | «В Конкретику должно попасть интересные факты, а не просто набор статичных данных - 784 нейрона — входной слой для изображения 28x28 пикселей. Это ещё нормально а вот 10 нейронов — выходной слой, по одному на каждую цифру. - это уже не понятно для чего.» | Prompt-shape defect of ART-02 **editorial quality**. `## Конкретика` must prefer interesting/explanatory facts over a static inventory. Owner's own bar: 784 neurons / 28×28 is OK; «10 нейронов — выходной слой, по одному на каждую цифру» fails because the purpose is unclear. | Would reopen 29-01/02 template instructions **if the owner chooses to fix in this phase**. Machine ART-02 (every asserted number/name/tool traced to the transcript; table above, zero `NOT FOUND`) still holds; the owner's editorial bar does not. | Recorded only. Live row not patched. Templates not reopened here. |
+| 3 | «Сними ограничение на использование только данных из статьи - пусть LLM добавит определения сложных терминов или сноски с текста, которые не понятны, а также справочные данные.» | Content-expansion request: lift transcript-only so the LLM may add definitions of hard terms, footnotes, and reference data not in the transcript. | **Contradicts** locked D-18 / D-19 (`29-CONTEXT.md` / `29-RESEARCH.md`: pass-1 user message stays transcript-only; expanding a thin talk from other sources is Phase 32 pass-2, not this rewrite) and REQUIREMENTS ART-02 («filled from the transcript only»). Designed home is Phase 32 pass-2 enricher (**ENR-01**). **This commit does not silently override the lock.** | Conflict recorded. Lock not overridden. |
+
+### Path pending (`gate=blocking-human`)
+
+Plan 29-03 Task 3 stays halted until the owner names a path. Options implied by the classification (not auto-selected):
+
+1. **Item 2 in this phase** — reopen Plans 01/02 and change `## Конкретика` prompt instructions so facts prefer explanatory interest over a static inventory.
+2. **Item 1 later** — visual framing of sections / `## Зачем это СВА` as MaterialPage UI (Phase 33-adjacent); not a template reopen.
+3. **Item 3 later, lock kept** — definitions, footnotes, and reference data wait for Phase 32 ENR-01.
+4. **Item 3 now** — would be an explicit unlock of D-18/D-19 and ART-02 transcript-only. That is an architectural decision; it is **not** assumed here.
+
+ART-01 / ART-02 / ART-03 remain unchecked. No `29-03-SUMMARY.md` is written from this rejection.
 
 ## Runbook
 
@@ -273,10 +298,10 @@ Not recorded. Task 3 is `blocking-human` and was not auto-approved. Operator aut
 | Criterion | Verdict |
 |-----------|---------|
 | ART-01 headings | **pass** (Task 3 still owns editorial chapter-feel) |
-| ART-02 facts audit | **pass** |
+| ART-02 facts audit | **pass** (machine traceability; owner editorial quality rejected — see sign-off) |
 | ART-03 СВА + dek | **pass** (Task 3 still owns editorial voice) |
 | `response_chars` band | **9847** (below 16000; not an escalation) |
-| Owner read | not recorded (awaiting `"approved"` or named defect) |
+| Owner read | **rejected** 2026-10-27 (named defect quoted above; not approved; path pending) |
 | Attempt 1 ingest | failed (`stage=metadata` `ProxyError`) |
 | Attempt 2 ingest | not started (oEmbed probe ≠ HTTP 200) |
 | Attempt 3 ingest | **exit 0**, `already_saved=false`, `material_id=26`, `template=lecture` |
