@@ -5,15 +5,15 @@ milestone_name: Two-pass article enrichment (Phases 29-34)
 current_phase: 30
 current_phase_name: Classifier practical | conceptual
 status: planning
-stopped_at: Phase 30 context gathered
-last_updated: "2026-10-28T19:22:05.011Z"
+stopped_at: Phase 30 planned
+last_updated: "2026-10-28T19:59:21.689Z"
 last_activity: 2026-10-28
 last_activity_desc: Phase 29 complete — ART-01/ART-02/ART-03 owner-approved on material 27
-state_head: 0a83b2e0888a2a4fcb42b05527a89b31e7402ebc
+state_head: 9da8914fefc85de3fdd3859f48ee94dd3a8aedf7
 progress:
   total_phases: 6
   completed_phases: 0
-  total_plans: 3
+  total_plans: 7
   completed_plans: 3
   percent: 0
 ---
@@ -29,10 +29,10 @@ See: .planning/PROJECT.md (updated 2026-10-26 — v1.5 Two-pass article enrichme
 
 ## Current Position
 
-Phase: 29 (Pass-1 richer templates) — COMPLETE
-Plan: 3 of 3
-Status: Owner approved 2026-10-28 (`material_id=27`)
-Last activity: 2026-10-28 — Phase 29 live proof closed; next `/gsd-plan-phase 30`
+Phase: 30 (Classifier practical | conceptual) — READY TO EXECUTE
+Plan: 0 of 4
+Status: 4 plans verified (KIND-01, KIND-02, KIND-03)
+Last activity: 2026-10-28 — Phase 30 planned; next `/gsd-execute-phase 30`
 
 ## Performance Metrics
 
@@ -337,13 +337,13 @@ Carried product deferrals beyond v1.3: leaderboard, quiz, Whisper/Foundry ASR, i
 ## Session Continuity
 
 Last session: 2026-10-28T19:22:04.988Z
-Stopped at: Phase 30 context gathered
-Resume file: .planning/phases/30-classifier-practical-conceptual/30-CONTEXT.md
-Next: `/gsd-plan-phase 30`. Carried forward (not in v1.5): the `INVALID_ROLE` toast needs an authenticated live SPA session.
+Stopped at: Phase 30 planned
+Resume file: .planning/phases/30-classifier-practical-conceptual/30-01-PLAN.md
+Next: `/gsd-execute-phase 30`. Carried forward (not in v1.5): the `INVALID_ROLE` toast needs an authenticated live SPA session.
 
 ## Operator Next Steps
 
-- `/gsd-plan-phase 30` (classifier `practical | conceptual`)
+- `/gsd-execute-phase 30` (classifier `practical | conceptual`)
 
 ## v1.5 roadmap (Phases 29-34)
 
