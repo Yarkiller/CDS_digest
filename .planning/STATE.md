@@ -5,17 +5,17 @@ milestone_name: Two-pass article enrichment (Phases 29-34)
 current_phase: 30
 current_phase_name: Classifier practical | conceptual
 status: planning
-stopped_at: Completed 29-03-PLAN.md — owner approved live ingest proof
-last_updated: "2026-10-28T18:55:00Z"
+stopped_at: Phase 30 context gathered
+last_updated: "2026-10-28T19:22:05.011Z"
 last_activity: 2026-10-28
 last_activity_desc: Phase 29 complete — ART-01/ART-02/ART-03 owner-approved on material 27
-state_head: 9cb1551a2dfcc3a52f7c5b204643fc97cbcc1adb
+state_head: 0a83b2e0888a2a4fcb42b05527a89b31e7402ebc
 progress:
   total_phases: 6
-  completed_phases: 1
+  completed_phases: 0
   total_plans: 3
   completed_plans: 3
-  percent: 17
+  percent: 0
 ---
 
 # Project State
@@ -336,9 +336,9 @@ Carried product deferrals beyond v1.3: leaderboard, quiz, Whisper/Foundry ASR, i
 
 ## Session Continuity
 
-Last session: 2026-10-28T18:55:00Z
-Stopped at: Completed 29-03-PLAN.md — owner `approved`
-Resume file: None
+Last session: 2026-10-28T19:22:04.988Z
+Stopped at: Phase 30 context gathered
+Resume file: .planning/phases/30-classifier-practical-conceptual/30-CONTEXT.md
 Next: `/gsd-plan-phase 30`. Carried forward (not in v1.5): the `INVALID_ROLE` toast needs an authenticated live SPA session.
 
 ## Operator Next Steps
