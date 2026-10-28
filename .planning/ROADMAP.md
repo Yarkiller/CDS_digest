@@ -138,7 +138,16 @@ Full phase detail: [milestones/v1.4-ROADMAP.md](milestones/v1.4-ROADMAP.md)
   2. Missing, empty, or unknown `topic_kind` is stored as `conceptual` and does not attach guide sections, generated-code extras, Tavily reads, or a cheat sheet.
   3. A conceptual material has no empty «Гайд» heading and no “ссылки скоро появятся” placeholder in the body (no cheat-sheet path either). Download controls are omitted later in Phase 33 because no files exist — never a disabled CTA.
 
-**Plans**: TBD
+**Plans:** 4 plans
+**Wave 1**
+
+- [ ] 30-01-PLAN.md — persist `topic_kind` through the pipeline Fake (KIND-01/02 tracer)
+
+**Wave 2** *(blocked on Wave 1 completion; 30-02 / 30-03 / 30-04 parallel)*
+
+- [ ] 30-02-PLAN.md — cheap DeepSeek classifier adapter + composition wire (D-01…D-08)
+- [ ] 30-03-PLAN.md — pass-1 `## Гайд` / honest-absence strip (KIND-03, D-09…D-12)
+- [ ] 30-04-PLAN.md — migration 014 DROP 12-arg RPC then CREATE `p_topic_kind` + [BLOCKING] apply
 
 **Locked scope facts (do not re-litigate):**
 
@@ -244,7 +253,7 @@ Full phase detail: [milestones/v1.4-ROADMAP.md](milestones/v1.4-ROADMAP.md)
 | Phase | Plans Complete | Status | Completed |
 |-------|----------------|--------|-----------|
 | 29. Pass-1 richer templates | 2/3 | In Progress|  |
-| 30. Classifier practical \| conceptual | 0/? | Not started | - |
+| 30. Classifier practical \| conceptual | 0/4 | Not started | - |
 | 31. Tavily quota and persist-then-enrich floor | 0/? | Not started | - |
 | 32. Pass-2 enricher and personal-KB cheat sheets | 0/? | Not started | - |
 | 33. Reader sources and cheat-sheet downloads | 0/? | Not started | - |
