@@ -79,7 +79,7 @@ Full phase detail: [milestones/v1.4-ROADMAP.md](milestones/v1.4-ROADMAP.md)
 
 </details>
 
-- [ ] **Phase 29: Pass-1 richer templates** - Every ingest is a content-shaped СВА longread with transcript-only facts and an explicit audit takeaway
+- [x] **Phase 29: Pass-1 richer templates** - Every ingest is a content-shaped СВА longread with transcript-only facts and an explicit audit takeaway
 - [ ] **Phase 30: Classifier practical | conceptual** - Every draft records `practical` or `conceptual`; extras stay off for conceptual/unknown
 - [ ] **Phase 31: Tavily quota and persist-then-enrich floor** - Pass-1 always persists; Tavily is budgeted (1000) and `already_saved` never spends it
 - [ ] **Phase 32: Pass-2 enricher and personal-KB cheat sheets** - Practical pass 2 may add guide, marked code, live URLs, and one markdown note per key technology without failing ingest
@@ -91,7 +91,7 @@ Full phase detail: [milestones/v1.4-ROADMAP.md](milestones/v1.4-ROADMAP.md)
 ### 🚧 v1.5 Two-pass article enrichment (Phases 29-34)
 
 **Started:** 2026-10-26 · **Requirements:** 22 (`ART-01…04`, `KIND-01…03`, `TAV-01…03`, `ENR-01…03`, `SHEET-01…03`, `MAT-10`, `MAT-11`, `ADUX-13`, `DBG-03`, `ING-11`, `ING-12`) · **Source:** [milestones/v1.5-ROADMAP.md](milestones/v1.5-ROADMAP.md)
-**Phase count:** 6 (Phases 29-34) · **Plans:** TBD · **Status:** planning
+**Phase count:** 6 (Phases 29-34) · **Plans:** TBD · **Status:** in progress (Phase 29 complete)
 **Granularity:** standard (research sketched 29–36; merged Tavily-port+quota and enricher+cheat-sheet-files as too-thin adjacent pairs). Order is not inverted.
 
 ### Phase 29: Pass-1 richer templates
@@ -125,7 +125,7 @@ Full phase detail: [milestones/v1.4-ROADMAP.md](milestones/v1.4-ROADMAP.md)
 
 **Wave 3** *(blocked on Wave 2 completion)*
 
-- [ ] 29-03-PLAN.md — live ingest proof: heading list, per-bullet facts audit against the transcript, `response_chars` band, owner read (blocking)
+- [x] 29-03-PLAN.md — live ingest proof: heading list, per-bullet facts audit against the transcript, `response_chars` band, owner read (blocking)
 
 ### Phase 30: Classifier practical | conceptual
 

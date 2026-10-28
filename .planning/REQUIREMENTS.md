@@ -13,12 +13,12 @@ Pass 2 is a gated enhancement for `practical` topics only.
 
 ### Pass-1 article
 
-- [ ] **ART-01**: A newly ingested material is a Russian longread whose `##` headings follow the source talk, not the three-block lecture scaffold («Тезис / Ход рассуждения / Вывод») or the podcast trio («О чём разговор / Позиции / Что запомнить»)
-- [ ] **ART-02**: The article contains a dedicated source-facts block (names, numbers, tools, caveats) filled from the transcript only — no invented numbers, names, or tool versions
-- [ ] **ART-03**: The article contains explicit «Зачем это СВА» and risks/limitations sections even if the talk barely mentioned audit; `dek` stays the 1–2 sentence hook and is not collapsed into those sections
+- [x] **ART-01**: A newly ingested material is a Russian longread whose `##` headings follow the source talk, not the three-block lecture scaffold («Тезис / Ход рассуждения / Вывод») or the podcast trio («О чём разговор / Позиции / Что запомнить»)
+- [x] **ART-02**: The article contains a dedicated `## Конкретика` of interesting or explanatory facts (names, numbers, tools, caveats) grounded in the talk — no invented numbers, names, or tool versions. Textbook definitions, short footnotes, and reference data that make a figure readable are allowed; a static inventory of unexplained counts is not.
+- [x] **ART-03**: The article contains explicit «Зачем это СВА» and risks/limitations sections even if the talk barely mentioned audit; `dek` stays the 1–2 sentence hook and is not collapsed into those sections
 
-> **Phase 29 owner overrides** (CONTEXT.md D-08, D-10, D-11 — gathered 2026-10-26 after these lines were written; verification scores against this reading):
-> - **ART-02** — read as «the `## Конкретика` block exists when the talk carries concreteness». Omitting it on a talk with no names/numbers/tools is correct, not a gap; no empty heading, no stub.
+> **Phase 29 owner overrides** (CONTEXT.md D-08, D-10, D-11 — gathered 2026-10-26 after these lines were written; D-18/D-19 and ART-02 editorial quality — owner paths 1, 2, 4 on 2026-10-27; verification scores against this reading):
+> - **ART-02** — read as «the `## Конкретика` block exists when the talk carries concreteness». Omitting it on a talk with no names/numbers/tools is correct, not a gap; no empty heading, no stub. Facts must be interesting or explanatory, not a static inventory. Pass-1 may add definitions of hard terms, footnotes, and reference data; it must not invent a version, name or number the speaker stated, and must not present added context as the speaker's words. Web research stays Phase 32.
 > - **ART-03** — read as **one** optional `## Зачем это СВА` section (the separate «риски и ограничения» heading is merged into its prose, per D-10), omitted when there is no working analog for СВА (D-11). `dek` stays the 1–2 sentence hook (D-17).
 - [ ] **ART-04**: A successful pass-1 write always leaves a `materials` row with `status=draft` plus a pending shortlist item, including when the topic is conceptual or Tavily is skipped
 
@@ -100,9 +100,9 @@ Which phases cover which requirements. Updated during roadmap creation.
 
 | Requirement | Phase | Status |
 |-------------|-------|--------|
-| ART-01 | Phase 29 | Pending |
-| ART-02 | Phase 29 | Pending |
-| ART-03 | Phase 29 | Pending |
+| ART-01 | Phase 29 | Complete |
+| ART-02 | Phase 29 | Complete |
+| ART-03 | Phase 29 | Complete |
 | ART-04 | Phase 31 | Pending |
 | KIND-01 | Phase 30 | Pending |
 | KIND-02 | Phase 30 | Pending |

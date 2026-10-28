@@ -2,20 +2,20 @@
 gsd_state_version: 1.0
 milestone: v1.5
 milestone_name: Two-pass article enrichment (Phases 29-34)
-current_phase: 29
-current_phase_name: Pass-1 richer templates
-status: executing
-stopped_at: Completed 29-02-PLAN.md
-last_updated: "2026-10-26T18:45:39.898Z"
-last_activity: 2026-10-26
-last_activity_desc: Phase 29 execution started
-state_head: bf91b22f09265359cac642f7cc92c6521bdf9ae5
+current_phase: 30
+current_phase_name: Classifier practical | conceptual
+status: planning
+stopped_at: Completed 29-03-PLAN.md — owner approved live ingest proof
+last_updated: "2026-10-28T18:55:00Z"
+last_activity: 2026-10-28
+last_activity_desc: Phase 29 complete — ART-01/ART-02/ART-03 owner-approved on material 27
+state_head: 9cb1551a2dfcc3a52f7c5b204643fc97cbcc1adb
 progress:
   total_phases: 6
-  completed_phases: 0
+  completed_phases: 1
   total_plans: 3
-  completed_plans: 2
-  percent: 0
+  completed_plans: 3
+  percent: 17
 ---
 
 # Project State
@@ -25,14 +25,14 @@ progress:
 See: .planning/PROJECT.md (updated 2026-10-26 — v1.5 Two-pass article enrichment)
 
 **Core value:** Trusted weekly prepared-article issue + one honest vote toward the next разбор
-**Current focus:** Phase 29 — Pass-1 richer templates
+**Current focus:** Phase 30 — Classifier practical | conceptual
 
 ## Current Position
 
-Phase: 29 (Pass-1 richer templates) — EXECUTING
+Phase: 29 (Pass-1 richer templates) — COMPLETE
 Plan: 3 of 3
-Status: Ready to execute
-Last activity: 2026-10-26 — Phase 29 execution started
+Status: Owner approved 2026-10-28 (`material_id=27`)
+Last activity: 2026-10-28 — Phase 29 live proof closed; next `/gsd-plan-phase 30`
 
 ## Performance Metrics
 
@@ -114,6 +114,7 @@ Last activity: 2026-10-26 — Phase 29 execution started
 | Phase 27 P05 | 18min | 3 tasks | 3 files |
 | Phase 29 P01 | 4 min | 2 tasks | 4 files |
 | Phase 29 P02 | 7min | 2 tasks | 4 files |
+| Phase 29 P03 | 2d | 3 tasks | evidence + UAT + owner path 1/2/4 |
 
 ## Accumulated Context
 
@@ -294,6 +295,9 @@ v1.3 roadmap locks:
 - [Phase 29]: podcast.md mirrors lecture.md with one kind-hint paragraph; shared voice/dek/length stay in ARTICLE_SYSTEM_PROMPT — The two templates must differ only by the dialogue/topic kind hint so Phase 32 can freeze one facts heading
 - [Phase 29]: Kind isolation pins unique sentinels (positions of its participants vs single speaker's argument), never shared section headings — A cross-kind absence assertion on a shared heading would be unsatisfiable by design
 - [Phase 29]: Audience-strip mutation: a pure top-placement among h2 sections does not redden equality; non-vacuity required demoting the first section out of h2 — strip_audience_section concatenates remaining h1/h2 sections, so moving the audience block among intact h2s cannot prove the exact-remainder pin is live
+- [Phase 29]: Owner path 1,2,4 (2026-10-27) lifts D-18/D-19 transcript-only for definitions/footnotes/reference data; Конкретика prefers explanatory facts; MaterialPage one body frame with nested Конкретика/СВА cards — Attempt 3 row 26 not patched; Attempt 4 material 27 is the proof
+- [Phase 29]: Live YouTube egress for the proof is direct (proxy cleared in-process); SOCKS dest-connect refused on Attempts 1–2 even with TCP:1080 open — not a production adapter edit
+- [Phase 29]: Task 3 resume-signal is `approved` (2026-10-28 on material 27); `done` is not editorial approval
 
 ### Pending Todos
 
@@ -332,15 +336,14 @@ Carried product deferrals beyond v1.3: leaderboard, quiz, Whisper/Foundry ASR, i
 
 ## Session Continuity
 
-Last session: 2026-10-26T18:45:20.895Z
-Stopped at: Completed 29-02-PLAN.md
+Last session: 2026-10-28T18:55:00Z
+Stopped at: Completed 29-03-PLAN.md — owner `approved`
 Resume file: None
-Next: `/gsd-plan-phase 29` after roadmap approval. Carried forward (not in v1.5): the `INVALID_ROLE` toast needs an authenticated live SPA session.
+Next: `/gsd-plan-phase 30`. Carried forward (not in v1.5): the `INVALID_ROLE` toast needs an authenticated live SPA session.
 
 ## Operator Next Steps
 
-- Review `.planning/ROADMAP.md` (v1.5 Phases 29–34) and approve or revise
-- After approval: `/gsd-plan-phase 29`
+- `/gsd-plan-phase 30` (classifier `practical | conceptual`)
 
 ## v1.5 roadmap (Phases 29-34)
 
