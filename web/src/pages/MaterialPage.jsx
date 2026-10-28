@@ -10,6 +10,20 @@ import { ContentApiError, clearFailNextContentFetch, fetchMaterial } from '../se
 import { fetchMaterialPreview } from '../services/adminApi.js'
 import { ANALYTICS_GOALS, trackGoal } from '../services/analyticsRuntime.js'
 import { extractMarkdownHeadings } from '../utils/markdownToc.js'
+import { groupMaterialBands, splitMaterialSections } from '../utils/markdownSections.js'
+
+const ARTICLE_MARKDOWN_PLUGINS = {
+  remarkPlugins: [remarkGfm],
+  rehypePlugins: [rehypeSlug, rehypeSanitize],
+}
+
+function ArticleMarkdown({ markdown }) {
+  return (
+    <Markdown remarkPlugins={ARTICLE_MARKDOWN_PLUGINS.remarkPlugins} rehypePlugins={ARTICLE_MARKDOWN_PLUGINS.rehypePlugins}>
+      {markdown}
+    </Markdown>
+  )
+}
 
 function formatPublishedLabel(material) {
   if (material.published_label) return material.published_label
@@ -176,6 +190,7 @@ export default function MaterialPage({ preview = false, loadMaterial }) {
   }
 
   const headings = extractMarkdownHeadings(material.body_markdown ?? '')
+  const bodyBands = groupMaterialBands(splitMaterialSections(material.body_markdown))
   const tags = material.tags ?? []
   const related = material.related ?? []
   // D-08: the marker received from the previous hop is re-emitted untouched — a related
@@ -237,12 +252,34 @@ export default function MaterialPage({ preview = false, loadMaterial }) {
             data-testid="material-prose"
             className="prose-column max-w-3xl leading-relaxed text-text-secondary [&_h1]:mt-8 [&_h1]:font-display [&_h1]:text-3xl [&_h1]:font-semibold [&_h1]:text-text-primary [&_h2]:mt-8 [&_h2]:font-display [&_h2]:text-2xl [&_h2]:font-semibold [&_h2]:text-text-primary [&_h3]:mt-6 [&_h3]:font-display [&_h3]:text-xl [&_h3]:font-semibold [&_h3]:text-text-primary [&_p]:mt-4 [&_ul]:mt-4 [&_ul]:list-disc [&_ul]:pl-5"
           >
-            <Markdown
-              remarkPlugins={[remarkGfm]}
-              rehypePlugins={[rehypeSlug, rehypeSanitize]}
-            >
-              {material.body_markdown}
-            </Markdown>
+            {bodyBands.length === 0 ? null : (
+              <div
+                data-testid="material-section-body"
+                className="rounded-lg border border-rule bg-paper-2 px-4 py-3 sm:px-5 sm:py-4"
+              >
+                {bodyBands.map((band, index) => {
+                  if (band.kind === 'concretika' || band.kind === 'sva') {
+                    return (
+                      <div
+                        key={`${band.kind}-${index}`}
+                        data-testid={
+                          band.kind === 'sva' ? 'material-section-sva' : 'material-section-concretika'
+                        }
+                        data-kind={band.kind}
+                        className="my-6 rounded-lg border border-rule bg-paper px-4 py-3 first:mt-0 last:mb-0 sm:px-5 sm:py-4 [&_h2]:mt-0"
+                      >
+                        <ArticleMarkdown markdown={band.markdown} />
+                      </div>
+                    )
+                  }
+                  return (
+                    <div key={`body-${index}`} data-kind="body">
+                      <ArticleMarkdown markdown={band.markdown} />
+                    </div>
+                  )
+                })}
+              </div>
+            )}
           </div>
 
           {tags.length > 0 ? (

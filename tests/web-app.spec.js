@@ -40,6 +40,52 @@ test.describe("web app main flows", () => {
     await expect(page.getByText(/заглушк|stub|dek отсутствует|нет описания/i)).toHaveCount(0);
   });
 
+  test("frames the body once and keeps Конкретика and Зачем это СВА in their own cards", async ({
+    page,
+  }) => {
+    await page.goto("/materials/rag-systems");
+
+    const body = page.getByTestId("material-section-body");
+    const concretika = page.getByTestId("material-section-concretika");
+    const sva = page.getByTestId("material-section-sva");
+    await expect(body).toBeVisible();
+    await expect(body.getByRole("heading", { name: "Введение" })).toBeVisible();
+    await expect(body.getByRole("heading", { name: "Оценка качества" })).toBeVisible();
+    await expect(concretika).toBeVisible();
+    await expect(concretika.getByRole("heading", { name: "Конкретика" })).toBeVisible();
+    await expect(sva).toBeVisible();
+    await expect(sva.getByRole("heading", { name: "Зачем это СВА" })).toBeVisible();
+    await expect(page.getByTestId("material-section-body")).toHaveCount(1);
+
+    const proseBg = await page
+      .getByTestId("material-prose")
+      .evaluate((el) => getComputedStyle(el).backgroundColor);
+    const bodyBg = await body.evaluate((el) => getComputedStyle(el).backgroundColor);
+    expect(bodyBg, "the rest of the article sits in one muted paper fill").not.toBe(proseBg);
+
+    const introCard = page.locator('[data-testid="material-section"]').filter({
+      has: page.getByRole("heading", { name: "Введение" }),
+    });
+    await expect(introCard).toHaveCount(0);
+
+    const bodyBorder = await body.evaluate((el) => Number.parseFloat(getComputedStyle(el).borderTopWidth));
+    const concretikaBorder = await concretika.evaluate((el) =>
+      Number.parseFloat(getComputedStyle(el).borderTopWidth),
+    );
+    const svaBorder = await sva.evaluate((el) => Number.parseFloat(getComputedStyle(el).borderTopWidth));
+    expect(bodyBorder).toBeGreaterThan(0);
+    expect(concretikaBorder).toBeGreaterThan(0);
+    expect(svaBorder).toBeGreaterThan(0);
+
+    const nested = await page.evaluate(() => {
+      const outer = document.querySelector('[data-testid="material-section-body"]');
+      const innerSva = document.querySelector('[data-testid="material-section-sva"]');
+      const innerFacts = document.querySelector('[data-testid="material-section-concretika"]');
+      return Boolean(outer && innerSva && innerFacts && outer.contains(innerSva) && outer.contains(innerFacts));
+    });
+    expect(nested, "Конкретика and Зачем это СВА stay inside the shared body frame").toBe(true);
+  });
+
   test("ships Concept 2 dark by default and a working light theme", async ({ page }) => {
     await page.goto("/");
 

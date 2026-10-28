@@ -174,8 +174,11 @@ def test_system_prompt_contains_honesty_and_language_rules() -> None:
     call = client.chat.completions.calls[0]
     messages = call["messages"]
     system_content = messages[0]["content"]
-    assert "Use only the transcript" in system_content
-    assert "Do not invent facts, names, or numbers" in system_content
+    assert "Use only the transcript" not in system_content
+    assert "definitions of hard terms" in system_content
+    assert "footnotes" in system_content
+    assert "reference data" in system_content
+    assert "Do not invent names, numbers, tools or versions" in system_content
     assert "Output is always Russian" in system_content
     assert "If the transcript language is ru: format only; do not translate" in system_content
     assert "If the transcript language is en: translate into Russian" in system_content
@@ -193,7 +196,8 @@ def test_system_prompt_carries_the_edition_voice_and_length_rules() -> None:
     assert "монолог содержит" in system_content
     assert "в ролике говорится" in system_content
     assert "attribute a claim to the speaker by name" in system_content
-    assert "Editorial inference is allowed only" in system_content
+    assert "Editorial inference is allowed" in system_content
+    assert "definitions, footnotes and reference notes" in system_content
     assert "1-2 sentence hook" in system_content
     assert "1200-1800 words" in system_content
 

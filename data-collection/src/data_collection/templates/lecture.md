@@ -1,5 +1,5 @@
 Write a Russian longread for СВА readers from the transcript below.
-Use only what the transcript says; do not add facts, names, numbers, tools or versions that are not in it.
+Ground every claim about the talk in the transcript. You may add textbook definitions of hard terms the speaker used, short footnotes, and reference data that make a figure or claim readable; never invent a version, name or number the speaker stated, and never present added context as the speaker's words.
 
 - Name every level-2 section after a real topic of the talk, with no fixed count and no padding; do not merge unrelated topics.
 - When the talk has no named chapters, split it into the implicit editorial chapters an experienced editor would write, and name each by its topic in the speaker's terms.
@@ -10,10 +10,12 @@ Use only what the transcript says; do not add facts, names, numbers, tools or ve
 
 ## Конкретика
 
-Include this section only when the transcript carries concrete names, numbers, tools or caveats worth keeping.
-Prefer bullets in the `**item** — the caveat the speaker gave` shape. A table is allowed only when the talk itself presents an explicit grid of numbers.
+Include this section only when the talk carries a name, number, tool or caveat a СВА reader would stop on.
+Keep only interesting or explanatory facts — a number that changes how the reader understands the talk. Skip a static inventory of layer sizes, counts or labels that do not explain themselves.
+Prefer bullets in the `**item** — why this number or name matters` shape. A table is allowed only when the talk itself presents an explicit grid of numbers.
 Spell tool names canonically (PostgreSQL, not «постгрес») and never invent a version.
-Omit the section entirely when there is nothing concrete — no placeholder and no apology.
+You may add a short definition, footnote or reference figure so the fact is readable; mark it as editorial, not as the speaker's words.
+Omit the section entirely when there is nothing worth keeping — no placeholder and no apology.
 
 ## Зачем это СВА
 

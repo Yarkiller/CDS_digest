@@ -1,4 +1,4 @@
-"""RED→GREEN: pass-1 templates carry the content-shaped frame (ART-01/ART-02/ART-03, D-01…D-18)."""
+"""RED→GREEN: pass-1 templates carry the content-shaped frame (ART-01/ART-02/ART-03, D-01…D-19)."""
 
 from __future__ import annotations
 
@@ -34,7 +34,10 @@ def test_lecture_md_names_the_topics_frame() -> None:
     assert "single speaker's argument" in text
     assert "implicit editorial chapters" in text
     assert "no fixed count" in text
-    assert "do not add facts" in text
+    assert "do not add facts" not in text
+    assert "definitions of hard terms" in text
+    assert "footnotes" in text
+    assert "reference data" in text
     assert "**bold**" in text
     assert "markdown blockquote" in text
 
@@ -42,12 +45,15 @@ def test_lecture_md_names_the_topics_frame() -> None:
 def test_lecture_md_states_the_concretika_rules() -> None:
     text = _template_text("lecture")
     assert "## Конкретика" in text
-    assert "concrete names, numbers, tools or caveats" in text
+    assert "interesting" in text
+    assert "explanatory" in text
+    assert "inventory" in text
     assert "**item** —" in text
     assert "explicit grid of numbers" in text
     assert "PostgreSQL" in text
     assert "never invent a version" in text
     assert "Omit the section entirely" in text
+    assert "footnote" in text
 
 
 def test_lecture_md_states_the_sva_rules() -> None:
@@ -89,7 +95,10 @@ def test_podcast_md_names_the_dialogue_frame() -> None:
     assert "follow the topics of the conversation" in text
     assert "implicit editorial chapters" in text
     assert "no fixed count" in text
-    assert "do not add facts" in text
+    assert "do not add facts" not in text
+    assert "definitions of hard terms" in text
+    assert "footnotes" in text
+    assert "reference data" in text
     assert "**bold**" in text
     assert "markdown blockquote" in text
 
@@ -97,12 +106,15 @@ def test_podcast_md_names_the_dialogue_frame() -> None:
 def test_podcast_md_states_the_concretika_rules() -> None:
     text = _template_text("podcast")
     assert "## Конкретика" in text
-    assert "concrete names, numbers, tools or caveats" in text
+    assert "interesting" in text
+    assert "explanatory" in text
+    assert "inventory" in text
     assert "**item** —" in text
     assert "explicit grid of numbers" in text
     assert "PostgreSQL" in text
     assert "never invent a version" in text
     assert "Omit the section entirely" in text
+    assert "footnote" in text
 
 
 def test_podcast_md_states_the_sva_rules() -> None:
