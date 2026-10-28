@@ -1,14 +1,14 @@
 ---
-status: rejected_pending_path
+status: approved
 phase: 29-pass-1-richer-templates
 plan: 03
 started: 2026-10-26T18:47:47Z
-updated: 2026-10-27T08:22:00Z
+updated: 2026-10-28T18:55:00Z
 ---
 
 # Phase 29 — Live ingest UAT (plan 03)
 
-Owner editorial sign-off is Task 3 (`checkpoint:human-verify`, `gate=blocking-human`). This file records the machine-observable evidence. **It is not owner approval.** Attempt 3 persisted a draft (`material_id=26`); ART criteria below are scored against that draft. On 2026-10-27 the owner **rejected** the live draft with a named defect (quoted in Owner sign-off). Task 3 remains open: path pending. ART-01 / ART-02 / ART-03 are **not** marked complete. Live row 26 was not patched.
+Owner editorial sign-off is Task 3 (`checkpoint:human-verify`, `gate=blocking-human`). This file records the machine-observable evidence. Attempt 3 persisted draft `material_id=26` (owner rejected; frames later accepted; row not patched). **Attempt 4** ingested `JzEd26jQ1Ys` as `material_id=27`. On 2026-10-28 the owner typed the resume-signal **`approved`**. Task 3 is closed. ART-01 / ART-02 / ART-03 are complete against this reading.
 
 **Attempt 1 failed** (2026-10-26) at `stage=metadata` `ProxyError`. **Attempt 2** (2026-10-27) ran after the operator confirmed SOCKS5/adguard-vpn is running; that confirmation unblocks the *intent* of the metadata path, not the dest connect. The httpx oEmbed probe still did not return HTTP 200, so **no ingest was spent**. **Attempt 3** (2026-10-27): operator authorized one live ingest with YouTube proxy disabled in-process (direct egress). That is **not** owner editorial approval of a draft. SOCKS hostname/IPv6 CONNECT refused on Attempts 1–2; this proof used direct YouTube because SOCKS dest-connect was refused.
 
@@ -254,7 +254,9 @@ Quoted from the log: `stage=llm elapsed_ms=16766 template=lecture response_chars
 
 ## Owner sign-off
 
-**Rejected by owner on 2026-10-27. Not approved.**
+**Attempt 4 approved by owner on 2026-10-28.** Resume-signal: `approved`. Draft `material_id=27` (`slug=vektornaia-pamiat-na-svoem-servere-postgresql-pgve-JzEd26jQ1Ys`). No named defect. Attempt 3 (`material_id=26`) remains the rejected row and was not patched.
+
+**Attempt 3 rejected by owner on 2026-10-27. Not approved.** (history below)
 
 Task 3 is `blocking-human` and was not auto-approved. Operator authorization of Attempt 3 (direct YouTube egress) is **not** editorial approval. Draft remains `/admin/materials/26`. Live material `id=26` is **left as-is**: neither a shape defect nor a content defect is patched by editing the live row. Templates, CSS, renderer, and production code were not edited in this record.
 
@@ -270,26 +272,106 @@ Owner's words (verbatim, no paraphrase of the complaint):
 | 2 | «В Конкретику должно попасть интересные факты, а не просто набор статичных данных - 784 нейрона — входной слой для изображения 28x28 пикселей. Это ещё нормально а вот 10 нейронов — выходной слой, по одному на каждую цифру. - это уже не понятно для чего.» | Prompt-shape defect of ART-02 **editorial quality**. `## Конкретика` must prefer interesting/explanatory facts over a static inventory. Owner's own bar: 784 neurons / 28×28 is OK; «10 нейронов — выходной слой, по одному на каждую цифру» fails because the purpose is unclear. | Would reopen 29-01/02 template instructions **if the owner chooses to fix in this phase**. Machine ART-02 (every asserted number/name/tool traced to the transcript; table above, zero `NOT FOUND`) still holds; the owner's editorial bar does not. | Recorded only. Live row not patched. Templates not reopened here. |
 | 3 | «Сними ограничение на использование только данных из статьи - пусть LLM добавит определения сложных терминов или сноски с текста, которые не понятны, а также справочные данные.» | Content-expansion request: lift transcript-only so the LLM may add definitions of hard terms, footnotes, and reference data not in the transcript. | **Contradicts** locked D-18 / D-19 (`29-CONTEXT.md` / `29-RESEARCH.md`: pass-1 user message stays transcript-only; expanding a thin talk from other sources is Phase 32 pass-2, not this rewrite) and REQUIREMENTS ART-02 («filled from the transcript only»). Designed home is Phase 32 pass-2 enricher (**ENR-01**). **This commit does not silently override the lock.** | Conflict recorded. Lock not overridden. |
 
-### Path pending (`gate=blocking-human`)
+### Owner path 2026-10-27: **1, 2, 4**
 
-Plan 29-03 Task 3 stays halted until the owner names a path. Options implied by the classification (not auto-selected):
+Owner named the path explicitly (`1, 2, 4`). Plan 29-03 Task 3 stays `blocking-human` until a later editorial read. Live row 26 is not patched and is not re-ingested: the MaterialPage frame (item 1) applies on the next render of any `body_markdown` with `##`; `## Конкретика` quality and definitions/footnotes (items 2 and 4) apply on the **next** ingest only.
 
-1. **Item 2 in this phase** — reopen Plans 01/02 and change `## Конкретика` prompt instructions so facts prefer explanatory interest over a static inventory.
-2. **Item 1 later** — visual framing of sections / `## Зачем это СВА` as MaterialPage UI (Phase 33-adjacent); not a template reopen.
-3. **Item 3 later, lock kept** — definitions, footnotes, and reference data wait for Phase 32 ENR-01.
-4. **Item 3 now** — would be an explicit unlock of D-18/D-19 and ART-02 transcript-only. That is an architectural decision; it is **not** assumed here.
+1. **Item 2 now** — `## Конкретика` prompt prefers interesting / explanatory facts over a static inventory.
+2. **Item 1 now** — muted `border-rule` / `bg-paper-2` frame on topic `##` and `## Зачем это СВА` in `MaterialPage` (Pitfall 4 lifted for renderer CSS, not for color-in-markdown).
+4. **Item 3 now** — explicit unlock of D-18/D-19 and ART-02 transcript-only: pass-1 may add definitions, footnotes, and reference data. Tavily / second research pass remains Phase 32.
 
-ART-01 / ART-02 / ART-03 remain unchecked. No `29-03-SUMMARY.md` is written from this rejection.
+ART-01 / ART-02 / ART-03 remain unchecked until the next owner read of a **new** ingest. No `29-03-SUMMARY.md` is written from the rejection or from the chrome acceptance.
+
+### Owner accepted frames 2026-10-27
+
+Owner, after reading the live preview of row 26 with the shared body frame plus own cards for `## Конкретика` and `## Зачем это СВА`: **«Принято - то что нужно»**.
+
+Item 1 is **accepted**. Live row 26 is still the Attempt 3 body (old Конкретика inventory, transcript-only). Items 2 and 4 are in templates/`ARTICLE_SYSTEM_PROMPT` and are **not** visible until the next ingest. Task 3 stays `blocking-human`.
+
+## Attempt 4 — fresh ingest after path 1/2/4 (2026-10-27)
+
+Owner supplied [https://www.youtube.com/watch?v=JzEd26jQ1Ys](https://www.youtube.com/watch?v=JzEd26jQ1Ys) (`&t=451s` stripped; id `JzEd26jQ1Ys`). `--template lecture`. Direct YouTube (same in-process proxy clear as Attempt 3). Row 26 not patched and not re-ingested.
+
+### Attempt 4 pre-flight
+
+Halt condition unchanged: missing `SUPABASE_URL` / `SUPABASE_SECRET_KEY` would halt at persist after the LLM call. Credentials probe (`Settings.from_env()` booleans, no secrets printed): `True True True True`. Unit gate before ingest: `95 passed`. oEmbed through `httpx.Client(timeout=30, trust_env=False)` to `https://www.youtube.com/oembed?url=https://www.youtube.com/watch?v=JzEd26jQ1Ys&format=json`: **HTTP 200**, title «Как подключить PGVECTOR store и дать вашему ИИ-агенту супер-память — гайд на VPS!». Captions adapter with proxy cleared: `JzEd26jQ1Ys ru 19801` (`MAX_TRANSCRIPT_CHARS=80000`, fits). Supabase MCP `materials` filter `youtube_video_id=JzEd26jQ1Ys` before ingest: **0 rows**.
+
+### Attempt 4 run
+
+Log: `evidence/ingest-run-2.log`. Transcript oracle: `evidence/transcript-2.txt` (first two lines `JzEd26jQ1Ys` / `ru`; body length 19801 matches `transcript_chars=19801`). Draft read-back: `evidence/draft-2.json` (`title`, `dek`, `body_markdown` only; `len(body_markdown)=10011` matches `response_chars`). Route: read-only fallback (Vite was down at persist time; started afterwards for the owner preview).
+
+```
+wall_clock_before_utc: 2026-10-27T10:17:47Z
+wall_clock_after_utc:  2026-10-27T10:18:10Z
+elapsed_s: 23.0
+exit_code: 0
+stage=captions elapsed_ms=1156 video_id=JzEd26jQ1Ys transcript_chars=19801 language=ru
+stage=metadata elapsed_ms=593
+stage=llm      elapsed_ms=19140 template=lecture response_chars=10011
+stage=persist  elapsed_ms=359 material_id=27 slug=vektornaia-pamiat-na-svoem-servere-postgresql-pgve-JzEd26jQ1Ys batch_id=7 rank=4 already_saved=False
+```
+
+Stdout ids: `material_id: 27`, `already_saved: false`. No `network_error`, no `APIConnectionError`. `.env` not edited. No production file edited for this run.
+
+### Attempt 4 observed draft (material_id=27)
+
+**Title:** Векторная память на своём сервере: PostgreSQL, pgvector и n8n без внешних сервисов
+
+**dek:** Костя собирает векторную память для Telegram-бота вручную — на своём сервере Ubuntu, без Supabase и прочих облачных обёрток. И попутно объясняет, почему в большинстве проектов она вообще не нужна.
+
+**`##` (10, ordered):**
+
+1. Зачем вообще векторная память и когда она не нужна
+2. Снапшот сервера до того, как лезть руками
+3. Замена образа PostgreSQL и три команды в терминале
+4. Включение расширения в pgAdmin
+5. Бот, который запоминает PDF
+6. Эмбеддинги своими словами
+7. Агент, который отвечает по памяти
+8. Проверка на трёх вопросах
+9. Конкретика
+10. Зачем это СВА
+
+Legacy scaffolds (`## Тезис`, `## Ход рассуждения`, `## Вывод`, `## О чём разговор`, `## Позиции`, `## Что запомнить`): **absent**. `## Аудитория`: **absent**. Not a fixed three.
+
+Preview (slug, not numeric id): `/admin/materials/vektornaia-pamiat-na-svoem-servere-postgresql-pgve-JzEd26jQ1Ys`
+
+### Attempt 4 ART-02 audit (`## Конкретика`)
+
+Section **present**. Talk-facts vs editorial addition are labelled. Canonical spelling (D-09) is a pass when the referent matches.
+
+| # | Bullet (subject) | Asserts | Transcript fragment | Verdict |
+|---|------------------|---------|---------------------|---------|
+| 1 | PostgreSQL 16 | image version 16 | «в разделе образ написан Postgress 16, то есть Postgress шестнадцатая версия» | pass (canonical PostgreSQL) |
+| 2 | pgvector | extension adding vector type | «поставим и расширение ПГ вектор для того, чтобы у нас был доступ к векторной памяти» | pass (canonical pgvector) |
+| 3 | таблица `vectorQ` | store name used for write and search | «Название таблички давайте мы сделаем наше векторQ» | pass |
+| 4 | чанк 500 | split size; 1000 allowed | «чан size я бы взял 500. То есть, чтобы не так много текста было в одном чанке» | pass (explanatory, not a bare inventory) |
+| 5 | лимит 5 | fragments pulled per question | «давайте возьмём лимит пять, чтобы он по пять по пять вытаскивал значений» | pass |
+| 6 | модель Small / GPT-4.1 | embeddings vs agent | «модель именно Small, потому что она такая средничковая»; «использовать GPT 4 и1» | pass |
+| 7 | `mime type` | must be PDF or insert fails | «он не может определить mim type, потому что mim type у нас должен быть PDF» | pass |
+| 8 | 2,40 ₽ в сутки | snapshot storage; depends on volume | «Захранение вот 2 руб. 40 коп. в сутки, да, но это там, если в зависимости от количества гигабайт» | pass |
+| 9 | *Редакционное примечание:* эмбеддинг = числовой вектор смысла | textbook definition | speaker explains «эмбендинги» / «это как раз вектора» but does not give this compact definition | **editorial** (owner path 4 / D-18 override). Not a speaker-stated number/name/version. Not scored as `NOT FOUND`. |
+
+Zero `NOT FOUND` on a talk-stated number, name, tool or version. Full suite before this verdict: `1197 passed, 1 warning in 15.88s`.
+
+### Attempt 4 criterion verdicts (machine; Task 3 still owns editorial)
+
+- **ART-01 criterion 1 — pass (machine).** Ten topic-shaped `##`; none of the six legacy headings; not a three-block skeleton. Editorial chapter-feel remains Task 3.
+- **ART-02 criterion 2 — pass (machine traceability).** Eight talk-fact bullets traced; one labelled editorial definition. Editorial quality (interesting vs inventory) is for the owner on this draft, not inferred from Attempt 3.
+- **ART-03 criterion 3 — pass (machine).** One `## Зачем это СВА`; analog is control over where data lives / snapshot-before-change / «отвечать только по загруженным документам»; no invented duty or standard. No second caveats heading. `dek` is a two-sentence hook about the talk, not the audit takeaway.
+- **Truncation guard:** `response_chars=10011` (quoted from `stage=llm`). Below 16000. Not an escalation. No `max_tokens` change. No re-run.
+
+On 2026-10-28 the owner first replied `done` after the Attempt 4 checklist (not the resume-signal), then typed **`approved`**. Recorded as **approved by owner on 2026-10-28**. No named defect. Live row 27 is not patched.
 
 ## Runbook
 
 1. **Env file:** `ingestion-service/.env` via `uv run --env-file ./ingestion-service/.env`. **Do not edit this file for the proof.**
-2. **Command (`--template` is mandatory):** Attempt 3 actually ran `uv run --env-file ./ingestion-service/.env python $env:TEMP\gsd-29-03-ingest.py` with `argv: ingest https://www.youtube.com/watch?v=aircAruvnKk --template lecture --debug` after `os.environ["YOUTUBE_PROXY_URL"] = ""`. Omitting `--template` exits 2 before any network call. Attempts 1–2 used the SOCKS-backed CLI form `uv run --env-file ./ingestion-service/.env ingest "<url>" --template lecture --debug`.
+2. **Command (`--template` is mandatory):** Attempt 4 ran `uv run --env-file ./ingestion-service/.env python $env:TEMP\gsd-29-03-ingest-2.py` with `argv: ingest https://www.youtube.com/watch?v=JzEd26jQ1Ys --template lecture --debug` after `os.environ["YOUTUBE_PROXY_URL"] = ""`. Attempt 3 used the same pattern on `aircAruvnKk`. Omitting `--template` exits 2 before any network call.
 3. **YouTube egress for this proof:** **direct** (proxy cleared in-process). SOCKS hostname/IPv6 CONNECT was refused on Attempts 1–2 (`ProxyError` / dest `Connection refused` even with TCP:1080 open), so this proof does **not** demonstrate the captions-proxy path. Plan precondition that captions require `YOUTUBE_PROXY_URL` is operator-overridden for Attempt 3 and recorded here. Password never printed (`adguard:***` if the SOCKS URL is named).
 4. **DeepSeek egress:** direct (`trust_env=False`). Do not route DeepSeek through the YouTube SOCKS5 proxy. `api.deepseek.com` negotiated TLSv1.3 on all three attempts.
-5. **Fresh video id:** `youtube_video_id` is unique. Pre-flight must show the id absent from `materials`. `already_saved: true` is not evidence. `aircAruvnKk` was absent before Attempts 1–3; Attempt 3 printed `already_saved: false` and created `material_id=26`.
+5. **Fresh video id:** `youtube_video_id` is unique. Pre-flight must show the id absent from `materials`. `already_saved: true` is not evidence. Attempt 3: `aircAruvnKk` → `material_id=26`. Attempt 4: `JzEd26jQ1Ys` was absent; printed `already_saved: false` and created `material_id=27`.
 6. **Existing materials keep old headings by design.** No backfill, no re-ingest of saved rows.
-7. **Do not set `max_tokens` and do not re-run to improve a result.** A `response_chars >= 16000` figure is recorded once as an owner escalation. Attempt 3 measured **9847** (below band).
+7. **Do not set `max_tokens` and do not re-run to improve a result.** A `response_chars >= 16000` figure is recorded once as an owner escalation. Attempt 3 measured **9847**; Attempt 4 measured **10011** (both below band).
 8. **A code fix to rescue the proof invalidates the proof.** No production file was edited on any attempt.
 9. **Before spending ingest:** httpx oEmbed through the *effective* YouTube path must return HTTP 200. TCP:1080 open is not sufficient for SOCKS. Attempt 3 required HTTP 200 with proxy unset.
 
@@ -297,11 +379,12 @@ ART-01 / ART-02 / ART-03 remain unchecked. No `29-03-SUMMARY.md` is written from
 
 | Criterion | Verdict |
 |-----------|---------|
-| ART-01 headings | **pass** (Task 3 still owns editorial chapter-feel) |
-| ART-02 facts audit | **pass** (machine traceability; owner editorial quality rejected — see sign-off) |
-| ART-03 СВА + dek | **pass** (Task 3 still owns editorial voice) |
-| `response_chars` band | **9847** (below 16000; not an escalation) |
-| Owner read | **rejected** 2026-10-27 (named defect quoted above; not approved; path pending) |
+| ART-01 headings | **pass** on 27 (Task 3 still owns editorial chapter-feel) |
+| ART-02 facts audit | **pass** on 27 (machine; eight talk-facts traced, one editorial definition; owner editorial quality open) |
+| ART-03 СВА + dek | **pass** on 27 (Task 3 still owns editorial voice) |
+| `response_chars` band | Attempt 3 **9847**; Attempt 4 **10011** (both below 16000; not an escalation) |
+| Owner read | Attempt 3 **rejected** then **item 1 frames accepted**; Attempt 4 **approved by owner 2026-10-28** (`material_id=27`, resume-signal `approved`) |
 | Attempt 1 ingest | failed (`stage=metadata` `ProxyError`) |
 | Attempt 2 ingest | not started (oEmbed probe ≠ HTTP 200) |
 | Attempt 3 ingest | **exit 0**, `already_saved=false`, `material_id=26`, `template=lecture` |
+| Attempt 4 ingest | **exit 0**, `already_saved=false`, `material_id=27`, `template=lecture`, `youtube_video_id=JzEd26jQ1Ys` |

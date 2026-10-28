@@ -6,11 +6,11 @@
 <domain>
 ## Phase Boundary
 
-A newly ingested lecture or podcast draft is a Russian СВА longread whose `##` follow the talk, with an optional transcript-only «Конкретика» layer and an optional editorial «Зачем это СВА» — not the three-block lecture scaffold or the podcast trio. This phase rewrites `lecture.md` / `podcast.md` and the shared honesty prompt only.
+A newly ingested lecture or podcast draft is a Russian СВА longread whose `##` follow the talk, with an optional interesting-facts «Конкретика» layer (definitions / footnotes / reference data allowed; no invented talk-versions) and an optional editorial «Зачем это СВА» — not the three-block lecture scaffold or the podcast trio. This phase rewrites `lecture.md` / `podcast.md` and the shared honesty prompt; owner paths 1/2/4 (2026-10-27) also frame topic/`## Зачем это СВА` sections on `MaterialPage`.
 
 **In scope (ROADMAP.md, do not re-litigate):**
 - Pass-1 still streams `json_object`; `stage=llm` / `llm_truncation` stay fail-closed and unchanged.
-- Source-facts stay transcript-only. Do not invent cheat-sheet files, Tavily, guide extras, or a classifier.
+- Talk-facts (names, numbers, tools, versions the speaker stated) stay grounded in the transcript. Definitions, footnotes and reference data are allowed. Do not invent cheat-sheet files, Tavily, guide extras, or a classifier.
 - Do not apply the transcript character cap to future extract context (Pitfall 11).
 - `dek` stays the 1–2 sentence JSON hook and is not collapsed into body sections.
 - `## Аудитория` remains prompt scaffolding and is stripped from `body_markdown` (Phase 9).
@@ -53,8 +53,12 @@ A newly ingested lecture or podcast draft is a Russian СВА longread whose `##
 - **D-17:** `dek` is always the 1–2 sentence hook about the talk. It is not a substitute for `## Зачем это СВА`. If the section is omitted, the article has no separate audit takeaway — do not smuggle it into `dek`.
 
 ### Honesty vs inference (pass-1)
-- **D-18:** Pass-1 user message stays transcript-only. Editorial inference is allowed *only* in `## Зачем это СВА` (and in implicit chaptering / authorial voice). `## Конкретика` must not be rewritten from opinion or from the web.
-- **D-19:** Expanding a thin talk from other sources is **out**. That is Phase 32 pass-2 Tavily, not this template rewrite.
+- **D-18:** Pass-1 user message stays the transcript (no web fetch, no Tavily). Editorial inference is allowed in `## Зачем это СВА`, in implicit chaptering / authorial voice, and — **owner override 2026-10-27, paths 1/2/4** — in textbook definitions of hard terms the speaker used, short footnotes, and reference data that make a figure or claim readable. Added context must never be presented as the speaker's words. Names, numbers, tools and versions the speaker stated must not be invented. A СВА duty must not be invented.
+- **D-19:** Expanding a thin talk from other sources via Tavily remains **out** of pass-1 (Phase 32). Owner override 2026-10-27: definitional / footnote / reference scaffolding around transcript claims is in pass-1; a second research pass is not.
+
+### Owner override 2026-10-27 (paths 1, 2, 4)
+- **D-06/D-07:** `## Конкретика` prefers interesting or explanatory facts over a static inventory. A number that changes how the reader understands the talk stays (owner bar: 784 neurons / 28×28). An unexplained count does not (owner bar: «10 нейронов — выходной слой, по одному на каждую цифру»).
+- **Reader chrome:** the article body sits in one muted `border-rule` / `bg-paper-2` frame. Own cards (`border-rule` / `bg-paper`) only for `## Конкретика` and `## Зачем это СВА`. This is renderer CSS, not color-in-markdown (Pitfall 4 / `rehype-sanitize`). Live row 26 is not patched; the frame applies to the next render of any `body_markdown` with `##`.
 
 ### Claude's Discretion
 - Exact English (or Russian) instruction prose inside `lecture.md` / `podcast.md`, as long as D-01…D-18 hold and the old scaffold heading strings are absent.

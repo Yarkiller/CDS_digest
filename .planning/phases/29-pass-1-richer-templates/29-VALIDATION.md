@@ -3,9 +3,9 @@ phase: 29
 slug: pass-1-richer-templates
 # status lifecycle: draft (seeded by plan-phase) → validated (set by validate-phase §6)
 # audit-milestone §5.5 distinguishes NOT-VALIDATED (draft) from PARTIAL (validated + nyquist_compliant: false) (#2117)
-status: draft
-nyquist_compliant: false
-wave_0_complete: false
+status: validated
+nyquist_compliant: true
+wave_0_complete: true
 created: 2026-10-26
 ---
 
@@ -60,11 +60,11 @@ created: 2026-10-26
 
 ## Wave 0 Requirements
 
-- [ ] `tests/unit/test_article_templates.py` — rewrite `test_lecture_md_contains_russian_headings` and `test_podcast_md_contains_russian_headings` into "frame present + scaffold absent"; update `test_load_article_templates_returns_both_kinds` off `## Тезис` / `## О чём разговор` (RED first, before editing the `.md` files).
-- [ ] `tests/unit/test_deepseek_article_adapter.py` — rewrite `test_lecture_prompt_contains_lecture_headings_not_podcast` and `test_podcast_prompt_contains_podcast_headings_not_lecture` to assert all six scaffold literals are absent from both messages and the shared headings present in both.
-- [ ] `tests/unit/test_article_draft_body_audience.py` — one case with the real new headings before the trailing `## Аудитория` block.
-- [ ] Evidence/UAT artifact for the live proof (checklist + captured `--debug` lines + the transcript used for the digit audit). Not a pytest file.
-- [ ] No framework install needed — pytest is already configured and the baseline suite (1156 passed) is green.
+- [x] `tests/unit/test_article_templates.py` — rewrite `test_lecture_md_contains_russian_headings` and `test_podcast_md_contains_russian_headings` into "frame present + scaffold absent"; update `test_load_article_templates_returns_both_kinds` off `## Тезис` / `## О чём разговор` (RED first, before editing the `.md` files).
+- [x] `tests/unit/test_deepseek_article_adapter.py` — rewrite `test_lecture_prompt_contains_lecture_headings_not_podcast` and `test_podcast_prompt_contains_podcast_headings_not_lecture` to assert all six scaffold literals are absent from both messages and the shared headings present in both.
+- [x] `tests/unit/test_article_draft_body_audience.py` — one case with the real new headings before the trailing `## Аудитория` block.
+- [x] Evidence/UAT artifact for the live proof (checklist + captured `--debug` lines + the transcript used for the digit audit). Not a pytest file.
+- [x] No framework install needed — pytest is already configured and the baseline suite (1156 passed) is green.
 
 *Existing infra covers framework/config; the gaps above are test-content rewrites and one evidence artifact.*
 

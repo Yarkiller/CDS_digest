@@ -1,0 +1,23 @@
+command: uv run --env-file ./ingestion-service/.env python $env:TEMP\gsd-29-03-ingest-2.py
+argv: ingest https://www.youtube.com/watch?v=JzEd26jQ1Ys --template lecture --debug
+override: YOUTUBE_PROXY_URL cleared in-process after --env-file load; .env file unchanged; direct YouTube egress (no SOCKS)
+wall_clock_before_utc: 2026-10-27T10:17:47Z
+wall_clock_after_utc: 2026-10-27T10:18:10Z
+elapsed_s: 23.0
+exit_code: 0
+
+--- stderr ---
+[13:17:50] debug stage=captions elapsed_ms=1156 video_id=JzEd26jQ1Ys transcript_chars=19801 transcript_words=3355 language=ru
+[13:17:51] debug stage=metadata elapsed_ms=593 video_id=JzEd26jQ1Ys
+[13:18:10] debug stage=llm elapsed_ms=19140 template=lecture response_chars=10011
+[13:18:10] debug stage=persist elapsed_ms=359 material_id=27 slug=vektornaia-pamiat-na-svoem-servere-postgresql-pgve-JzEd26jQ1Ys batch_id=7 rank=4 already_saved=False
+
+--- stdout ---
+✓ transcript
+✓ LLM
+✓ saved
+material_id: 27
+slug: vektornaia-pamiat-na-svoem-servere-postgresql-pgve-JzEd26jQ1Ys
+batch_id: 7
+rank: 4
+already_saved: false
