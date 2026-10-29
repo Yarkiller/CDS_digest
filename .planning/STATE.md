@@ -4,17 +4,17 @@ milestone: v1.5
 milestone_name: Two-pass article enrichment (Phases 29-34)
 current_phase: 30
 current_phase_name: Classifier practical | conceptual
-status: planning
-stopped_at: Phase 30 planned
-last_updated: "2026-10-28T19:59:21.689Z"
-last_activity: 2026-10-28
-last_activity_desc: Phase 29 complete — ART-01/ART-02/ART-03 owner-approved on material 27
-state_head: 9da8914fefc85de3fdd3859f48ee94dd3a8aedf7
+status: executing
+stopped_at: Completed 30-01-PLAN.md
+last_updated: "2026-10-29T03:11:53.081Z"
+last_activity: 2026-10-29
+last_activity_desc: Phase 30 execution started
+state_head: 279d82a315a9de93cd13e3f86dc39259d45ab207
 progress:
   total_phases: 6
   completed_phases: 0
   total_plans: 7
-  completed_plans: 3
+  completed_plans: 4
   percent: 0
 ---
 
@@ -29,10 +29,10 @@ See: .planning/PROJECT.md (updated 2026-10-26 — v1.5 Two-pass article enrichme
 
 ## Current Position
 
-Phase: 30 (Classifier practical | conceptual) — READY TO EXECUTE
-Plan: 0 of 4
-Status: 4 plans verified (KIND-01, KIND-02, KIND-03)
-Last activity: 2026-10-28 — Phase 30 planned; next `/gsd-execute-phase 30`
+Phase: 30 (Classifier practical | conceptual) — EXECUTING
+Plan: 2 of 4
+Status: Ready to execute
+Last activity: 2026-10-29 — Phase 30 execution started
 
 ## Performance Metrics
 
@@ -115,6 +115,7 @@ Last activity: 2026-10-28 — Phase 30 planned; next `/gsd-execute-phase 30`
 | Phase 29 P01 | 4 min | 2 tasks | 4 files |
 | Phase 29 P02 | 7min | 2 tasks | 4 files |
 | Phase 29 P03 | 2d | 3 tasks | evidence + UAT + owner path 1/2/4 |
+| Phase 30 P01 | 12min | 2 tasks | 18 files |
 
 ## Accumulated Context
 
@@ -298,6 +299,10 @@ v1.3 roadmap locks:
 - [Phase 29]: Owner path 1,2,4 (2026-10-27) lifts D-18/D-19 transcript-only for definitions/footnotes/reference data; Конкретика prefers explanatory facts; MaterialPage one body frame with nested Конкретика/СВА cards — Attempt 3 row 26 not patched; Attempt 4 material 27 is the proof
 - [Phase 29]: Live YouTube egress for the proof is direct (proxy cleared in-process); SOCKS dest-connect refused on Attempts 1–2 even with TCP:1080 open — not a production adapter edit
 - [Phase 29]: Task 3 resume-signal is `approved` (2026-10-28 on material 27); `done` is not editorial approval
+- [Phase 30]: normalize_topic_kind allowlists only practical|conceptual after strip+casefold; dicts/lists/unsure/None are conceptual (KIND-02, D-08 code layer)
+- [Phase 30]: Pipeline always overwrites article_draft.topic_kind from classifier raw, even when pass-1 leaked practical (Pitfall 4)
+- [Phase 30]: classifier= is required keyword-only with no None default; unit call sites pass FakeTopicKindClassifier
+- [Phase 30]: Live build_ingest_deps / build_collect_deps stay unwired this plan — Plan 02 owns the DeepSeek adapter factory
 
 ### Pending Todos
 
@@ -336,9 +341,9 @@ Carried product deferrals beyond v1.3: leaderboard, quiz, Whisper/Foundry ASR, i
 
 ## Session Continuity
 
-Last session: 2026-10-28T19:22:04.988Z
-Stopped at: Phase 30 planned
-Resume file: .planning/phases/30-classifier-practical-conceptual/30-01-PLAN.md
+Last session: 2026-10-29T03:11:53.058Z
+Stopped at: Completed 30-01-PLAN.md
+Resume file: None
 Next: `/gsd-execute-phase 30`. Carried forward (not in v1.5): the `INVALID_ROLE` toast needs an authenticated live SPA session.
 
 ## Operator Next Steps
