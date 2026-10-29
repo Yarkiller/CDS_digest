@@ -184,11 +184,12 @@ v1 is done only when **all** of the following hold:
 - ✓ NAV-02 — the header keeps «Архив»/«База» lit for an issue or material opened from that section via a single closed `history.state.usr.section` marker; a direct URL visit lights no false section — Phase 26
 - ✓ KNOW-05 — a header submit runs the search immediately: one request per submission (the pill only produces a URL + opaque `submitId`), zero for an empty query, no double-fire on re-render, and Back restores the settled rows at Δ=0 from a memory-only cache; `knowledgeApi.js` byte-identical — Phase 27
 - ✓ ING-09 — a live `ingest` on a 24.14 min video completes through the streamed DeepSeek path (`0dddc75`, `stream=True`): exit 0, material 25 `draft` (`youtube_video_id=HR7hD8TO4Z8`) plus `digest_shortlist_items` batch 7 / rank 2 / `pending`, no `APIConnectionError`, LLM stage 16.58 s recorded, with the operator preconditions (SOCKS5 proxy for captions only, `--template lecture`) written down — Phase 28
+- ✓ KIND-01…03 — every ingest stamps a closed `topic_kind` (`practical` | `conceptual`); missing/empty/unknown maps to `conceptual` without failing ingest; pass-1 bodies drop ATX `Гайд` and `ссылки скоро появятся`; extras (Tavily/guide/cheat sheet) stay unwired until later phases; live `materials.topic_kind` + 13-arg `persist_draft_and_enqueue` (migration 014) — Phase 30
 
 ### Active
 
 - [ ] Richer lecture/podcast templates: content-shaped sections, a source-facts layer, and explicit СВА takeaway + risks — not the three-block dry summary
-- [ ] Ingest classifies `practical | conceptual`; generated code, in-article guide, Tavily reads, and a cheat sheet attach only when practical
+- [ ] Generated code, in-article guide, Tavily reads, and a cheat sheet attach only when `topic_kind` is `practical` (classifier floor is Phase 30)
 - [ ] Two-pass pipeline: pass 1 is transcript-grounded; pass 2 enriches from Tavily search/extract with only live URLs plus links already in the video
 - [ ] Practical materials attach one or more personal-KB markdown notes (one file per key technology); the guide stays in article sections
 - [ ] Shared Tavily quota of 1000 requests (`try_consume`, ~5 per video); on exhaustion log `tavily_quota_exhausted` and still persist the pass-1 draft
@@ -294,6 +295,8 @@ v1 is done only when **all** of the following hold:
 | v1.4 closeout: the send banner carries a tone (`data-banner-tone`) instead of a fixed `text-success-ink` (WR-12) | Colour by outcome is a data question, not a message question — substring-matching «не отправлена» would break on any copy edit | ✓ v1.4 closeout |
 | v1.4 closeout: the 640–959.98px band declares `--header-height: 112px` (NAV-01 residual) | The header grows past 64px only in that band, and the token is the one input `scroll-padding-top` reads; measured 31.5px of heading under the bar at 800px | ✓ v1.4 closeout |
 | MaterialPage resets `redirectToReader`/`forbidden` on every load (CR-01/WR-01) | The instance is reused across the preview→reader handoff the flag itself triggers, so a stale `true` re-rendered `<Navigate>` to the current URL (a blank page) and wedged later navigation; the D-12 URL-only assertion could not see it (WR-02) | ✓ Phase 18 |
+| Phase 30: closed `topic_kind` is `text` + CHECK, not ENUM; invalid classifier output is `conceptual` in code (KIND-02), while the prompt maps unsure → `practical` (D-08) | Two-layer default so a helpful model cannot launder garbage into Tavily spend; CHECK is defense in depth | ✓ Phase 30 |
+| Phase 30: DROP 12-arg `persist_draft_and_enqueue` then CREATE 13-arg; parameters after a DEFAULT also have DEFAULT (`p_batch_size int default null`) | `CREATE OR REPLACE` with a new argument leaves an overload (T-30-06 / 42P13); named Python RPC still always sends `p_batch_size` | ✓ Phase 30 |
 
 <decisions>
 ## Locked decisions (from ADRs / ingest)
@@ -334,4 +337,4 @@ After each phase transition: move validated/invalidated requirements; log decisi
 After milestone: full review of Core Value, Out of Scope, and Context against shipped reality.
 
 ---
-*Last updated: 2026-10-26 after starting milestone v1.5 — Two-pass article enrichment*
+*Last updated: 2026-10-29 after Phase 30 — Classifier practical | conceptual*

@@ -2,20 +2,20 @@
 gsd_state_version: 1.0
 milestone: v1.5
 milestone_name: Two-pass article enrichment (Phases 29-34)
-current_phase: 30
-current_phase_name: Classifier practical | conceptual
-status: verifying
-stopped_at: Completed 30-04-PLAN.md
-last_updated: "2026-10-29T17:56:44.911Z"
+current_phase: 31
+current_phase_name: Tavily quota and persist-then-enrich floor
+status: planning
+stopped_at: Phase 30 complete, ready to plan Phase 31
+last_updated: "2026-10-29T18:13:08.122Z"
 last_activity: 2026-10-29
-last_activity_desc: Phase 30 execution started
-state_head: 94bbd77f0ff86867d77b817aa23658d199d97bfb
+last_activity_desc: Phase 30 complete, transitioned to Phase 31
+state_head: bfb1c2bf12820f9d98d06d6894da61fd47d02980
 progress:
   total_phases: 6
-  completed_phases: 0
+  completed_phases: 1
   total_plans: 7
   completed_plans: 7
-  percent: 0
+  percent: 17
 ---
 
 # Project State
@@ -29,16 +29,16 @@ See: .planning/PROJECT.md (updated 2026-10-26 — v1.5 Two-pass article enrichme
 
 ## Current Position
 
-Phase: 30 (Classifier practical | conceptual) — EXECUTING
-Plan: 4 of 4
-Status: Phase complete — ready for verification
-Last activity: 2026-10-29 — Phase 30 execution started
+Phase: 31 — Tavily quota and persist-then-enrich floor
+Plan: Not started
+Status: Ready to plan
+Last activity: 2026-10-29 — Phase 30 complete, transitioned to Phase 31
 
 ## Performance Metrics
 
 **Velocity:**
 
-- Total plans completed: 47 (40 v1 + 23 v1.1 + 26 v1.2)
+- Total plans completed: 51 (40 v1 + 23 v1.1 + 26 v1.2)
 - Prior milestones shipped: v1 (5 phases), v1.1 (6 phases), v1.2 (5 phases)
 - v1.3 plans completed: 3
 
@@ -66,6 +66,7 @@ Last activity: 2026-10-29 — Phase 30 execution started
 | 26 | 3 | Complete (UAT 3/3, threats_open 0) | - |
 | 27 | 5 | Complete (UAT 2 pass + 1 deferred, threats_open 0) | - |
 | 28 | 1 | Complete (live proof 4/4 criteria, UAT 4 pass + 1 deferred, threats_open 0) | - |
+| 30 | 4 | - | - |
 **Per-Plan Metrics:**
 
 | Plan | Duration | Tasks | Files |
@@ -356,7 +357,7 @@ Carried product deferrals beyond v1.3: leaderboard, quiz, Whisper/Foundry ASR, i
 ## Session Continuity
 
 Last session: 2026-10-29T17:56:44.885Z
-Stopped at: Completed 30-04-PLAN.md
+Stopped at: Phase 30 complete, ready to plan Phase 31
 Resume file: None
 Next: `/gsd-execute-phase 30`. Carried forward (not in v1.5): the `INVALID_ROLE` toast needs an authenticated live SPA session.
 
