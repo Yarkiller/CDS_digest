@@ -3,6 +3,7 @@
 from ingestion_service.composition.clients import (
     build_async_deepseek_client,
     build_deepseek_article_generator,
+    build_deepseek_topic_kind_classifier,
     build_httpx_client,
     build_supabase_draft_persister,
     build_supabase_service_client,
@@ -18,6 +19,7 @@ __all__ = [
     "build_httpx_client",
     "build_async_deepseek_client",
     "build_deepseek_article_generator",
+    "build_deepseek_topic_kind_classifier",
     "build_supabase_service_client",
     "build_supabase_draft_persister",
 ]

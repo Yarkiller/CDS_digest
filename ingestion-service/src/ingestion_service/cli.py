@@ -19,6 +19,7 @@ from ingestion_service.application.ports.diagnostics import (
 from ingestion_service.application.use_cases.ingest_pipeline import run_ingest_pipeline
 from ingestion_service.composition.clients import (
     build_deepseek_article_generator,
+    build_deepseek_topic_kind_classifier,
     build_supabase_draft_persister,
     build_youtube_captions,
     build_youtube_metadata_provider,
@@ -44,6 +45,7 @@ def build_ingest_deps() -> Any:
         metadata_provider=build_youtube_metadata_provider(settings),
         article=build_deepseek_article_generator(settings),
         persist=build_supabase_draft_persister(settings),
+        classifier=build_deepseek_topic_kind_classifier(settings),
         settings=settings,
     )
 

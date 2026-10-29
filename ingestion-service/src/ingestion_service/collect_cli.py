@@ -16,6 +16,7 @@ from ingestion_service.application.use_cases.collect_batch import (
 from ingestion_service.composition.clients import (
     build_collect_source_reader,
     build_deepseek_article_generator,
+    build_deepseek_topic_kind_classifier,
     build_supabase_draft_persister,
     build_youtube_captions,
     build_youtube_feed,
@@ -48,6 +49,7 @@ def build_collect_deps() -> CollectDeps:
         metadata_provider=build_youtube_metadata_provider(settings),
         article=build_deepseek_article_generator(settings),
         persist=build_supabase_draft_persister(settings),
+        classifier=build_deepseek_topic_kind_classifier(settings),
         emit_diagnostic=emit_diagnostic,
         clock=UtcClock(),
         tz=tz,

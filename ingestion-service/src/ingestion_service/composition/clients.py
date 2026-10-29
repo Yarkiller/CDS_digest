@@ -9,6 +9,7 @@ from youtube_transcript_api import YouTubeTranscriptApi
 from youtube_transcript_api.proxies import GenericProxyConfig
 
 from data_collection.adapters.deepseek_article import DeepSeekArticleGenerator
+from data_collection.adapters.deepseek_classifier import DeepSeekTopicKindClassifier
 from data_collection.adapters.youtube_feed import YouTubeFeedAdapter
 from data_collection.adapters.youtube_oembed import YouTubeOEmbedAdapter
 from data_collection.adapters.youtube_transcript import YouTubeTranscriptAdapter
@@ -97,6 +98,20 @@ def build_deepseek_article_generator(
         model=settings.deepseek_model,
         templates=templates,
         max_transcript_chars=settings.max_transcript_chars,
+    )
+
+
+def build_deepseek_topic_kind_classifier(
+    settings: Settings,
+) -> DeepSeekTopicKindClassifier:
+    client = build_async_deepseek_client(
+        settings.deepseek_api_key or "",
+        settings.deepseek_base_url,
+        _DEEPSEEK_TIMEOUT,
+    )
+    return DeepSeekTopicKindClassifier(
+        client=client,
+        model=settings.deepseek_model,
     )
 
 
