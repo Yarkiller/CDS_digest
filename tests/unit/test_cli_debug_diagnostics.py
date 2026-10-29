@@ -12,6 +12,7 @@ from data_collection.dto.transcript import Transcript
 from data_collection.dto.video_metadata import VideoMetadata
 from data_collection.tests_support.fakes import (
     FakeArticleGenerator,
+    FakeTopicKindClassifier,
     FakeTranscriptProvider,
     FakeVideoMetadataProvider,
 )
@@ -66,6 +67,7 @@ def _fake_deps() -> object:
         metadata_provider=FakeVideoMetadataProvider(result=_metadata()),
         article=FakeArticleGenerator(result=_article()),
         persist=FakeDraftPersister(_persist_result()),
+        classifier=FakeTopicKindClassifier(result="conceptual"),
     )
 
 

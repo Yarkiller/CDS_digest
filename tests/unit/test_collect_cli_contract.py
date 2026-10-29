@@ -10,6 +10,7 @@ from data_collection.dto.transcript import Transcript
 from data_collection.dto.video_metadata import VideoMetadata
 from data_collection.tests_support.fakes import (
     FakeArticleGenerator,
+    FakeTopicKindClassifier,
     FakeTranscriptProvider,
     FakeVideoMetadataProvider,
 )
@@ -73,6 +74,7 @@ def _build_deps(*, with_skip: bool = False):
         persist=FakeDraftPersister(
             PersistResult(material_id=1, slug="t-dQw4w9WgXcQ", batch_id=1, rank=1)
         ),
+        classifier=FakeTopicKindClassifier(result="conceptual"),
         emit_diagnostic=lambda _line: None,
         clock=FakeClock([0.0], datetime(2026, 10, 19, 10, 0, tzinfo=timezone.utc)),
         tz=timezone(timedelta(hours=3)),
@@ -109,6 +111,7 @@ def test_collect_cli_feed_skip_goes_to_stderr(monkeypatch) -> None:
         metadata_provider=base.metadata_provider,
         article=base.article,
         persist=base.persist,
+        classifier=FakeTopicKindClassifier(result="conceptual"),
         emit_diagnostic=cli_mod.emit_diagnostic,
         clock=FakeClock([0.0], datetime(2026, 10, 19, 10, 0, tzinfo=timezone.utc)),
         tz=timezone(timedelta(hours=3)),
@@ -211,6 +214,7 @@ def test_collect_cli_video_failure_exit_1_and_stderr_diagnostic(monkeypatch) -> 
         persist=FakeDraftPersister(
             PersistResult(material_id=1, slug="t", batch_id=1, rank=1)
         ),
+        classifier=FakeTopicKindClassifier(result="conceptual"),
         emit_diagnostic=cli_mod.emit_diagnostic,
         clock=FakeClock([0.0], datetime(2026, 10, 19, 10, 0, tzinfo=timezone.utc)),
         tz=timezone(timedelta(hours=3)),
@@ -252,6 +256,7 @@ def test_collect_cli_source_list_failure_exit_2(monkeypatch) -> None:
         persist=FakeDraftPersister(
             PersistResult(material_id=1, slug="t", batch_id=1, rank=1)
         ),
+        classifier=FakeTopicKindClassifier(result="conceptual"),
         emit_diagnostic=cli_mod.emit_diagnostic,
         clock=FakeClock([0.0], datetime(2026, 10, 19, 10, 0, tzinfo=timezone.utc)),
         tz=timezone(timedelta(hours=3)),
@@ -347,6 +352,7 @@ def _build_deps_scheduled(
         persist=FakeDraftPersister(
             PersistResult(material_id=1, slug="t-dQw4w9WgXcQ", batch_id=1, rank=1)
         ),
+        classifier=FakeTopicKindClassifier(result="conceptual"),
         emit_diagnostic=emit or (lambda _line: None),
         clock=FakeClock([0.0], clock_now),
         tz=_msk(),
@@ -389,6 +395,7 @@ def test_collect_cli_not_due_one_line_exit_0_no_feed(monkeypatch) -> None:
         persist=FakeDraftPersister(
             PersistResult(material_id=1, slug="t", batch_id=1, rank=1)
         ),
+        classifier=FakeTopicKindClassifier(result="conceptual"),
         emit_diagnostic=cli_mod.emit_diagnostic,
         clock=FakeClock(
             [0.0], datetime(2026, 10, 19, 10, 0, tzinfo=timezone.utc)

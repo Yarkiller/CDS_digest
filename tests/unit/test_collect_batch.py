@@ -14,6 +14,7 @@ from data_collection.dto.video_ref import FeedListing, VideoRef
 from data_collection.errors.captions import CaptionsError, CaptionsUnavailable
 from data_collection.tests_support.fakes import (
     FakeArticleGenerator,
+    FakeTopicKindClassifier,
     FakeTranscriptProvider,
     FakeVideoMetadataProvider,
 )
@@ -84,6 +85,15 @@ def _persist() -> FakeDraftPersister:
     )
 
 
+def test_collect_deps_requires_classifier() -> None:
+    from dataclasses import fields
+
+    from ingestion_service.application.use_cases.collect_batch import CollectDeps
+
+    names = {item.name for item in fields(CollectDeps)}
+    assert "classifier" in names
+
+
 def test_run_collect_batch_ingests_one_new_video_and_advances_cursor() -> None:
     from data_collection.dto.video_ref import FeedListing, VideoRef
     from ingestion_service.application.ports.collect_sources import EnabledSource
@@ -122,6 +132,7 @@ def test_run_collect_batch_ingests_one_new_video_and_advances_cursor() -> None:
         metadata_provider=FakeVideoMetadataProvider(result=_metadata()),
         article=FakeArticleGenerator(result=_article()),
         persist=persist,
+        classifier=FakeTopicKindClassifier(result="conceptual"),
         emit_diagnostic=diagnostics.append,
         clock=FakeClock([0.0], datetime(2026, 10, 19, 10, 0, tzinfo=timezone.utc)),
         tz=timezone(timedelta(hours=3)),
@@ -186,6 +197,7 @@ def test_run_collect_batch_filters_older_than_cursor_before_pipeline() -> None:
         metadata_provider=_EchoMetadata(),
         article=article,
         persist=_persist(),
+        classifier=FakeTopicKindClassifier(result="conceptual"),
         emit_diagnostic=lambda _line: None,
         clock=FakeClock([0.0], datetime(2026, 10, 19, 10, 0, tzinfo=timezone.utc)),
         tz=timezone(timedelta(hours=3)),
@@ -241,6 +253,7 @@ def test_run_collect_batch_emits_one_diagnostic_per_feed_skip() -> None:
         metadata_provider=FakeVideoMetadataProvider(result=_metadata()),
         article=FakeArticleGenerator(result=_article()),
         persist=persist,
+        classifier=FakeTopicKindClassifier(result="conceptual"),
         emit_diagnostic=diagnostics.append,
         clock=FakeClock([0.0], datetime(2026, 10, 19, 10, 0, tzinfo=timezone.utc)),
         tz=timezone(timedelta(hours=3)),
@@ -291,6 +304,7 @@ def test_run_collect_batch_first_run_processes_oldest_five_in_asc_order() -> Non
         metadata_provider=_EchoMetadata(),
         article=article,
         persist=_persist(),
+        classifier=FakeTopicKindClassifier(result="conceptual"),
         emit_diagnostic=lambda _line: None,
         clock=FakeClock([0.0], datetime(2026, 10, 19, 10, 0, tzinfo=timezone.utc)),
         tz=timezone(timedelta(hours=3)),
@@ -335,6 +349,7 @@ def test_run_collect_batch_cursor_on_tenth_takes_eleven_through_fifteen() -> Non
         metadata_provider=_EchoMetadata(),
         article=FakeArticleGenerator(result=_article()),
         persist=_persist(),
+        classifier=FakeTopicKindClassifier(result="conceptual"),
         emit_diagnostic=lambda _line: None,
         clock=FakeClock([0.0], datetime(2026, 10, 19, 10, 0, tzinfo=timezone.utc)),
         tz=timezone(timedelta(hours=3)),
@@ -368,6 +383,7 @@ def test_run_collect_batch_cursor_on_twelfth_limit_two_skips_one() -> None:
         metadata_provider=_EchoMetadata(),
         article=FakeArticleGenerator(result=_article()),
         persist=_persist(),
+        classifier=FakeTopicKindClassifier(result="conceptual"),
         emit_diagnostic=lambda _line: None,
         clock=FakeClock([0.0], datetime(2026, 10, 19, 10, 0, tzinfo=timezone.utc)),
         tz=timezone(timedelta(hours=3)),
@@ -402,6 +418,7 @@ def test_rescan_at_feed_head_makes_zero_llm_calls() -> None:
         metadata_provider=_EchoMetadata(),
         article=article,
         persist=persist,
+        classifier=FakeTopicKindClassifier(result="conceptual"),
         emit_diagnostic=lambda _line: None,
         clock=FakeClock([0.0], datetime(2026, 10, 19, 10, 0, tzinfo=timezone.utc)),
         tz=timezone(timedelta(hours=3)),
@@ -428,6 +445,7 @@ def test_rescan_at_feed_head_makes_zero_llm_calls() -> None:
         metadata_provider=_EchoMetadata(),
         article=article2,
         persist=persist2,
+        classifier=FakeTopicKindClassifier(result="conceptual"),
         emit_diagnostic=lambda _line: None,
         clock=FakeClock([0.0], datetime(2026, 10, 19, 10, 0, tzinfo=timezone.utc)),
         tz=timezone(timedelta(hours=3)),
@@ -462,6 +480,7 @@ def test_run_collect_batch_passes_bare_video_id_to_pipeline() -> None:
         metadata_provider=_EchoMetadata(),
         article=FakeArticleGenerator(result=_article()),
         persist=_persist(),
+        classifier=FakeTopicKindClassifier(result="conceptual"),
         emit_diagnostic=lambda _line: None,
         clock=FakeClock([0.0], datetime(2026, 10, 19, 10, 0, tzinfo=timezone.utc)),
         tz=timezone(timedelta(hours=3)),
@@ -504,6 +523,7 @@ def test_run_collect_batch_failed_video_does_not_advance_cursor() -> None:
         metadata_provider=_EchoMetadata(),
         article=FakeArticleGenerator(result=_article()),
         persist=_persist(),
+        classifier=FakeTopicKindClassifier(result="conceptual"),
         emit_diagnostic=diagnostics.append,
         clock=FakeClock([0.0], datetime(2026, 10, 19, 10, 0, tzinfo=timezone.utc)),
         tz=timezone(timedelta(hours=3)),
@@ -555,6 +575,7 @@ def test_cursor_write_failure_is_isolated_and_batch_completes() -> None:
         metadata_provider=_EchoMetadata(),
         article=FakeArticleGenerator(result=_article()),
         persist=_persist(),
+        classifier=FakeTopicKindClassifier(result="conceptual"),
         emit_diagnostic=diagnostics.append,
         clock=FakeClock([0.0], datetime(2026, 10, 19, 10, 0, tzinfo=timezone.utc)),
         tz=timezone(timedelta(hours=3)),
@@ -619,6 +640,7 @@ def test_unreadable_source_continues_to_next_source() -> None:
         metadata_provider=_EchoMetadata(),
         article=FakeArticleGenerator(result=_article()),
         persist=_persist(),
+        classifier=FakeTopicKindClassifier(result="conceptual"),
         emit_diagnostic=diagnostics.append,
         clock=FakeClock([0.0], datetime(2026, 10, 19, 10, 0, tzinfo=timezone.utc)),
         tz=timezone(timedelta(hours=3)),
@@ -678,6 +700,7 @@ def test_all_sources_unreadable_exit_code_2() -> None:
         metadata_provider=_EchoMetadata(),
         article=FakeArticleGenerator(result=_article()),
         persist=_persist(),
+        classifier=FakeTopicKindClassifier(result="conceptual"),
         emit_diagnostic=lambda _line: None,
         clock=FakeClock([0.0], datetime(2026, 10, 19, 10, 0, tzinfo=timezone.utc)),
         tz=timezone(timedelta(hours=3)),
@@ -733,6 +756,7 @@ def test_unexpected_feed_exception_is_isolated_per_source() -> None:
         metadata_provider=_EchoMetadata(),
         article=FakeArticleGenerator(result=_article()),
         persist=_persist(),
+        classifier=FakeTopicKindClassifier(result="conceptual"),
         emit_diagnostic=diagnostics.append,
         clock=FakeClock([0.0], datetime(2026, 10, 19, 10, 0, tzinfo=timezone.utc)),
         tz=timezone(timedelta(hours=3)),
@@ -774,6 +798,7 @@ def test_unexpected_feed_exception_only_source_exit_code_2() -> None:
         metadata_provider=_EchoMetadata(),
         article=FakeArticleGenerator(result=_article()),
         persist=_persist(),
+        classifier=FakeTopicKindClassifier(result="conceptual"),
         emit_diagnostic=lambda _line: None,
         clock=FakeClock([0.0], datetime(2026, 10, 19, 10, 0, tzinfo=timezone.utc)),
         tz=timezone(timedelta(hours=3)),
@@ -807,6 +832,7 @@ def test_list_enabled_sources_failure_exit_2_no_feed_calls() -> None:
         metadata_provider=_EchoMetadata(),
         article=FakeArticleGenerator(result=_article()),
         persist=_persist(),
+        classifier=FakeTopicKindClassifier(result="conceptual"),
         emit_diagnostic=diagnostics.append,
         clock=FakeClock([0.0], datetime(2026, 10, 19, 10, 0, tzinfo=timezone.utc)),
         tz=timezone(timedelta(hours=3)),
@@ -838,6 +864,7 @@ def test_empty_feed_zero_videos_exit_0() -> None:
         metadata_provider=_EchoMetadata(),
         article=FakeArticleGenerator(result=_article()),
         persist=_persist(),
+        classifier=FakeTopicKindClassifier(result="conceptual"),
         emit_diagnostic=lambda _line: None,
         clock=FakeClock([0.0], datetime(2026, 10, 19, 10, 0, tzinfo=timezone.utc)),
         tz=timezone(timedelta(hours=3)),
@@ -872,6 +899,7 @@ def test_already_saved_counts_as_already_and_advances_cursor() -> None:
         metadata_provider=FakeVideoMetadataProvider(result=_metadata()),
         article=FakeArticleGenerator(result=_article()),
         persist=persist,
+        classifier=FakeTopicKindClassifier(result="conceptual"),
         emit_diagnostic=lambda _line: None,
         clock=FakeClock([0.0], datetime(2026, 10, 19, 10, 0, tzinfo=timezone.utc)),
         tz=timezone(timedelta(hours=3)),
@@ -943,6 +971,7 @@ def _deps_with_schedule(
         metadata_provider=_EchoMetadata(),
         article=article or FakeArticleGenerator(result=_article()),
         persist=persist or _persist(),
+        classifier=FakeTopicKindClassifier(result="conceptual"),
         emit_diagnostic=diagnostics if diagnostics is not None else (lambda _l: None),
         clock=FakeClock([0.0], clock_now),
         tz=_MSK,

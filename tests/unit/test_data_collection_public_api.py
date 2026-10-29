@@ -46,6 +46,11 @@ NEGATIVE_ROOT_NAMES = (
     "TaggingResultDto",
     "EmbeddingResultDto",
     "EMBEDDING_DIM",
+    "FakeTopicKindClassifier",
+    "TopicKindClassifier",
+    "normalize_topic_kind",
+    "DeepSeekTopicKindClassifier",
+    "TopicKind",
 )
 
 
@@ -78,6 +83,7 @@ def test_ports_package_exports_both_provider_protocols() -> None:
     assert "ArticleGenerator" in ports.__all__
     assert "VideoMetadataProvider" in ports.__all__
     assert "VideoListProvider" in ports.__all__
+    assert "TopicKindClassifier" not in ports.__all__
     assert ports.TranscriptProvider is TranscriptProvider
     assert ports.ArticleGenerator is ArticleGenerator
     assert ports.VideoMetadataProvider is VideoMetadataProvider
