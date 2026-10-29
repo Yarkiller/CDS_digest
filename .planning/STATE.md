@@ -5,16 +5,16 @@ milestone_name: Two-pass article enrichment (Phases 29-34)
 current_phase: 30
 current_phase_name: Classifier practical | conceptual
 status: executing
-stopped_at: Completed 30-02-PLAN.md
-last_updated: "2026-10-29T03:21:46.371Z"
+stopped_at: Completed 30-03-PLAN.md
+last_updated: "2026-10-29T03:28:53.015Z"
 last_activity: 2026-10-29
 last_activity_desc: Phase 30 execution started
-state_head: 41a668405bf6edb8e3c918209fd4762dd8f282ea
+state_head: 7d0a3a5e807a4ef637df866136e208cb24785fa2
 progress:
   total_phases: 6
   completed_phases: 0
   total_plans: 7
-  completed_plans: 5
+  completed_plans: 6
   percent: 0
 ---
 
@@ -30,7 +30,7 @@ See: .planning/PROJECT.md (updated 2026-10-26 — v1.5 Two-pass article enrichme
 ## Current Position
 
 Phase: 30 (Classifier practical | conceptual) — EXECUTING
-Plan: 3 of 4
+Plan: 4 of 4
 Status: Ready to execute
 Last activity: 2026-10-29 — Phase 30 execution started
 
@@ -117,6 +117,7 @@ Last activity: 2026-10-29 — Phase 30 execution started
 | Phase 29 P03 | 2d | 3 tasks | evidence + UAT + owner path 1/2/4 |
 | Phase 30 P01 | 12min | 2 tasks | 18 files |
 | Phase 30 P02 | 7 min | 2 tasks | 8 files |
+| Phase 30 P03 | 4min | 2 tasks | 4 files |
 
 ## Accumulated Context
 
@@ -308,6 +309,10 @@ v1.3 roadmap locks:
 - [Phase 30]: Adapter unwraps only topic_kind; sibling key kind and empty content return a KIND-02 miss, never ArticleError
 - [Phase 30]: build_deepseek_topic_kind_classifier reuses build_async_deepseek_client and settings.deepseek_model; no templates, no new env var
 - [Phase 30]: D-08 unsure to practical lives only in the prompt sentence; code still allowlists via Plan 01 normalize_topic_kind
+- [Phase 30]: strip_guide_section clones the audience heading-until-next-h1/h2 walk; then deletes every occurrence of the honest-absence substring
+- [Phase 30]: Second body_markdown validator runs after the audience strip on every pass-1 body including practical (D-11)
+- [Phase 30]: D-12 exact match only: Guide / How-to talk headings and in-prose guide word stay; lowercase Cyrillic ATX heading is stripped (A3)
+- [Phase 30]: Task 2 is a characterization pin of the Phase 29 lock — lecture.md and podcast.md were not rewritten
 
 ### Pending Todos
 
@@ -346,8 +351,8 @@ Carried product deferrals beyond v1.3: leaderboard, quiz, Whisper/Foundry ASR, i
 
 ## Session Continuity
 
-Last session: 2026-10-29T03:21:34.562Z
-Stopped at: Completed 30-02-PLAN.md
+Last session: 2026-10-29T03:28:39.233Z
+Stopped at: Completed 30-03-PLAN.md
 Resume file: None
 Next: `/gsd-execute-phase 30`. Carried forward (not in v1.5): the `INVALID_ROLE` toast needs an authenticated live SPA session.
 
