@@ -15,8 +15,15 @@ def test_article_draft_constructs_article_fields_only() -> None:
     assert draft.title == "RAG for audit"
     assert draft.dek == "Как искать по регламентам СВА."
     assert draft.body_markdown == "# Intro\n\nBody"
-    assert set(ArticleDraft.model_fields) == {"title", "dek", "body_markdown", "roles"}
+    assert set(ArticleDraft.model_fields) == {
+        "title",
+        "dek",
+        "body_markdown",
+        "roles",
+        "topic_kind",
+    }
     assert draft.roles == ["employee"]
+    assert draft.topic_kind == "conceptual"
 
 
 @pytest.mark.parametrize("field", ["title", "dek", "body_markdown"])
