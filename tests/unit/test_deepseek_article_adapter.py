@@ -156,6 +156,22 @@ def test_podcast_prompt_keeps_the_kind_sentinel() -> None:
     assert "single speaker's argument" not in user_content
 
 
+@pytest.mark.parametrize(
+    "kind, language",
+    [(TemplateKind.LECTURE, "ru"), (TemplateKind.PODCAST, "en")],
+)
+def test_assembled_user_message_omits_guide_heading(
+    kind: TemplateKind, language: str
+) -> None:
+    """KIND-03 / D-11: pass-1 never owns Гайд; Phase 32 is the first allowed home."""
+    assert "Гайд" not in _user_content(kind, language)
+    assert SHARED_PROMPT_HEADINGS == (
+        "## Конкретика",
+        "## Зачем это СВА",
+        "## Аудитория",
+    )
+
+
 def test_system_prompt_contains_honesty_and_language_rules() -> None:
     from data_collection.adapters.deepseek_article import DeepSeekArticleGenerator
     from data_collection.templates import load_article_templates
