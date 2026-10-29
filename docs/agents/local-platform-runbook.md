@@ -665,7 +665,7 @@ drop the kind.
 
 - `alter table public.materials add column if not exists topic_kind text not null default 'conceptual'`
 - DO-block CHECK `materials_topic_kind_check` (`topic_kind in ('practical', 'conceptual')`) — no `ADD CONSTRAINT IF NOT EXISTS`
-- `DROP FUNCTION` of the live 12-arg signature, then `CREATE FUNCTION` 13-arg with `p_topic_kind text default 'conceptual'` immediately before `p_batch_size`; INSERT writes `topic_kind`
+- `DROP FUNCTION` of the live 12-arg signature, then `CREATE FUNCTION` 13-arg with `p_topic_kind text default 'conceptual'` immediately before `p_batch_size int default null` (Postgres 42P13: parameters after a DEFAULT must also have DEFAULT). DROP+CREATE+GRANT share one transaction so a failed CREATE cannot leave the RPC missing. INSERT writes `topic_kind`
 - Revoke `public` / `anon` / `authenticated`; grant execute on the 13-arg signature to `service_role` only (`security invoker`) (T-30-04)
 - Does **not** edit applied 007/008/009; does **not** add `topic_kind` to the reader SELECT list (T-30-05)
 - Idempotent column/check; RPC DROP+CREATE is a one-way arity change

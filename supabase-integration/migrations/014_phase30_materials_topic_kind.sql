@@ -22,6 +22,11 @@ begin
   end if;
 end $$;
 
+-- DROP+CREATE+GRANT in one transaction: a failed CREATE must not leave
+-- persist_draft_and_enqueue missing (Studio auto-commits each statement).
+-- 42P13: every parameter after p_topic_kind's DEFAULT must also have a DEFAULT.
+begin;
+
 drop function if exists public.persist_draft_and_enqueue(text, text, text, text, int, text, text, text, text, timestamptz, text[], int);
 
 create function public.persist_draft_and_enqueue(
@@ -37,7 +42,7 @@ create function public.persist_draft_and_enqueue(
   p_source_published_at timestamptz,
   p_roles text[],
   p_topic_kind text default 'conceptual',
-  p_batch_size int
+  p_batch_size int default null
 )
 returns jsonb
 language plpgsql
@@ -201,3 +206,5 @@ $$;
 revoke all on function public.persist_draft_and_enqueue(text, text, text, text, int, text, text, text, text, timestamptz, text[], text, int) from public;
 revoke all on function public.persist_draft_and_enqueue(text, text, text, text, int, text, text, text, text, timestamptz, text[], text, int) from anon, authenticated;
 grant execute on function public.persist_draft_and_enqueue(text, text, text, text, int, text, text, text, text, timestamptz, text[], text, int) to service_role;
+
+commit;
