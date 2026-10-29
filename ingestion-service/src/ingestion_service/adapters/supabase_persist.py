@@ -57,6 +57,7 @@ def _rpc_params(draft: MaterialDraft, batch_size: int) -> dict[str, Any]:
         "p_source_author": draft.source_author,
         "p_source_published_at": published.isoformat() if published is not None else None,
         "p_roles": list(draft.roles),
+        "p_topic_kind": draft.topic_kind,
         "p_batch_size": batch_size,
     }
 

@@ -651,6 +651,60 @@ Installed (дата):
 
 ---
 
+## 4l. Phase 30 materials.topic_kind (KIND-01, D-01, T-30-06)
+
+Checked-in idempotent SQL: `supabase-integration/migrations/014_phase30_materials_topic_kind.sql`.
+
+**Why:** KIND-01 persists the closed `practical | conceptual` kind on the draft row.
+D-01 stores it as `text` + CHECK, not `CREATE TYPE … ENUM`. T-30-06 DROPs the live
+12-arg `persist_draft_and_enqueue` before CREATE of the 13-arg function with
+`p_topic_kind`, so PostgREST cannot keep calling the old overload and silently
+drop the kind.
+
+**What it does (safe on shared VM):**
+
+- `alter table public.materials add column if not exists topic_kind text not null default 'conceptual'`
+- DO-block CHECK `materials_topic_kind_check` (`topic_kind in ('practical', 'conceptual')`) — no `ADD CONSTRAINT IF NOT EXISTS`
+- `DROP FUNCTION` of the live 12-arg signature, then `CREATE FUNCTION` 13-arg with `p_topic_kind text default 'conceptual'` immediately before `p_batch_size`; INSERT writes `topic_kind`
+- Revoke `public` / `anon` / `authenticated`; grant execute on the 13-arg signature to `service_role` only (`security invoker`) (T-30-04)
+- Does **not** edit applied 007/008/009; does **not** add `topic_kind` to the reader SELECT list (T-30-05)
+- Idempotent column/check; RPC DROP+CREATE is a one-way arity change
+
+There is **no `supabase/config.toml`** in this repo, so Studio SQL / `psql` is the established
+path (same as §4i/§4j). Prefer non-interactive `supabase db push` with `SUPABASE_ACCESS_TOKEN`
+when that path works for this project; otherwise use Studio / `psql` below.
+
+**Apply once on the shared VM** (`knowledge-db.ru`):
+
+1. Open Supabase Studio → **SQL Editor** → **New query**
+   URL (self-hosted): `https://knowledge-db.ru/project/default/sql/new`
+2. Paste the **entire** file [`014_phase30_materials_topic_kind.sql`](../../supabase-integration/migrations/014_phase30_materials_topic_kind.sql) and **Run** once. Expect success / no rows returned.
+3. Optional: when `POSTGRES_URL` is configured for Supabase MCP, `raw_sql` may run the same DDL — **never** `db reset`.
+
+**Do not** `TRUNCATE` / wipe `materials` / edit 007–009 in place / `db reset` on the shared VM. Never expose `SUPABASE_SECRET_KEY` via `VITE_`.
+
+**Verify after apply** (Studio SQL):
+
+```sql
+select column_name, column_default from information_schema.columns
+  where table_schema = 'public' and table_name = 'materials' and column_name = 'topic_kind';
+  -- expect default conceptual
+select pg_get_constraintdef(oid) from pg_constraint
+  where conname = 'materials_topic_kind_check';
+  -- expect CHECK (topic_kind IN ('practical', 'conceptual'))
+select count(*) as n, max(p.pronargs) as pronargs
+  from pg_proc p
+  join pg_namespace n on n.oid = p.pronamespace
+  where n.nspname = 'public' and p.proname = 'persist_draft_and_enqueue';
+  -- expect a single row: n=1, pronargs=13 (no leftover 12-arg overload)
+```
+
+Record apply method below when confirmed.
+
+**Applied:**
+
+---
+
 ## 5. Live FE↔BE proof checklist (D-10)
 
 With API on `:8000`, Vite on `:5173`, `APP_CONTAINER=live`, and `VITE_USE_MOCKS=false`:
