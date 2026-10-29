@@ -25,7 +25,7 @@ Pass 2 is a gated enhancement for `practical` topics only.
 
 ### Classifier
 
-- [ ] **KIND-01**: Every ingest records `topic_kind` as `practical` or `conceptual` on the draft
+- [x] **KIND-01**: Every ingest records `topic_kind` as `practical` or `conceptual` on the draft
 - [x] **KIND-02**: Missing, empty, or unknown `topic_kind` is stored as `conceptual` and does not attach guide sections, generated-code extras, Tavily reads, or a cheat sheet
 - [x] **KIND-03**: A conceptual material has no empty «Гайд» heading, no disabled cheat-sheet control, and no “ссылки скоро появятся” placeholder
 
@@ -105,7 +105,7 @@ Which phases cover which requirements. Updated during roadmap creation.
 | ART-02 | Phase 29 | Complete |
 | ART-03 | Phase 29 | Complete |
 | ART-04 | Phase 31 | Pending |
-| KIND-01 | Phase 30 | Pending |
+| KIND-01 | Phase 30 | Complete |
 | KIND-02 | Phase 30 | Complete |
 | KIND-03 | Phase 30 | Complete |
 | TAV-01 | Phase 32 | Pending |

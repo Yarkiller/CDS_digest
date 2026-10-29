@@ -4,17 +4,17 @@ milestone: v1.5
 milestone_name: Two-pass article enrichment (Phases 29-34)
 current_phase: 30
 current_phase_name: Classifier practical | conceptual
-status: executing
-stopped_at: Completed 30-03-PLAN.md
-last_updated: "2026-10-29T03:28:53.015Z"
+status: verifying
+stopped_at: Completed 30-04-PLAN.md
+last_updated: "2026-10-29T17:56:44.911Z"
 last_activity: 2026-10-29
 last_activity_desc: Phase 30 execution started
-state_head: 7d0a3a5e807a4ef637df866136e208cb24785fa2
+state_head: 94bbd77f0ff86867d77b817aa23658d199d97bfb
 progress:
   total_phases: 6
   completed_phases: 0
   total_plans: 7
-  completed_plans: 6
+  completed_plans: 7
   percent: 0
 ---
 
@@ -31,7 +31,7 @@ See: .planning/PROJECT.md (updated 2026-10-26 — v1.5 Two-pass article enrichme
 
 Phase: 30 (Classifier practical | conceptual) — EXECUTING
 Plan: 4 of 4
-Status: Ready to execute
+Status: Phase complete — ready for verification
 Last activity: 2026-10-29 — Phase 30 execution started
 
 ## Performance Metrics
@@ -118,6 +118,7 @@ Last activity: 2026-10-29 — Phase 30 execution started
 | Phase 30 P01 | 12min | 2 tasks | 18 files |
 | Phase 30 P02 | 7 min | 2 tasks | 8 files |
 | Phase 30 P03 | 4min | 2 tasks | 4 files |
+| Phase 30 P04 | 20min | 3 tasks | 5 files |
 
 ## Accumulated Context
 
@@ -313,6 +314,9 @@ v1.3 roadmap locks:
 - [Phase 30]: Second body_markdown validator runs after the audience strip on every pass-1 body including practical (D-11)
 - [Phase 30]: D-12 exact match only: Guide / How-to talk headings and in-prose guide word stay; lowercase Cyrillic ATX heading is stripped (A3)
 - [Phase 30]: Task 2 is a characterization pin of the Phase 29 lock — lecture.md and podcast.md were not rewritten
+- [Phase 30]: DROP 12-arg persist_draft_and_enqueue then CREATE 13-arg with p_topic_kind (drop-then-create-13; KIND-01, D-01, T-30-06)
+- [Phase 30]: 42P13 trailing defaults: p_batch_size int default null; DROP+CREATE+GRANT in one transaction
+- [Phase 30]: Live apply 2026-10-29 Studio SQL on shared knowledge-db VM; operator screenshot n=1 pronargs=13
 
 ### Pending Todos
 
@@ -351,8 +355,8 @@ Carried product deferrals beyond v1.3: leaderboard, quiz, Whisper/Foundry ASR, i
 
 ## Session Continuity
 
-Last session: 2026-10-29T03:28:39.233Z
-Stopped at: Completed 30-03-PLAN.md
+Last session: 2026-10-29T17:56:44.885Z
+Stopped at: Completed 30-04-PLAN.md
 Resume file: None
 Next: `/gsd-execute-phase 30`. Carried forward (not in v1.5): the `INVALID_ROLE` toast needs an authenticated live SPA session.
 

@@ -701,7 +701,7 @@ select count(*) as n, max(p.pronargs) as pronargs
 
 Record apply method below when confirmed.
 
-**Applied:**
+**Applied:** 2026-10-29 — Studio SQL Editor on shared knowledge-db VM (`knowledge-db.ru`); file `014_phase30_materials_topic_kind.sql`. Operator screenshot of `pg_proc` verify: `n=1`, `pronargs=13`. First Studio run hit ERROR 42P13 (`p_topic_kind DEFAULT` before required `p_batch_size`); ALTER/DO likely committed (0 rows) before CREATE failed; DROP of 12-arg may have committed. Operator re-ran the fixed 014 (`p_batch_size int default null`, DROP+CREATE+GRANT in one transaction). Column + CHECK were not re-pasted; first-run 0-row statements plus successful 13-arg CREATE after the fix are the evidence. Never db reset.
 
 ---
 
