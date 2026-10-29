@@ -5,6 +5,7 @@ from pydantic import BaseModel, Field, field_validator
 from data_collection.dto._body import strip_audience_section
 from data_collection.dto._validators import strip_non_blank
 from data_collection.dto.role_kind import RoleKind, normalize_roles
+from data_collection.dto.topic_kind import TopicKind, normalize_topic_kind
 
 
 class ArticleDraft(BaseModel):
@@ -12,6 +13,7 @@ class ArticleDraft(BaseModel):
     dek: str = Field(min_length=1)
     body_markdown: str = Field(min_length=1)
     roles: list[RoleKind] = ["employee"]
+    topic_kind: TopicKind = "conceptual"
 
     @field_validator("title", "dek", "body_markdown")
     @classmethod
@@ -29,3 +31,8 @@ class ArticleDraft(BaseModel):
     @classmethod
     def _normalize_roles(cls, value: object) -> list[RoleKind]:
         return normalize_roles(value)
+
+    @field_validator("topic_kind", mode="before")
+    @classmethod
+    def _normalize_topic_kind(cls, value: object) -> TopicKind:
+        return normalize_topic_kind(value)

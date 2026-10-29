@@ -6,10 +6,12 @@ from collections.abc import Callable
 
 from data_collection.assemble import assemble_material_draft
 from data_collection.dto.template_kind import TemplateKind
+from data_collection.dto.topic_kind import normalize_topic_kind
 from data_collection.errors.article import ArticleError
 from data_collection.errors.captions import CaptionsError
 from data_collection.errors.metadata import MetadataError
 from data_collection.ports.article_generator import ArticleGenerator
+from data_collection.ports.topic_kind import TopicKindClassifier
 from data_collection.ports.transcript_provider import TranscriptProvider
 from data_collection.ports.video_metadata_provider import VideoMetadataProvider
 from ingestion_service.adapters.persist_errors import DraftPersistError
@@ -36,6 +38,7 @@ async def run_ingest_pipeline(
     metadata_provider: VideoMetadataProvider,
     article: ArticleGenerator,
     persist: PersistPort,
+    classifier: TopicKindClassifier,
     on_stage: OnStage | None = None,
     diagnostics: StageDiagnostics | None = None,
 ) -> PersistResult:
@@ -131,6 +134,12 @@ async def run_ingest_pipeline(
         )
     if on_stage is not None:
         on_stage("llm")
+
+    try:
+        raw = await classifier.classify(transcript, article_draft)
+    except Exception:
+        raw = None
+    article_draft.topic_kind = normalize_topic_kind(raw)
 
     material = assemble_material_draft(article_draft, metadata, provenance)
     if diagnostics is not None:

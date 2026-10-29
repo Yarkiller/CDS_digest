@@ -6,6 +6,7 @@ from pydantic import BaseModel, Field, field_validator
 
 from data_collection.dto._validators import strip_non_blank
 from data_collection.dto.role_kind import RoleKind, normalize_roles
+from data_collection.dto.topic_kind import TopicKind, normalize_topic_kind
 
 
 class MaterialDraft(BaseModel):
@@ -18,6 +19,7 @@ class MaterialDraft(BaseModel):
     provenance_label: str = Field(min_length=1)
     source_published_at: datetime | None = None
     roles: list[RoleKind] = ["employee"]
+    topic_kind: TopicKind = "conceptual"
     slug: str = ""
     reading_minutes: int = 1
 
@@ -45,3 +47,8 @@ class MaterialDraft(BaseModel):
     @classmethod
     def _normalize_roles(cls, value: object) -> list[RoleKind]:
         return normalize_roles(value)
+
+    @field_validator("topic_kind", mode="before")
+    @classmethod
+    def _normalize_topic_kind(cls, value: object) -> TopicKind:
+        return normalize_topic_kind(value)

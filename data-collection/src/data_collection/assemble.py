@@ -22,6 +22,7 @@ def assemble_material_draft(
         provenance_label=provenance_label,
         source_published_at=metadata.published_at,
         roles=article.roles,
+        topic_kind=article.topic_kind,
     )
 
 
