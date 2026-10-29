@@ -22,10 +22,10 @@ progress:
 
 ## Project Reference
 
-See: .planning/PROJECT.md (updated 2026-10-26 — v1.5 Two-pass article enrichment)
+See: .planning/PROJECT.md (updated 2026-10-29 — Phase 30 Classifier practical | conceptual)
 
 **Core value:** Trusted weekly prepared-article issue + one honest vote toward the next разбор
-**Current focus:** Phase 30 — Classifier practical | conceptual
+**Current focus:** Phase 31 — Tavily quota and persist-then-enrich floor
 
 ## Current Position
 
