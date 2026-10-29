@@ -53,3 +53,27 @@ def test_assemble_material_draft_copies_article_roles() -> None:
     draft = assemble_material_draft(article, metadata, "label")
 
     assert draft.roles == ["analyst"]
+
+
+def test_assemble_material_draft_copies_article_topic_kind() -> None:
+    from data_collection.assemble import assemble_material_draft
+    from data_collection.dto.article_draft import ArticleDraft
+    from data_collection.dto.video_metadata import VideoMetadata
+
+    article = ArticleDraft(
+        title="Prepared title",
+        dek="Prepared dek",
+        body_markdown="# Body",
+        topic_kind="practical",
+    )
+    metadata = VideoMetadata(
+        video_id="dQw4w9WgXcQ",
+        source_url="https://www.youtube.com/watch?v=dQw4w9WgXcQ",
+        author="Rick Astley",
+        published_at=None,
+    )
+
+    draft = assemble_material_draft(article, metadata, "label")
+
+    assert draft.topic_kind == "practical"
+    assert draft.provenance_label == "label"

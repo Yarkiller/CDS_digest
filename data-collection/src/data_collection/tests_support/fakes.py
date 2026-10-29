@@ -74,3 +74,27 @@ class FakeArticleGenerator:
             raise failure
         await asyncio.sleep(0)
         return self._result
+
+
+class TopicKindClassifierCall(TypedDict):
+    transcript: Transcript
+    article: ArticleDraft
+
+
+class FakeTopicKindClassifier:
+    def __init__(
+        self,
+        result: object = "conceptual",
+        failures: dict[str, Exception] | None = None,
+    ) -> None:
+        self._result = result
+        self._failures = failures or {}
+        self.calls: list[TopicKindClassifierCall] = []
+
+    async def classify(self, transcript: Transcript, article: ArticleDraft) -> object:
+        self.calls.append({"transcript": transcript, "article": article})
+        failure = self._failures.get(transcript.video_id)
+        if failure is not None:
+            raise failure
+        await asyncio.sleep(0)
+        return self._result
