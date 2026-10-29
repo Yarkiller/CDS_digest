@@ -2,7 +2,7 @@
 
 from pydantic import BaseModel, Field, field_validator
 
-from data_collection.dto._body import strip_audience_section
+from data_collection.dto._body import strip_audience_section, strip_guide_section
 from data_collection.dto._validators import strip_non_blank
 from data_collection.dto.role_kind import RoleKind, normalize_roles
 from data_collection.dto.topic_kind import TopicKind, normalize_topic_kind
@@ -26,6 +26,13 @@ class ArticleDraft(BaseModel):
         # `## Аудитория` is prompt scaffolding for the `roles` key, not article
         # content; models sometimes leak it (as JSON or the echoed instruction).
         return strip_audience_section(value)
+
+    @field_validator("body_markdown")
+    @classmethod
+    def _strip_guide_scaffolding(cls, value: str) -> str:
+        # `## Гайд` is pass-2 extras furniture (KIND-03, D-09…D-12). Strip on
+        # every pass-1 body, including practical drafts (D-11). Never raises.
+        return strip_guide_section(value)
 
     @field_validator("roles", mode="before")
     @classmethod
