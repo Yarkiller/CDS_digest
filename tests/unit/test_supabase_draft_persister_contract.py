@@ -102,6 +102,8 @@ def test_persist_returns_result_from_mocked_rpc() -> None:
     assert params["p_youtube_video_id"] == VIDEO_ID
     assert params["p_slug"] == SLUG
     assert params["p_roles"] == ["employee", "ds"]
+    assert params["p_topic_kind"] == draft.topic_kind
+    assert params["p_topic_kind"] == "conceptual"
     assert params["p_batch_size"] == 5
     assert params["p_source_published_at"] == "2026-03-20T12:00:00+00:00"
     assert params["p_source_url"] == draft.source_url
@@ -111,6 +113,19 @@ def test_persist_returns_result_from_mocked_rpc() -> None:
     assert params["p_dek"] == draft.dek
     assert params["p_body_markdown"] == draft.body_markdown
     assert params["p_reading_minutes"] == draft.reading_minutes
+
+
+def test_persist_forwards_practical_topic_kind() -> None:
+    """KIND-01: a practical draft binds p_topic_kind=practical on the RPC."""
+    from ingestion_service.adapters.supabase_persist import SupabaseDraftPersister
+
+    draft = _draft(topic_kind="practical")
+    client = _FakeClient(_happy_data())
+    SupabaseDraftPersister(client, batch_size=5).persist(draft)
+
+    params = client.calls[0][1]
+    assert params["p_topic_kind"] == "practical"
+    assert params["p_topic_kind"] == draft.topic_kind
 
 
 def test_persist_maps_already_saved_true_with_stored_slug() -> None:
