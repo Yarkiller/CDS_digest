@@ -18,6 +18,7 @@ def test_build_ingest_deps_source_delegates_to_composition_factories() -> None:
     assert "build_youtube_captions" in src
     assert "build_youtube_metadata_provider" in src
     assert "build_deepseek_article_generator" in src
+    assert "build_deepseek_topic_kind_classifier" in src
     assert "build_supabase_draft_persister" in src
     assert "load_dotenv" not in src
     assert "os.environ" not in src
@@ -33,6 +34,7 @@ def test_build_ingest_deps_wires_four_ports_via_monkeypatched_factories(monkeypa
     metadata = object()
     article = object()
     persist = object()
+    classifier = object()
     calls: list[str] = []
 
     def _track(name: str, sentinel: object):
@@ -58,6 +60,12 @@ def test_build_ingest_deps_wires_four_ports_via_monkeypatched_factories(monkeypa
     monkeypatch.setattr(
         cli_mod, "build_supabase_draft_persister", _track("persist", persist)
     )
+    monkeypatch.setattr(
+        cli_mod,
+        "build_deepseek_topic_kind_classifier",
+        _track("classifier", classifier),
+        raising=False,
+    )
 
     deps = cli_mod.build_ingest_deps()
 
@@ -65,7 +73,17 @@ def test_build_ingest_deps_wires_four_ports_via_monkeypatched_factories(monkeypa
     assert deps.metadata_provider is metadata
     assert deps.article is article
     assert deps.persist is persist
-    assert calls == ["captions", "metadata", "article", "persist"]
+    assert deps.classifier is classifier
+    assert calls == ["captions", "metadata", "article", "persist", "classifier"]
+
+
+def test_build_collect_deps_source_wires_classifier_factory() -> None:
+    from ingestion_service import collect_cli as collect_mod
+
+    src = inspect.getsource(collect_mod.build_collect_deps)
+    assert "build_deepseek_topic_kind_classifier" in src
+    assert "classifier=" in src
+    assert "classifier=build_deepseek_topic_kind_classifier" in src.replace(" ", "")
 
 
 def test_runbook_documents_phase10_uat_ingest_command() -> None:

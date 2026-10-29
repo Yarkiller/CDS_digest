@@ -128,8 +128,31 @@ def test_composition_exports_supabase_factories() -> None:
         "build_httpx_client",
         "build_async_deepseek_client",
         "build_deepseek_article_generator",
+        "build_deepseek_topic_kind_classifier",
     ):
         assert name in composition.__all__
+
+
+def test_build_deepseek_topic_kind_classifier_uses_async_client_not_httpx() -> None:
+    import inspect
+
+    from ingestion_service.composition.clients import build_deepseek_topic_kind_classifier
+
+    src = inspect.getsource(build_deepseek_topic_kind_classifier)
+    assert "build_async_deepseek_client" in src
+    assert "build_httpx_client" not in src
+    assert "load_article_templates" not in src
+    assert "max_transcript_chars" not in src
+
+
+def test_build_deepseek_topic_kind_classifier_rejects_blank_key() -> None:
+    from ingestion_service.composition.clients import build_deepseek_topic_kind_classifier
+    from ingestion_service.composition.config_error import ConfigurationError
+    from ingestion_service.composition.settings import Settings
+
+    settings = Settings.from_env({})
+    with pytest.raises(ConfigurationError):
+        build_deepseek_topic_kind_classifier(settings)
 
 
 def test_ingestion_env_example_documents_supabase_placeholders() -> None:
