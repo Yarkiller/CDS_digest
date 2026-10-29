@@ -62,7 +62,37 @@ def test_migration_014_drops_live_12_arg_then_creates_p_topic_kind() -> None:
     assert _DROP_12 in executable
     assert "p_topic_kind" in executable
     assert "p_topic_kind text default 'conceptual'" in executable
-    assert "p_topic_kind text default 'conceptual', p_batch_size int" in executable
+    assert "p_topic_kind text default 'conceptual', p_batch_size int default" in executable
+
+
+def test_migration_014_args_after_default_also_have_defaults() -> None:
+    """Postgres 42P13: parameters after one with DEFAULT must also have DEFAULT."""
+    executable = _normalized_executable_sql()
+    create_idx = executable.find("create function public.persist_draft_and_enqueue")
+    returns_idx = executable.find("returns jsonb", create_idx)
+    arg_list = executable[create_idx:returns_idx]
+    marker = "p_topic_kind text default 'conceptual'"
+    assert marker in arg_list
+    after = arg_list.split(marker, 1)[1]
+    assert "p_batch_size int default" in after
+    compact = arg_list.replace(" ", "")
+    assert "p_topic_kindtextdefault'conceptual',p_batch_sizeint)" not in compact
+
+
+def test_migration_014_drop_and_create_share_one_transaction() -> None:
+    """A committed DROP with a failed CREATE would leave persist_draft_and_enqueue missing."""
+    executable = _normalized_executable_sql()
+    drop_idx = executable.find(_DROP_12)
+    create_idx = executable.find("create function public.persist_draft_and_enqueue")
+    grant_idx = executable.find(
+        "grant execute on function public.persist_draft_and_enqueue"
+    )
+    begin_idx = executable.rfind("begin;", 0, drop_idx)
+    commit_idx = executable.find("commit;", grant_idx)
+    assert drop_idx >= 0
+    assert begin_idx >= 0
+    assert begin_idx < drop_idx < create_idx < grant_idx
+    assert commit_idx > grant_idx
     create_idx = executable.find("create function public.persist_draft_and_enqueue")
     drop_idx = executable.find(_DROP_12)
     assert drop_idx >= 0
