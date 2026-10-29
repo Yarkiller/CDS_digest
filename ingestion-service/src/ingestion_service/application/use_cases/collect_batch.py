@@ -9,6 +9,7 @@ from datetime import tzinfo
 from data_collection.dto.template_kind import TemplateKind
 from data_collection.errors.feed import FeedError
 from data_collection.ports.article_generator import ArticleGenerator
+from data_collection.ports.topic_kind import TopicKindClassifier
 from data_collection.ports.transcript_provider import TranscriptProvider
 from data_collection.ports.video_list_provider import VideoListProvider
 from data_collection.ports.video_metadata_provider import VideoMetadataProvider
@@ -30,6 +31,7 @@ class CollectDeps:
     metadata_provider: VideoMetadataProvider
     article: ArticleGenerator
     persist: PersistPort
+    classifier: TopicKindClassifier
     emit_diagnostic: Callable[[str], None]
     clock: Clock
     tz: tzinfo
@@ -176,6 +178,7 @@ async def run_collect_batch(
                     metadata_provider=deps.metadata_provider,
                     article=deps.article,
                     persist=deps.persist,
+                    classifier=deps.classifier,
                     on_stage=None,
                     diagnostics=None,
                 )

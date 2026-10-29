@@ -103,6 +103,7 @@ def main(
                 metadata_provider=deps.metadata_provider,
                 article=deps.article,
                 persist=deps.persist,
+                classifier=deps.classifier,
                 on_stage=_on_stage,
                 diagnostics=diagnostics,
             )
