@@ -20,12 +20,13 @@ Pass 2 is a gated enhancement for `practical` topics only.
 > **Phase 29 owner overrides** (CONTEXT.md D-08, D-10, D-11 — gathered 2026-10-26 after these lines were written; D-18/D-19 and ART-02 editorial quality — owner paths 1, 2, 4 on 2026-10-27; verification scores against this reading):
 > - **ART-02** — read as «the `## Конкретика` block exists when the talk carries concreteness». Omitting it on a talk with no names/numbers/tools is correct, not a gap; no empty heading, no stub. Facts must be interesting or explanatory, not a static inventory. Pass-1 may add definitions of hard terms, footnotes, and reference data; it must not invent a version, name or number the speaker stated, and must not present added context as the speaker's words. Web research stays Phase 32.
 > - **ART-03** — read as **one** optional `## Зачем это СВА` section (the separate «риски и ограничения» heading is merged into its prose, per D-10), omitted when there is no working analog for СВА (D-11). `dek` stays the 1–2 sentence hook (D-17).
+
 - [ ] **ART-04**: A successful pass-1 write always leaves a `materials` row with `status=draft` plus a pending shortlist item, including when the topic is conceptual or Tavily is skipped
 
 ### Classifier
 
 - [ ] **KIND-01**: Every ingest records `topic_kind` as `practical` or `conceptual` on the draft
-- [ ] **KIND-02**: Missing, empty, or unknown `topic_kind` is stored as `conceptual` and does not attach guide sections, generated-code extras, Tavily reads, or a cheat sheet
+- [x] **KIND-02**: Missing, empty, or unknown `topic_kind` is stored as `conceptual` and does not attach guide sections, generated-code extras, Tavily reads, or a cheat sheet
 - [ ] **KIND-03**: A conceptual material has no empty «Гайд» heading, no disabled cheat-sheet control, and no “ссылки скоро появятся” placeholder
 
 ### Tavily quota and pass-2
@@ -105,7 +106,7 @@ Which phases cover which requirements. Updated during roadmap creation.
 | ART-03 | Phase 29 | Complete |
 | ART-04 | Phase 31 | Pending |
 | KIND-01 | Phase 30 | Pending |
-| KIND-02 | Phase 30 | Pending |
+| KIND-02 | Phase 30 | Complete |
 | KIND-03 | Phase 30 | Pending |
 | TAV-01 | Phase 32 | Pending |
 | TAV-02 | Phase 31 | Pending |
@@ -124,6 +125,7 @@ Which phases cover which requirements. Updated during roadmap creation.
 | ING-12 | Phase 34 | Pending |
 
 **Coverage:**
+
 - v1.5 requirements: 22 total
 - Mapped to phases: 22
 - Unmapped: 0 ✓

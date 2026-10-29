@@ -5,16 +5,16 @@ milestone_name: Two-pass article enrichment (Phases 29-34)
 current_phase: 30
 current_phase_name: Classifier practical | conceptual
 status: executing
-stopped_at: Completed 30-01-PLAN.md
-last_updated: "2026-10-29T03:11:53.081Z"
+stopped_at: Completed 30-02-PLAN.md
+last_updated: "2026-10-29T03:21:46.371Z"
 last_activity: 2026-10-29
 last_activity_desc: Phase 30 execution started
-state_head: 279d82a315a9de93cd13e3f86dc39259d45ab207
+state_head: 41a668405bf6edb8e3c918209fd4762dd8f282ea
 progress:
   total_phases: 6
   completed_phases: 0
   total_plans: 7
-  completed_plans: 4
+  completed_plans: 5
   percent: 0
 ---
 
@@ -30,7 +30,7 @@ See: .planning/PROJECT.md (updated 2026-10-26 — v1.5 Two-pass article enrichme
 ## Current Position
 
 Phase: 30 (Classifier practical | conceptual) — EXECUTING
-Plan: 2 of 4
+Plan: 3 of 4
 Status: Ready to execute
 Last activity: 2026-10-29 — Phase 30 execution started
 
@@ -116,6 +116,7 @@ Last activity: 2026-10-29 — Phase 30 execution started
 | Phase 29 P02 | 7min | 2 tasks | 4 files |
 | Phase 29 P03 | 2d | 3 tasks | evidence + UAT + owner path 1/2/4 |
 | Phase 30 P01 | 12min | 2 tasks | 18 files |
+| Phase 30 P02 | 7 min | 2 tasks | 8 files |
 
 ## Accumulated Context
 
@@ -303,6 +304,10 @@ v1.3 roadmap locks:
 - [Phase 30]: Pipeline always overwrites article_draft.topic_kind from classifier raw, even when pass-1 leaked practical (Pitfall 4)
 - [Phase 30]: classifier= is required keyword-only with no None default; unit call sites pass FakeTopicKindClassifier
 - [Phase 30]: Live build_ingest_deps / build_collect_deps stay unwired this plan — Plan 02 owns the DeepSeek adapter factory
+- [Phase 30]: Classifier create is json_object + thinking.disabled + stream=False + max_tokens=128; pass-1 stays stream=True with no max_tokens
+- [Phase 30]: Adapter unwraps only topic_kind; sibling key kind and empty content return a KIND-02 miss, never ArticleError
+- [Phase 30]: build_deepseek_topic_kind_classifier reuses build_async_deepseek_client and settings.deepseek_model; no templates, no new env var
+- [Phase 30]: D-08 unsure to practical lives only in the prompt sentence; code still allowlists via Plan 01 normalize_topic_kind
 
 ### Pending Todos
 
@@ -341,8 +346,8 @@ Carried product deferrals beyond v1.3: leaderboard, quiz, Whisper/Foundry ASR, i
 
 ## Session Continuity
 
-Last session: 2026-10-29T03:11:53.058Z
-Stopped at: Completed 30-01-PLAN.md
+Last session: 2026-10-29T03:21:34.562Z
+Stopped at: Completed 30-02-PLAN.md
 Resume file: None
 Next: `/gsd-execute-phase 30`. Carried forward (not in v1.5): the `INVALID_ROLE` toast needs an authenticated live SPA session.
 
