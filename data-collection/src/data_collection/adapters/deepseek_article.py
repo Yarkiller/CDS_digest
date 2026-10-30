@@ -43,6 +43,8 @@ ARTICLE_SYSTEM_PROMPT = (
     "Write in the voice of the edition: state the substance, do not report the container. "
     "Never write «в подкасте рассказывается», «монолог содержит» or «в ролике говорится»; "
     "attribute a claim to the speaker by name instead («Элен считает…»).\n"
+    "If the speaker's name is absent from the transcript, attribute as «докладчик» or «ведущий» — never invent a name.\n"
+    "Mark every added definition, footnote or reference note as editorial («Редакционное примечание»), never as the speaker's words.\n"
     "Editorial inference is allowed in ## Зачем это СВА and in definitions, footnotes and reference notes; "
     "never present it as the speaker's words and never invent a duty, a standard or a number the talk asserted.\n"
     "dek is a 1-2 sentence hook about the talk, never a summary and never the audit takeaway.\n"

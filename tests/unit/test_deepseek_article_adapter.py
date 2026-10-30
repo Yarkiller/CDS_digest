@@ -218,6 +218,8 @@ def test_system_prompt_carries_the_edition_voice_and_length_rules() -> None:
     assert "definitions, footnotes and reference notes" in system_content
     assert "1-2 sentence hook" in system_content
     assert "1200-1800 words" in system_content
+    assert "If the speaker's name is absent from the transcript, attribute as «докладчик» or «ведущий» — never invent a name." in system_content
+    assert "Mark every added definition, footnote or reference note as editorial («Редакционное примечание»), never as the speaker's words." in system_content
 
 
 def test_create_kwargs_include_json_object_and_disabled_thinking() -> None:
