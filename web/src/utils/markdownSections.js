@@ -10,8 +10,9 @@
  */
 function kindForHeading(heading) {
   if (!heading) return 'lead'
-  if (heading === 'Зачем это СВА') return 'sva'
-  if (heading === 'Конкретика') return 'concretika'
+  const normalized = heading.replace(/[*_`]/g, '').replace(/[.:?!]+$/g, '').trim()
+  if (normalized === 'Зачем это СВА') return 'sva'
+  if (normalized === 'Конкретика') return 'concretika'
   return 'topic'
 }
 

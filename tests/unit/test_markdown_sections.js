@@ -89,6 +89,17 @@ describe('splitMaterialSections', () => {
     assert.equal(bands.length, 1)
     assert.equal(bands[0].kind, 'body')
   })
+
+  it('recognises reserved headings wrapped in emphasis or trailing punctuation', async () => {
+    const { splitMaterialSections } = await import('../../web/src/utils/markdownSections.js')
+    const sections = splitMaterialSections('## **Конкретика**\n\n- **784** — pixels.')
+    assert.equal(sections.length, 1)
+    assert.equal(sections[0].kind, 'concretika')
+    assert.equal(sections[0].heading, '**Конкретика**')
+
+    const sva = splitMaterialSections('## Зачем это СВА?\n\nДля СВА это значит контроль.')
+    assert.equal(sva[0].kind, 'sva')
+  })
 })
 
 describe('groupMaterialBands', () => {
