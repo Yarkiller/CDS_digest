@@ -21,7 +21,8 @@ function kindForHeading(heading) {
  * @returns {string | null}
  */
 function headingText(line) {
-  if (!line.startsWith('## ') || line.startsWith('###')) return null
+  // `###` / `####` do not start with `'## '` (hash-hash-space), so they stay in buf.
+  if (!line.startsWith('## ')) return null
   return line.slice(3).replace(/\s+#+\s*$/, '').trim()
 }
 
