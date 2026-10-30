@@ -8,6 +8,8 @@ a sibling of `## Аудитория`: it never raises, and real talk headings st
 
 from __future__ import annotations
 
+import pytest
+
 PLACEHOLDER = "ссылки скоро появятся"
 
 
@@ -165,3 +167,34 @@ def test_body_that_is_only_a_guide_section_still_validates_without_guide() -> No
     assert "Гайд" not in draft.body_markdown
     assert "Open SAP" not in draft.body_markdown
     assert draft.body_markdown.strip() != ""
+
+
+@pytest.mark.parametrize(
+    "body",
+    ["## Гайд\n", "## Гайд\n\n1. Open SAP"],
+    ids=["empty-guide", "filled-guide"],
+)
+def test_furniture_only_guide_body_assembles_without_validation_error(body: str) -> None:
+    """KIND-03 / D-09: strip then persist — assemble must not raise ValidationError."""
+    from data_collection.assemble import assemble_material_draft
+    from data_collection.dto.material_draft import MaterialDraft
+    from data_collection.dto.video_metadata import VideoMetadata
+
+    draft = _draft(body)
+    assert "Гайд" not in draft.body_markdown
+    assert draft.body_markdown.strip() != ""
+
+    material = assemble_material_draft(
+        draft,
+        VideoMetadata(
+            video_id="dQw4w9WgXcQ",
+            source_url="https://www.youtube.com/watch?v=dQw4w9WgXcQ",
+            author="Rick Astley",
+            published_at=None,
+        ),
+        "YouTube · Rick Astley",
+    )
+
+    assert isinstance(material, MaterialDraft)
+    assert "Гайд" not in material.body_markdown
+    assert material.body_markdown.strip() != ""

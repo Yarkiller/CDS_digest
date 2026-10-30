@@ -232,6 +232,32 @@ def test_sibling_kind_key_does_not_launder_practical() -> None:
     assert normalize_topic_kind(raw) == "conceptual"
 
 
+def test_json_array_content_maps_to_conceptual_without_article_error() -> None:
+    """KIND-02: non-dict JSON array is a miss; ["practical"] must not become practical."""
+    try:
+        raw, _client = _classify(json.dumps(["practical"]))
+    except ArticleError:
+        pytest.fail("JSON array content must not raise ArticleError")
+    assert normalize_topic_kind(raw) == "conceptual"
+
+
+@pytest.mark.xfail(
+    strict=True,
+    reason=(
+        "KIND-02 BLOCKER: classify() returns non-dict JSON as-is "
+        "(deepseek_classifier.py:118-119); json.dumps('practical') launders practical. "
+        "Fix: return None for non-dict payloads. Nyquist manual-only until impl change."
+    ),
+)
+def test_json_string_content_does_not_launder_practical() -> None:
+    """KIND-02: a JSON string is not an object; only payload['topic_kind'] unwraps."""
+    try:
+        raw, _client = _classify(json.dumps("practical"))
+    except ArticleError:
+        pytest.fail("JSON string content must not raise ArticleError")
+    assert normalize_topic_kind(raw) == "conceptual"
+
+
 @pytest.mark.parametrize("content", ["", None])
 def test_empty_content_maps_to_conceptual_without_article_error(content: str | None) -> None:
     client = _stub_client(content)

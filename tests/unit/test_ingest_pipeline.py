@@ -507,6 +507,36 @@ def test_classifier_does_not_emit_classify_diagnostic_or_stage_failed() -> None:
     assert all(call[0] != "failed" for call in diagnostics.calls)
 
 
+@pytest.mark.parametrize(
+    "body",
+    ["## Гайд\n", "## Гайд\n\n1. Open SAP"],
+    ids=["empty-guide", "filled-guide"],
+)
+def test_furniture_only_guide_body_still_persists(body: str) -> None:
+    """KIND-03 / D-09: a leaked ## Гайд heading is deleted then persist proceeds."""
+    persist = _persist()
+    asyncio.run(
+        run_ingest_pipeline(
+            URL,
+            TemplateKind.LECTURE,
+            captions=FakeTranscriptProvider(result=_transcript()),
+            metadata_provider=FakeVideoMetadataProvider(result=_metadata()),
+            article=FakeArticleGenerator(
+                result=ArticleDraft.model_validate(
+                    {"title": "T", "dek": "D", "body_markdown": body}
+                )
+            ),
+            persist=persist,
+            classifier=_classifier(),
+        )
+    )
+
+    assert persist.calls, "furniture-only Гайд must strip then persist, not fail ingest"
+    stored = persist.calls[0]
+    assert "Гайд" not in stored.body_markdown
+    assert stored.body_markdown.strip() != ""
+
+
 def test_ingest_pipeline_does_not_wire_pass2_extras() -> None:
     from ingestion_service.application.use_cases import ingest_pipeline as mod
 
