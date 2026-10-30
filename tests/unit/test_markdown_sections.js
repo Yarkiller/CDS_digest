@@ -60,6 +60,35 @@ describe('splitMaterialSections', () => {
       },
     ])
   })
+
+  it('does not split on ## headings inside fenced code', async () => {
+    const { splitMaterialSections, groupMaterialBands } = await import(
+      '../../web/src/utils/markdownSections.js'
+    )
+    const markdown = [
+      '## Введение',
+      '',
+      'Topic prose.',
+      '',
+      '```markdown',
+      '## Конкретика',
+      '- fake fact',
+      '```',
+      '',
+      'Closing prose.',
+    ].join('\n')
+
+    const sections = splitMaterialSections(markdown)
+    assert.equal(sections.length, 1)
+    assert.equal(sections[0].kind, 'topic')
+    assert.equal(sections[0].heading, 'Введение')
+    assert.ok(sections[0].markdown.includes('```markdown\n## Конкретика'))
+    assert.equal(sections.some((section) => section.kind === 'concretika'), false)
+
+    const bands = groupMaterialBands(sections)
+    assert.equal(bands.length, 1)
+    assert.equal(bands[0].kind, 'body')
+  })
 })
 
 describe('groupMaterialBands', () => {

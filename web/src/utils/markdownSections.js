@@ -34,6 +34,7 @@ export function splitMaterialSections(markdown) {
   const sections = []
   let heading = null
   let buf = []
+  let inFence = false
 
   const flush = () => {
     const text = buf.join('\n')
@@ -47,7 +48,8 @@ export function splitMaterialSections(markdown) {
   }
 
   for (const line of lines) {
-    const next = headingText(line)
+    if (/^```/.test(line)) inFence = !inFence
+    const next = inFence ? null : headingText(line)
     if (next !== null) {
       flush()
       heading = next
