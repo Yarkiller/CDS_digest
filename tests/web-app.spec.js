@@ -40,6 +40,16 @@ test.describe("web app main flows", () => {
     await expect(page.getByText(/заглушк|stub|dek отсутствует|нет описания/i)).toHaveCount(0);
   });
 
+  test("omits Конкретика and Зачем это СВА cards when the article has no reserved headings", async ({
+    page,
+  }) => {
+    await page.goto("/materials/empty-dek-article");
+
+    await expect(page.getByTestId("material-section-body")).toBeVisible();
+    await expect(page.getByTestId("material-section-concretika")).toHaveCount(0);
+    await expect(page.getByTestId("material-section-sva")).toHaveCount(0);
+  });
+
   test("frames the body once and keeps Конкретика and Зачем это СВА in their own cards", async ({
     page,
   }) => {

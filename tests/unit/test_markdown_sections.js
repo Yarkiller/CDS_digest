@@ -180,6 +180,17 @@ describe('groupMaterialBands', () => {
     ])
   })
 
+  it('omits reserved cards for the empty-dek fixture that has no Конкретика or СВА', async () => {
+    const { splitMaterialSections, groupMaterialBands } = await import(
+      '../../web/src/utils/markdownSections.js'
+    )
+    const markdown = '## Section One\n\nFixture prose without an audit dek.'
+    const bands = groupMaterialBands(splitMaterialSections(markdown))
+    assert.equal(bands.some((band) => band.kind === 'concretika' || band.kind === 'sva'), false)
+    assert.equal(bands.length, 1)
+    assert.equal(bands[0].kind, 'body')
+  })
+
   it('omits empty Конкретика / СВА headings so they never become cards', async () => {
     const { splitMaterialSections, groupMaterialBands } = await import(
       '../../web/src/utils/markdownSections.js'
