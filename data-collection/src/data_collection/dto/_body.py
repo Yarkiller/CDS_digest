@@ -23,6 +23,7 @@ _GUIDE_HEADING_RE = re.compile(
     r"^#{2,6}[ \t]+Гайд[ \t]*$", re.IGNORECASE | re.MULTILINE
 )
 _GUIDE_PLACEHOLDER = "ссылки скоро появятся"
+_GUIDE_PLACEHOLDER_RE = re.compile(re.escape(_GUIDE_PLACEHOLDER), re.IGNORECASE)
 # KIND-03: an emptied body must still satisfy ArticleDraft min_length=1.
 _EMPTY_BODY_STUB = "."
 # The end of the scaffolding block: the next top-level (h1/h2) heading, if any.
@@ -73,5 +74,5 @@ def strip_guide_section(body_markdown: str) -> str:
         if stripped == cleaned:
             break
         cleaned = stripped
-    cleaned = cleaned.replace(_GUIDE_PLACEHOLDER, "").strip()
+    cleaned = _GUIDE_PLACEHOLDER_RE.sub("", cleaned).strip()
     return cleaned if cleaned else _EMPTY_BODY_STUB

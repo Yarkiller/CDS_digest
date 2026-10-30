@@ -94,6 +94,18 @@ def test_body_strips_placeholder_substring_outside_the_guide_section() -> None:
     assert draft.body_markdown == "## Тезис\n\nМысль."
 
 
+def test_body_strips_sentence_capitalized_placeholder() -> None:
+    """D-10: models routinely capitalize «Ссылки скоро появятся»; it must not persist."""
+    capitalized = "Ссылки скоро появятся"
+    body = f"## Тезис\n\nМысль.\n\n{capitalized}"
+
+    draft = _draft(body)
+
+    assert capitalized not in draft.body_markdown
+    assert PLACEHOLDER not in draft.body_markdown.casefold()
+    assert draft.body_markdown == "## Тезис\n\nМысль."
+
+
 def test_body_strips_lowercase_atx_guide_heading() -> None:
     """RESEARCH A3: re.IGNORECASE on Cyrillic Гайд matches a leaked ## гайд."""
     body = "## Тезис\n\nМысль.\n\n## гайд\n\n1. Open SAP"
