@@ -155,6 +155,14 @@ def test_kind_sentinels_do_not_cross() -> None:
     assert "positions of its participants" not in lecture
 
 
+def test_shared_concretika_sva_audience_tails_are_identical() -> None:
+    lecture = _template_text("lecture")
+    podcast = _template_text("podcast")
+    lecture_tail = lecture[lecture.index("## Конкретика") :]
+    podcast_tail = podcast[podcast.index("## Конкретика") :]
+    assert lecture_tail == podcast_tail
+
+
 def test_load_article_templates_returns_both_kinds() -> None:
     from data_collection.templates import load_article_templates
 
