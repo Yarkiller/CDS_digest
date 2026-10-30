@@ -126,3 +126,30 @@ def test_guide_stripping_is_idempotent() -> None:
     assert once == twice
     assert "Гайд" not in once
     assert PLACEHOLDER not in once
+
+
+def test_body_strips_every_guide_section_not_only_the_first() -> None:
+    """KIND-03: a later ## Гайд is furniture too — the first-match terminator must not keep it."""
+    body = (
+        "## Тезис\n\nМысль.\n\n"
+        "## Гайд\n\nfirst leak\n\n"
+        "## Гайд\n\nsecond leak"
+    )
+
+    draft = _draft(body)
+
+    assert "Гайд" not in draft.body_markdown
+    assert "first leak" not in draft.body_markdown
+    assert "second leak" not in draft.body_markdown
+    assert draft.body_markdown == "## Тезис\n\nМысль."
+
+
+def test_body_that_is_only_a_guide_section_still_validates_without_guide() -> None:
+    """KIND-03: leaked furniture is deleted, not rejected; an emptied body keeps a stub."""
+    body = "## Гайд\n\n1. Open SAP"
+
+    draft = _draft(body)
+
+    assert "Гайд" not in draft.body_markdown
+    assert "Open SAP" not in draft.body_markdown
+    assert draft.body_markdown.strip() != ""

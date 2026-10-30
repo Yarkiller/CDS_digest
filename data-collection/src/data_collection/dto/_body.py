@@ -23,6 +23,8 @@ _GUIDE_HEADING_RE = re.compile(
     r"^#{2,6}[ \t]+Гайд[ \t]*$", re.IGNORECASE | re.MULTILINE
 )
 _GUIDE_PLACEHOLDER = "ссылки скоро появятся"
+# KIND-03: an emptied body must still satisfy ArticleDraft min_length=1.
+_EMPTY_BODY_STUB = "."
 # The end of the scaffolding block: the next top-level (h1/h2) heading, if any.
 _NEXT_TOP_HEADING_RE = re.compile(r"^#{1,2}[ \t]+\S", re.MULTILINE)
 
@@ -50,19 +52,26 @@ def strip_audience_section(body_markdown: str) -> str:
 def strip_guide_section(body_markdown: str) -> str:
     """Drop a leaked `## Гайд` extras block and the honest-absence substring.
 
-    Removes the heading and its content up to the next h1/h2 heading, then
-    deletes every occurrence of «ссылки скоро появятся». Leaves the text
-    untouched when no such heading exists (in-prose «гайд» and D-12 talk
-    titles survive). Never raises — a leaked heading is deleted, not rejected.
+    Removes every ATX `Гайд` heading and its content up to the next h1/h2
+    heading, then deletes every occurrence of «ссылки скоро появятся».
+    Leaves the text untouched when no such heading exists (in-prose «гайд»
+    and D-12 talk titles survive). Never raises — a leaked heading is
+    deleted, not rejected. If stripping would empty the body, keep a
+    non-empty stub so ArticleDraft min_length=1 still validates.
     """
-    match = _GUIDE_HEADING_RE.search(body_markdown)
-    if match is None:
-        cleaned = body_markdown
-    else:
-        tail = body_markdown[match.end():]
+    cleaned = body_markdown
+    while True:
+        match = _GUIDE_HEADING_RE.search(cleaned)
+        if match is None:
+            break
+        tail = cleaned[match.end() :]
         next_heading = _NEXT_TOP_HEADING_RE.search(tail)
         if next_heading is None:
-            cleaned = body_markdown[: match.start()]
+            stripped = cleaned[: match.start()]
         else:
-            cleaned = body_markdown[: match.start()] + tail[next_heading.start():]
-    return cleaned.replace(_GUIDE_PLACEHOLDER, "").strip()
+            stripped = cleaned[: match.start()] + tail[next_heading.start() :]
+        if stripped == cleaned:
+            break
+        cleaned = stripped
+    cleaned = cleaned.replace(_GUIDE_PLACEHOLDER, "").strip()
+    return cleaned if cleaned else _EMPTY_BODY_STUB
