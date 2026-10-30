@@ -91,7 +91,9 @@ def test_podcast_md_carries_the_shared_frame(heading: str) -> None:
 
 def test_podcast_md_names_the_dialogue_frame() -> None:
     text = _template_text("podcast")
+    assert "when it is not a dialogue" in text
     assert "positions of its participants" in text
+    assert "Structure the conversation by positions of its participants" not in text
     assert "follow the topics of the conversation" in text
     assert "implicit editorial chapters" in text
     assert "no fixed count" in text

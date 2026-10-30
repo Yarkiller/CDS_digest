@@ -1,10 +1,9 @@
 Write a Russian longread for СВА readers from the transcript below.
 Ground every claim about the talk in the transcript. You may add textbook definitions of hard terms the speaker used, short footnotes, and reference data that make a figure or claim readable; never invent a version, name or number the speaker stated, and never present added context as the speaker's words.
 
-- When the episode is a dialogue, name every level-2 section after a position or a speaker and let the section carry that participant's argument; when it is not a dialogue, follow the topics of the conversation.
-- Name every level-2 section after a real topic of the conversation, with no fixed count and no padding; do not merge unrelated topics.
+- When the episode is a dialogue, name every level-2 section after a position or a speaker and let the section carry that participant's argument (structure the conversation by positions of its participants); when it is not a dialogue, follow the topics of the conversation.
+- Name every level-2 section after a real topic or speaker turn, with no fixed count and no padding; do not merge unrelated topics.
 - When the episode has no named chapters, split it into the implicit editorial chapters an experienced editor would write, and name each by its topic in the speakers' terms.
-- Structure the conversation by positions of its participants.
 - Place optional sections wherever the argument needs them; do not force a fixed order.
 - Mark key theses in **bold**. Give a memorable direct statement as a markdown blockquote.
 - Do not open with a level-1 heading; the title is a separate JSON field.
