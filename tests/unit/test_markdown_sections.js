@@ -10,6 +10,8 @@ describe('splitMaterialSections', () => {
     const { splitMaterialSections } = await import('../../web/src/utils/markdownSections.js')
     assert.deepEqual(splitMaterialSections(''), [])
     assert.deepEqual(splitMaterialSections('   \n'), [])
+    assert.deepEqual(splitMaterialSections(null), [])
+    assert.deepEqual(splitMaterialSections(undefined), [])
   })
 
   it('keeps lead prose unframed when there is no heading', async () => {
@@ -88,6 +90,33 @@ describe('splitMaterialSections', () => {
     const bands = groupMaterialBands(sections)
     assert.equal(bands.length, 1)
     assert.equal(bands[0].kind, 'body')
+  })
+
+  it('keeps an article without reserved headings as topic sections only', async () => {
+    const { splitMaterialSections, groupMaterialBands } = await import(
+      '../../web/src/utils/markdownSections.js'
+    )
+    const markdown = [
+      '## Введение',
+      '',
+      'Topic prose.',
+      '',
+      '## Оценка',
+      '',
+      'Trailing topic.',
+    ].join('\n')
+    const sections = splitMaterialSections(markdown)
+    assert.equal(sections.every((section) => section.kind === 'topic'), true)
+    assert.equal(sections.some((section) => section.kind === 'concretika' || section.kind === 'sva'), false)
+
+    const bands = groupMaterialBands(sections)
+    assert.deepEqual(bands, [
+      {
+        kind: 'body',
+        heading: null,
+        markdown: '## Введение\n\nTopic prose.\n## Оценка\n\nTrailing topic.',
+      },
+    ])
   })
 
   it('recognises reserved headings wrapped in emphasis or trailing punctuation', async () => {
