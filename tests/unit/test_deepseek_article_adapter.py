@@ -164,12 +164,10 @@ def test_assembled_user_message_omits_guide_heading(
     kind: TemplateKind, language: str
 ) -> None:
     """KIND-03 / D-11: pass-1 never owns Гайд; Phase 32 is the first allowed home."""
-    assert "Гайд" not in _user_content(kind, language)
-    assert SHARED_PROMPT_HEADINGS == (
-        "## Конкретика",
-        "## Зачем это СВА",
-        "## Аудитория",
-    )
+    user_content = _user_content(kind, language)
+    assert "Гайд" not in user_content
+    for heading in SHARED_PROMPT_HEADINGS:
+        assert heading in user_content
 
 
 def test_system_prompt_contains_honesty_and_language_rules() -> None:
