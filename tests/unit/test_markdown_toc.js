@@ -58,4 +58,26 @@ describe('extractMarkdownHeadings', () => {
       { id: 'user-content-качество-1', text: 'Качество', level: 2 },
     ])
   })
+
+  it('suffixes duplicate Введение headings that sit on either side of Конкретика', async () => {
+    const { extractMarkdownHeadings } = await import('../../web/src/utils/markdownToc.js')
+    const markdown = [
+      '## Введение',
+      '',
+      'Lead topic.',
+      '',
+      '## Конкретика',
+      '',
+      '- **784** — pixels.',
+      '',
+      '## Введение',
+      '',
+      'Trailing topic.',
+    ].join('\n')
+    const headings = extractMarkdownHeadings(markdown)
+    const vvedenie = headings.filter((heading) => heading.text === 'Введение')
+    assert.equal(vvedenie.length, 2)
+    assert.equal(vvedenie[0].id, 'user-content-введение')
+    assert.equal(vvedenie[1].id, 'user-content-введение-1')
+  })
 })

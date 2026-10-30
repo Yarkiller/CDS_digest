@@ -37,6 +37,8 @@ def test_lecture_md_names_the_topics_frame() -> None:
     assert "do not add facts" not in text
     assert "definitions of hard terms" in text
     assert "footnotes" in text
+    assert "parenthetical footnotes" in text
+    assert "not [^n] endnotes" in text
     assert "reference data" in text
     assert "**bold**" in text
     assert "markdown blockquote" in text
@@ -100,6 +102,8 @@ def test_podcast_md_names_the_dialogue_frame() -> None:
     assert "do not add facts" not in text
     assert "definitions of hard terms" in text
     assert "footnotes" in text
+    assert "parenthetical footnotes" in text
+    assert "not [^n] endnotes" in text
     assert "reference data" in text
     assert "**bold**" in text
     assert "markdown blockquote" in text

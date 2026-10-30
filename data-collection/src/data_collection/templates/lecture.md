@@ -1,5 +1,5 @@
 Write a Russian longread for СВА readers from the transcript below.
-Ground every claim about the talk in the transcript. You may add textbook definitions of hard terms the speaker used, short footnotes, and reference data that make a figure or claim readable; never invent a version, name or number the speaker stated, and never present added context as the speaker's words.
+Ground every claim about the talk in the transcript. You may add textbook definitions of hard terms the speaker used, short parenthetical footnotes in the sentence («Редакционное примечание: …»), not [^n] endnotes, and reference data that make a figure or claim readable; never invent a version, name or number the speaker stated, and never present added context as the speaker's words.
 
 - Name every level-2 section after a real topic of the talk, with no fixed count and no padding; do not merge unrelated topics.
 - When the talk has no named chapters, split it into the implicit editorial chapters an experienced editor would write, and name each by its topic in the speaker's terms.

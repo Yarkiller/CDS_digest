@@ -193,6 +193,8 @@ def test_system_prompt_contains_honesty_and_language_rules() -> None:
     assert "Use only the transcript" not in system_content
     assert "definitions of hard terms" in system_content
     assert "footnotes" in system_content
+    assert "parenthetical footnotes" in system_content
+    assert "not [^n] endnotes" in system_content
     assert "reference data" in system_content
     assert "Do not invent names, numbers, tools or versions" in system_content
     assert "Output is always Russian" in system_content
