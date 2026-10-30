@@ -150,4 +150,23 @@ describe('groupMaterialBands', () => {
       },
     ])
   })
+
+  it('omits empty Конкретика / СВА headings so they never become cards', async () => {
+    const { splitMaterialSections, groupMaterialBands } = await import(
+      '../../web/src/utils/markdownSections.js'
+    )
+    const markdown = ['## Конкретика', '', '## Оценка', '', 'Trailing topic.'].join('\n')
+    const bands = groupMaterialBands(splitMaterialSections(markdown))
+    assert.equal(
+      bands.some((band) => band.kind === 'concretika' || band.kind === 'sva'),
+      false,
+    )
+    assert.deepEqual(bands, [
+      {
+        kind: 'body',
+        heading: null,
+        markdown: '## Оценка\n\nTrailing topic.',
+      },
+    ])
+  })
 })

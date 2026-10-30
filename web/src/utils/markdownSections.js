@@ -76,6 +76,14 @@ function joinMarkdown(left, right) {
 }
 
 /**
+ * @param {{ markdown: string }} section
+ * @returns {boolean}
+ */
+function bandHasBody(section) {
+  return section.markdown.split('\n').slice(1).some((l) => l.trim())
+}
+
+/**
  * Merge consecutive lead/topic sections into `body` bands so the reader can
  * paint one shared frame; leave Конкретика and Зачем это СВА as own bands.
  *
@@ -86,6 +94,7 @@ export function groupMaterialBands(sections) {
   const bands = []
   for (const section of sections) {
     if (section.kind === 'concretika' || section.kind === 'sva') {
+      if (!bandHasBody(section)) continue
       bands.push({
         kind: section.kind,
         heading: section.heading,
